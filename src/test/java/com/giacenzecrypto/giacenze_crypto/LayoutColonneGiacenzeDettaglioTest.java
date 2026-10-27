@@ -74,6 +74,53 @@ class LayoutColonneGiacenzeDettaglioTest {
     }
 
     @Test
+    void siOffronoAncheLeColonneDellaTabellaDeiMovimentiMaNonLeSueInterne() {
+        int inizio = Principale_GiacenzeaData.DETTAGLIO_INIZIO_MOVIMENTI;
+        List<Integer> offerte = LayoutColonneMovimenti.colonneOffribili(PROFILO);
+        for (int m : LayoutColonneMovimenti.colonneOffribili()) {
+            assertTrue(offerte.contains(inizio + m), "colonna dei movimenti " + m);
+        }
+        for (int m : LayoutColonneMovimenti.COLONNE_INTERNE) {
+            assertFalse(offerte.contains(inizio + m), "interna dei movimenti " + m);
+        }
+        assertEquals(Principale_GiacenzeaData.DETTAGLIO_COLONNE - 1, offerte.get(offerte.size() - 1));
+        //Un layout salvato prima delle nuove colonne si rilegge uguale, uno che le usa le conserva
+        assertEquals(List.of(0, 13, 7), LayoutColonneMovimenti.fromJson("{\"v\":1,\"col\":[{\"m\":0},{\"m\":13},{\"m\":7}]}", PROFILO).ordine());
+        assertEquals(List.of(0, inizio + 42, 7), LayoutColonneMovimenti.fromJson(
+                "{\"v\":1,\"col\":[{\"m\":0},{\"m\":" + (inizio + 42) + "},{\"m\":" + (inizio + 38) + "},{\"m\":7}]}", PROFILO).ordine());
+    }
+
+    @Test
+    void ilModelloDelDettaglioHaInCodaLeColonneDeiMovimentiNonModificabili() {
+        String[] nomiMovimenti = new String[LayoutColonneMovimenti.COLONNA_MASSIMA + 1];
+        for (int i = 0; i < nomiMovimenti.length; i++) nomiMovimenti[i] = "M" + i;
+        nomiMovimenti[16] = "<html><center>Costo di Carico<br>Moneta Uscente</html>";
+        DefaultTableModel modello = Principale_GiacenzeaData.ModelloDettaglioConMovimenti(
+                tabella().getModel(), new DefaultTableModel(new Object[0][0], nomiMovimenti));
+        int inizio = Principale_GiacenzeaData.DETTAGLIO_INIZIO_MOVIMENTI;
+        assertEquals(Principale_GiacenzeaData.DETTAGLIO_COLONNE, modello.getColumnCount());
+        assertEquals("Qta Residua", modello.getColumnName(7));
+        assertEquals("Qta Blockchain", modello.getColumnName(18));
+        assertEquals("M0", modello.getColumnName(inizio));
+        assertEquals("<html><center>Costo di Carico<br>Moneta Uscente</html>", modello.getColumnName(inizio + 16));
+        modello.addRow(new Object[modello.getColumnCount()]);
+        for (int c = 0; c < modello.getColumnCount(); c++) assertFalse(modello.isCellEditable(0, c));
+        //Il layout di default sul model vero non mostra nessuna delle colonne nuove
+        JTable t = new JTable(modello);
+        LayoutColonneMovimenti.applica(t, null, PROFILO);
+        assertEquals(List.of(0, 1, 2, 3, 4, 5, 6, 13, 7, 14, 15, 16, 17), modelliInVista(t));
+    }
+
+    @Test
+    void lIntestazioneLungaVaSuDueRighe() {
+        assertEquals("Note", Principale_GiacenzeaData.IntestazioneSuDueRighe("Note"));
+        //L'intestazione con due <html> annidati della tabella dei movimenti
+        assertEquals("<html><center>Tipo<br>Trasferimento</html>", Principale_GiacenzeaData.IntestazioneSuDueRighe(
+                "<html><center><html><center>Tipo Trasferimento</html></html>"));
+        assertEquals("<html><center>DeFi - Nome<br>Token Uscito</html>", Principale_GiacenzeaData.IntestazioneSuDueRighe("DeFi - Nome Token Uscito"));
+    }
+
+    @Test
     void ilProfiloDeiMovimentiNonCambia() {
         assertEquals(LayoutColonneMovimenti.ORDINE_DEFAULT, LayoutColonneMovimenti.predefinito().ordine());
         assertSame(LayoutColonneMovimenti.PROFILO_MOVIMENTI, LayoutColonneMovimenti.predefinito().profilo());

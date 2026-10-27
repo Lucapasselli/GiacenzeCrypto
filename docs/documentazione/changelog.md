@@ -97,7 +97,13 @@ In caso di problemi si può chiedere supporto sul
 
 - **Importazione da Exodus (in prova)**: nella finestra *Importazioni* c'è ora la voce *Exodus – Transazioni*, per l'export CSV delle transazioni del wallet Exodus. Depositi e prelievi diventano trasferimenti cripto da classificare, con la commissione di rete come movimento a parte. Le ricompense di partecipazione di Algorand, che Exodus riscuoteva con un invio di 0 ALGO al wallet stesso e che nel file compaiono come depositi, diventano premi. Gli scambi fatti dentro Exodus vengono letti come scambi fra cripto, ma non sono ancora stati verificati su un file reale.
 
+- **Giacenze a data, tutte le colonne dei movimenti nel dettaglio**: nel dettaglio dei movimenti di una moneta il pulsante *Colonne...* propone ora, oltre alle colonne del dettaglio, anche tutte quelle che si possono scegliere nella tabella dei movimenti, per esempio *Causale originale*, *Hash Transazione*, *Plusvalenza in EURO*, *Note* od *Operazione*. Nella finestra sono raccolte in un gruppo a parte. Come le altre si spostano e si allargano trascinando le intestazioni, e la disposizione scelta viene ricordata. La disposizione predefinita non cambia.
+
 **Correzione di bug**
+
+- **Avviso di movimento in ingresso mancante sulla moneta sbagliata**: con la tabella dei movimenti filtrata o ordinata, il suggerimento dell'icona che segnala un movimento in ingresso mancante poteva descrivere il movimento di un'altra riga, con un'altra moneta e quantità e valore vuoti. L'icona era al posto giusto, il testo no. Ora il suggerimento descrive sempre il movimento della riga su cui si trova il mouse.
+
+- **Quadro T/RT, "Dettagli x Tipologia", e dettagli del quadro W/RW più veloci**: dal secondo caricamento in poi l'elenco dei movimenti di una tipologia, e allo stesso modo la tabella dei dettagli del quadro W/RW, impiegava qualche secondo a riempirsi quando le righe erano migliaia. Ora si riempie subito.
 
 - **Cambia Tipologia Reward su più movimenti**: con più movimenti selezionati la nuova tipologia veniva assegnata solo al primo. Ora vale per tutti i movimenti selezionati che sono ricompense, e quelli che non lo sono vengono elencati senza essere modificati. Il rimborso di una ricompensa resta un rimborso: prima cambiandone la tipologia la descrizione perdeva "RIMBORSO". Il cambio di tipologia compare nelle *Versioni precedenti* del movimento.
 

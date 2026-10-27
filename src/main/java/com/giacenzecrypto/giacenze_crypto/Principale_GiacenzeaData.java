@@ -1824,6 +1824,106 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
     }
 
     /**
+     * Primo indice di model della tabella dettaglio movimenti che ripete le colonne della tabella dei movimenti: la
+     * colonna N di quella è la {@code DETTAGLIO_INIZIO_MOVIMENTI + N} di questa. Le 19 prima (0-18) sono quelle
+     * proprie del dettaglio e non si spostano.
+     */
+    public static final int DETTAGLIO_INIZIO_MOVIMENTI = 19;
+
+    /** Numero di colonne del model del dettaglio: le sue 19 più le 43 della tabella dei movimenti. */
+    public static final int DETTAGLIO_COLONNE = DETTAGLIO_INIZIO_MOVIMENTI + LayoutColonneMovimenti.COLONNA_MASSIMA + 1;
+
+    /**
+     * Il model della tabella dettaglio movimenti con in coda le colonne della tabella dei movimenti, tutte non
+     * modificabili. Si costruisce dopo {@code initComponents()} invece di elencare le colonne nel {@code .form}: i nomi
+     * vengono dal model dei movimenti, quindi una colonna aggiunta là compare qui senza toccare niente.
+     *
+     * @param Dettaglio il model generato del dettaglio, da cui si prendono le prime 19 intestazioni
+     * @param Movimenti il model della tabella dei movimenti
+     */
+    public static javax.swing.table.DefaultTableModel ModelloDettaglioConMovimenti(javax.swing.table.TableModel Dettaglio,
+            javax.swing.table.TableModel Movimenti) {
+        List<Object> Nomi = new ArrayList<>();
+        for (int c = 0; c < DETTAGLIO_INIZIO_MOVIMENTI; c++) {
+            Nomi.add(Dettaglio.getColumnName(c));
+        }
+        for (int c = 0; c < DETTAGLIO_COLONNE - DETTAGLIO_INIZIO_MOVIMENTI; c++) {
+            Nomi.add(IntestazioneSuDueRighe(c < Movimenti.getColumnCount() ? Movimenti.getColumnName(c) : "null"));
+        }
+        return new javax.swing.table.DefaultTableModel(Nomi.toArray(), 0) {
+            @Override
+            public boolean isCellEditable(int Riga, int Colonna) {
+                return false;
+            }
+        };
+    }
+
+    /**
+     * L'intestazione di una colonna dei movimenti ridotta a due righe al massimo: quelle originali arrivano a quattro,
+     * per un'intestazione alta 100, quella del dettaglio è alta 42. Si va a capo allo spazio più vicino a metà.
+     */
+    static String IntestazioneSuDueRighe(String Html) {
+        String Testo = org.jsoup.Jsoup.parse(String.valueOf(Html)).text().trim();
+        if (Testo.length() <= 12) {
+            return Testo;
+        }
+        int Meta = Testo.length() / 2;
+        int Taglio = -1;
+        for (int i = 0; i < Testo.length(); i++) {
+            if (Testo.charAt(i) == ' ' && (Taglio < 0 || Math.abs(i - Meta) < Math.abs(Taglio - Meta))) {
+                Taglio = i;
+            }
+        }
+        if (Taglio < 0) {
+            return Testo;
+        }
+        return "<html><center>" + Testo.substring(0, Taglio) + "<br>" + Testo.substring(Taglio + 1) + "</html>";
+    }
+
+    /**
+     * Copia in coda alla riga del dettaglio le colonne che il movimento ha nella tabella dei movimenti: i campi
+     * {@code v[0..39]} come sono, la Plusvalenza vuota come "0" (così la mostra la tabella dei movimenti, che però la
+     * scrive nel movimento: qui no), e le tre colonne derivate 40-42.
+     *
+     * @param Riga la riga del dettaglio, lunga {@link #DETTAGLIO_COLONNE}
+     * @param v il movimento
+     * @param AliasGruppi la tabella degli alias dei gruppi wallet ({@code DatabaseH2.Pers_GruppoAlias_LeggiTabella()})
+     * @param Operazioni l'operazione di ogni movimento ({@code OperazioniCalcolate.Calcola}), {@code null} se la
+     * colonna non è in vista e non si è calcolata
+     */
+    public static void CompletaRigaDettaglioConMovimento(String[] Riga, String[] v, Map<String, String[]> AliasGruppi,
+            Map<String, String> Operazioni) {
+        int Inizio = DETTAGLIO_INIZIO_MOVIMENTI;
+        for (int i = 0; i < 40; i++) {
+            Riga[Inizio + i] = i < v.length && v[i] != null ? v[i] : "";
+        }
+        if (Riga[Inizio + 19].isBlank()) {
+            Riga[Inizio + 19] = "0";
+        }
+        Riga[Inizio + 40] = FontePrezzi(v.length > 40 ? v[40] : null);
+        Riga[Inizio + 41] = AliasGruppoWallet(DatabaseH2.Pers_GruppoWallet_Leggi(v[3], true), AliasGruppi);
+        Riga[Inizio + 42] = Operazioni == null ? "" : Operazioni.getOrDefault(v[0], "");
+    }
+
+    /**
+     * Colonna 40 della tabella dei movimenti, "Fonte Prezzi": {@code v[40]} è il campo composito
+     * Moneta|Timestamp|Prezzo|Fonte ({@link Prezzi.InfoPrezzo#Ritorna40()}), se ne mostra solo la Fonte.
+     */
+    public static String FontePrezzi(String v40) {
+        Prezzi.InfoPrezzo Info = Funzioni.noData(v40) ? null : new Prezzi.InfoPrezzo(v40);
+        return Info != null && Info.Fonte != null ? Info.Fonte : "";
+    }
+
+    /**
+     * Colonna 41 della tabella dei movimenti, "Alias Gruppo Wallet": l'alias del gruppo, o il nome del gruppo se
+     * l'utente non gliene ha dato uno.
+     */
+    public static String AliasGruppoWallet(String GruppoWallet, Map<String, String[]> AliasGruppi) {
+        String[] Alias = AliasGruppi.get(GruppoWallet);
+        return Alias != null && !Funzioni.noData(Alias[1]) ? Alias[1] : GruppoWallet;
+    }
+
+    /**
      * La ricerca del prezzo di una riga rimasta senza prezzo ({@link #PrezzoDaCompletare}): cache dei prezzi,
      * archivio orario, movimenti vicini, quotazione più vicina a finestre di ±1, 6 e 24 ore. Pensata per girare in
      * un thread di background.

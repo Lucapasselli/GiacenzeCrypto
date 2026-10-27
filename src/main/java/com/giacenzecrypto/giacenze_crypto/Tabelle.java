@@ -1571,6 +1571,18 @@ public static int[] Funzioni_getRigheSelezionate(JTable table) {
        
        
        
+    /**
+     * Riporta tutte le righe della tabella all'altezza uniforme, eliminando le altezze per riga
+     * impostate da {@link #updateRowHeights}. Da chiamare dopo aver svuotato il modello e prima di
+     * riempirlo con {@code addRow}: con un {@code RowSorter} installato, finch&eacute; restano altezze per
+     * riga JTable le ricopia tutte a ogni riga aggiunta, e il riempimento diventa quadratico
+     * (3.000 righe quasi un secondo, 6.000 righe quattro secondi).
+     * @param table la tabella appena svuotata
+     */
+    public static void AzzeraAltezzeRighe(JTable table) {
+        table.setRowHeight(table.getRowHeight());
+    }
+
        /**
         * Adatta l'altezza di ogni riga della tabella al contenuto renderizzato più alto tra tutte le sue colonne
         * (utile per celle multi-riga o con font/icone di dimensione variabile).

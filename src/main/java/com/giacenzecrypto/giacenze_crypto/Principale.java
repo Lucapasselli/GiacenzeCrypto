@@ -463,13 +463,19 @@ private static final long serialVersionUID = 3L;
         Tabelle.Tabelle_InizializzaHeader(CDC_FiatWallet_Tabella2);
         Tabelle.Tabelle_InizializzaHeader(CDC_FiatWallet_Tabella3);
         Tabelle.Tabelle_InizializzaHeader(GiacenzeaData_Tabella);
+        //In coda al dettaglio (dalla 19) le colonne della tabella dei movimenti, che l'utente puo' scegliere di vedere:
+        //il model si sostituisce prima di inizializzarne l'header e i filtri
+        GiacenzeaData_TabellaDettaglioMovimenti.setModel(Principale_GiacenzeaData.ModelloDettaglioConMovimenti(
+                GiacenzeaData_TabellaDettaglioMovimenti.getModel(), TransazioniCryptoTabella.getModel()));
         Tabelle.Tabelle_InizializzaHeader(GiacenzeaData_TabellaDettaglioMovimenti);
         //Valore/costo unitario (7, 8) e le quattro colonne di costo del dettaglio (13-16) : sommarli non ha senso
         GiacenzeaData_Tabella.putClientProperty("ColonneSenzaSomma", java.util.Set.of(7, 8, 12));
         //Qta letta dalla blockchain (colonna 12 del model, in coda per non spostare Errori e InfoPrezzo) : a video
         //subito dopo la Qta dell'archivio, larga zero finche' non si sceglie un singolo wallet DeFi
         GiacenzeaData_Tabella.moveColumn(GiacenzeaData_Tabella.convertColumnIndexToView(12), 5);
-        GiacenzeaData_TabellaDettaglioMovimenti.putClientProperty("ColonneSenzaSomma", java.util.Set.of(13, 14, 15, 16, 17, 18));
+        //Nel dettaglio anche Blocco (23) e Timestamp (29) dei movimenti: sono numeri, ma la somma non ha senso
+        GiacenzeaData_TabellaDettaglioMovimenti.putClientProperty("ColonneSenzaSomma", java.util.Set.of(13, 14, 15, 16, 17, 18,
+                Principale_GiacenzeaData.DETTAGLIO_INIZIO_MOVIMENTI + 23, Principale_GiacenzeaData.DETTAGLIO_INIZIO_MOVIMENTI + 29));
         //Colonne della tabella dettaglio: le interne (ID, saldi negativi, "null") escono dalla vista e il costo di
         //carico del movimento va prima della Qta Residua. La scelta salvata dell'utente si sovrappone in AggiornaSpunte()
         LayoutColonneMovimenti.applica(GiacenzeaData_TabellaDettaglioMovimenti, null, LayoutColonneMovimenti.PROFILO_GIACENZE_DETTAGLIO);
@@ -7237,7 +7243,7 @@ private void SettaIcone(){
                 LayoutColonneMovimenti.applica(GiacenzeaData_TabellaDettaglioMovimenti, layoutDettaglio,
                         LayoutColonneMovimenti.PROFILO_GIACENZE_DETTAGLIO);
                 GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().setPreferredSize(new Dimension(
-                        GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getTotalColumnWidth(), 42));
+                        GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getTotalColumnWidth(), GiacenzeaData_AltezzaIntestazioneDettaglio()));
             }
         } catch (Exception eLayoutDettaglio) {
             System.out.println("AggiornaSpunte: layout colonne dettaglio giacenze non applicato : " + eLayoutDettaglio.getMessage());
@@ -8514,13 +8520,49 @@ private void SettaIcone(){
         } else {
             cm.removeColumn(cm.getColumn(Vista));
         }
-        GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().setPreferredSize(new Dimension(cm.getTotalColumnWidth(), 42));
+        GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().setPreferredSize(new Dimension(cm.getTotalColumnWidth(), GiacenzeaData_AltezzaIntestazioneDettaglio()));
         GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().revalidate();
         GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().repaint();
     }
 
     /** Vero se la colonna Qta Blockchain del dettaglio e' in vista: un nuovo layout delle colonne la deve rimettere. */
     private boolean GiacenzeaData_DettaglioConBlockchain = false;
+
+    /**
+     * @return l'altezza dell'intestazione del dettaglio: 42 come sempre, 58 se in vista c'e' una colonna della tabella dei
+     * movimenti, il cui nome sta su due righe e, se numerica, ha la somma sotto (la terza riga sarebbe tagliata)
+     */
+    private int GiacenzeaData_AltezzaIntestazioneDettaglio() {
+        javax.swing.table.TableColumnModel cm = GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel();
+        for (int v = 0; v < cm.getColumnCount(); v++) {
+            if (cm.getColumn(v).getModelIndex() >= Principale_GiacenzeaData.DETTAGLIO_INIZIO_MOVIMENTI) return 58;
+        }
+        return 42;
+    }
+
+    /** @return vero se nel dettaglio e' in vista la colonna "Operazione" della tabella dei movimenti */
+    private boolean GiacenzeaData_OperazioniDettaglioInVista() {
+        return GiacenzeaData_TabellaDettaglioMovimenti.convertColumnIndexToView(
+                Principale_GiacenzeaData.DETTAGLIO_INIZIO_MOVIMENTI + 42) >= 0;
+    }
+
+    /**
+     * Riempie la colonna "Operazione" del dettaglio sulle righe gia' caricate, quando l'utente la mette in vista: il
+     * caricamento la calcola solo se e' gia' in vista.
+     */
+    private void GiacenzeaData_AggiornaOperazioniDettaglio() {
+        if (!GiacenzeaData_OperazioniDettaglioInVista()) return;
+        DefaultTableModel Modello = (DefaultTableModel) GiacenzeaData_TabellaDettaglioMovimenti.getModel();
+        if (Modello.getRowCount() == 0) return;
+        java.util.Map<String, String> Operazioni = OperazioniCalcolate.Calcola(MappaCryptoWallet);
+        int Colonna = Principale_GiacenzeaData.DETTAGLIO_INIZIO_MOVIMENTI + 42;
+        for (int r = 0; r < Modello.getRowCount(); r++) {
+            Object ID = Modello.getValueAt(r, 8);
+            String Chiave = ID == null ? "" : Operazioni.getOrDefault(ID.toString(), "");
+            Object Attuale = Modello.getValueAt(r, Colonna);
+            if (!Chiave.equals(Attuale == null ? "" : Attuale.toString())) Modello.setValueAt(Chiave, r, Colonna);
+        }
+    }
 
     /**
      * Legge in background il saldo della moneta a fine dei blocchi delle righe del dettaglio e lo scrive nella colonna
@@ -8832,6 +8874,11 @@ private void SettaIcone(){
                     Wallet, mon, GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 3).toString(), Address, Rete);
             // do una sequenza alle giacenze negative trovate
             int NumNegativi=0;
+            //Per le colonne della tabella dei movimenti in coda (dalla 19): gli alias una volta sola, e l'operazione di
+            //ogni movimento solo se la sua colonna e' in vista (si calcola sull'intera mappa)
+            java.util.Map<String, String[]> AliasGruppi = DatabaseH2.Pers_GruppoAlias_LeggiTabella();
+            java.util.Map<String, String> Operazioni = GiacenzeaData_OperazioniDettaglioInVista()
+                    ? OperazioniCalcolate.Calcola(MappaCryptoWallet) : null;
             for (String[] movimento : MappaCryptoWallet.values()) {
                 String ReteMov=Funzioni.TrovaReteDaIMovimento(movimento);
                 if (ReteMov==null)ReteMov="";
@@ -8859,8 +8906,9 @@ private void SettaIcone(){
                                 ) { 
                         if (movimento[8].equals(mon) && AddressU.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
                             TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
-                            //Le colonne 10-12 restano vuote (le usa solo il tooltip delle altre tabelle) e le colonne dei costi stanno in coda
-                            String riga[] = new String[19];
+                            //Le colonne 10-12 restano vuote (le usa solo il tooltip delle altre tabelle) e le colonne dei costi stanno in coda,
+                            //seguite da quelle della tabella dei movimenti
+                            String riga[] = new String[Principale_GiacenzeaData.DETTAGLIO_COLONNE];
                             riga[0] = Funzioni.getOradaID(movimento[0]);
                             riga[1] = movimento[3];
                             riga[2] = movimento[8];
@@ -8888,6 +8936,7 @@ private void SettaIcone(){
                                     PrezziDaCompletare.add(new RigaPrezzoDaCompletare(GiacenzeaData_ModelloTabella.getRowCount(),
                                             movimento[0], false, movimento[10], riga[7], ColonneCosti[3]));
                                 }
+                                Principale_GiacenzeaData.CompletaRigaDettaglioConMovimento(riga, movimento, AliasGruppi, Operazioni);
                                 RigaModello = GiacenzeaData_ModelloTabella.getRowCount();
                                 GiacenzeaData_ModelloTabella.addRow(riga);
                             }
@@ -8898,7 +8947,7 @@ private void SettaIcone(){
                         }
                         if (movimento[11].equals(mon) && AddressE.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
                             TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
-                            String riga[] = new String[19];
+                            String riga[] = new String[Principale_GiacenzeaData.DETTAGLIO_COLONNE];
                             riga[0] = Funzioni.getOradaID(movimento[0]);
                             riga[1] = movimento[3];
                             riga[2] = movimento[11];
@@ -8926,6 +8975,7 @@ private void SettaIcone(){
                                     PrezziDaCompletare.add(new RigaPrezzoDaCompletare(GiacenzeaData_ModelloTabella.getRowCount(),
                                             movimento[0], true, movimento[13], riga[7], ColonneCosti[3]));
                                 }
+                                Principale_GiacenzeaData.CompletaRigaDettaglioConMovimento(riga, movimento, AliasGruppi, Operazioni);
                                 RigaModello = GiacenzeaData_ModelloTabella.getRowCount();
                                 GiacenzeaData_ModelloTabella.addRow(riga);
                             }
@@ -11845,6 +11895,7 @@ if (result.isAction("delete-all")) {
             //Cancello Contenuto Tabella Dettagli
             DefaultTableModel ModelloTabella = (DefaultTableModel) RW_Tabella_Dettagli.getModel();
             Tabelle.Funzioni_PulisciTabella(ModelloTabella);
+            Tabelle.AzzeraAltezzeRighe(RW_Tabella_Dettagli);
             Tabelle.ColoraTabellaEvidenzaRigheErrore(RW_Tabella_Dettagli);
             Tabelle.Tabelle_FiltroColonne(RW_Tabella_Dettagli,null,popup);
             DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
@@ -14174,6 +14225,7 @@ if (result.isAction("delete-all")) {
     private void RT_CompilaTabellaTipologiaMovimenti() {
         DefaultTableModel modello = (DefaultTableModel) RT_Tabella_TipologiaMovimenti.getModel();
         Tabelle.Funzioni_PulisciTabella(modello);
+        Tabelle.AzzeraAltezzeRighe(RT_Tabella_TipologiaMovimenti);
         Tabelle.ColoraTabellaSemplice(RT_Tabella_TipologiaMovimenti);
 
         if (RT_DatiTipologie == null) return;
@@ -16825,6 +16877,7 @@ if (result != null && !result.isAction("cancel")) {
             LayoutColonneMovimenti risultato = dlg.getRisultato();
             LayoutColonneMovimenti.applica(GiacenzeaData_TabellaDettaglioMovimenti, risultato, profilo);
             DatabaseH2.Pers_Opzioni_Scrivi(profilo.opzione, risultato.toJson());
+            GiacenzeaData_AggiornaOperazioniDettaglio();
         }
         //Il layout ricrea le colonne e toglie la 18, che non ne fa parte
         if (GiacenzeaData_DettaglioConBlockchain) {
@@ -16834,7 +16887,7 @@ if (result != null && !result.isAction("cancel")) {
                     GiacenzeaData_TabellaDettaglioMovimenti.getClientProperty(Tabelle.PROP_FONTE_CONFRONTO) instanceof String f ? f : null);
         }
         GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().setPreferredSize(new Dimension(
-                GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getTotalColumnWidth(), 42));
+                GiacenzeaData_TabellaDettaglioMovimenti.getColumnModel().getTotalColumnWidth(), GiacenzeaData_AltezzaIntestazioneDettaglio()));
         GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().revalidate();
         GiacenzeaData_TabellaDettaglioMovimenti.getTableHeader().repaint();
         GiacenzeaData_TabellaDettaglioMovimenti.revalidate();
@@ -20172,15 +20225,13 @@ try {
                     //
                     //[40] "Fonte Prezzi": v[40] è il campo composito Moneta|Timestamp|Prezzo|Fonte
                     //(Prezzi.InfoPrezzo.Ritorna40()) - qui si mostra solo la Fonte.
-                    Prezzi.InfoPrezzo infoPrezzoRiga = Funzioni.noData(v[40]) ? null : new Prezzi.InfoPrezzo(v[40]);
-                    z[40] = (infoPrezzoRiga != null && infoPrezzoRiga.Fonte != null) ? infoPrezzoRiga.Fonte : "";
+                    //Le stesse funzioni riempiono queste colonne nel dettaglio di "Giacenze a data"
+                    z[40] = Principale_GiacenzeaData.FontePrezzi(v[40]);
 
                     //[41] "Alias Gruppo Wallet": derivata da gruppoWallet (già calcolato sopra per i
                     //filtri) via la mappa gruppo->alias caricata una volta sola prima del ciclo.
                     //Fallback al nome del gruppo se l'utente non ha ancora impostato un alias.
-                    String[] aliasGruppoRiga = Mappa_GruppiAlias_XColonna.get(gruppoWallet);
-                    z[41] = (aliasGruppoRiga != null && !Funzioni.noData(aliasGruppoRiga[1]))
-                            ? aliasGruppoRiga[1] : gruppoWallet;
+                    z[41] = Principale_GiacenzeaData.AliasGruppoWallet(gruppoWallet, Mappa_GruppiAlias_XColonna);
                     //[42] "Operazione": come la 41 non è v[42] (il lignaggio, che il model non contiene) ma
                     //l'operazione calcolata (OperazioniCalcolate: unione di [20], [43], [45] e stesso [24]), con la
                     //chiave del contratto Dual se c'è, altrimenti OP- e l'ID del primo movimento. Serve a filtrare:

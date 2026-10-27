@@ -64,7 +64,18 @@ public class GUI_ColonneMovimenti extends JDialog {
         lista.setLayout(new BoxLayout(lista, BoxLayout.Y_AXIS));
         lista.setBorder(BorderFactory.createEmptyBorder(4, 12, 4, 12));
 
+        //I titoli dei gruppi di colonne, se il profilo ne ha: ognuno prima della prima colonna offerta del suo gruppo
+        java.util.Iterator<Map.Entry<Integer, String>> sezioni = new java.util.TreeMap<>(profilo.sezioni).entrySet().iterator();
+        Map.Entry<Integer, String> prossimaSezione = sezioni.hasNext() ? sezioni.next() : null;
         for (int m : LayoutColonneMovimenti.colonneOffribili(profilo)) {
+            if (m >= model.getColumnCount()) continue;
+            while (prossimaSezione != null && m >= prossimaSezione.getKey()) {
+                JLabel titolo = new JLabel(prossimaSezione.getValue());
+                titolo.setFont(titolo.getFont().deriveFont(java.awt.Font.BOLD));
+                titolo.setBorder(BorderFactory.createEmptyBorder(lista.getComponentCount() == 0 ? 0 : 10, 0, 4, 0));
+                lista.add(titolo);
+                prossimaSezione = sezioni.hasNext() ? sezioni.next() : null;
+            }
             String nome = Jsoup.parse(String.valueOf(model.getColumnName(m))).text().trim();
             if (nome.isEmpty() || "null".equalsIgnoreCase(nome)) continue;
             boolean fissa = profilo.fisse.contains(m);

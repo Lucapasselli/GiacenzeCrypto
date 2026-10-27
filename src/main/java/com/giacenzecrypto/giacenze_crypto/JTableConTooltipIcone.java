@@ -52,7 +52,8 @@ public class JTableConTooltipIcone extends JTable {
             if (icon != null) {
                 Rectangle cellRect = getCellRect(viewRow, viewCol, false);
                 Insets insets = label.getInsets();
-                String ID = this.getModel().getValueAt(viewRow, 0).toString();
+                //Con filtri/ordinamento attivi la riga della vista non coincide con quella del model
+                String ID = this.getModel().getValueAt(convertRowIndexToModel(viewRow), 0).toString();
                 String mov[]=Principale.MappaCryptoWallet.get(ID);
                 String MonetaU;
                 String QtaRiferimento; //quantità su cui rapportare il valore mancante: quella uscente se presente, altrimenti quella entrante

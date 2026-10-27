@@ -83,15 +83,23 @@ public final class LayoutColonneMovimenti {
         final int colonnaMassima;
         /** Riporta ogni colonna a una larghezza preferita ragionevole, subito dopo che le colonne sono state ricreate. */
         final Consumer<TableColumnModel> larghezzeBase;
+        /** Titoli dei gruppi di colonne nel dialogo: indice di model da cui il gruppo comincia → titolo. Vuota se nessuno. */
+        final Map<Integer, String> sezioni;
 
         Profilo(String opzione, List<Integer> interne, List<Integer> fisse, List<Integer> ordineDefault,
                 int colonnaMassima, Consumer<TableColumnModel> larghezzeBase) {
+            this(opzione, interne, fisse, ordineDefault, colonnaMassima, larghezzeBase, Map.of());
+        }
+
+        Profilo(String opzione, List<Integer> interne, List<Integer> fisse, List<Integer> ordineDefault,
+                int colonnaMassima, Consumer<TableColumnModel> larghezzeBase, Map<Integer, String> sezioni) {
             this.opzione = opzione;
             this.interne = interne;
             this.fisse = fisse;
             this.ordineDefault = ordineDefault;
             this.colonnaMassima = colonnaMassima;
             this.larghezzeBase = larghezzeBase;
+            this.sezioni = sezioni;
         }
     }
 
@@ -109,10 +117,16 @@ public final class LayoutColonneMovimenti {
      * wallet si può confrontare con la blockchain, quindi non si offre e non si salva. Il costo di carico del movimento (13) sta <b>prima</b> della Qta Residua (7) pur essendo in coda al
      * model: gli indici fissi di {@code Tabelle.ColoraRigheTabella1GiacenzeaData} e quelli letti da selezione e popup
      * non si spostano, si riordina solo la vista.
+     *
+     * <p>Dalla 19 in poi il model ripete le 43 colonne della tabella dei movimenti, la N di quella alla
+     * {@code 19 + N} ({@link Principale_GiacenzeaData#DETTAGLIO_INIZIO_MOVIMENTI}): si offrono le stesse che offre
+     * {@link #PROFILO_MOVIMENTI}, le sue interne restano interne anche qui. Nessuna è nel default, quindi un layout
+     * salvato prima di averle resta valido così com'è.
      */
     public static final Profilo PROFILO_GIACENZE_DETTAGLIO = new Profilo(OPZIONE_GIACENZE_DETTAGLIO,
-            List.of(8, 9, 10, 11, 12, 18), List.of(0, 5, 7),
-            List.of(0, 1, 2, 3, 4, 5, 6, 13, 7, 14, 15, 16, 17), 17,
+            interneDettaglio(), List.of(0, 5, 7),
+            List.of(0, 1, 2, 3, 4, 5, 6, 13, 7, 14, 15, 16, 17),
+            Principale_GiacenzeaData.DETTAGLIO_INIZIO_MOVIMENTI + COLONNA_MASSIMA,
             cm -> {
                 preferita(cm, 0, 130);   // Data
                 preferita(cm, 1, 110);   // Wallet
@@ -127,7 +141,17 @@ public final class LayoutColonneMovimenti {
                 preferita(cm, 15, 100);  // Valore Qta Residua
                 preferita(cm, 16, 110);  // Costo Carico Qta Residua
                 preferita(cm, 17, 110);  // Plus/Minus Latente Qta Residua
-            });
+                impostaLarghezzeBase(cm, Principale_GiacenzeaData.DETTAGLIO_INIZIO_MOVIMENTI);
+            },
+            Map.of(0, "Colonne del dettaglio",
+                    Principale_GiacenzeaData.DETTAGLIO_INIZIO_MOVIMENTI, "Colonne della tabella dei movimenti"));
+
+    /** Le interne del dettaglio: le sue (8-12 e la 18) e quelle della tabella dei movimenti, spostate in coda. */
+    private static List<Integer> interneDettaglio() {
+        List<Integer> l = new ArrayList<>(List.of(8, 9, 10, 11, 12, 18));
+        for (int m : COLONNE_INTERNE) l.add(Principale_GiacenzeaData.DETTAGLIO_INIZIO_MOVIMENTI + m);
+        return List.copyOf(l);
+    }
 
     /** Chiave in {@code personale.mv.db} del layout della tabella dei depositi/prelievi da classificare. */
     public static final String OPZIONE_DEPOSITI_PRELIEVI = "DepositiPrelievi_LayoutColonne";
@@ -356,19 +380,24 @@ public final class LayoutColonneMovimenti {
 
     /** Le larghezze preferite della tabella movimenti. */
     private static void impostaLarghezzeBase(TableColumnModel cm) {
-        preferita(cm, 1, 120);    // Data e Ora
-        preferita(cm, 4, 90);     // Dettaglio Wallet
-        preferita(cm, 8, 80);     // Moneta Ven./Trasf.
-        preferita(cm, 11, 80);    // Moneta Acq./Ric.
-        preferita(cm, 12, 70);    // Tipo Moneta Acq./Ric.
-        preferita(cm, 15, 100);   // Valore transazione in EURO
-        preferita(cm, 16, 100);   // Costo di Carico C.A. Uscente
-        preferita(cm, 17, 100);   // Nuovo Costo di Carico in EURO
-        preferita(cm, 18, 100);   // Tipo Trasferimento
-        preferita(cm, 19, 100);   // Plusvalenza in EURO
-        preferita(cm, 40, 100);   // Fonte Prezzi
-        preferita(cm, 41, 120);   // Alias Gruppo Wallet
-        preferita(cm, 42, 150);   // Operazione
+        impostaLarghezzeBase(cm, 0);
+    }
+
+    /** Le larghezze preferite della tabella movimenti, con le colonne a partire dall'indice di model {@code inizio}. */
+    private static void impostaLarghezzeBase(TableColumnModel cm, int inizio) {
+        preferita(cm, inizio + 1, 120);    // Data e Ora
+        preferita(cm, inizio + 4, 90);     // Dettaglio Wallet
+        preferita(cm, inizio + 8, 80);     // Moneta Ven./Trasf.
+        preferita(cm, inizio + 11, 80);    // Moneta Acq./Ric.
+        preferita(cm, inizio + 12, 70);    // Tipo Moneta Acq./Ric.
+        preferita(cm, inizio + 15, 100);   // Valore transazione in EURO
+        preferita(cm, inizio + 16, 100);   // Costo di Carico C.A. Uscente
+        preferita(cm, inizio + 17, 100);   // Nuovo Costo di Carico in EURO
+        preferita(cm, inizio + 18, 100);   // Tipo Trasferimento
+        preferita(cm, inizio + 19, 100);   // Plusvalenza in EURO
+        preferita(cm, inizio + 40, 100);   // Fonte Prezzi
+        preferita(cm, inizio + 41, 120);   // Alias Gruppo Wallet
+        preferita(cm, inizio + 42, 150);   // Operazione
     }
 
     private static void preferita(TableColumnModel cm, int modelIndex, int pref) {

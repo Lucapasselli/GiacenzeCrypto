@@ -24,6 +24,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 
 /**
  * Registrazione di una tranche di rimborso di una procedura di fallimento: data, percentuale del credito pagata,
@@ -131,6 +132,7 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
         TabellaRicevute = new JTable(Ricevute);
         TabellaRicevute.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(TabellaRicevute);
+        Tabelle.ColoraTabellaSemplice(TabellaRicevute);
         TabellaRicevute.setToolTipText("In natura: la stessa moneta che era bloccata, trattata come giroconto (costo trasferito, "
                 + "nessuna plusvalenza) invece che come rimborso");
 
@@ -138,11 +140,14 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
         DaDeposito.addActionListener(e -> AggiungiDeposito());
         JButton Fuori = new JButton("Aggiungi euro ricevuti fuori dal programma");
         Fuori.setToolTipText("Bonifico, PayPal o azioni valutate in euro: escono dalla piattaforma con un prelievo");
+        GUI_FallimentiPiattaforme_Pannello.Icona(DaDeposito, "Wallet");
+        GUI_FallimentiPiattaforme_Pannello.Icona(Fuori, "Nuovo");
         Fuori.addActionListener(e -> {
             Depositi.add(null);
             Ricevute.addRow(new Object[]{"EUR", "FIAT", "", "", "Fuori dal programma", false});
         });
         JButton Togli = new JButton("Togli");
+        GUI_FallimentiPiattaforme_Pannello.Icona(Togli, "Cestino");
         Togli.addActionListener(e -> {
             int r = TabellaRicevute.getSelectedRow();
             if (r >= 0) {
@@ -168,6 +173,7 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
         };
         JTable TabellaAnteprima = new JTable(Anteprima);
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(TabellaAnteprima);
+        Tabelle.ColoraTabellaSemplice(TabellaAnteprima);
         //Il nome del token credito e il trattamento sono le colonne da leggere per intero
         TabellaAnteprima.getColumnModel().getColumn(0).setPreferredWidth(210);
         TabellaAnteprima.getColumnModel().getColumn(7).setPreferredWidth(300);
@@ -184,6 +190,9 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
         JButton Annulla = new JButton("Annulla");
         Annulla.addActionListener(e -> dispose());
         JButton Registra = new JButton("Registra rimborso");
+        GUI_FallimentiPiattaforme_Pannello.Icona(Calcola, "Calcolatrice");
+        GUI_FallimentiPiattaforme_Pannello.Icona(Annulla, "Annulla");
+        GUI_FallimentiPiattaforme_Pannello.Icona(Registra, "Salva");
         Registra.addActionListener(e -> Registra());
         JPanel Pulsanti = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         Pulsanti.add(Calcola);
@@ -196,6 +205,7 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
         Contenuto.add(Divisione, BorderLayout.CENTER);
         Contenuto.add(Pulsanti, BorderLayout.SOUTH);
         setContentPane(Contenuto);
+        Icone.AdattaIconeAlTema(Contenuto);
         pack();
         setMinimumSize(new Dimension(900, 550));
     }
@@ -230,28 +240,73 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
         for (String[] v : Candidati) M.addRow(new Object[]{v[1], v[3], v[4], v[11], v[13], v[15]});
         JTable T = new JTable(M);
         T.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(T);
+        //Quantità e valore sono testi: si ordinano come numeri
+        TableRowSorter<DefaultTableModel> Ordine = new TableRowSorter<>(M);
+        java.util.Comparator<Object> ComeNumeri = (a, b) -> {
+            BigDecimal x = GUI_FallimentiPiattaforme_Pannello.Numero(a), y = GUI_FallimentiPiattaforme_Pannello.Numero(b);
+            if (x == null || y == null) return x == null ? (y == null ? 0 : -1) : 1;
+            return x.compareTo(y);
+        };
+        Ordine.setComparator(4, ComeNumeri);
+        Ordine.setComparator(5, ComeNumeri);
+        T.setRowSorter(Ordine);
+        //Le quantità sono di monete diverse: sommarle nell'intestazione non ha senso, il valore sì
+        T.putClientProperty("ColonneSenzaSomma", java.util.Set.of(4));
+        Tabelle.Tabelle_InizializzaHeader(T);
+        Tabelle.ColoraTabellaSemplice(T);
         JDialog Scelta = new JDialog(this, "Deposito su cui è arrivato il rimborso", ModalityType.APPLICATION_MODAL);
-        JLabel Testo = new JLabel("<html>Depositi su altre piattaforme dal " + P.DataDomanda
-                + " in poi, non ancora classificati. Diventeranno l'arrivo di un trasferimento dalla piattaforma fallita.</html>");
-        Testo.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        int[] Scelto = {-1};
-        JButton Ok = new JButton("Scegli");
-        Ok.addActionListener(e -> {
-            Scelto[0] = T.getSelectedRow() < 0 ? -1 : T.convertRowIndexToModel(T.getSelectedRow());
-            Scelta.dispose();
+        Tabelle_PopupSelezioneMultipla Popup = new Tabelle_PopupSelezioneMultipla(Scelta);
+        JTextField Cerca = new JTextField(24);
+        Cerca.setToolTipText("Mostra solo i depositi che contengono il testo in una qualsiasi colonna");
+        Tabelle.Tabelle_FiltroColonne(T, Cerca, Popup);
+        Cerca.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { Tabelle.Tabelle_FiltroColonne(T, Cerca, Popup); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { Tabelle.Tabelle_FiltroColonne(T, Cerca, Popup); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { Tabelle.Tabelle_FiltroColonne(T, Cerca, Popup); }
         });
+        JLabel Testo = new JLabel("<html>Depositi su altre piattaforme dal " + P.DataDomanda
+                + " in poi, non ancora classificati. Diventeranno l'arrivo di un trasferimento dalla piattaforma fallita.<br>"
+                + "Clic sull'intestazione per ordinare, clic destro per filtrare una colonna.</html>");
+        JPanel Ricerca = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        Ricerca.add(new JLabel("Cerca:"));
+        Ricerca.add(Cerca);
+        JPanel Sopra = new JPanel(new BorderLayout());
+        Sopra.setBorder(BorderFactory.createEmptyBorder(8, 8, 0, 8));
+        Sopra.add(Testo, BorderLayout.NORTH);
+        Sopra.add(Ricerca, BorderLayout.SOUTH);
+        int[] Scelto = {-1};
+        Runnable Conferma = () -> {
+            Scelto[0] = T.getSelectedRow() < 0 ? -1 : T.convertRowIndexToModel(T.getSelectedRow());
+            if (Scelto[0] >= 0) Scelta.dispose();
+        };
+        T.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() == 2 && T.getSelectedRow() >= 0) Conferma.run();
+            }
+        });
+        JButton Ok = new JButton("Scegli");
+        GUI_FallimentiPiattaforme_Pannello.Icona(Ok, "Catena");
+        Ok.addActionListener(e -> Conferma.run());
+        JButton Rinuncia = new JButton("Annulla");
+        GUI_FallimentiPiattaforme_Pannello.Icona(Rinuncia, "Annulla");
+        Rinuncia.addActionListener(e -> Scelta.dispose());
         JPanel Sotto = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        Sotto.add(Rinuncia);
         Sotto.add(Ok);
         Scelta.getContentPane().setLayout(new BorderLayout());
-        Scelta.getContentPane().add(Testo, BorderLayout.NORTH);
+        Scelta.getContentPane().add(Sopra, BorderLayout.NORTH);
         JScrollPane S = new JScrollPane(T);
         S.setPreferredSize(new Dimension(800, 300));
         Scelta.getContentPane().add(S, BorderLayout.CENTER);
         Scelta.getContentPane().add(Sotto, BorderLayout.SOUTH);
+        Icone.AdattaIconeAlTema(Scelta.getContentPane());
         Scelta.pack();
         Scelta.setLocationRelativeTo(this);
         Scelta.setVisible(true);
+        //Il dialogo non c'è più: la tabella non deve restare nelle mappe statiche dei filtri
+        Tabelle.tableFilters.remove(T);
+        Tabelle.tableFiltersListener.remove(T);
         if (Scelto[0] < 0) return;
         String[] v = Candidati.get(Scelto[0]);
         Depositi.add(v[0]);

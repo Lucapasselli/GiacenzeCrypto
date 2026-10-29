@@ -12,7 +12,9 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
@@ -43,6 +45,9 @@ public class GUI_FallimentiPiattaforme_Pannello extends JPanel {
     private final JButton Rimborso;
     private final JButton Chiudi;
     private final JButton Annulla;
+    private final DefaultTableModel ModelloRimborsi;
+    private final JTable TabellaRimborsi;
+    private final JLabel TitoloRimborsi = new JLabel(" ");
 
     /**
      * @param AggiornaTutto ricalcolo e ricarica delle tabelle della finestra principale, da chiamare una volta dopo
@@ -75,10 +80,36 @@ public class GUI_FallimentiPiattaforme_Pannello extends JPanel {
         Tabella = new JTable(Modello);
         Tabella.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         Tabella.setAutoCreateRowSorter(true);
-        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella);
+        Tabelle.Tabelle_InizializzaHeader(Tabella);
+        Tabelle.ColoraTabellaSemplice(Tabella);
         //Lo stato è la colonna più lunga ("Credito esaurito, 1 rimborso oltre il credito")
         Tabella.getColumnModel().getColumn(7).setPreferredWidth(420);
-        add(new JScrollPane(Tabella), BorderLayout.CENTER);
+
+        //Sotto, i rimborsi già registrati della procedura selezionata, letti dai movimenti
+        ModelloRimborsi = new DefaultTableModel(new Object[]{"Data", "Tipo", "% pagata", "Dollari", "Monete ricevute",
+            "Arrivo", "Valore (EUR)", "Plus/minus (EUR)", "Movimenti"}, 0) {
+            /** @return sempre {@code false}: la tabella è solo un elenco */
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
+        };
+        TabellaRimborsi = new JTable(ModelloRimborsi);
+        TabellaRimborsi.setAutoCreateRowSorter(true);
+        Tabelle.Tabelle_InizializzaHeader(TabellaRimborsi);
+        Tabelle.ColoraTabellaSemplice(TabellaRimborsi);
+        Tabelle.TooltipHeaderColonne(TabellaRimborsi, null, null, "Percentuale del credito pagata, dal piano",
+                "Dollari pagati, dal piano", null, "Piattaforma e wallet del deposito abbinato",
+                "Valore delle monete ricevute", "Plusvalenze meno minusvalenze del rimborso, dopo l'ultimo ricalcolo", null);
+        TabellaRimborsi.getColumnModel().getColumn(0).setPreferredWidth(130);
+        TabellaRimborsi.getColumnModel().getColumn(4).setPreferredWidth(220);
+        TabellaRimborsi.getColumnModel().getColumn(5).setPreferredWidth(220);
+        JPanel PannelloRimborsi = new JPanel(new BorderLayout(0, 4));
+        PannelloRimborsi.add(TitoloRimborsi, BorderLayout.NORTH);
+        PannelloRimborsi.add(new JScrollPane(TabellaRimborsi), BorderLayout.CENTER);
+        JSplitPane Divisione = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(Tabella), PannelloRimborsi);
+        Divisione.setResizeWeight(0.5);
+        add(Divisione, BorderLayout.CENTER);
 
         JButton Nuova = new JButton("Nuova procedura...");
         Nuova.setToolTipText("Blocca le giacenze di una piattaforma alla data della domanda di fallimento");
@@ -100,11 +131,13 @@ public class GUI_FallimentiPiattaforme_Pannello extends JPanel {
         Annulla.setEnabled(false);
         Annulla.addActionListener(e -> AnnullaUltimaOperazione());
         Tabella.getSelectionModel().addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) return;
             Elimina.setEnabled(Tabella.getSelectedRow() >= 0);
             boolean ConPiano = ProceduraSelezionata() != null;
             Rimborso.setEnabled(ConPiano);
             Chiudi.setEnabled(ConPiano);
             Annulla.setEnabled(IdSelezionato() != null);
+            CaricaRimborsi();
         });
 
         JComboBox<String> Valore = new JComboBox<>(VOCI_VALORE);
@@ -131,6 +164,12 @@ public class GUI_FallimentiPiattaforme_Pannello extends JPanel {
         Pulsanti.add(Annulla);
         Pulsanti.add(Elimina);
         JButton Guida = new JButton("Guida...");
+        Icona(Nuova, "Nuovo");
+        Icona(Rimborso, "Prezzo");
+        Icona(Chiudi, "Chiave");
+        Icona(Annulla, "Annulla");
+        Icona(Elimina, "Cestino");
+        Icona(Guida, "Libro");
         Guida.setToolTipText("Apre la guida passo per passo con gli esempi di Celsius, FTX e Voyager");
         Guida.addActionListener(e -> DocumentiAiuto.Apri(DocumentiAiuto.FALLIMENTI_PIATTAFORME));
         Pulsanti.add(Guida);
@@ -147,11 +186,19 @@ public class GUI_FallimentiPiattaforme_Pannello extends JPanel {
         addHierarchyListener(e -> {
             if ((e.getChangeFlags() & java.awt.event.HierarchyEvent.SHOWING_CHANGED) != 0 && isShowing()) Ricarica();
         });
+        //Il pannello nasce dopo initComponents: le icone nere vanno adattate al tema qui (Icone è idempotente)
+        Icone.AdattaIconeAlTema(this);
         Ricarica();
     }
 
-    /** Rilegge procedure e movimenti. */
+    /** Icona di un pulsante, dalle immagini del programma ({@code /Images/24_<Nome>.png}). */
+    static void Icona(JButton b, String Nome) {
+        b.setIcon(new ImageIcon(GUI_FallimentiPiattaforme_Pannello.class.getResource("/Images/24_" + Nome + ".png")));
+    }
+
+    /** Rilegge procedure e movimenti, tenendo selezionata la procedura che lo era. */
     public final void Ricarica() {
+        String Selezionata = IdSelezionato();
         Modello.setRowCount(0);
         Map<String, FallimentiPiattaforme.Procedura> Procedure = FallimentiPiattaforme.LeggiProcedure();
         Map<String, Integer> Movimenti = new TreeMap<>();
@@ -174,6 +221,33 @@ public class GUI_FallimentiPiattaforme_Pannello extends JPanel {
                     p.RecuperoAtteso.stripTrailingZeros().toPlainString(), FallimentiPiattaforme.TrancheValide(p).size(), n,
                     n == 0 ? "Nessun movimento" : Principale_Fallimenti.Stato(p.Id)});
             }
+        }
+        for (int r = 0; Selezionata != null && r < Tabella.getRowCount(); r++) {
+            if (Selezionata.equals(Modello.getValueAt(Tabella.convertRowIndexToModel(r), 0))) {
+                Tabella.setRowSelectionInterval(r, r);
+                break;
+            }
+        }
+        CaricaRimborsi();
+    }
+
+    /** Riempie l'elenco dei rimborsi registrati della procedura selezionata. */
+    private void CaricaRimborsi() {
+        ModelloRimborsi.setRowCount(0);
+        String Id = IdSelezionato();
+        if (Id == null) {
+            TitoloRimborsi.setText("Seleziona una procedura per vedere i rimborsi registrati.");
+            return;
+        }
+        java.util.List<Principale_Fallimenti.RimborsoRegistrato> L = Principale_Fallimenti.RimborsiRegistrati(Id);
+        TitoloRimborsi.setText(L.isEmpty() ? "Nessun rimborso registrato per la procedura " + Id + "."
+                : "Rimborsi registrati della procedura " + Id + ":");
+        for (Principale_Fallimenti.RimborsoRegistrato R : L) {
+            ModelloRimborsi.addRow(new Object[]{R.Data, R.Tipo,
+                R.Percentuale == null ? "" : R.Percentuale.stripTrailingZeros().toPlainString(),
+                R.USD == null ? "" : R.USD.toPlainString(), R.Ricevute, R.Arrivo,
+                R.ValoreEUR == null ? "" : R.ValoreEUR.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString(),
+                R.Risultato.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString(), R.Movimenti});
         }
     }
 

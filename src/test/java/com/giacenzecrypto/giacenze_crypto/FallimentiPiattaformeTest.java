@@ -785,6 +785,54 @@ class FallimentiPiattaformeTest {
     }
 
     @Test
+    void dataDigitata_formatiAccettatiEMessaggioChiaro() {
+        long Atteso = FunzioniDate.ConvertiDatainLongMinuto("2024-01-15 10:00");
+        assertEquals(Atteso, Principale_Fallimenti.IstanteDigitato("2024-01-15 10:00"));
+        assertEquals(Atteso, Principale_Fallimenti.IstanteDigitato(" 2024-01-15 10:00:00 "));
+        assertEquals(Atteso, Principale_Fallimenti.IstanteDigitato("15/01/2024 10:00"));
+        assertEquals(Atteso, Principale_Fallimenti.IstanteDigitato("15/1/2024 10.00"));
+        assertEquals(FunzioniDate.ConvertiDatainLongMinuto("2024-01-15 00:00"), Principale_Fallimenti.IstanteDigitato("2024-01-15"));
+        assertEquals(0, Principale_Fallimenti.IstanteDigitato("2024-02-30 10:00"), "una data inesistente non diventa un'altra");
+        assertEquals(0, Principale_Fallimenti.IstanteDigitato("gennaio 2024"));
+        assertEquals(0, Principale_Fallimenti.IstanteDigitato(""));
+
+        //Euro fuori dal programma con la data senza ora: prima dava sempre "successiva alla data della domanda"
+        FallimentiPiattaforme.Procedura P = proceduraCreata("100");
+        assertNull(Principale_Fallimenti.PreparaTranche(P, "15/01/2024", BigDecimal.TEN, new BigDecimal("100"),
+                List.of(ricevuta("EUR", "FIAT", "2000", "2000", null))).Errore);
+        String Errore = Principale_Fallimenti.PreparaTranche(P, "2024-15-01", BigDecimal.TEN, new BigDecimal("100"),
+                List.of(ricevuta("EUR", "FIAT", "2000", "2000", null))).Errore;
+        assertTrue(Errore.contains("aaaa-mm-gg"), Errore);
+    }
+
+    @Test
+    void rimborsiRegistrati_unaRigaPerTrancheConArrivoERisultato() {
+        FallimentiPiattaforme.Procedura P = proceduraCreata("60");
+        String[] Dep = depositoSu("Coinbase", "20240115100500", "2024-01-15 10:05", "BTC", "Crypto", "0.27", "11530");
+        assertNull(Principale_Fallimenti.RegistraTranche(P, "2024-01-15 10:00", new BigDecimal("57.65"), null,
+                new BigDecimal("60"), List.of(ricevuta("BTC", "Crypto", "0.27", "11530", Dep[0]))));
+        assertNull(Principale_Fallimenti.RegistraTranche(P, "2025-03-01 10:00", new BigDecimal("2.75"), null,
+                new BigDecimal("60"), List.of(ricevuta("EUR", "FIAT", "550", "550", null))));
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        FallimentiPiattaforme.Invalida();
+
+        List<Principale_Fallimenti.RimborsoRegistrato> L = Principale_Fallimenti.RimborsiRegistrati("CELSIUS");
+        assertEquals(2, L.size());
+        Principale_Fallimenti.RimborsoRegistrato Primo = L.get(0);
+        assertEquals("2024-01-15 10:00", Primo.Data);
+        assertEquals("Rimborso", Primo.Tipo);
+        assertEquals(0, new BigDecimal("57.65").compareTo(Primo.Percentuale));
+        assertEquals("0.27 BTC", Primo.Ricevute);
+        assertEquals("Coinbase / Main", Primo.Arrivo);
+        assertCirca("11530", Primo.ValoreEUR);
+        assertCirca("6725.83", Primo.Risultato);
+        Principale_Fallimenti.RimborsoRegistrato Secondo = L.get(1);
+        assertEquals("550 EUR", Secondo.Ricevute);
+        assertEquals("fuori dal programma", Secondo.Arrivo);
+        assertCirca("354.17", Secondo.Risultato);
+    }
+
+    @Test
     void movimentiSenzaPiano_nuovaProceduraConLoStessoNomeRifiutata() {
         FallimentiPiattaforme.Procedura P = proceduraCreata("100");
         //Ripristino parziale: le righe del blocco ci sono, i dati del piano no

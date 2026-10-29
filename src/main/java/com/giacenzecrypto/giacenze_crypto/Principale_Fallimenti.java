@@ -73,6 +73,44 @@ public final class Principale_Fallimenti {
         return NomeBreve + ".CREDITO." + Simbolo.replace(";", "").replace(",", "").trim();
     }
 
+    private static final java.util.regex.Pattern DATA_ISO = java.util.regex.Pattern.compile(
+            "(\\d{4})-(\\d{1,2})-(\\d{1,2})(?:[ T]+(\\d{1,2})[:.](\\d{2})(?::\\d{2})?)?");
+    private static final java.util.regex.Pattern DATA_ITALIANA = java.util.regex.Pattern.compile(
+            "(\\d{1,2})[/.-](\\d{1,2})[/.-](\\d{4})(?: +(\\d{1,2})[:.](\\d{2})(?::\\d{2})?)?");
+
+    /**
+     * L'istante di una data scritta dall'utente nei dialoghi: {@code aaaa-mm-gg hh:mm} (anche con i secondi o senza
+     * l'ora, che vale mezzanotte) oppure {@code gg/mm/aaaa} con o senza ora. Una data inesistente ({@code 2024-02-30})
+     * non diventa un'altra data.
+     * @return i millisecondi al minuto, 0 se il testo non è una data valida
+     */
+    static long IstanteDigitato(String Testo) {
+        if (Testo == null) return 0;
+        String s = Testo.trim();
+        int Anno, Mese, Giorno;
+        String Ora, Minuti;
+        java.util.regex.Matcher m = DATA_ISO.matcher(s);
+        if (m.matches()) {
+            Anno = Integer.parseInt(m.group(1));
+            Mese = Integer.parseInt(m.group(2));
+            Giorno = Integer.parseInt(m.group(3));
+        } else {
+            m = DATA_ITALIANA.matcher(s);
+            if (!m.matches()) return 0;
+            Giorno = Integer.parseInt(m.group(1));
+            Mese = Integer.parseInt(m.group(2));
+            Anno = Integer.parseInt(m.group(3));
+        }
+        Ora = m.group(4) == null ? "0" : m.group(4);
+        Minuti = m.group(5) == null ? "0" : m.group(5);
+        try {
+            java.time.LocalDateTime d = java.time.LocalDateTime.of(Anno, Mese, Giorno, Integer.parseInt(Ora), Integer.parseInt(Minuti));
+            return FunzioniDate.ConvertiDatainLongMinuto(d.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+        } catch (java.time.DateTimeException ex) {
+            return 0;
+        }
+    }
+
     /** L'istante della domanda: mezzanotte del giorno indicato ({@code yyyy-MM-dd}). */
     static long IstanteDomanda(String DataDomanda) {
         return FunzioniDate.ConvertiDatainLong(DataDomanda);
@@ -493,10 +531,14 @@ public final class Principale_Fallimenti {
     public static Tranche PreparaTranche(FallimentiPiattaforme.Procedura P, String Data, BigDecimal Percentuale,
             BigDecimal Atteso, List<Ricevuta> Ricevute) {
         Tranche T = new Tranche();
-        long Istante = FunzioniDate.ConvertiDatainLongMinuto(Data);
+        long Istante = IstanteDigitato(Data);
+        if (Istante <= 0) {
+            T.Errore = "Scrivi la data del rimborso come aaaa-mm-gg hh:mm (per esempio 2024-01-15 10:00).";
+            return T;
+        }
         //Dopo il blocco, che sta alla mezzanotte della domanda e un secondo dopo
-        if (Istante <= 0 || Istante <= IstanteDomanda(P.DataDomanda) + 1000) {
-            T.Errore = "La data del rimborso dev'essere successiva alla data della domanda.";
+        if (Istante <= IstanteDomanda(P.DataDomanda) + 1000) {
+            T.Errore = "La data del rimborso dev'essere successiva alla data della domanda (" + P.DataDomanda + ").";
             return T;
         }
         //Procedura chiusa: il rimborso si registra lo stesso e la chiusura si rifà dopo (RegistraTranche). Il credito
@@ -836,7 +878,7 @@ public final class Principale_Fallimenti {
         for (String[] a : T.Abbinamenti) GUI_ClassificazioneMovimento.CreaMovimentiTrasferimentosuWalletProprio(a[0], a[1]);
         FallimentiPiattaforme.Tranche t = new FallimentiPiattaforme.Tranche();
         //Nella forma del campo 1 dei movimenti: è così che la tranche si ritrova nella mappa (TrancheValide)
-        t.Data = FunzioniDate.ConvertiDatadaLongAlSecondo(FunzioniDate.ConvertiDatainLongMinuto(Data)).substring(0, 16);
+        t.Data = FunzioniDate.ConvertiDatadaLongAlSecondo(IstanteDigitato(Data)).substring(0, 16);
         t.Percentuale = Percentuale;
         t.USDPagati = USDPagati != null ? USDPagati : P.CreditoUSD == null ? BigDecimal.ZERO
                 : P.CreditoUSD.multiply(Percentuale).divide(FallimentiPiattaforme.CENTO, 2, RoundingMode.HALF_UP);
@@ -920,7 +962,7 @@ public final class Principale_Fallimenti {
      */
     public static Chiusura PreparaChiusura(FallimentiPiattaforme.Procedura P, String Data) {
         Chiusura C = new Chiusura();
-        long Istante = FunzioniDate.ConvertiDatainLongMinuto(Data);
+        long Istante = IstanteDigitato(Data);
         if (Istante <= 0) {
             C.Errore = "Scrivi la data della chiusura come aaaa-mm-gg hh:mm.";
             return C;
@@ -1097,5 +1139,99 @@ public final class Principale_Fallimenti {
                     : "Aperta, residuo " + Residua.stripTrailingZeros().toPlainString() + "%" + Coda;
         }
         return "Aperta" + Coda;
+    }
+
+    /** Un rimborso registrato di una procedura, o la sua chiusura, come lo raccontano i movimenti. */
+    public static final class RimborsoRegistrato {
+        /** Data e ora, {@code yyyy-MM-dd HH:mm}. */
+        public String Data = "";
+        /** Rimborso, restituzione in natura, rimborso oltre il credito o chiusura. */
+        public String Tipo = "";
+        /** Percentuale e dollari dal piano, {@code null} se il piano non ha la tranche (o è la chiusura). */
+        public BigDecimal Percentuale;
+        public BigDecimal USD;
+        /** Le monete ricevute, per esempio {@code 0.27 BTC, 550 EUR}. */
+        public String Ricevute = "";
+        /** Dove sono arrivate: la piattaforma e il wallet del deposito abbinato, o fuori dal programma. */
+        public String Arrivo = "";
+        public BigDecimal ValoreEUR = BigDecimal.ZERO;
+        /** Plusvalenze meno minusvalenze delle righe, come le ha lasciate l'ultimo ricalcolo. */
+        public BigDecimal Risultato = BigDecimal.ZERO;
+        /** Quanti movimenti compongono il rimborso. */
+        public int Movimenti;
+    }
+
+    /**
+     * I rimborsi della procedura che esistono nei movimenti, in ordine di data, più la chiusura se c'è. Le monete
+     * ricevute sono le entrate sul sotto-wallet {@value #SOTTOWALLET} (sommate per moneta), l'arrivo è il deposito
+     * abbinato all'uscita di quella moneta o, se non c'è, "fuori dal programma".
+     */
+    public static List<RimborsoRegistrato> RimborsiRegistrati(String Id) {
+        String Chiave = FallimentiPiattaforme.PREFISSO_CHIAVE + Id;
+        java.util.Set<String> Date = new java.util.HashSet<>(FallimentiPiattaforme.Registro().DateTranche.getOrDefault(Id, java.util.Set.of()));
+        String Chiusa = FallimentiPiattaforme.DataChiusura(Id);
+        if (Chiusa != null) Date.add(Chiusa);
+        Map<String, List<String[]>> PerData = new TreeMap<>();
+        for (String[] v : MappaCryptoWallet.values()) {
+            if (Date.contains(v[1]) && Chiave.equals(GruppoOperazione.Chiave(v))) {
+                PerData.computeIfAbsent(v[1], k -> new ArrayList<>()).add(v);
+            }
+        }
+        Map<String, FallimentiPiattaforme.Tranche> Piano = new TreeMap<>();
+        FallimentiPiattaforme.Procedura P = FallimentiPiattaforme.LeggiProcedure().get(Id);
+        if (P != null) for (FallimentiPiattaforme.Tranche t : P.Tranche) Piano.put(t.Data, t);
+
+        List<RimborsoRegistrato> Ris = new ArrayList<>();
+        for (Map.Entry<String, List<String[]>> e : PerData.entrySet()) {
+            RimborsoRegistrato R = new RimborsoRegistrato();
+            R.Data = e.getKey();
+            R.Movimenti = e.getValue().size();
+            Map<String, BigDecimal> Entrate = new LinkedHashMap<>();
+            Map<String, String> Arrivi = new LinkedHashMap<>();
+            boolean Natura = false, Oltre = false;
+            for (String[] v : e.getValue()) {
+                if (FallimentiPiattaforme.Inizia(v[18], FallimentiPiattaforme.RESTITUZIONE_IN_NATURA)) Natura = true;
+                if (FallimentiPiattaforme.RimborsoOltreIlCredito(v[18])) Oltre = true;
+                if ("S".equals(v[33])) {
+                    BigDecimal Plus = FallimentiPiattaforme.Numero(v[19]);
+                    if (Plus != null) R.Risultato = R.Risultato.add(Plus);
+                }
+                if (!SOTTOWALLET.equals(v[4])) continue;
+                BigDecimal QEntra = FallimentiPiattaforme.Numero(v[13]);
+                if (!v[11].isBlank() && QEntra != null && QEntra.signum() > 0 && !FallimentiPiattaforme.isTokenCredito(v[11])) {
+                    Entrate.merge(v[11], QEntra, BigDecimal::add);
+                    BigDecimal Val = FallimentiPiattaforme.Numero(v[15]);
+                    if (Val != null) R.ValoreEUR = R.ValoreEUR.add(Val.abs());
+                }
+                //L'uscita della moneta ricevuta: se è abbinata a un deposito, [20] porta all'arrivo
+                if (!v[8].isBlank() && v[11].isBlank() && !FallimentiPiattaforme.isTokenCredito(v[8]) && v[20] != null) {
+                    for (String Altro : v[20].split(",")) {
+                        String[] d = MappaCryptoWallet.get(Altro.trim());
+                        if (d != null && !Chiave.equals(GruppoOperazione.Chiave(d))) Arrivi.put(v[8], d[3] + " / " + d[4]);
+                    }
+                }
+            }
+            if (R.Data.equals(Chiusa)) {
+                R.Tipo = "Chiusura";
+                R.ValoreEUR = null;
+            } else {
+                R.Tipo = Oltre ? "Oltre il credito" : Natura ? "Restituzione in natura" : "Rimborso";
+                FallimentiPiattaforme.Tranche t = Piano.get(R.Data);
+                if (t != null) {
+                    R.Percentuale = t.Percentuale;
+                    R.USD = t.USDPagati;
+                }
+                List<String> Monete = new ArrayList<>();
+                java.util.Set<String> Dove = new java.util.LinkedHashSet<>();
+                for (Map.Entry<String, BigDecimal> m : Entrate.entrySet()) {
+                    Monete.add(m.getValue().setScale(8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString() + " " + m.getKey());
+                    Dove.add(Arrivi.getOrDefault(m.getKey(), "fuori dal programma"));
+                }
+                R.Ricevute = String.join(", ", Monete);
+                R.Arrivo = String.join(", ", Dove);
+            }
+            Ris.add(R);
+        }
+        return Ris;
     }
 }

@@ -2870,6 +2870,15 @@ movimenti generati e lo stato:
 Lo stato si ricava dai movimenti: se si annulla un'operazione, o se si chiude il programma senza salvare, lo
 stato torna quello dei movimenti salvati.
 
+Sotto l'elenco, la tabella dei **rimborsi registrati** mostra quelli della procedura selezionata, uno per riga,
+e per ultima l'eventuale chiusura:
+
+- **% pagata** e **Dollari**: come sono stati scritti registrando la tranche.
+- **Monete ricevute** e **Arrivo**: le monete ricevute e il deposito a cui sono state abbinate (piattaforma e
+  wallet), oppure *fuori dal programma*.
+- **Valore (EUR)** e **Plus/minus (EUR)**: il valore ricevuto e il risultato fiscale del rimborso, come li ha
+  lasciati l'ultimo ricalcolo.
+
 I pulsanti in basso sono:
 
 - **Nuova procedura...** — blocca le giacenze di una piattaforma alla data della domanda di fallimento.
@@ -2965,13 +2974,17 @@ I BTC arrivano su Coinbase con il loro costo di carico di 3.200 €, senza plusv
 La prima tranche di Celsius ha pagato il 57,65% del credito: 0,25 BTC e 1,9 ETH arrivati su Coinbase il
 15 gennaio 2024. Si seleziona la procedura e si preme **Registra rimborso...**:
 
-- **Data e ora**: il momento del rimborso, almeno un minuto prima dei depositi su cui è arrivato.
+- **Data e ora**: il momento del rimborso, almeno un minuto prima dei depositi su cui è arrivato. Si scrive
+  come *aaaa-mm-gg hh:mm* o *gg/mm/aaaa hh:mm*; senza l'ora vale la mezzanotte. Scegliendo un deposito, il
+  programma la propone da solo.
 - **Percentuale del credito pagata**: la percentuale indicata dalla procedura per questa tranche.
 - **Dollari pagati**: proposti come percentuale per credito ammesso, si possono correggere.
 - **Recupero atteso (%)**: nell'esempio 60%, la stima del recupero totale fatta a questa data.
 
 Con **Aggiungi da deposito importato...** si sceglie ogni deposito su cui sono arrivate le monete. L'elenco
-mostra i depositi non ancora classificati su altre piattaforme dalla data della domanda in poi:
+mostra i depositi non ancora classificati su altre piattaforme dalla data della domanda in poi. Un clic
+sull'intestazione ordina le colonne, il clic destro filtra una colonna per valore e il campo *Cerca* tiene
+solo le righe che contengono il testo scritto. Il deposito si sceglie con **Scegli** o con un doppio clic:
 
 ![La scelta del deposito importato](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/fallimenti-piattaforme/05.png)
 

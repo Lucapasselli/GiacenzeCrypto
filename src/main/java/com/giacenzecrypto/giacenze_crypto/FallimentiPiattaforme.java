@@ -250,7 +250,7 @@ public final class FallimentiPiattaforme {
         return s == null ? "" : s.trim();
     }
 
-    private static BigDecimal Numero(String s) {
+    static BigDecimal Numero(String s) {
         if (s == null || s.isBlank()) return null;
         try {
             return new BigDecimal(s.trim());

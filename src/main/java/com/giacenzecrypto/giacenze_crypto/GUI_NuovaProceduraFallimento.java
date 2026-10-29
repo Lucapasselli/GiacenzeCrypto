@@ -83,6 +83,8 @@ public class GUI_NuovaProceduraFallimento extends JDialog {
         RecuperoAtteso.setToolTipText("Percentuale del credito che ci si aspetta di recuperare in totale: ripartisce il "
                 + "costo fra le tranche future. 100 = ogni tranche scarica la sua percentuale del credito");
         Leggi.addActionListener(e -> LeggiGiacenze());
+        GUI_FallimentiPiattaforme_Pannello.Icona(Leggi, "Wallet");
+        GUI_FallimentiPiattaforme_Pannello.Icona(Crea, "Salva");
         CreditoUSD.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyTyped(java.awt.event.KeyEvent e) {
@@ -120,6 +122,7 @@ public class GUI_NuovaProceduraFallimento extends JDialog {
         });
         Tabella = new JTable(Modello);
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella);
+        Tabelle.ColoraTabellaSemplice(Tabella);
         JScrollPane Scorrimento = new JScrollPane(Tabella);
         Scorrimento.setPreferredSize(new Dimension(900, 260));
 
@@ -145,6 +148,7 @@ public class GUI_NuovaProceduraFallimento extends JDialog {
 
         JButton Annulla = new JButton("Annulla");
         Annulla.addActionListener(e -> dispose());
+        GUI_FallimentiPiattaforme_Pannello.Icona(Annulla, "Annulla");
         Crea.setEnabled(false);
         Crea.addActionListener(e -> CreaProcedura());
         JPanel Pulsanti = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -159,6 +163,7 @@ public class GUI_NuovaProceduraFallimento extends JDialog {
         Contenuto.add(Centro, BorderLayout.CENTER);
         Contenuto.add(Pulsanti, BorderLayout.SOUTH);
         setContentPane(Contenuto);
+        Icone.AdattaIconeAlTema(Contenuto);
         pack();
         setMinimumSize(new Dimension(800, 500));
     }

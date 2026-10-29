@@ -5,6 +5,22 @@ programma all'avvio di una beta, ed è la descrizione della beta su GitHub. L'el
 in preparazione è nella sezione "in lavorazione" di docs/documentazione/changelog.md, dove ogni voce di questo file
 compare con lo stesso titolo. Questo file non è una pagina del sito.
 
+## Versione 1.0.65.15
+
+**Nuove implementazioni**
+
+- **Fallimenti delle piattaforme (in prova)**: nuova scheda *Analisi Crypto – Fallimenti piattaforme* per chi aveva monete su una piattaforma fallita, come Celsius o FTX. Alla data della domanda di fallimento le monete, e gli euro, diventano un credito che conserva il costo di carico, e ogni rimborso registrato è uno scambio dal credito alle monete ricevute, con la sua plusvalenza o minusvalenza. Ci sono anche la chiusura della procedura, l'annullamento dell'ultima operazione, la scelta del valore del credito nel quadro W/RW e una guida passo per passo con gli esempi di Celsius, FTX e Voyager.
+
+- **Importazione da Exodus (in prova)**: nella finestra *Importazioni* c'è ora la voce *Exodus – Transazioni*, per l'export CSV delle transazioni del wallet Exodus. Depositi e prelievi diventano trasferimenti da classificare, e le ricompense di partecipazione di Algorand diventano premi.
+
+- **Giacenze a data, tutte le colonne dei movimenti nel dettaglio**: nel dettaglio dei movimenti di una moneta il pulsante *Colonne...* propone anche tutte le colonne della tabella dei movimenti, per esempio *Causale originale*, *Hash Transazione* o *Note*.
+
+**Correzione di bug**
+
+- **Avviso di movimento in ingresso mancante sulla moneta sbagliata**: con la tabella dei movimenti filtrata o ordinata, il suggerimento dell'icona poteva descrivere il movimento di un'altra riga. Ora descrive sempre quello della riga su cui si trova il mouse.
+
+- **Quadro T/RT, "Dettagli x Tipologia", e dettagli del quadro W/RW più veloci**: dal secondo caricamento in poi queste tabelle impiegavano qualche secondo a riempirsi quando le righe erano migliaia. Ora si riempiono subito.
+
 ## Versione 1.0.65.14
 
 **Nuove implementazioni**

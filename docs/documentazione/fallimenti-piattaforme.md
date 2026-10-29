@@ -11,7 +11,7 @@ title: Fallimenti delle piattaforme
 - [Caso 1: Celsius, più monete, euro e un conto Custody](#caso-1-celsius)
 - [Caso 2: FTX, rimborso oltre il 100%](#caso-2-ftx)
 - [Caso 3: Voyager, restituzione in natura e chiusura](#caso-3-voyager)
-- [Il credito in euro e "Consuma prima il credito FIAT"](#credito-in-euro)
+- [Il credito in euro](#credito-in-euro)
 - [Annullare un'operazione](#annullare)
 - [Il valore del credito nel quadro W/RW e in Giacenze a data](#valore-del-credito)
 - [Limiti e cose da sapere](#limiti)
@@ -84,6 +84,8 @@ I pulsanti in basso sono:
 - **Chiudi procedura...** — fa uscire il credito non rimborsato.
 - **Annulla ultima operazione...** — toglie la chiusura o l'ultimo rimborso.
 - **Elimina procedura...** — toglie tutti i movimenti della procedura e i suoi dati.
+- **Risultato parte FIAT...** — mostra la differenza della parte in euro del credito, che il programma non calcola
+  (vedi [Il credito in euro](#credito-in-euro)).
 - **Guida...** — apre questa guida.
 
 Sotto i pulsanti si sceglie il [valore dei crediti](#valore-del-credito) nel quadro W/RW e in *Giacenze a data*.
@@ -181,9 +183,6 @@ La prima tranche di Celsius ha pagato il 57,65% del credito: 0,25 BTC e 1,9 ETH 
   ammesso. La procedura annuncia la percentuale di ogni distribuzione, mentre la comunicazione al singolo
   creditore riporta di solito l'importo in dollari.
 - **Recupero atteso (%)**: nell'esempio 60%, la stima del recupero totale fatta a questa data.
-- **Consuma prima il credito FIAT**: compare quando nel credito ci sono anche euro, ed è spuntata, con accanto la
-  scelta *per il valore ricevuto* o *secondo la percentuale pagata*. In questo esempio è tolta, per mostrare la
-  ripartizione in proporzione: spunta e scelta sono spiegate in [Il credito in euro](#credito-in-euro).
 
 Con **Aggiungi da deposito importato...** si sceglie ogni deposito su cui sono arrivate le monete. L'elenco
 mostra i depositi non ancora classificati su altre piattaforme dalla data della domanda in poi. Un clic
@@ -314,100 +313,26 @@ plusvalenza è 278 - 230 = 48 €. Prima di registrare il programma chiede confe
 Confermando, la chiusura viene tolta e rifatta subito dopo il rimborso, con quello che resta del credito
 (qui 1,2 token). Se non resta più nulla, la procedura risulta con il credito esaurito invece che chiusa.
 
-## Il credito in euro e "Consuma prima il credito FIAT" {#credito-in-euro}
+## Il credito in euro {#credito-in-euro}
 
-Gli euro rimasti sulla piattaforma sono un credito come le monete, ma restano FIAT: un rimborso che li riguarda
-compra la moneta ricevuta, al suo valore, e la differenza fra quanto si riceve e gli euro del credito non è
-una plusvalenza né una minusvalenza su cripto-attività. Con la ripartizione in proporzione ogni tranche dà agli
-euro la loro quota del valore ricevuto, e quella differenza resta fuori dai calcoli.
+Gli euro rimasti sulla piattaforma sono una parte del credito come le monete (*CELSIUS.CREDITO.EUR*) e ogni
+rimborso li consuma nella stessa proporzione. Restano però FIAT: la loro quota del rimborso compra la moneta
+ricevuta, al suo valore, oppure è uno scambio fra valute se arrivano euro. La differenza fra quanto riceve il
+credito in euro e il credito che consuma **non è una plusvalenza o minusvalenza su cripto-attività** e il programma
+non la calcola: l'anteprima di ogni rimborso lo ricorda.
 
-Con la spunta **Consuma prima il credito FIAT**, attiva quando nel credito ci sono euro e monete:
+Per chi vuole conoscerla, il pulsante **Risultato parte FIAT...** la mostra per la procedura selezionata, rimborso
+per rimborso e per anno. Nel caso 1 di Celsius:
 
-- la tranche consuma **prima il credito in euro, alla pari, per tutto il valore ricevuto** finché ce n'è, a
-  prescindere dalla percentuale: gli euro ricevono lo stesso valore che consumano, quindi non hanno differenze.
-- la parte dell'importo pagato che supera gli euro consumati tocca alle cripto, che ricevono il resto del valore:
-  **la differenza fra valore ricevuto e credito in euro viene attribuita alle cripto-attività**.
-- il costo delle cripto si consuma in proporzione all'importo pagato che tocca loro, rispetto al recupero atteso
-  tolta la parte in euro: così si esaurisce quando i rimborsi arrivano al recupero atteso.
+![Il risultato della parte FIAT di Celsius](immagini/fallimenti-piattaforme/18.png)
 
-Un esempio con un credito di 1.000 €: 200 € in euro e 800 € in BTC, con costo di carico 500 €.
+- la prima tranche consuma il 96,0833% dei 7.000 € di credito in euro, cioè 6.725,83 €, e il credito in euro
+  riceve 3.009,99 € di monete: −3.715,84 €.
+- la seconda consuma gli ultimi 274,17 € e riceve 200,39 €: −73,78 €.
+- alla chiusura il credito in euro rimasto uscirebbe senza valore, e la tabella lo mostrerebbe con tutto il suo
+  importo come differenza.
 
-**Recupero atteso 100%, tranche del 30% che vale 360 €.** La tranche paga 300 € di credito:
-
-| | **Con la spunta** | **Senza la spunta** |
-|---|---|---|
-| Euro | 200 € di credito, ricevono 200 € | 60 € di credito, ricevono 72 € (12 € non contati) |
-| BTC | 100 € di credito su 800 (12,5%, costo 62,50 €), ricevono 160 € | 30% del credito (costo 150 €), ricevono 288 € |
-| Plusvalenza sui BTC | 97,50 € | 138 € |
-| Resta | 87,5% del credito BTC, nessun credito in euro | 70% del credito BTC, 140 € di credito in euro |
-
-**Recupero atteso 50%, due tranche del 25% che valgono 250 € ciascuna.** Il recupero atteso sulle cripto è
-500 − 200 = 300 €:
-
-| | **Con la spunta** | **Senza la spunta** |
-|---|---|---|
-| 1ª tranche, euro | 200 € di credito, ricevono 200 € | 100 € di credito, ricevono 50 € (−50 € non contati) |
-| 1ª tranche, BTC | 50 € su 300 (16,67%, costo 83,33 €), ricevono 50 €: −33,33 € | 50% del credito (costo 250 €), ricevono 200 €: −50 € |
-| 2ª tranche, BTC | 250 € su 300 (83,33%, costo 416,67 €), ricevono 250 €: −166,67 € | 50% del credito (costo 250 €), ricevono 200 €: −50 € |
-| Totale sui BTC | −200 € | −100 € (e −100 € sugli euro, non contati) |
-
-Il totale ricevuto è lo stesso: la spunta decide se la differenza degli euro entra nel calcolo sulle cripto o
-resta fuori.
-
-Nel [caso 1](#rimborso-in-cripto) di Celsius, con la spunta, la prima tranche dà agli euro tutti i 7.000 € del
-credito, alla pari, invece dei 3.010 € della ripartizione in proporzione:
-
-![Anteprima della prima tranche di Celsius con "Consuma prima il credito FIAT"](immagini/fallimenti-piattaforme/18.png)
-
-- gli euro comprano BTC per 4.833,57 € ed ETH per 2.166,43 €.
-- alle cripto restano 7.120 € e consumano il 93,925% del credito: l'importo pagato (57,65% di 32.837,36 € =
-  18.930,74 €) meno i 7.000 € degli euro, diviso per il recupero atteso sulle cripto (60% di 32.837,36 € meno
-  7.000 € = 12.702,42 €).
-- le minusvalenze attese sono 27.256,54 € invece di 24.056,49 €.
-
-La spunta **non si applica**, e il rimborso si ripartisce in proporzione con un avviso nell'anteprima, in due
-casi:
-
-- quando il recupero atteso non supera il credito in euro: alle cripto non resterebbe nulla.
-- quando la tranche chiude il credito cripto ma vale meno del credito in euro rimasto: gli euro non
-  potrebbero tornare alla pari, e la loro differenza resta fuori dal calcolo.
-
-**Una tranche che vale più di quanto paga.** Con lo stesso credito di 1.000 € e recupero atteso 100%, una tranche
-del 10% (100 € di credito) vale 150 €, per esempio perché le monete ricevute si sono apprezzate:
-
-- gli euro consumano 150 € alla pari, tutto il valore ricevuto, anche se la tranche paga solo 100 € di credito.
-- l'importo pagato non supera gli euro consumati, quindi le cripto non cambiano e non c'è alcun risultato.
-- restano 50 € di credito in euro e tutto il credito BTC: lo stato è *Aperta, residuo 85%*.
-
-Quando arriva il resto, il 90% che vale 900 €, gli euro consumano gli ultimi 50 € e alle cripto toccano 850 € di
-importo pagato, più degli 800 € di credito BTC: la tranche lo chiude, con 850 € ricevuti e 500 € di costo, una
-plusvalenza di 350 €. In tutto: 1.050 € ricevuti, 200 € agli euro alla pari, 850 € alle cripto che costavano
-500 €.
-
-Altri due casi che seguono dalla stessa regola:
-
-- una tranche che vale meno di quanto paga dà agli euro tutto il valore, alla pari, e le cripto consumano il resto
-  dell'importo pagato senza ricevere nulla: una minusvalenza.
-- una tranche che vale più del credito in euro rimasto ma paga meno di quello (per esempio il 10% che vale 300 €)
-  chiude gli euro alla pari e dà il resto del valore alle cripto senza che consumino credito: è un rimborso oltre il
-  credito consumato, tutto plusvalenza.
-
-**Secondo la percentuale pagata.** Accanto alla spunta si può scegliere *secondo la percentuale pagata* invece di
-*per il valore ricevuto*: gli euro consumano al massimo l'importo pagato dalla tranche, come indicato dalla
-procedura. Nell'esempio del 10% che vale 150 €:
-
-- gli euro consumano 100 € alla pari, l'importo pagato.
-- il BTC non consuma credito e riceve i 50 € oltre l'importo pagato: è un rimborso oltre il credito consumato,
-  tutto plusvalenza.
-- restano 100 € di credito in euro e tutto il credito BTC: lo stato è *Aperta, residuo 90%*.
-
-Con il resto, il 90% che vale 900 €, gli euro consumano gli ultimi 100 € e il BTC 800 €, tutto il suo credito: 800 €
-ricevuti e 500 € di costo, una plusvalenza di 300 €. In tutto sono 350 €, come con l'altra scelta: cambia in quale
-tranche, e quindi in quale anno, cade la plusvalenza. *Secondo la percentuale pagata* segue la percentuale
-ufficiale di ogni distribuzione, *per il valore ricevuto* è più semplice da seguire.
-
-Le tranche con e senza la spunta, e con le due scelte, si possono alternare: ogni tranche parte dal credito che resta,
-euro e cripto.
+Il programma non riporta queste differenze in nessun quadro.
 
 ## Annullare un'operazione {#annullare}
 

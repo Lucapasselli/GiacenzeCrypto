@@ -57,12 +57,6 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
     private boolean Registrata = false;
     /** Credito già esaurito: il rimborso è oltre il credito e percentuale, dollari e recupero atteso non servono. */
     private final boolean Esaurito;
-    /** "Consuma prima il credito FIAT": si vede solo se la procedura ha un credito in valuta accanto a quello cripto. */
-    private final javax.swing.JCheckBox PrimaFiat = new javax.swing.JCheckBox("Consuma prima il credito FIAT", true);
-    private boolean ConPrimaFiat = false;
-    /** Con la spunta: gli euro consumano tutto il valore ricevuto (predefinito) o al massimo l'importo pagato. */
-    private final javax.swing.JComboBox<String> MetodoFiat = new javax.swing.JComboBox<>(new String[]{
-        "per il valore ricevuto", "secondo la percentuale pagata"});
 
     /**
      * Mostra il dialogo e aspetta che venga chiuso.
@@ -81,17 +75,9 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
         Esaurito = Principale_Fallimenti.CreditoEsaurito(P);
         setTitle("Rimborso della procedura " + P.Id);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        boolean HaFiat = false, HaCripto = false;
         for (FallimentiPiattaforme.TokenCredito t : Principale_Fallimenti.TokenDellaProcedura(P.Id)) {
             MoneteOriginali.add(t.MonetaOriginale.toUpperCase());
-            if (t.Fiat) HaFiat = true;
-            else HaCripto = true;
         }
-        ConPrimaFiat = HaFiat && HaCripto && !Esaurito;
-        PrimaFiat.setToolTipText("<html>Il credito in valuta si consuma per primo e alla pari: riceve lo stesso valore che "
-                + "consuma, quindi non ha differenze.<br>La differenza fra valore ricevuto e credito in euro viene "
-                + "attribuita alle cripto-attività.<br>Senza la spunta il rimborso si ripartisce in proporzione su "
-                + "tutto il credito, valuta compresa.</html>");
 
         BigDecimal Pagata = BigDecimal.ZERO;
         List<FallimentiPiattaforme.Tranche> Valide = FallimentiPiattaforme.TrancheValide(P);
@@ -143,21 +129,6 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
             Campo(Campi, g, 0, 2, "Percentuale del credito pagata:", Percentuale);
             Campo(Campi, g, 1, 0, "Dollari pagati:", USD);
             Campo(Campi, g, 1, 2, "Recupero atteso (%):", Atteso);
-        }
-        if (ConPrimaFiat) {
-            MetodoFiat.setToolTipText("<html><b>Per il valore ricevuto</b>: gli euro consumano tutto il valore ricevuto "
-                    + "finché ce n'è, a prescindere dalla percentuale.<br><b>Secondo la percentuale pagata</b>: gli euro "
-                    + "consumano al massimo l'importo pagato dalla tranche, e il valore oltre l'importo pagato va alle "
-                    + "cripto come plusvalenza.<br>A fine procedura il totale è lo stesso, può cambiare l'anno in cui "
-                    + "cadono le plusvalenze e le minusvalenze.</html>");
-            PrimaFiat.addActionListener(e -> MetodoFiat.setEnabled(PrimaFiat.isSelected()));
-            g.gridx = 1;
-            g.gridy = 2;
-            Campi.add(PrimaFiat, g);
-            g.gridx = 2;
-            g.gridwidth = 2;
-            Campi.add(MetodoFiat, g);
-            g.gridwidth = 1;
         }
         JPanel CampiASinistra = new JPanel(new BorderLayout());
         CampiASinistra.add(Campi, BorderLayout.WEST);
@@ -413,14 +384,7 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
 
     private Principale_Fallimenti.Tranche Prepara() {
         return Principale_Fallimenti.PreparaTranche(P, Data.getText().trim(), Digitato(Percentuale), Digitato(Atteso),
-                LeggiRicevute(), Metodo());
-    }
-
-    /** @return come la tranche consuma il credito in valuta, dalla spunta e dalla scelta accanto */
-    private Principale_Fallimenti.CreditoFiat Metodo() {
-        if (!ConPrimaFiat || !PrimaFiat.isSelected()) return Principale_Fallimenti.CreditoFiat.PROPORZIONALE;
-        return MetodoFiat.getSelectedIndex() == 1 ? Principale_Fallimenti.CreditoFiat.PRIMA_PER_PERCENTUALE
-                : Principale_Fallimenti.CreditoFiat.PRIMA_PER_VALORE;
+                LeggiRicevute());
     }
 
     /** @return il numero scritto nel campo, {@code null} se vuoto o se il credito è esaurito (il campo non si vede) */
@@ -446,7 +410,7 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
         }
         String Consumo = T.Frazione.signum() == 0 ? "" : "La tranche consuma il " + T.Frazione.multiply(FallimentiPiattaforme.CENTO)
                 .setScale(4, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString() + "% della quantità bloccata"
-                + (ConPrimaFiat ? " delle cripto" : "") + ". ";
+                + ". ";
         Esito.setText("<html>" + Consumo + "Plusvalenze meno minusvalenze attese: <b>"
                 + Risultato.setScale(2, RoundingMode.HALF_UP).toPlainString() + " EUR</b> (calcolo definitivo dopo il ricalcolo)."
                 + (T.Avviso == null ? "" : "<br>" + T.Avviso) + "</html>");
@@ -478,7 +442,7 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
             if (Esito == null || !Esito.isAction("registra")) return;
         }
         String Errore = Principale_Fallimenti.RegistraTranche(P, Data.getText().trim(), Digitato(Percentuale),
-                Digitato(USD), Digitato(Atteso), LeggiRicevute(), Metodo());
+                Digitato(USD), Digitato(Atteso), LeggiRicevute());
         if (Errore != null) {
             AppDialog.builder(this).windowTitle("Rimborso").showTitleInBody(false).theme()
                     .type(AppDialog.DialogType.WARNING).message(Errore).primaryAction("ok", "OK").showDialog();

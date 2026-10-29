@@ -58,6 +58,13 @@ public final class FallimentiPiattaforme {
     public static final String CAMPO18_RIMBORSO = RIMBORSO + " - RIMBORSO DA FALLIMENTO";
     /** Campo 18 completo della restituzione in natura. */
     public static final String CAMPO18_RESTITUZIONE_IN_NATURA = RESTITUZIONE_IN_NATURA + " - RESTITUZIONE IN NATURA";
+    /**
+     * Campo 18 di un token credito consumato da una tranche senza ricevere nulla (una parte a cui non tocca valore, per
+     * esempio un credito con valore zero alla domanda): un prelievo {@code PC} col {@code PCO} esistente, che il motore
+     * realizza a valore zero, quindi minusvalenza pari al costo scaricato. Un {@code PC} con {@code FRB} il motore non lo
+     * elaborava: la quantità usciva e il costo restava nel LIFO.
+     */
+    public static final String CAMPO18_RIMBORSO_SENZA_VALORE = "PCO - RIMBORSO DA FALLIMENTO SENZA VALORE";
     /** Campo 18 completo del rimborso oltre il credito. */
     public static final String CAMPO18_RIMBORSO_OLTRE_IL_CREDITO = RIMBORSO_OLTRE_IL_CREDITO + " - RIMBORSO OLTRE IL CREDITO";
 
@@ -463,6 +470,7 @@ public final class FallimentiPiattaforme {
     /** @return {@code true} se la riga fa parte di una tranche di rimborso (marcatore o campo 5 della quota FIAT) */
     static boolean isRigaDiRimborso(String[] v) {
         return Realizza(v[18]) || Inizia(v[18], RESTITUZIONE_IN_NATURA) || RimborsoOltreIlCredito(v[18])
+                || CAMPO18_RIMBORSO_SENZA_VALORE.equals(v[18])
                 || CAMPO5_ACQUISTO_FIAT.equals(v[5]) || CAMPO5_RIMBORSO_FIAT.equals(v[5]);
     }
 

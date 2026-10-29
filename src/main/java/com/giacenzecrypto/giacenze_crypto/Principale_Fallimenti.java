@@ -526,51 +526,27 @@ public final class Principale_Fallimenti {
         return false;
     }
 
-    /** Come una tranche consuma il credito in valuta rispetto a quello cripto ({@link #Consumi}). */
-    public enum CreditoFiat {
-        /** Metodo A' su tutto il credito, valuta compresa. */
-        PROPORZIONALE,
-        /** "Consuma prima il credito FIAT", per il valore ricevuto (predefinito nel dialogo). */
-        PRIMA_PER_VALORE,
-        /** "Consuma prima il credito FIAT", fino all'importo pagato secondo la percentuale. */
-        PRIMA_PER_PERCENTUALE
-    }
-
     /** Quanto consuma una tranche: per ogni token, nell'ordine, la quantità che esce e la quota del valore ricevuto. */
     static final class Consumo {
         final List<BigDecimal> Qta = new ArrayList<>();
         final List<BigDecimal> Pesi = new ArrayList<>();
         /** Frazione della quantità originaria dei token cripto consumata (tutti la stessa). */
         BigDecimal FrazioneCripto = BigDecimal.ZERO;
-        /** Perché "Consuma prima il credito FIAT" non si è applicato, {@code null} se non serve dirlo. */
-        String Avviso;
     }
 
     /**
-     * Quanto consuma ogni token credito e quale quota del valore ricevuto gli tocca. Il credito si misura in euro alla
-     * data della domanda ({@code [15]} del blocco): {@code T} il totale, {@code F} la parte in valuta, il pagato della
-     * tranche è {@code Percentuale × T}.
-     * <ul>
-     *   <li><b>Proporzionale</b> (metodo A'): la tranche consuma {@code Percentuale ÷ Atteso × T}, ripartito sui token in
-     *       proporzione al credito che resta a ognuno. Finché tutti i token hanno la stessa frazione residua è la
-     *       frazione {@code Percentuale ÷ Atteso} di ogni token, e il valore va in proporzione al credito alla domanda.
-     *       Se supera il residuo, la tranche consuma tutto.</li>
-     *   <li><b>Prima il credito FIAT</b> (solo con token cripto e in valuta): il credito in valuta si consuma per primo
-     *       e alla pari, e riceve lo stesso valore. Per {@link CreditoFiat#PRIMA_PER_VALORE} consuma
-     *       {@code min(residuo in valuta, valore ricevuto)} a prescindere dalla percentuale (la regola più chiara,
-     *       predefinita), per {@link CreditoFiat#PRIMA_PER_PERCENTUALE} anche al massimo il pagato:
-     *       {@code min(residuo in valuta, pagato, valore ricevuto)} (decisioni dell'utente del 2026-10-29). Il
-     *       resto del pagato, se c'è, tocca alle cripto, che ne consumano la frazione
-     *       {@code max(0, pagato − valuta) ÷ (Atteso × T − F)} della quantità bloccata, e ricevono il resto del valore:
-     *       tutta la differenza fra valore ricevuto e credito va sulle cripto. Non si applica, e si torna al
-     *       proporzionale con un avviso, se {@code Atteso × T} non supera {@code F} o se la tranche chiude il credito
-     *       cripto lasciando un residuo in valuta.</li>
-     * </ul>
+     * Quanto consuma ogni token credito e quale quota del valore ricevuto gli tocca, con il metodo A' su tutto il
+     * credito, valuta compresa: la tranche consuma {@code Percentuale ÷ Atteso} del credito alla data della domanda
+     * ({@code [15]} del blocco), ripartito sui token in proporzione al credito che resta a ognuno, e il valore va in
+     * proporzione al credito alla domanda. Se supera il residuo, la tranche consuma tutto. I token hanno sempre la
+     * stessa frazione residua, ma il calcolo regge anche residui diversi (consumo e valore in proporzione al credito
+     * che resta). "Consuma prima il credito FIAT", provato il 29/10, è stato tolto su decisione dell'utente: troppe
+     * incongruenze, la differenza della parte in valuta si mostra a parte ({@link #RisultatiValuta}).
      * @return {@code null} se il valore del credito alla domanda è zero
      */
     static Consumo Consumi(List<FallimentiPiattaforme.TokenCredito> Token, long Istante, BigDecimal Percentuale,
-            BigDecimal Atteso, BigDecimal ValoreRicevuto, CreditoFiat Modo) {
-        BigDecimal Totale = BigDecimal.ZERO, ValoreCripto = BigDecimal.ZERO, ValoreFiat = BigDecimal.ZERO;
+            BigDecimal Atteso) {
+        BigDecimal Totale = BigDecimal.ZERO, ValoreCripto = BigDecimal.ZERO;
         BigDecimal FiatResidua = BigDecimal.ZERO;
         BigDecimal ResCripto = null;
         List<BigDecimal> Residui = new ArrayList<>();
@@ -582,7 +558,6 @@ public final class Principale_Fallimenti {
             Frazioni.add(Fr);
             Totale = Totale.add(t.ValoreEUR);
             if (t.Fiat) {
-                ValoreFiat = ValoreFiat.add(t.ValoreEUR);
                 FiatResidua = FiatResidua.add(t.ValoreEUR.multiply(Fr));
             } else {
                 ValoreCripto = ValoreCripto.add(t.ValoreEUR);
@@ -592,51 +567,8 @@ public final class Principale_Fallimenti {
         if (Totale.signum() <= 0) return null;
         if (ResCripto == null) ResCripto = BigDecimal.ZERO;
         Consumo C = new Consumo();
-        BigDecimal Pagato = Totale.multiply(Percentuale).divide(FallimentiPiattaforme.CENTO, SCALA, RoundingMode.HALF_UP);
 
-        if (Modo != CreditoFiat.PROPORZIONALE && ValoreFiat.signum() > 0 && ValoreCripto.signum() > 0 && ValoreRicevuto.signum() > 0) {
-            BigDecimal AttesoCripto = Totale.multiply(Atteso).divide(FallimentiPiattaforme.CENTO, SCALA, RoundingMode.HALF_UP)
-                    .subtract(ValoreFiat);
-            if (AttesoCripto.signum() <= 0) {
-                C.Avviso = "\"Consuma prima il credito FIAT\" non si applica: il recupero atteso non supera il credito in "
-                        + "valuta, quindi alle cripto non resterebbe nulla. Il rimborso si ripartisce in proporzione su "
-                        + "tutto il credito.";
-            } else {
-                BigDecimal Fn = FiatResidua.min(ValoreRicevuto);
-                if (Modo == CreditoFiat.PRIMA_PER_PERCENTUALE) Fn = Fn.min(Pagato);
-                BigDecimal cc = Pagato.subtract(Fn).max(BigDecimal.ZERO).divide(AttesoCripto, SCALA, RoundingMode.HALF_UP);
-                boolean UltimaCripto = cc.compareTo(ResCripto) >= 0;
-                boolean FiatChiusa = Fn.compareTo(FiatResidua) == 0;
-                //Con il credito cripto già finito non c'è nulla da chiudere: la valuta prende il valore, alla pari
-                if (UltimaCripto && ResCripto.signum() > 0 && !FiatChiusa) {
-                    C.Avviso = "\"Consuma prima il credito FIAT\" non si applica: questo rimborso chiude il credito "
-                            + "cripto ma vale meno del credito in valuta rimasto. Il rimborso si ripartisce in proporzione "
-                            + "su tutto il credito residuo, e la parte in valuta ha una differenza che non viene contata.";
-                } else {
-                    C.FrazioneCripto = UltimaCripto ? ResCripto : cc;
-                    for (int k = 0; k < Token.size(); k++) {
-                        FallimentiPiattaforme.TokenCredito t = Token.get(k);
-                        if (t.Fiat) {
-                            //Alla pari: la valuta riceve il valore del credito che consuma, diviso fra le valute in
-                            //proporzione al credito che resta a ognuna
-                            BigDecimal Quota = FiatResidua.signum() == 0 ? BigDecimal.ZERO
-                                    : t.ValoreEUR.multiply(Frazioni.get(k)).divide(FiatResidua, SCALA, RoundingMode.HALF_UP);
-                            C.Qta.add(FiatChiusa ? Residui.get(k)
-                                    : Residui.get(k).multiply(Fn).divide(FiatResidua, 2, RoundingMode.HALF_UP));
-                            C.Pesi.add(Fn.multiply(Quota).divide(ValoreRicevuto, SCALA, RoundingMode.HALF_UP));
-                        } else {
-                            C.Qta.add(UltimaCripto ? Residui.get(k) : t.Qta.multiply(cc).setScale(SCALA, RoundingMode.HALF_UP));
-                            C.Pesi.add(ValoreRicevuto.subtract(Fn).multiply(t.ValoreEUR)
-                                    .divide(ValoreRicevuto.multiply(ValoreCripto), SCALA, RoundingMode.HALF_UP));
-                        }
-                    }
-                    return C;
-                }
-            }
-        }
-
-        //Proporzionale. Finché i token hanno la stessa frazione residua (nessuna tranche "prima il credito FIAT") le
-        //quantità e i pesi sono quelli di sempre, calcolati allo stesso modo
+        //Con la stessa frazione residua per tutti i token quantità e pesi sono quelli del metodo A' di sempre
         BigDecimal c = Percentuale.divide(Atteso, SCALA, RoundingMode.HALF_UP);
         BigDecimal ResiduoTotale = ValoreCripto.multiply(ResCripto).add(FiatResidua).divide(Totale, SCALA, RoundingMode.HALF_UP);
         boolean Uniforme = true;
@@ -670,12 +602,6 @@ public final class Principale_Fallimenti {
         return C;
     }
 
-    /** {@link #PreparaTranche(FallimentiPiattaforme.Procedura, String, BigDecimal, BigDecimal, List, CreditoFiat)} con la ripartizione proporzionale. */
-    public static Tranche PreparaTranche(FallimentiPiattaforme.Procedura P, String Data, BigDecimal Percentuale,
-            BigDecimal Atteso, List<Ricevuta> Ricevute) {
-        return PreparaTranche(P, Data, Percentuale, Atteso, Ricevute, CreditoFiat.PROPORZIONALE);
-    }
-
     /**
      * Prepara le righe di una tranche senza toccare la mappa. Le parti del credito sono i token credito, cripto e in
      * valuta: quanto consuma ognuna e quale quota del valore ricevuto le tocca lo decide {@link #Consumi}. Per ogni
@@ -687,10 +613,9 @@ public final class Principale_Fallimenti {
      * @param Data data e ora del rimborso, {@code yyyy-MM-dd HH:mm}
      * @param Percentuale percentuale del credito pagata dalla tranche
      * @param Atteso recupero atteso in percentuale
-     * @param Modo come si consuma il credito in valuta ({@link #Consumi})
      */
     public static Tranche PreparaTranche(FallimentiPiattaforme.Procedura P, String Data, BigDecimal Percentuale,
-            BigDecimal Atteso, List<Ricevuta> Ricevute, CreditoFiat Modo) {
+            BigDecimal Atteso, List<Ricevuta> Ricevute) {
         Tranche T = new Tranche();
         long Istante = IstanteDigitato(Data);
         if (Istante <= 0) {
@@ -789,13 +714,18 @@ public final class Principale_Fallimenti {
                 return T;
             }
         }
-        Consumo C = Consumi(Token, IstanteResiduo, Percentuale, Atteso, ValoreRicevuto, Modo);
+        Consumo C = Consumi(Token, IstanteResiduo, Percentuale, Atteso);
         if (C == null) {
             T.Errore = "Il valore del credito alla data della domanda è zero: non si può ripartire il rimborso.";
             return T;
         }
         T.Frazione = C.FrazioneCripto;
-        if (C.Avviso != null) T.Avviso = T.Avviso == null ? C.Avviso : C.Avviso + " " + T.Avviso;
+        if (Token.stream().anyMatch(t -> t.Fiat)) {
+            String Valuta = "Il credito in valuta riceve la sua quota del valore: la differenza fra quanto riceve e il credito "
+                    + "che consuma non è una plusvalenza o minusvalenza su cripto-attività e qui non viene calcolata "
+                    + "(la mostra il pulsante Risultato parte FIAT).";
+            T.Avviso = T.Avviso == null ? Valuta : T.Avviso + " " + Valuta;
+        }
         List<BigDecimal> Pesi = C.Pesi;
 
         String Chiave = FallimentiPiattaforme.PREFISSO_CHIAVE + P.Id;
@@ -851,15 +781,22 @@ public final class Principale_Fallimenti {
                     Campo5 = r.isFiat() ? FallimentiPiattaforme.CAMPO5_RIMBORSO_FIAT : FallimentiPiattaforme.CAMPO5_ACQUISTO_FIAT;
                     A.Trattamento = r.isFiat() ? "FIAT: nessun effetto" : "Acquisto: costo = valore ricevuto";
                 } else if (Out.signum() == 0) {
-                    //Il token riceve valore senza consumare credito (con "Consuma prima il credito FIAT", la tranche
-                    //vale più del credito in valuta rimasto ma paga meno di quello, o il credito cripto è già finito,
-                    //e "secondo la percentuale" anche quando vale più del pagato):
-                    //come un rimborso oltre il credito, tutto plusvalenza
+                    //Il token riceve valore senza consumare credito (una quantità così piccola che l'arrotondamento la
+                    //azzera): come un rimborso oltre il credito, tutto plusvalenza
                     Entrata.Rete = t.ReteOriginale;
                     Campo18 = FallimentiPiattaforme.CAMPO18_RIMBORSO_OLTRE_IL_CREDITO;
                     Campo5 = FallimentiPiattaforme.CAMPO5_RIMBORSO_OLTRE_IL_CREDITO;
                     A.Costo = BigDecimal.ZERO;
                     A.Trattamento = "Rimborso oltre il credito consumato: tutto plusvalenza";
+                } else if (In.signum() == 0) {
+                    //Il token consuma credito senza ricevere nulla di questa moneta: senza entrata la riga è un prelievo,
+                    //e col PCO il motore la realizza al suo valore (di solito zero), minusvalenza pari al costo
+                    Campo18 = FallimentiPiattaforme.CAMPO18_RIMBORSO_SENZA_VALORE;
+                    Campo5 = "RIMBORSO DA FALLIMENTO";
+                    if (t.Costo != null && t.Qta.signum() > 0) {
+                        A.Costo = t.Costo.multiply(Out).divide(t.Qta, 2, RoundingMode.HALF_UP);
+                    }
+                    A.Trattamento = "Rimborso senza valore: minusvalenza pari al costo";
                 } else {
                     Entrata.Rete = t.ReteOriginale;
                     boolean Natura = r.InNatura && r.Moneta.equalsIgnoreCase(t.MonetaOriginale);
@@ -979,22 +916,15 @@ public final class Principale_Fallimenti {
         return T;
     }
 
-    /** {@link #RegistraTranche(FallimentiPiattaforme.Procedura, String, BigDecimal, BigDecimal, BigDecimal, List, CreditoFiat)} con la ripartizione proporzionale. */
-    public static String RegistraTranche(FallimentiPiattaforme.Procedura P, String Data, BigDecimal Percentuale,
-            BigDecimal USDPagati, BigDecimal Atteso, List<Ricevuta> Ricevute) {
-        return RegistraTranche(P, Data, Percentuale, USDPagati, Atteso, Ricevute, CreditoFiat.PROPORZIONALE);
-    }
-
     /**
      * Registra una tranche: righe nella mappa, abbinamento ai depositi importati, tranche e recupero atteso nella
      * tabella. Il ricalcolo resta al chiamante.
      * @param USDPagati dollari pagati dalla tranche, {@code null} = percentuale × credito in dollari
-     * @param Modo come si consuma il credito in valuta ({@link #Consumi})
      * @return {@code null} se è andato tutto bene, altrimenti il motivo
      */
     public static String RegistraTranche(FallimentiPiattaforme.Procedura P, String Data, BigDecimal Percentuale,
-            BigDecimal USDPagati, BigDecimal Atteso, List<Ricevuta> Ricevute, CreditoFiat Modo) {
-        Tranche T = PreparaTranche(P, Data, Percentuale, Atteso, Ricevute, Modo);
+            BigDecimal USDPagati, BigDecimal Atteso, List<Ricevuta> Ricevute) {
+        Tranche T = PreparaTranche(P, Data, Percentuale, Atteso, Ricevute);
         if (T.Errore != null) return T.Errore;
         //Procedura chiusa (decisione dell'utente del 2026-10-28): la chiusura si toglie e si rifà dopo il rimborso, così
         //un residuo rimasto serve a questo rimborso invece di uscire senza valore
@@ -1080,7 +1010,7 @@ public final class Principale_Fallimenti {
         if (Token.isEmpty()) return false;
         String Chiusa = FallimentiPiattaforme.DataChiusura(P.Id);
         long Istante = Chiusa == null ? Long.MAX_VALUE : FunzioniDate.ConvertiDatainLongMinuto(Chiusa) - 1;
-        //Tutti i token: con "Consuma prima il credito FIAT" il credito in valuta e quello cripto non finiscono insieme
+        //Tutti i token, non il primo: il residuo si legge su ognuno
         return !CreditoResiduo(Token, Istante);
     }
 
@@ -1296,6 +1226,51 @@ public final class Principale_Fallimenti {
                     : "Aperta, residuo " + Residua.stripTrailingZeros().toPlainString() + "%" + Coda;
         }
         return "Aperta" + Coda;
+    }
+
+    /** Il risultato della parte in valuta di un rimborso o della chiusura, che il programma non mette in nessun quadro. */
+    public static final class RisultatoValuta {
+        /** Data e ora, {@code yyyy-MM-dd HH:mm}. */
+        public String Data = "";
+        /** Rimborso o chiusura. */
+        public String Tipo = "";
+        /** Il credito in valuta, per esempio {@code CELSIUS.CREDITO.EUR}. */
+        public String Credito = "";
+        /** Credito consumato, in euro al valore della data della domanda. */
+        public BigDecimal Consumato = BigDecimal.ZERO;
+        /** Valore ricevuto per quel credito ({@code [15]} delle righe, zero alla chiusura). */
+        public BigDecimal Ricevuto = BigDecimal.ZERO;
+
+        public BigDecimal Differenza() {
+            return Ricevuto.subtract(Consumato);
+        }
+    }
+
+    /**
+     * Le differenze della parte in valuta della procedura: per ogni rimborso (e la chiusura) e ogni credito in valuta,
+     * il credito consumato al suo valore in euro alla domanda e il valore ricevuto. Il motore non le calcola (le righe
+     * sono acquisti o scambi FIAT): servono a chi le vuole indicare per conto suo, fuori dai quadri delle cripto.
+     * @return in ordine di data
+     */
+    public static List<RisultatoValuta> RisultatiValuta(String Id) {
+        String Chiave = FallimentiPiattaforme.PREFISSO_CHIAVE + Id;
+        Map<String, RisultatoValuta> PerData = new TreeMap<>();
+        for (FallimentiPiattaforme.TokenCredito t : TokenDellaProcedura(Id)) {
+            if (!t.Fiat || t.Qta.signum() <= 0) continue;
+            for (String[] v : MappaCryptoWallet.values()) {
+                if (!t.Simbolo.equals(v[8]) || !Chiave.equals(GruppoOperazione.Chiave(v))) continue;
+                BigDecimal Q = FallimentiPiattaforme.Numero(v[10]);
+                if (Q == null || Q.signum() == 0) continue;
+                RisultatoValuta R = PerData.computeIfAbsent(v[1] + ";" + t.Simbolo, k -> new RisultatoValuta());
+                R.Data = v[1];
+                R.Credito = t.Simbolo;
+                R.Tipo = FallimentiPiattaforme.CAMPO5_CHIUSURA.equals(v[5]) ? "Chiusura" : "Rimborso";
+                R.Consumato = R.Consumato.add(t.ValoreEUR.multiply(Q.abs()).divide(t.Qta, 2, RoundingMode.HALF_UP));
+                BigDecimal Val = FallimentiPiattaforme.Numero(v[15]);
+                if (Val != null && R.Tipo.equals("Rimborso")) R.Ricevuto = R.Ricevuto.add(Val.abs());
+            }
+        }
+        return new ArrayList<>(PerData.values());
     }
 
     /** Un rimborso registrato di una procedura, o la sua chiusura, come lo raccontano i movimenti. */

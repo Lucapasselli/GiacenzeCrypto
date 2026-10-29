@@ -49,6 +49,7 @@ public class GUI_FallimentiPiattaforme_Pannello extends JPanel {
     private final JButton Rimborso;
     private final JButton Chiudi;
     private final JButton Annulla;
+    private final JButton RisultatoFiat;
     private final DefaultTableModel ModelloRimborsi;
     private final JTable TabellaRimborsi;
     private final JLabel TitoloRimborsi = new JLabel(" ");
@@ -184,6 +185,11 @@ public class GUI_FallimentiPiattaforme_Pannello extends JPanel {
         Annulla.setToolTipText("Toglie la chiusura o, se non c'è, l'ultimo rimborso registrato");
         Annulla.setEnabled(false);
         Annulla.addActionListener(e -> AnnullaUltimaOperazione());
+        RisultatoFiat = new JButton("Risultato parte FIAT...");
+        RisultatoFiat.setToolTipText("Differenza fra valore ricevuto e credito in valuta consumato, rimborso per rimborso e "
+                + "per anno: il programma non la calcola fra plusvalenze e minusvalenze delle cripto-attività");
+        RisultatoFiat.setEnabled(false);
+        RisultatoFiat.addActionListener(e -> MostraRisultatoValuta());
         Tabella.getSelectionModel().addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) return;
             Elimina.setEnabled(Tabella.getSelectedRow() >= 0);
@@ -191,6 +197,7 @@ public class GUI_FallimentiPiattaforme_Pannello extends JPanel {
             Rimborso.setEnabled(ConPiano);
             Chiudi.setEnabled(ConPiano);
             Annulla.setEnabled(IdSelezionato() != null);
+            RisultatoFiat.setEnabled(IdSelezionato() != null);
             CaricaRimborsi();
         });
 
@@ -217,12 +224,14 @@ public class GUI_FallimentiPiattaforme_Pannello extends JPanel {
         Pulsanti.add(Chiudi);
         Pulsanti.add(Annulla);
         Pulsanti.add(Elimina);
+        Pulsanti.add(RisultatoFiat);
         JButton Guida = new JButton("Guida...");
         Icona(Nuova, "Nuovo");
         Icona(Rimborso, "Prezzo");
         Icona(Chiudi, "Chiave");
         Icona(Annulla, "Annulla");
         Icona(Elimina, "Cestino");
+        Icona(RisultatoFiat, "Calcolatrice");
         Icona(Guida, "Libro");
         Guida.setToolTipText("Apre la guida passo per passo con gli esempi di Celsius, FTX e Voyager");
         Guida.addActionListener(e -> DocumentiAiuto.Apri(DocumentiAiuto.FALLIMENTI_PIATTAFORME));
@@ -421,6 +430,69 @@ public class GUI_FallimentiPiattaforme_Pannello extends JPanel {
         }
         AggiornaTutto.run();
         Ricarica();
+    }
+
+    /**
+     * Mostra le differenze della parte in valuta della procedura selezionata ({@link Principale_Fallimenti#RisultatiValuta}),
+     * rimborso per rimborso e per anno. Il testo dice l'effetto, non come dichiararle.
+     */
+    private void MostraRisultatoValuta() {
+        String Id = IdSelezionato();
+        if (Id == null) return;
+        List<Principale_Fallimenti.RisultatoValuta> L = Principale_Fallimenti.RisultatiValuta(Id);
+        DefaultTableModel M = new DefaultTableModel(new Object[]{"Data", "Tipo", "Credito in valuta",
+            "Credito consumato (EUR)", "Valore ricevuto (EUR)", "Differenza (EUR)"}, 0) {
+            /** @return sempre {@code false} */
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
+        };
+        Map<String, BigDecimal> PerAnno = new TreeMap<>();
+        for (Principale_Fallimenti.RisultatoValuta r : L) {
+            M.addRow(new Object[]{r.Data, r.Tipo, r.Credito, Euro(r.Consumato), Euro(r.Ricevuto), Euro(r.Differenza())});
+            PerAnno.merge(r.Data.substring(0, 4), r.Differenza(), BigDecimal::add);
+        }
+        JTable T = new JTable(M);
+        Tabelle.Tabelle_InizializzaHeader(T);
+        Tabelle.ColoraTabellaSemplice(T);
+        T.getColumnModel().getColumn(2).setPreferredWidth(200);
+        StringBuilder Testo = new StringBuilder("<html><body style='width:760px'>");
+        if (L.isEmpty()) {
+            Testo.append("La procedura ").append(Id).append(" non ha un credito in valuta, oppure nessun rimborso o chiusura "
+                    + "lo ha ancora consumato.");
+        } else {
+            Testo.append("Per ogni rimborso, il credito in valuta consumato (al suo valore in euro alla data della domanda) e "
+                    + "il valore ricevuto per quella parte. Alla chiusura il credito rimasto esce senza valore. La "
+                    + "differenza non è una plusvalenza o minusvalenza su cripto-attività: il programma non la riporta "
+                    + "in nessun quadro.<br><br><b>Per anno:</b> ");
+            List<String> Anni = new ArrayList<>();
+            PerAnno.forEach((a, d) -> Anni.add(a + ": " + Euro(d) + " EUR"));
+            Testo.append(String.join(", ", Anni)).append(".");
+        }
+        Testo.append("</body></html>");
+        javax.swing.JDialog D = new javax.swing.JDialog(SwingUtilities.getWindowAncestor(this),
+                "Risultato della parte FIAT della procedura " + Id, java.awt.Dialog.ModalityType.APPLICATION_MODAL);
+        JLabel Spiegazione = new JLabel(Testo.toString());
+        Spiegazione.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        JScrollPane S = new JScrollPane(T);
+        S.setPreferredSize(new Dimension(820, 220));
+        JButton Chiudi = new JButton("Chiudi");
+        Icona(Chiudi, "Annulla");
+        Chiudi.addActionListener(e -> D.dispose());
+        JPanel Sotto = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        Sotto.add(Chiudi);
+        D.getContentPane().setLayout(new BorderLayout());
+        D.getContentPane().add(Spiegazione, BorderLayout.NORTH);
+        D.getContentPane().add(S, BorderLayout.CENTER);
+        D.getContentPane().add(Sotto, BorderLayout.SOUTH);
+        Icone.AdattaIconeAlTema(D.getContentPane());
+        D.pack();
+        D.setLocationRelativeTo(this);
+        D.setVisible(true);
+        //Il dialogo non c'è più: la tabella non deve restare nelle mappe statiche dei filtri
+        Tabelle.tableFilters.remove(T);
+        Tabelle.tableFiltersListener.remove(T);
     }
 
     private void AnnullaUltimaOperazione() {

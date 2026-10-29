@@ -1253,6 +1253,14 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                 VecchioPrezzoCarico="";
                 
         }
+        //TIPOLOGIA = 12 -> Scambio fra due valute FIAT (SF): nessun effetto sulle cripto-attivita', niente LIFO e
+        //niente plusvalenza. Lo scrive il blocco degli euro di un fallimento nel loro credito in valuta e il suo rimborso
+        //in euro (FallimentiPiattaforme); i valori restano quelli iniziali, come quando il caso finiva nell'errore qui sotto
+        else if (TipoMU.equalsIgnoreCase("FIAT") && TipoME.equalsIgnoreCase("FIAT"))
+        {
+            Plusvalenza = "0.00";
+            CalcoloPlusvalenza = "N";
+        }
         else {
             LoggerGC.ScriviErrore("CategorizzaTransazione x Plusvalenze - Nessuna Tipologia Individuata");
             System.out.println("Tipologie Uscita ed entrata usate -> "+TipoMU+" - "+TipoME);

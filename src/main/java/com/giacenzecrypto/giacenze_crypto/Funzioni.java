@@ -2186,8 +2186,12 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
         
         boolean rilevante=true;
         boolean plusvalenza=true;
-        
-        if (IDTS[4].equals("VC")                //Vendita Cripto Rilevante
+
+        //Rimborso da fallimento oltre il credito: deposito cripto o FIAT che realizza sempre (FallimentiPiattaforme)
+        if (FallimentiPiattaforme.RimborsoOltreIlCredito(Mov[18])) {
+            rilevante=true;
+            plusvalenza=true;
+        } else if (IDTS[4].equals("VC")                //Vendita Cripto Rilevante
                 || IDTS[4].equals("CM"))         //Commissione Rilevante
         {
             rilevante=true;
@@ -2221,8 +2225,15 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
             String Tipo1 = RitornaTipoCrypto(m[0].Moneta, Data, m[0].Tipo);
             String Tipo2 = RitornaTipoCrypto(m[1].Moneta, Data, m[1].Tipo);
             //Stessa condizione del motore (Calcoli_PlusvalenzeNew.ElaboraMovimento, tipologia 1):
-            //con ScambiSempreRilevanti attiva anche lo scambio fra monete dello stesso tipo e' rilevante
-            if ((DataSuperiore2023 || !Pre2023ScambiRilevanti) && !ScambiSempreRilevanti) {
+            //con ScambiSempreRilevanti attiva anche lo scambio fra monete dello stesso tipo e' rilevante.
+            //Blocco, restituzione in natura e rimborso da fallimento decidono da soli (FallimentiPiattaforme)
+            if (FallimentiPiattaforme.TrasferisceCosto(Mov[18])) {
+                rilevante = false;
+                plusvalenza = false;
+            } else if (FallimentiPiattaforme.Realizza(Mov[18])) {
+                rilevante = true;
+                plusvalenza = true;
+            } else if ((DataSuperiore2023 || !Pre2023ScambiRilevanti) && !ScambiSempreRilevanti) {
                 if (Tipo1.equalsIgnoreCase(Tipo2)) {
                     rilevante = false;
                     plusvalenza = false;

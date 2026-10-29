@@ -336,6 +336,10 @@ public class Backup_Restore {
         //Storico delle modifiche ai movimenti: sta nel gruppo dei movimenti per lo stesso motivo di
         //DOCUMENTIFONTE, referenzia gli ID dei movimenti e non ha senso ripristinato separatamente
         t.add(new Tabella("MOVIMENTI_STORICO", DB.PERSONALE, Gruppo.MOVIMENTI));
+        //Procedure di fallimento delle piattaforme: le loro righe nei movimenti portano la chiave FALL-<id>,
+        //quindi stanno nel gruppo dei movimenti per lo stesso motivo
+        t.add(new Tabella("FALLIMENTI", DB.PERSONALE, Gruppo.MOVIMENTI));
+        t.add(new Tabella("FALLIMENTI_TRANCHE", DB.PERSONALE, Gruppo.MOVIMENTI));
         //Nell'edizione Store la tabella non esiste (vedi VarStatiche.EdizioneStore()): fuori da questo
         //elenco vuol dire che non viene salvata e che un archivio prodotto dall'edizione completa la
         //salta al ripristino, con l'avviso già previsto da Backup_Compatibilita. Il gruppo CHIAVI_API

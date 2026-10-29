@@ -453,6 +453,16 @@ private static final long serialVersionUID = 3L;
         RT_GraficoTipologia = new RT_GraficoPlusvalenze();
         RT_Pannello_GraficoTipologia.setLayout(new java.awt.BorderLayout());
         RT_Pannello_GraficoTipologia.add(RT_GraficoTipologia, java.awt.BorderLayout.CENTER);
+        //Analisi Crypto, scheda "Fallimenti piattaforme" (scritta a mano, senza .form): subito dopo Giacenze a Data, si
+        //rilegge da sola ogni volta che diventa visibile perché i movimenti si caricano dopo il costruttore
+        //Il valore dei crediti (A/B/C) non tocca movimenti né plusvalenze: come l'opzione DefiLlama dei prezzi, segnala
+        //solo che le tabelle valorizzate dal vivo vanno ricalcolate
+        AnalisiCrypto_Fallimenti_Pannello = new GUI_FallimentiPiattaforme_Pannello(this::Funzioni_AggiornaTutto, () -> {
+            if (RW_Tabella.getRowCount() > 0) RW_Label_SegnalaRicalcolo.setVisible(true);
+            if (GiacenzeaData_Tabella.getRowCount() > 0) GiacenzeaData_Label_Aggiornare.setVisible(true);
+        });
+        AnalisiCrypto.insertTab("Fallimenti piattaforme", null, AnalisiCrypto_Fallimenti_Pannello, null,
+                AnalisiCrypto.indexOfComponent(GiacenzeaData) + 1);
         //Scheda "Grafico" del dettaglio di Giacenze a data: il clic su un marcatore mostra il movimento nella tabella
         GiacenzeaData_Grafico = new GiacenzeaData_Grafico();
         GiacenzeaData_Grafico.setAlClicMovimento(this::GiacenzeaData_MostraMovimentoInTabella);
@@ -9418,7 +9428,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
         long tempoOperazione=System.currentTimeMillis();
         //Aggiorno le Plusvalenze automaticamente solo se non ho selezionato il calcolo manuale delle plusvalenze
-        if (!Opzioni_GruppoWallet_CheckBox_PlusManuali.isSelected())Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();              
+        if (!Opzioni_GruppoWallet_CheckBox_PlusManuali.isSelected())Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        //I movimenti sono cambiati: il registro dei token credito delle piattaforme fallite va ricostruito, dopo il
+        //motore perché legge il costo di carico del blocco ([17])
+        FallimentiPiattaforme.Invalida();
         
         tempoOperazione=(System.currentTimeMillis()-tempoOperazione);
         System.out.println("Tempo calcolo plusvalenza : "+tempoOperazione+" millisec.");
@@ -10033,6 +10046,8 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
      * caricata, quindi il lavoro sarebbe sia inutile sia sbagliato.
      */
     private GUI_DocumentiFonte_Pannello GestioneDocumentale_Pannello = null;
+    //Scheda "Fallimenti piattaforme" di Analisi Crypto, aggiunta nel costruttore dopo initComponents
+    private GUI_FallimentiPiattaforme_Pannello AnalisiCrypto_Fallimenti_Pannello;
 
     private void GestioneDocumentaleComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_GestioneDocumentaleComponentShown
         if (GestioneDocumentale_Pannello == null) {
@@ -13233,6 +13248,11 @@ if (result.isAction("delete-all")) {
             o.put("Rigo spezzato sui prelievi", RW_Opzioni_CheckBox_FiatSpezzaPrelievi.isSelected()
                     ? "Sì, soglia " + RW_Opzioni_Text_FiatSogliaPrelievi.getText().trim() : "No");
         }
+        //Solo per gli anni con un credito verso una piattaforma fallita: sempre presente, renderebbe diversa dal
+        //ricalcolo ogni dichiarazione archiviata prima (e non va nelle opzioni comuni: il quadro T/RT non la legge)
+        if (FallimentiPiattaforme.InfluisconoSullAnno(Anno)) {
+            o.put(FallimentiPiattaforme.NOME_OPZIONE, FallimentiPiattaforme.DescrizioneValore());
+        }
         Dichiarazioni_OpzioniComuni(o);
         return d;
     }
@@ -13668,6 +13688,18 @@ if (result.isAction("delete-all")) {
                                 testo = testo + """
                                     &emsp;\u2022 Sui conti correnti esteri (codice bene 1) il valore finale è la giacenza media annua (somma dei saldi giornalieri divisa sempre per 365, anche per un conto aperto solo parte dell'anno) e l'IVAFE è quella in misura fissa (34,20 euro), non dovuta se la giacenza media non supera 5.000 euro.<br></html>
                                     """;
+                stampa.AggiungiHtml(testo);
+            }
+
+            //Crediti verso piattaforme fallite (FallimentiPiattaforme): blocco a se' come quello FIAT, vale con ogni
+            //metodo perche' i token credito si valorizzano anche a inizio e fine anno
+            if (FallimentiPiattaforme.InfluisconoSullAnno(AnnoDiCompetenza)) {
+                testo = "<html><font size=\"2\" face=\"Courier New, Courier, mono\" >"
+                        + "<br><b>CREDITI VERSO PIATTAFORME FALLITE : </b><br>"
+                        + "&emsp;• Dalla data della domanda di fallimento le cripto-attività depositate sulla piattaforma "
+                        + "sono riportate come credito verso la procedura (token come CELSIUS.CREDITO.BTC, sotto-wallet "
+                        + Principale_Fallimenti.SOTTOWALLET + "), con il loro costo di carico.<br>"
+                        + "&emsp;• Valore del credito nel quadro: " + FallimentiPiattaforme.DescrizioneValore() + ".<br></html>";
                 stampa.AggiungiHtml(testo);
             }
 
@@ -19379,6 +19411,7 @@ try {
 
                     String fileDaImportare = VarStatiche.getFile_CryptoWallet();
                     MappaCryptoWallet.clear();
+                    FallimentiPiattaforme.Invalida();
                     Mappa_Wallet.clear();
 
                     //come prima cosa leggo il file csv e lo ordino in maniera corretta (dal più recente)

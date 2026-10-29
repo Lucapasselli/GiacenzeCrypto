@@ -417,6 +417,9 @@ public class DatabaseH2 {
             EseguiDDL(connectionPersonale, createTableSQL);
             aggiornaDimensioneColonnaValoreH2Opzioni(connectionPersonale);
 
+            //Procedure di fallimento delle piattaforme e loro tranche (2026-10-28, FallimentiPiattaforme)
+            FallimentiPiattaforme.CreaTabelle(connectionPersonale);
+
             //--- Quadro RW : periodi di detenzione dei gruppi wallet (2026-08-30, rifatta il 2026-09-09) ---
             //UNA sola tabella di dati dell'utente (gruppo GRUPPI_WALLET nel backup). Fino al 2026-09-08
             //erano quattro : GRUPPO_PERIODO_RW più EXCHANGE_ANAGRAFICA / EXCHANGE_PERIODO (i dati fiscali

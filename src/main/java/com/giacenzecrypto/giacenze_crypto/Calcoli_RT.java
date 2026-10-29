@@ -287,6 +287,17 @@ public class Calcoli_RT {
             //Se inoltre è un movimento fiscalmente rilevante mi salvo costo di carico, valore transazione e plusvalenza divisa per anno
             //dobbiamo controllare i cashback come vengono gestiti.
             if (v[33].equals("S")) {
+                //Un deposito FIAT che realizza (rimborso da fallimento oltre il credito, FallimentiPiattaforme) non ha
+                //una voce per moneta, perche' la PARTE 1 salta i FIAT: gliene do una a giacenza zero, per la plusvalenza
+                if (Monete[Uscita].Moneta.isBlank() && MappaMoneta_PlusXMoneta.get(Monete[Entrata].Moneta) == null) {
+                    PlusXMoneta PlusXm = new PlusXMoneta();
+                    PlusXm.movimentatoAnno = true;
+                    Moneta m = Monete[Entrata].ClonaMoneta();
+                    m.Qta = "0";
+                    m.Prezzo = "0.00";
+                    PlusXm.CompilaCampiDaMoneta(m);
+                    MappaMoneta_PlusXMoneta.put(Monete[Entrata].Moneta, PlusXm);
+                }
                 //Per prima cosa verifico se l'anno è vuoto e in quel caso lo valorizzo
                 BigDecimal PlusAnno[];
                 if (PlusvalenzeXAnno.get(Anno)==null)

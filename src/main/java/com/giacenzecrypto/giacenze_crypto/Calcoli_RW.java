@@ -76,6 +76,18 @@ public class Calcoli_RW {
             return !Tipo1.equalsIgnoreCase(Tipo2);
         }
     }
+
+    /**
+     * Come {@link #ScambioRilevante(Moneta[], String, String)}, ma prima guarda i marcatori del fallimento di una
+     * piattaforma ({@link FallimentiPiattaforme}): il blocco e la restituzione in natura non chiudono mai il rigo (la
+     * detenzione continua come credito), il rimborso lo chiude come uno scambio fiscalmente rilevante, quindi con
+     * tutti i metodi tranne il B (solo scambi con FIAT).
+     */
+    public static boolean ScambioRilevante(Moneta[] m,String Data,String Rilevanza,String Campo18){
+        if (FallimentiPiattaforme.TrasferisceCosto(Campo18)) return false;
+        if (FallimentiPiattaforme.Realizza(Campo18)) return !Rilevanza.equalsIgnoreCase("B");
+        return ScambioRilevante(m, Data, Rilevanza);
+    }
    
        
     
@@ -989,6 +1001,8 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
          */
         public static boolean AggiornaRWFR(String AnnoRif, Download progress) {
 
+        //Il valore dei token credito delle piattaforme fallite dipende dai movimenti e dalle procedure attuali
+        FallimentiPiattaforme.Ricostruisci();
         String Rilevanza=DatabaseH2.Pers_Opzioni_Leggi("RW_Rilevanza");
         //Chiusura conseguente apertura di un nuovo rigo segue queste roegole
         //Rilevanza A = Solo Valori iniziali e finali (righi da Calcoli_RW_Giacenze)
@@ -1277,7 +1291,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                             SpostaQta(GruppoWallet,ELem,ELem.GruppoWalletOri);
                         }}*/
                     //Adesso distinguo 2 casi, se scambio fiscalmente rilevante oppure no
-                    if (ScambioRilevante(Monete,Data,Rilevanza)){
+                    if (ScambioRilevante(Monete,Data,Rilevanza,v[18])){
                         //Chiudo RW moneta uscente
                         //prima di chiudere RW recupero i movimenti e li sposto sul wallet di destinazione
 
@@ -1437,9 +1451,11 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
 
                         }
 
-                    }else if (v[18].contains("DAC")||v[18].contains("DDO")) {
+                    }else if (v[18].contains("DAC")||v[18].contains("DDO")
+                            || FallimentiPiattaforme.RimborsoOltreIlCredito(v[18])) {
 
                         //Apro RW nel caso di un acquisto Crypto da piattaforma esterna
+                        //o di un rimborso da fallimento oltre il credito (realizzo: valore iniziale = valore ricevuto)
                         ElementiStack el = new ElementiStack();
 
                         el.IDOri = IDTransazione;//ID del movimento da cui tutto ha avuto origine

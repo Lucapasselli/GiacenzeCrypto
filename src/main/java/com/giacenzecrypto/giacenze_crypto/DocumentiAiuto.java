@@ -41,6 +41,9 @@ public class DocumentiAiuto {
      */
     public static final String PARTICOLARITA_EXCHANGE = "particolarita-exchange.html";
 
+    /** Guida passo per passo ai fallimenti delle piattaforme (scheda Analisi Crypto, Fallimenti piattaforme). */
+    public static final String FALLIMENTI_PIATTAFORME = "fallimenti-piattaforme.html";
+
     /** Elenco delle novità di ogni versione: pagina sola, non ha una copia in PDF */
     public static final String NOVITA_VERSIONI = "changelog.html";
 
@@ -48,7 +51,7 @@ public class DocumentiAiuto {
     static final String[] TUTTI = {
         OPZIONI_CALCOLO_RW, DISCLAIMER, AVVERTENZE_PROBLEMI_NOTI, CALCOLO_PLUSVALENZE_OPZIONI,
         CLASSIFICAZIONI_MOVIMENTI, EXPORT_IMPORT_CSV, CREAZIONE_JSON_IMPORTAZIONI, PARTICOLARITA_EXCHANGE,
-        NOVITA_VERSIONI
+        FALLIMENTI_PIATTAFORME, NOVITA_VERSIONI
     };
 
     private DocumentiAiuto() {

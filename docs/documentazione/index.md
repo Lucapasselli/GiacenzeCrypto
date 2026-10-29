@@ -16,6 +16,7 @@ scaricarla o stamparla.
 | **[Classificazione dei movimenti](classificazioni-movimenti.html)** — come classificare depositi e prelievi, opzione per opzione | | [PDF](classificazioni-movimenti.pdf) |
 | **[Esportazione e importazione da CSV](export-import-csv.html)** — come estrarre i file dalle piattaforme e caricarli nel programma | | [PDF](export-import-csv.pdf) |
 | **[Particolarità degli import per exchange](particolarita-exchange.html)** — exchange per exchange, quali file scaricare, quali file accessori servono e in che ordine importarli | | [PDF](particolarita-exchange.pdf) |
+| **[Fallimenti delle piattaforme](fallimenti-piattaforme.html)** — Celsius, FTX e simili: blocco del credito, rimborsi, chiusura e valore nel quadro W/RW, passo per passo | | [PDF](fallimenti-piattaforme.pdf) |
 | **[Configurazione JSON per le importazioni personalizzate](creazione-json-importazioni-personalizzate.html)** — riferimento completo dei descrittori JSON | | [PDF](creazione-json-importazioni-personalizzate.pdf) |
 | **[Avvertenze e problemi noti](avvertenze-problemi-noti.html)** — limiti conosciuti e verifiche consigliate | | [PDF](avvertenze-problemi-noti.pdf) |
 | **[Disclaimer](disclaimer.html)** — termini d'uso del programma | | [PDF](disclaimer.pdf) |

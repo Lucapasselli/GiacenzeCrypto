@@ -12,7 +12,9 @@ import java.util.function.Function;
 
 /**
  * La chiave di <b>operazione</b> nel campo {@value #CAMPO} del movimento: «questi movimenti sono la stessa
- * operazione». Oggi la scrive solo l'abbinamento dei contratti Binance Dual Investment ({@code DUAL-<id contratto>});
+ * operazione». La scrivono l'abbinamento dei contratti Binance Dual Investment ({@code DUAL-<id contratto>}) e le
+ * procedure di fallimento delle piattaforme ({@code FALL-<id procedura>}, {@link FallimentiPiattaforme}: righe
+ * {@code [22] = "M"}, non generate, quindi la chiave resta scritta);
  * è il posto dove andranno i gruppi delle altre operazioni quando verranno salvati.
  *
  * <p><b>Perché un campo a parte dalle commissioni collegate</b> ({@link CommissioniCollegate}, campo 43, dal
@@ -135,6 +137,8 @@ public final class GruppoOperazione {
     public static String Descrizione(String Chiave) {
         if (Chiave == null || Chiave.isBlank()) return "";
         if (isContrattoDual(Chiave)) return "Contratto Dual Investment " + Chiave.substring(PREFISSO_DUAL.length());
+        if (Chiave.startsWith(FallimentiPiattaforme.PREFISSO_CHIAVE))
+            return "Fallimento " + Chiave.substring(FallimentiPiattaforme.PREFISSO_CHIAVE.length());
         return "Operazione " + Chiave;
     }
 

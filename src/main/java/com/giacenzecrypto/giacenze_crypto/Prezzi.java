@@ -1632,6 +1632,14 @@ public class Prezzi {
         //Conversione "a secco" di un'importazione via API (vedi SenzaValorizzare): nessun prezzo, nessuna rete
         if (SENZA_VALORIZZARE.get()) return null;
 
+        //Token credito verso una piattaforma fallita (FallimentiPiattaforme): nelle valutazioni a moneta singola
+        //(giacenze del quadro RW, Giacenze a data) il prezzo segue l'opzione RW_ValoreCreditiFallimento. Le chiamate
+        //a due gambe non si toccano: il valore di un movimento non deve dipendere da un'opzione del quadro RW
+        if (Moneta2a == null) {
+            InfoPrezzo IPCredito = FallimentiPiattaforme.PrezzoCredito(Moneta1a, Data);
+            if (IPCredito != null) return IPCredito;
+        }
+
         Moneta MonOri[] = new Moneta[]{Moneta1a, Moneta2a};
 
         //A - Clono le monete in quanto altrimenti potrei andare ad alterarle nel corso del ciclo per la richiesta dei prezzi

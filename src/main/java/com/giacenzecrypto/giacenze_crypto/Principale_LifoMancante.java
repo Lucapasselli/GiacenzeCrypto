@@ -71,7 +71,8 @@ public final class Principale_LifoMancante {
      * segnala come non riconosciuti dei depositi che il motore carica.
      */
     static boolean CausaleDepositoRiconosciuta(String TipoID, String Campo18) {
-        return TipoID.equalsIgnoreCase("RW") || Campo18.contains("DAI")
+        return FallimentiPiattaforme.RimborsoOltreIlCredito(Campo18)
+                || TipoID.equalsIgnoreCase("RW") || Campo18.contains("DAI")
                 || TipoID.equalsIgnoreCase("TI") || Campo18.contains("DTW")
                 || Campo18.contains("DCZ")
                 || Campo18.contains("DAC") || TipoID.equals("AC")

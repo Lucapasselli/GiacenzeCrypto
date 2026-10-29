@@ -107,7 +107,8 @@ public class Principale_TraslaOrario {
         if (Traslabili.isEmpty()) {
             Messaggi.WarningMessage("Nessun movimento traslabile",
                     "Nessuno dei movimenti selezionati può essere traslato: i movimenti generati "
-                    + "automaticamente dal programma non possono essere modificati strutturalmente.", owner);
+                    + "automaticamente dal programma non possono essere modificati strutturalmente, e quelli di "
+                    + "una procedura di fallimento si spostano solo annullando e registrando di nuovo l'operazione.", owner);
             return false;
         }
 
@@ -701,11 +702,14 @@ public class Principale_TraslaOrario {
     }
 
     /**
-     * @return {@code true} se il movimento non può essere traslato strutturalmente: ID malformato, o
+     * @return {@code true} se il movimento non può essere traslato strutturalmente: ID malformato,
      *         generato automaticamente dal programma (stessa regola di {@code GUI_ModificaMovimento} e
-     *         di {@code Principale_Movimenti_SeparaUnisci.VerificaSeparazione})
+     *         di {@code Principale_Movimenti_SeparaUnisci.VerificaSeparazione}), o riga di una procedura di
+     *         fallimento: le sue date sono i fatti del piano (domanda, tranche, chiusura) e la chiusura,
+     *         a una gamba, verrebbe riprezzata col valore del credito che dipende dall'opzione del quadro RW
      */
     private static boolean NonTraslabile(String Movimento[]) {
-        return Movimento[0].split("_").length < 5 || (Movimento[22] != null && Movimento[22].equalsIgnoreCase("AU"));
+        return Movimento[0].split("_").length < 5 || (Movimento[22] != null && Movimento[22].equalsIgnoreCase("AU"))
+                || GruppoOperazione.Chiave(Movimento).startsWith(FallimentiPiattaforme.PREFISSO_CHIAVE);
     }
 }

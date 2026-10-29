@@ -645,6 +645,8 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             //azzeramento il prefisso corrotto risulterebbe "già verificato" e nessuna passata
             //successiva lo toccherebbe più: un errore transitorio diventerebbe permanente.
             if (!AndataABuonFine) InvalidaStatoIncrementale();
+            //Il registro dei token credito legge il costo di carico del blocco ([17]) appena riscritto
+            FallimentiPiattaforme.Invalida();
         }
     }
 
@@ -845,7 +847,14 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
         boolean DataSuperiore2023=true;
         if (dataLong<Opzioni.long2023){DataSuperiore2023=false;}
 
-        
+        //Fallimento di una piattaforma (FallimentiPiattaforme): fra cripto il campo 18 decide da solo, a prescindere
+        //da opzioni e tipi. Il blocco e la restituzione in natura vanno sempre nella tipologia 1 a costo trasferito,
+        //il rimborso sempre nella tipologia 2
+        boolean CriptoCripto = !TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")
+                && !TipoMU.isBlank() && !TipoME.isBlank();
+        boolean SempreNeutro = CriptoCripto && FallimentiPiattaforme.TrasferisceCosto(v[18]);
+        boolean SempreRealizzo = CriptoCripto && FallimentiPiattaforme.Realizza(v[18]);
+
         //TIPOLOGIA = 0 (Vendita Crypto)
         //System.out.println("aaa "+IDTransazione);
         if (TipoID.equals("VC")){
@@ -860,15 +869,16 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             CalcoloPlusvalenza="S";
         }           
         //TIPOLOGIA = 1  (Scambio Cripto Attività medesime Caratteristiche)
-        else if (!TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")//non devono essere fiata
+        else if (!SempreRealizzo && (SempreNeutro ||
+                !TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")//non devono essere fiata
                 && TipoMU.equalsIgnoreCase(TipoME)&&//moneta uscita e entrata dello stesso tipo
-                !TipoMU.isBlank() && !TipoME.isBlank()) //non devno essere campi nulli (senza scambi)
+                !TipoMU.isBlank() && !TipoME.isBlank())) //non devno essere campi nulli (senza scambi)
         {
-            
+
             //ScambiSempreRilevanti (opzione utente, default NO): se attiva anche lo scambio fra
             //cripto dello stesso tipo prende la strada della tipologia 2, cioe' il ramo else qui
             //sotto - scarico del LIFO, ricarico al valore di mercato e calcolo della plusvalenza.
-            if ((DataSuperiore2023||!Opzioni.Pre2023ScambiRilevanti)&&!Opzioni.ScambiSempreRilevanti){//se la data è superiore al 2023 oppure gli scambi pre 2023 non voglio renderli rilvenati
+            if (SempreNeutro || (DataSuperiore2023||!Opzioni.Pre2023ScambiRilevanti)&&!Opzioni.ScambiSempreRilevanti){//se la data è superiore al 2023 oppure gli scambi pre 2023 non voglio renderli rilvenati
                 //Tolgo dallo stack il costo di carico della cripèto uscita
                 VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
                 
@@ -896,9 +906,9 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
         
         
         //TIPOLOGIA = 2 (Scambio Cripto Attività Diverse Caratteristiche)
-        else if (!TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")
+        else if (SempreRealizzo || !TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")
                 && !TipoMU.equalsIgnoreCase(TipoME)&&
-                !TipoMU.isBlank() && !TipoME.isBlank())  
+                !TipoMU.isBlank() && !TipoME.isBlank())
         {
                 //Tolgo dallo stack il vecchio costo di carico
                 VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
@@ -955,8 +965,18 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             //Se arrivo qua vuol dire che questo è un deposito, poi a secondo di che tipo di deposito è
             //valorizzo la tipologia corretta
             
+            //Rimborso da fallimento oltre il credito (FallimentiPiattaforme): il costo del credito e' gia' stato usato
+            //dalle tranche precedenti, il valore e' tutto plusvalenza e diventa il costo di carico. Sempre: non e' una
+            //reward e non dipende dalle loro opzioni
+            if (FallimentiPiattaforme.RimborsoOltreIlCredito(v[18])) {
+                NuovoPrezzoCarico = Valore;
+                StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico,IDTransazione);
+                Plusvalenza = Valore;
+                CalcoloPlusvalenza="S";
+                VecchioPrezzoCarico = "";
+            }
             //TIPOLOGIA = 7; ( Deposito Criptoattività x rewards, stacking,cashback etc... - Plusvalenza immediata)
-            if (TipoID.equalsIgnoreCase("RW") || v[18].contains("DAI")) {
+            else if (TipoID.equalsIgnoreCase("RW") || v[18].contains("DAI")) {
                 //Se è un cashback ed è attiva l'assimilazione ai cashback fiat allora lo gestisco come tale, altrimenti passo alle if successive
                 if (Funzioni.CashbackComeFIAT(IDTransazione)){
                     NuovoPrezzoCarico = Valore;
@@ -1216,13 +1236,19 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             }
         } 
         //TIPOLOGIA = 11 -> Deposito FIAT o Prelievo FIAT
-        else if ((TipoMU.isBlank() && TipoME.equalsIgnoreCase("FIAT"))||(TipoME.isBlank() && TipoMU.equalsIgnoreCase("FIAT"))) 
+        else if ((TipoMU.isBlank() && TipoME.equalsIgnoreCase("FIAT"))||(TipoME.isBlank() && TipoMU.equalsIgnoreCase("FIAT")))
         {
-                
+
                 NuovoPrezzoCarico="";
-                
+
                 Plusvalenza="0.00";
                 CalcoloPlusvalenza="N";
+                //Euro (o altra valuta) ricevuti da una procedura di fallimento a credito esaurito: come la vendita di un
+                //credito a costo zero, il valore e' tutto plusvalenza (FallimentiPiattaforme)
+                if (TipoMU.isBlank() && FallimentiPiattaforme.RimborsoOltreIlCredito(v[18])) {
+                    Plusvalenza = Valore;
+                    CalcoloPlusvalenza="S";
+                }
                                        
                 VecchioPrezzoCarico="";
                 

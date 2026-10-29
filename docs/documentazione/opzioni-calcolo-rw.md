@@ -916,6 +916,25 @@ viene valorizzato alle 00:00 del 1° gennaio successivo. Alcune regole particola
 - un valore mancante o sbagliato si corregge dal dettaglio con **Modifica Valore Iniziale** o **Modifica
   Valore Finale** (vedi [Gestione degli errori](#gestione-degli-errori)).
 
+### Crediti verso piattaforme fallite {#crediti-verso-piattaforme-fallite}
+
+Quando una piattaforma fallisce (per esempio Celsius o FTX), in **Analisi Crypto** – **Fallimenti piattaforme** si
+crea una procedura: alla data della domanda di fallimento le monete depositate sulla piattaforma diventano
+token credito (per esempio *CELSIUS.CREDITO.BTC*), con il loro costo di carico, e restano nel quadro fino
+all'ultimo rimborso o alla chiusura della procedura.
+
+Nella stessa scheda si sceglie il valore dei token credito nel quadro W/RW e in *Giacenze a data*:
+
+- **B** (predefinito): il credito ammesso in dollari meno le tranche già pagate, al cambio del giorno, diviso
+  fra le monete in proporzione al loro valore alla data della domanda.
+- **A**: il prezzo di mercato della moneta che era depositata, che può essere molto diverso dal credito.
+- **C**: il costo di carico trasferito al credito.
+
+La scelta non cambia plusvalenze e minusvalenze. Dopo un cambio, un quadro già calcolato mostra l'avviso di
+ricalcolo. Negli anni in cui c'è un credito la scelta compare fra le opzioni stampate in fondo al quadro e
+nell'archivio delle dichiarazioni. La guida passo per passo, con gli esempi di Celsius, FTX e Voyager, è
+nel manuale [Fallimenti delle piattaforme](fallimenti-piattaforme.html).
+
 ## Stampa del quadro {#stampa-del-quadro}
 
 I pulsanti **Stampa Report PDF** e **Crea Excel con i Dettagli** della scheda **RW/W** producono sempre

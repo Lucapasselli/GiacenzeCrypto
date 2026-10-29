@@ -33,7 +33,7 @@ import javax.swing.table.DefaultTableModel;
 public class GUI_NuovaProceduraFallimento extends JDialog {
 
     private static final int COL_INCLUDI = 0;
-    private static final int COL_VALORE = 5;
+    private static final int COL_VALORE = 6;
 
     private final JComboBox<String> Piattaforma;
     private final JTextField DataDomanda = new JTextField(10);
@@ -49,7 +49,6 @@ public class GUI_NuovaProceduraFallimento extends JDialog {
     private String DataLetta = "";
     private String PiattaformaLetta = "";
     private BigDecimal EuroPerDollaro;
-    private BigDecimal FiatEUR = BigDecimal.ZERO;
     /** Il credito in dollari scritto a mano non viene più sostituito dalla proposta. */
     private boolean CreditoScrittoAMano = false;
     private boolean Creata = false;
@@ -79,7 +78,7 @@ public class GUI_NuovaProceduraFallimento extends JDialog {
         DataDomanda.setToolTipText("Data della domanda di fallimento, aaaa-mm-gg: le giacenze sono quelle dei giorni precedenti");
         NomeBreve.setToolTipText("Prima parte del nome dei token credito: NOME.CREDITO.BTC");
         CreditoUSD.setToolTipText("Credito ammesso in dollari alla data della domanda (lista dei crediti del piano). "
-                + "Proposto dai valori in euro della tabella e dei FIAT, finché non lo scrivi a mano");
+                + "Proposto dai valori in euro della tabella, finché non lo scrivi a mano");
         RecuperoAtteso.setToolTipText("Percentuale del credito che ci si aspetta di recuperare in totale: ripartisce il "
                 + "costo fra le tranche future. 100 = ogni tranche scarica la sua percentuale del credito");
         Leggi.addActionListener(e -> LeggiGiacenze());
@@ -103,7 +102,7 @@ public class GUI_NuovaProceduraFallimento extends JDialog {
         g.gridy = 1;
         Campi.add(Leggi, g);
 
-        Modello = new DefaultTableModel(new Object[]{"Includi", "Sotto-wallet", "Moneta", "Rete", "Quantità",
+        Modello = new DefaultTableModel(new Object[]{"Includi", "Sotto-wallet", "Moneta", "Tipo", "Rete", "Quantità",
             "Valore credito (EUR)", "Token credito"}, 0) {
             /** @return il tipo della colonna: la prima è una casella di spunta */
             @Override
@@ -123,6 +122,9 @@ public class GUI_NuovaProceduraFallimento extends JDialog {
         Tabella = new JTable(Modello);
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella);
         Tabelle.ColoraTabellaSemplice(Tabella);
+        //Il nome del token credito è la colonna da leggere per intero, spunta e tipo stanno in poco
+        int[] Larghezze = {60, 140, 90, 70, 90, 120, 140, 230};
+        for (int c = 0; c < Larghezze.length; c++) Tabella.getColumnModel().getColumn(c).setPreferredWidth(Larghezze[c]);
         JScrollPane Scorrimento = new JScrollPane(Tabella);
         Scorrimento.setPreferredSize(new Dimension(900, 260));
 
@@ -200,17 +202,14 @@ public class GUI_NuovaProceduraFallimento extends JDialog {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         Avvisi.setText("Lettura delle giacenze e dei prezzi alla data in corso...");
         new SwingWorker<List<Principale_Fallimenti.Posizione>, Void>() {
-            private Map<String, BigDecimal> Fiat;
             private int Successivi;
             private BigDecimal Cambio;
-            private BigDecimal ValoreFiat;
 
             @Override
             protected List<Principale_Fallimenti.Posizione> doInBackground() {
-                List<Principale_Fallimenti.Posizione> P = Principale_Fallimenti.GiacenzeAllaData(Exchange, Data);
+                //Cripto e FIAT: anche le valute diventano un credito (in valuta, che resta FIAT)
+                List<Principale_Fallimenti.Posizione> P = Principale_Fallimenti.PosizioniAllaData(Exchange, Data);
                 Principale_Fallimenti.Valorizza(P, Data);
-                Fiat = Principale_Fallimenti.GiacenzeFiatAllaData(Exchange, Data);
-                ValoreFiat = Principale_Fallimenti.ValoreFiatAllaData(Fiat, Data);
                 Successivi = Principale_Fallimenti.MovimentiSuccessivi(Exchange, Data).size();
                 //Il cambio può richiedere la rete: si legge qui e non nel thread della grafica
                 Cambio = GUI_FallimentiPiattaforme_Pannello.Numero(Prezzi.CambioUSDEUR("1", Data));
@@ -231,24 +230,20 @@ public class GUI_NuovaProceduraFallimento extends JDialog {
                 DataLetta = Data;
                 PiattaformaLetta = Exchange;
                 EuroPerDollaro = Cambio;
-                FiatEUR = ValoreFiat;
                 CreditoScrittoAMano = false;
                 Map<String, String> Nomi = Principale_Fallimenti.NomiToken(
                         Principale_Fallimenti.NormalizzaNomeBreve(NomeBreve.getText()), Posizioni);
                 for (Principale_Fallimenti.Posizione p : Posizioni) {
-                    Modello.addRow(new Object[]{true, p.SottoWallet, p.Moneta, p.Rete, p.Qta.toPlainString(),
+                    Modello.addRow(new Object[]{true, p.SottoWallet, p.Moneta, p.Tipo, p.Rete, p.Qta.toPlainString(),
                         p.ValoreEUR == null ? "" : p.ValoreEUR.toPlainString(), Nomi.get(p.ChiaveMoneta())});
                 }
                 StringBuilder t = new StringBuilder("<html>");
-                if (Posizioni.isEmpty()) t.append("Nessuna giacenza cripto su ").append(Exchange).append(" alla data.<br>");
+                if (Posizioni.isEmpty()) t.append("Nessuna giacenza su ").append(Exchange).append(" alla data.<br>");
                 long SenzaPrezzo = Posizioni.stream().filter(p -> p.ValoreEUR == null).count();
                 if (SenzaPrezzo > 0) t.append("<font color='red'>").append(SenzaPrezzo)
                         .append(" monete senza prezzo alla data: scrivi il valore del credito a mano.</font><br>");
-                if (!Fiat.isEmpty()) {
-                    t.append("FIAT sulla piattaforma: ");
-                    Fiat.forEach((k, v) -> t.append(v.toPlainString()).append(" ").append(k).append("  "));
-                    t.append("(").append(FiatEUR.toPlainString()).append(" EUR). Fanno parte del credito e restano FIAT.<br>");
-                }
+                if (Posizioni.stream().anyMatch(p -> "FIAT".equalsIgnoreCase(p.Tipo))) t.append("Le valute FIAT diventano un "
+                        + "credito in valuta, che resta FIAT: nei rimborsi si vede lo scambio dal credito alla moneta ricevuta.<br>");
                 for (String sw : SottoWalletCustodia()) {
                     t.append("<font color='red'>Il sotto-wallet ").append(sw)
                             .append(" sembra un conto di custodia: vedi la nota sotto.</font><br>");
@@ -276,7 +271,7 @@ public class GUI_NuovaProceduraFallimento extends JDialog {
     /** Propone il credito in dollari dalla somma dei valori in euro inclusi, al cambio della data. */
     private void ProponiCreditoUSD() {
         if (DataLetta.isEmpty() || CreditoScrittoAMano) return;
-        BigDecimal Euro = FiatEUR;
+        BigDecimal Euro = BigDecimal.ZERO;
         for (int r = 0; r < Modello.getRowCount(); r++) {
             if (!Boolean.TRUE.equals(Modello.getValueAt(r, COL_INCLUDI))) continue;
             BigDecimal v = GUI_FallimentiPiattaforme_Pannello.Numero(Modello.getValueAt(r, COL_VALORE));
@@ -304,11 +299,13 @@ public class GUI_NuovaProceduraFallimento extends JDialog {
             return;
         }
         List<Principale_Fallimenti.Posizione> Incluse = new ArrayList<>();
+        BigDecimal FiatEUR = BigDecimal.ZERO;
         for (int r = 0; r < Modello.getRowCount(); r++) {
             if (!Boolean.TRUE.equals(Modello.getValueAt(r, COL_INCLUDI))) continue;
             Principale_Fallimenti.Posizione p = Posizioni.get(r);
             p.ValoreEUR = GUI_FallimentiPiattaforme_Pannello.Numero(Modello.getValueAt(r, COL_VALORE));
             if (p.ValoreEUR != null) p.ValoreEUR = p.ValoreEUR.abs().setScale(2, RoundingMode.HALF_UP);
+            if (p.ValoreEUR != null && "FIAT".equalsIgnoreCase(p.Tipo)) FiatEUR = FiatEUR.add(p.ValoreEUR);
             Incluse.add(p);
         }
         BigDecimal Atteso = GUI_FallimentiPiattaforme_Pannello.Numero(RecuperoAtteso.getText());

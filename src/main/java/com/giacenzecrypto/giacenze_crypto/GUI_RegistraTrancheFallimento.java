@@ -50,8 +50,19 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
     private final List<String> Depositi = new ArrayList<>();
     private final DefaultTableModel Anteprima;
     private final JLabel Esito = new JLabel(" ");
+    /** L'ultimo dei due campi scritto a mano, percentuale o dollari: l'altro si ricava da quello. */
     private boolean USDScrittiAMano = false;
+    /** Un campo riempito dal programma non deve rimbalzare sull'altro. */
+    private boolean Ricavando = false;
     private boolean Registrata = false;
+    /** Credito già esaurito: il rimborso è oltre il credito e percentuale, dollari e recupero atteso non servono. */
+    private final boolean Esaurito;
+    /** "Consuma prima il credito FIAT": si vede solo se la procedura ha un credito in valuta accanto a quello cripto. */
+    private final javax.swing.JCheckBox PrimaFiat = new javax.swing.JCheckBox("Consuma prima il credito FIAT", true);
+    private boolean ConPrimaFiat = false;
+    /** Con la spunta: gli euro consumano tutto il valore ricevuto (predefinito) o al massimo l'importo pagato. */
+    private final javax.swing.JComboBox<String> MetodoFiat = new javax.swing.JComboBox<>(new String[]{
+        "per il valore ricevuto", "secondo la percentuale pagata"});
 
     /**
      * Mostra il dialogo e aspetta che venga chiuso.
@@ -67,11 +78,20 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
     private GUI_RegistraTrancheFallimento(Window Proprietario, FallimentiPiattaforme.Procedura P) {
         super(Proprietario, ModalityType.APPLICATION_MODAL);
         this.P = P;
+        Esaurito = Principale_Fallimenti.CreditoEsaurito(P);
         setTitle("Rimborso della procedura " + P.Id);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        boolean HaFiat = false, HaCripto = false;
         for (FallimentiPiattaforme.TokenCredito t : Principale_Fallimenti.TokenDellaProcedura(P.Id)) {
             MoneteOriginali.add(t.MonetaOriginale.toUpperCase());
+            if (t.Fiat) HaFiat = true;
+            else HaCripto = true;
         }
+        ConPrimaFiat = HaFiat && HaCripto && !Esaurito;
+        PrimaFiat.setToolTipText("<html>Il credito in valuta si consuma per primo e alla pari: riceve lo stesso valore che "
+                + "consuma, quindi non ha differenze.<br>La differenza fra valore ricevuto e credito in euro viene "
+                + "attribuita alle cripto-attività.<br>Senza la spunta il rimborso si ripartisce in proporzione su "
+                + "tutto il credito, valuta compresa.</html>");
 
         BigDecimal Pagata = BigDecimal.ZERO;
         List<FallimentiPiattaforme.Tranche> Valide = FallimentiPiattaforme.TrancheValide(P);
@@ -79,17 +99,33 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
         JLabel Intestazione = new JLabel("<html>Piattaforma <b>" + P.Exchange + "</b>, domanda del " + P.DataDomanda
                 + ", credito " + (P.CreditoUSD == null ? "non indicato" : P.CreditoUSD.toPlainString() + " USD")
                 + ". Tranche già registrate: " + Valide.size() + " (" + Pagata.stripTrailingZeros().toPlainString()
-                + "% del credito).</html>");
+                + "% del credito)."
+                + (Esaurito ? "<br><b>Il credito è esaurito</b>: questo rimborso è oltre il credito e il suo valore è tutto "
+                        + "plusvalenza, quindi non servono la percentuale né i dollari pagati." : "")
+                + "</html>");
 
         Atteso.setText(P.RecuperoAtteso.stripTrailingZeros().toPlainString());
-        Data.setToolTipText("Data e ora del rimborso, aaaa-mm-gg hh:mm: almeno un minuto prima dei depositi su cui è arrivato");
-        Percentuale.setToolTipText("Percentuale del credito pagata da questa tranche (per esempio 57,65)");
-        USD.setToolTipText("Dollari pagati da questa tranche: proposti come percentuale × credito finché non li scrivi a mano");
+        Data.setToolTipText("Data e ora del rimborso, aaaa-mm-gg hh:mm: prima dei depositi su cui è arrivato");
+        Percentuale.setToolTipText("Percentuale del credito pagata da questa tranche (per esempio 57,65). Basta scrivere "
+                + "questa o i dollari: l'altra si ricava dal credito ammesso");
+        USD.setToolTipText("Dollari pagati da questa tranche, come nella comunicazione della procedura. Basta scrivere "
+                + "questi o la percentuale: l'altra si ricava dal credito ammesso");
         Atteso.setToolTipText("Recupero totale atteso in percentuale: ripartisce il costo fra le tranche. Vale da questa tranche in poi");
         Percentuale.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void insertUpdate(javax.swing.event.DocumentEvent e) { ProponiUSD(); }
             public void removeUpdate(javax.swing.event.DocumentEvent e) { ProponiUSD(); }
             public void changedUpdate(javax.swing.event.DocumentEvent e) { ProponiUSD(); }
+        });
+        USD.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { ProponiPercentuale(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { ProponiPercentuale(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { ProponiPercentuale(); }
+        });
+        Percentuale.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                USDScrittiAMano = false;
+            }
         });
         USD.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
@@ -103,9 +139,26 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
         g.insets = new Insets(4, 4, 4, 4);
         g.anchor = GridBagConstraints.WEST;
         Campo(Campi, g, 0, 0, "Data e ora (aaaa-mm-gg hh:mm):", Data);
-        Campo(Campi, g, 0, 2, "Percentuale del credito pagata:", Percentuale);
-        Campo(Campi, g, 1, 0, "Dollari pagati:", USD);
-        Campo(Campi, g, 1, 2, "Recupero atteso (%):", Atteso);
+        if (!Esaurito) {
+            Campo(Campi, g, 0, 2, "Percentuale del credito pagata:", Percentuale);
+            Campo(Campi, g, 1, 0, "Dollari pagati:", USD);
+            Campo(Campi, g, 1, 2, "Recupero atteso (%):", Atteso);
+        }
+        if (ConPrimaFiat) {
+            MetodoFiat.setToolTipText("<html><b>Per il valore ricevuto</b>: gli euro consumano tutto il valore ricevuto "
+                    + "finché ce n'è, a prescindere dalla percentuale.<br><b>Secondo la percentuale pagata</b>: gli euro "
+                    + "consumano al massimo l'importo pagato dalla tranche, e il valore oltre l'importo pagato va alle "
+                    + "cripto come plusvalenza.<br>A fine procedura il totale è lo stesso, può cambiare l'anno in cui "
+                    + "cadono le plusvalenze e le minusvalenze.</html>");
+            PrimaFiat.addActionListener(e -> MetodoFiat.setEnabled(PrimaFiat.isSelected()));
+            g.gridx = 1;
+            g.gridy = 2;
+            Campi.add(PrimaFiat, g);
+            g.gridx = 2;
+            g.gridwidth = 2;
+            Campi.add(MetodoFiat, g);
+            g.gridwidth = 1;
+        }
         JPanel CampiASinistra = new JPanel(new BorderLayout());
         CampiASinistra.add(Campi, BorderLayout.WEST);
         JPanel Nord = new JPanel(new BorderLayout(0, 6));
@@ -125,7 +178,8 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
             public boolean isCellEditable(int r, int c) {
                 if (c == COL_VALORE) return true;
                 if (c == COL_QTA) return Depositi.get(r) == null;
-                if (c == COL_NATURA) return MoneteOriginali.contains(String.valueOf(getValueAt(r, COL_MONETA)).toUpperCase());
+                //A credito esaurito non c'è più nulla da restituire in natura
+                if (c == COL_NATURA) return !Esaurito && MoneteOriginali.contains(String.valueOf(getValueAt(r, COL_MONETA)).toUpperCase());
                 return false;
             }
         };
@@ -219,10 +273,28 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
     }
 
     private void ProponiUSD() {
-        if (USDScrittiAMano || P.CreditoUSD == null) return;
+        if (Ricavando || USDScrittiAMano || P.CreditoUSD == null) return;
         BigDecimal Perc = GUI_FallimentiPiattaforme_Pannello.Numero(Percentuale.getText());
-        USD.setText(Perc == null ? "" : P.CreditoUSD.multiply(Perc)
+        Ricava(USD, Perc == null ? "" : P.CreditoUSD.multiply(Perc)
                 .divide(FallimentiPiattaforme.CENTO, 2, RoundingMode.HALF_UP).toPlainString());
+    }
+
+    /** I dollari scritti a mano danno la percentuale: dollari ÷ credito ammesso, a quattro decimali. */
+    private void ProponiPercentuale() {
+        if (Ricavando || !USDScrittiAMano || P.CreditoUSD == null || P.CreditoUSD.signum() <= 0) return;
+        BigDecimal Dollari = GUI_FallimentiPiattaforme_Pannello.Numero(USD.getText());
+        Ricava(Percentuale, Dollari == null ? "" : Dollari.multiply(FallimentiPiattaforme.CENTO)
+                .divide(P.CreditoUSD, 4, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString());
+    }
+
+    /** Scrive il campo ricavato senza che la sua modifica ricalcoli a sua volta l'altro campo. */
+    private void Ricava(JTextField Campo, String Testo) {
+        Ricavando = true;
+        try {
+            Campo.setText(Testo);
+        } finally {
+            Ricavando = false;
+        }
     }
 
     /** Sceglie un deposito importato e lo aggiunge alle monete ricevute; propone la data un minuto prima. */
@@ -340,9 +412,20 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
     }
 
     private Principale_Fallimenti.Tranche Prepara() {
-        return Principale_Fallimenti.PreparaTranche(P, Data.getText().trim(),
-                GUI_FallimentiPiattaforme_Pannello.Numero(Percentuale.getText()),
-                GUI_FallimentiPiattaforme_Pannello.Numero(Atteso.getText()), LeggiRicevute());
+        return Principale_Fallimenti.PreparaTranche(P, Data.getText().trim(), Digitato(Percentuale), Digitato(Atteso),
+                LeggiRicevute(), Metodo());
+    }
+
+    /** @return come la tranche consuma il credito in valuta, dalla spunta e dalla scelta accanto */
+    private Principale_Fallimenti.CreditoFiat Metodo() {
+        if (!ConPrimaFiat || !PrimaFiat.isSelected()) return Principale_Fallimenti.CreditoFiat.PROPORZIONALE;
+        return MetodoFiat.getSelectedIndex() == 1 ? Principale_Fallimenti.CreditoFiat.PRIMA_PER_PERCENTUALE
+                : Principale_Fallimenti.CreditoFiat.PRIMA_PER_VALORE;
+    }
+
+    /** @return il numero scritto nel campo, {@code null} se vuoto o se il credito è esaurito (il campo non si vede) */
+    private BigDecimal Digitato(JTextField Campo) {
+        return Esaurito ? null : GUI_FallimentiPiattaforme_Pannello.Numero(Campo.getText());
     }
 
     private void MostraAnteprima() {
@@ -362,7 +445,8 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
                 r == null ? "" : r.toPlainString(), a.Trattamento});
         }
         String Consumo = T.Frazione.signum() == 0 ? "" : "La tranche consuma il " + T.Frazione.multiply(FallimentiPiattaforme.CENTO)
-                .setScale(4, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString() + "% della quantità bloccata. ";
+                .setScale(4, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString() + "% della quantità bloccata"
+                + (ConPrimaFiat ? " delle cripto" : "") + ". ";
         Esito.setText("<html>" + Consumo + "Plusvalenze meno minusvalenze attese: <b>"
                 + Risultato.setScale(2, RoundingMode.HALF_UP).toPlainString() + " EUR</b> (calcolo definitivo dopo il ricalcolo)."
                 + (T.Avviso == null ? "" : "<br>" + T.Avviso) + "</html>");
@@ -393,10 +477,8 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
                     .showDialog();
             if (Esito == null || !Esito.isAction("registra")) return;
         }
-        String Errore = Principale_Fallimenti.RegistraTranche(P, Data.getText().trim(),
-                GUI_FallimentiPiattaforme_Pannello.Numero(Percentuale.getText()),
-                GUI_FallimentiPiattaforme_Pannello.Numero(USD.getText()),
-                GUI_FallimentiPiattaforme_Pannello.Numero(Atteso.getText()), LeggiRicevute());
+        String Errore = Principale_Fallimenti.RegistraTranche(P, Data.getText().trim(), Digitato(Percentuale),
+                Digitato(USD), Digitato(Atteso), LeggiRicevute(), Metodo());
         if (Errore != null) {
             AppDialog.builder(this).windowTitle("Rimborso").showTitleInBody(false).theme()
                     .type(AppDialog.DialogType.WARNING).message(Errore).primaryAction("ok", "OK").showDialog();

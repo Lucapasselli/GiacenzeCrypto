@@ -114,7 +114,10 @@ public final class FallimentiPiattaforme {
         public BigDecimal CreditoUSD;
         /** Percentuale di recupero attesa per il metodo A' (100 = metodo A). */
         public BigDecimal RecuperoAtteso = CENTO;
-        /** Valore in euro, alla data della domanda, dei FIAT rimasti sulla piattaforma: fanno parte del credito. */
+        /**
+         * Valore in euro, alla data della domanda, dei FIAT bloccati. Solo informativo: i calcoli leggono i crediti in
+         * valuta dal registro ({@link TokenCredito#Fiat}), che li ricava dalle righe di blocco.
+         */
         public BigDecimal FiatEUR = BigDecimal.ZERO;
         /** {@code APERTA} o {@code CHIUSA}. */
         public String Stato = "APERTA";
@@ -314,6 +317,11 @@ public final class FallimentiPiattaforme {
         String MonetaOriginale;
         String AddressOriginale;
         String ReteOriginale;
+        /**
+         * Credito in valuta (tipo FIAT, nato da euro o dollari rimasti sulla piattaforma): resta FIAT, non ha costo di
+         * carico e vale la sua valuta alla pari.
+         */
+        boolean Fiat;
         /** Quantità bloccata. */
         BigDecimal Qta;
         /** Valore del credito in euro alla data della domanda ({@code [15]} del blocco): il peso. */
@@ -395,6 +403,7 @@ public final class FallimentiPiattaforme {
             t.MonetaOriginale = v[8];
             t.AddressOriginale = v[26];
             t.ReteOriginale = Funzioni.TrovaReteDaIMovimento(v);
+            t.Fiat = "FIAT".equalsIgnoreCase(v[12]);
             BigDecimal Q = Numero(v[13]);
             BigDecimal Val = Numero(v[15]);
             BigDecimal Cos = Numero(v[17]);
@@ -402,6 +411,9 @@ public final class FallimentiPiattaforme {
             if (Val != null) t.ValoreEUR = t.ValoreEUR.add(Val.abs());
             if (Cos != null) t.Costo = t.Costo == null ? Cos : t.Costo.add(Cos);
         }
+        //Un deposito FRT dentro una tranche che consuma credito (la parte cripto di un rimborso che vale più di quanto
+        //consuma, con "Consuma prima il credito FIAT") non fa della tranche un rimborso oltre il credito
+        Map<String, java.util.Set<String>> ConCredito = new HashMap<>();
         for (String[] v : Movimenti) {
             if (v == null || v.length <= GruppoOperazione.CAMPO) continue;
             if (CAMPO5_CHIUSURA.equals(v[5]) && GruppoOperazione.Chiave(v).startsWith(PREFISSO_CHIAVE)) {
@@ -413,7 +425,11 @@ public final class FallimentiPiattaforme {
                 String Id = Chiave.substring(PREFISSO_CHIAVE.length());
                 r.DateTranche.computeIfAbsent(Id, k -> new java.util.HashSet<>()).add(v[1]);
                 if (RimborsoOltreIlCredito(v[18])) r.DateOltreIlCredito.computeIfAbsent(Id, k -> new java.util.HashSet<>()).add(v[1]);
+                else ConCredito.computeIfAbsent(Id, k -> new java.util.HashSet<>()).add(v[1]);
             }
+        }
+        for (Map.Entry<String, java.util.Set<String>> e : r.DateOltreIlCredito.entrySet()) {
+            e.getValue().removeAll(ConCredito.getOrDefault(e.getKey(), java.util.Set.of()));
         }
         if (r.Token.isEmpty()) return r;
         for (String[] v : Movimenti) {
@@ -479,6 +495,17 @@ public final class FallimentiPiattaforme {
         return Simbolo != null && Registro().Token.containsKey(Simbolo);
     }
 
+    /**
+     * La valuta di un credito in valuta ({@code CELSIUS.CREDITO.EUR} → {@code EUR}), per la parte FIAT del quadro W/RW:
+     * lì il credito resta la valuta che era sulla piattaforma, come prima del blocco.
+     * @return la valuta originale per un credito in valuta, altrimenti il simbolo così com'è
+     */
+    public static String ValutaDelCredito(String Simbolo) {
+        if (Simbolo == null) return null;
+        TokenCredito t = Registro().Token.get(Simbolo);
+        return t != null && t.Fiat ? t.MonetaOriginale : Simbolo;
+    }
+
     /** Conversione dollari → euro alla data ({@code yyyy-MM-dd}); sostituibile nei test, che non usano la rete. */
     static BiFunction<String, String, String> CambioUSDEUR = Prezzi::CambioUSDEUR;
 
@@ -500,6 +527,21 @@ public final class FallimentiPiattaforme {
         String Opzione = DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_VALORE, VALORE_CREDITO);
         BigDecimal Qta = Numero(m.Qta);
         if (Qta == null) Qta = BigDecimal.ZERO;
+
+        //Credito in valuta: con ogni opzione vale la sua valuta (l'euro alla pari, le altre al cambio del giorno). Non
+        //ha costo di carico (il motore non lo scrive sulle gambe FIAT) e la sua quantità è già il credito residuo
+        if (t.Fiat) {
+            if (t.MonetaOriginale.equalsIgnoreCase("EUR")) return Info(m, Qta, BigDecimal.ONE, Istante, "Credito fallimento: euro");
+            Moneta o = new Moneta();
+            o.Moneta = t.MonetaOriginale;
+            o.MonetaAddress = "";
+            o.Rete = "";
+            o.Tipo = "FIAT";
+            o.Qta = Qta.abs().toPlainString();
+            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(o, null, Istante, "", "");
+            if (IP == null || IP.prezzoUnitario == null) return null;
+            return Info(m, Qta, IP.prezzoUnitario, Istante, "Credito fallimento: " + t.MonetaOriginale);
+        }
 
         if (VALORE_PREZZO_ORIGINALE.equalsIgnoreCase(Opzione)) {
             Moneta o = new Moneta();
@@ -541,6 +583,11 @@ public final class FallimentiPiattaforme {
      * Opzione B: credito nominale ancora da rimborsare all'istante, ripartito sul token col peso del suo valore
      * alla data della domanda, al cambio USD/EUR del giorno, diviso per la quantità residua. Senza il credito in
      * dollari della procedura resta il valore unitario del credito in euro alla data della domanda.
+     *
+     * <p>I crediti in valuta della procedura valgono la loro quantità residua alla pari: dei dollari ancora da pagare
+     * si toglie prima la loro parte (la quota del credito in dollari che avevano alla domanda, per la frazione che ne
+     * resta) e il resto si ripartisce fra i token cripto. Con le tranche proporzionali e recupero atteso 100 è la
+     * stessa ripartizione di prima, con "Consuma prima il credito FIAT" i dollari pagati coprono prima la valuta.
      */
     static BigDecimal UnitarioCredito(Registro r, TokenCredito t, long Istante) {
         BigDecimal Residua = t.QtaAl(Istante);
@@ -550,19 +597,25 @@ public final class FallimentiPiattaforme {
             if (t.Qta.signum() == 0) return null;
             return t.ValoreEUR.divide(t.Qta, 20, RoundingMode.HALF_UP);
         }
-        //Il credito comprende anche i FIAT rimasti sulla piattaforma: senza, la loro quota finirebbe sui token
-        BigDecimal ValoreProcedura = p.FiatEUR == null ? BigDecimal.ZERO : p.FiatEUR;
+        BigDecimal ValoreProcedura = BigDecimal.ZERO;
+        BigDecimal ValoreCripto = BigDecimal.ZERO;
+        BigDecimal FiatResiduaEUR = BigDecimal.ZERO;
         for (TokenCredito x : r.Token.values()) {
-            if (t.IdProcedura.equals(x.IdProcedura)) ValoreProcedura = ValoreProcedura.add(x.ValoreEUR);
+            if (!t.IdProcedura.equals(x.IdProcedura)) continue;
+            ValoreProcedura = ValoreProcedura.add(x.ValoreEUR);
+            if (!x.Fiat) ValoreCripto = ValoreCripto.add(x.ValoreEUR);
+            else if (x.Qta.signum() > 0) FiatResiduaEUR = FiatResiduaEUR.add(x.ValoreEUR.multiply(x.QtaAl(Istante))
+                    .divide(x.Qta, 20, RoundingMode.HALF_UP));
         }
-        if (ValoreProcedura.signum() == 0) return null;
+        if (ValoreProcedura.signum() == 0 || ValoreCripto.signum() == 0) return null;
         BigDecimal Pagati = BigDecimal.ZERO;
         java.util.Set<String> Esistenti = r.DateTranche.getOrDefault(p.Id, java.util.Set.of());
         for (Tranche tr : p.Tranche) {
             if (Esistenti.contains(tr.Data) && FunzioniDate.ConvertiDatainLongMinuto(tr.Data) <= Istante) Pagati = Pagati.add(tr.USDPagati);
         }
-        BigDecimal ResiduoUSD = p.CreditoUSD.subtract(Pagati).max(BigDecimal.ZERO)
-                .multiply(t.ValoreEUR).divide(ValoreProcedura, 20, RoundingMode.HALF_UP);
+        BigDecimal FiatResiduaUSD = p.CreditoUSD.multiply(FiatResiduaEUR).divide(ValoreProcedura, 20, RoundingMode.HALF_UP);
+        BigDecimal ResiduoUSD = p.CreditoUSD.subtract(Pagati).subtract(FiatResiduaUSD).max(BigDecimal.ZERO)
+                .multiply(t.ValoreEUR).divide(ValoreCripto, 20, RoundingMode.HALF_UP);
         String Giorno = FunzioniDate.ConvertiDatadaLong(Istante);
         String Euro = CambioUSDEUR.apply(ResiduoUSD.toPlainString(), Giorno);
         BigDecimal ResiduoEUR = Numero(Euro);

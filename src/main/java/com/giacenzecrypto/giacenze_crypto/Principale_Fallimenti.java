@@ -155,35 +155,24 @@ public final class Principale_Fallimenti {
     }
 
     /**
-     * Valore in euro, alla data della domanda, delle giacenze FIAT della piattaforma: fanno parte del credito (pesano
-     * nella ripartizione) ma restano FIAT. Una valuta senza cambio alla data non viene contata.
+     * Le giacenze da bloccare che il dialogo propone: le cripto ({@link #GiacenzeAllaData}) e poi i FIAT
+     * ({@link #GiacenzeFiatPerSottoWallet}), che diventano crediti in valuta. Il valore non è ancora calcolato per le
+     * cripto e per le valute diverse dall'euro ({@link #Valorizza}).
      */
-    public static BigDecimal ValoreFiatAllaData(Map<String, BigDecimal> Fiat, String DataDomanda) {
-        BigDecimal Totale = BigDecimal.ZERO;
-        long Istante = IstanteDomanda(DataDomanda);
-        for (Map.Entry<String, BigDecimal> e : Fiat.entrySet()) {
-            if (e.getKey().equalsIgnoreCase("EUR")) {
-                Totale = Totale.add(e.getValue());
-                continue;
-            }
-            Moneta m = new Moneta();
-            m.Moneta = e.getKey();
-            m.Tipo = "FIAT";
-            m.Qta = e.getValue().toPlainString();
-            Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(m, null, Istante, "", "");
-            if (IP != null && IP.prezzoUnitario != null) Totale = Totale.add(e.getValue().multiply(IP.prezzoUnitario).abs());
-        }
-        return Totale.setScale(2, RoundingMode.HALF_UP);
+    public static List<Posizione> PosizioniAllaData(String Exchange, String DataDomanda) {
+        List<Posizione> Ris = GiacenzeAllaData(Exchange, DataDomanda);
+        Ris.addAll(GiacenzeFiatPerSottoWallet(Exchange, DataDomanda));
+        return Ris;
     }
 
     /**
-     * I FIAT da spostare al blocco nel sotto-wallet {@value #SOTTOWALLET}, da cui escono le loro quote dei rimborsi e
-     * il residuo alla chiusura. Per ogni valuta si sposta il <b>saldo netto</b> della piattaforma, lo stesso che pesa
-     * nel credito ({@link #GiacenzeFiatAllaData}), prelevato dai sotto-wallet positivi a partire dal più grande: un
-     * sotto-wallet negativo (scambi importati senza il deposito) resta com'è e la piattaforma torna a zero alla
-     * chiusura. Il valore è quello in euro solo per l'EUR.
+     * I FIAT da bloccare: passano nel sotto-wallet {@value #SOTTOWALLET} e da lì al loro credito in valuta
+     * ({@code CELSIUS.CREDITO.EUR}, tipo FIAT). Per ogni valuta si blocca il <b>saldo netto</b> della piattaforma
+     * ({@link #GiacenzeFiatAllaData}), prelevato dai sotto-wallet positivi a partire dal più grande: un sotto-wallet
+     * negativo (scambi importati senza il deposito) resta com'è e la piattaforma torna a zero alla chiusura. Il valore
+     * è quello in euro solo per l'EUR.
      */
-    static List<Posizione> GiacenzeFiatPerSottoWallet(String Exchange, String DataDomanda) {
+    public static List<Posizione> GiacenzeFiatPerSottoWallet(String Exchange, String DataDomanda) {
         List<Posizione> Ris = new ArrayList<>();
         long Istante = IstanteDomanda(DataDomanda);
         TreeSet<String> SottoWallet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
@@ -193,7 +182,7 @@ public final class Principale_Fallimenti {
         Map<String, List<Posizione>> Positivi = new TreeMap<>();
         for (String sw : SottoWallet) {
             for (Moneta m : Principale_GiacenzeaData.SommaQuantitaAData(MappaCryptoWallet.values(), Istante, Exchange, sw).values()) {
-                if (m.Tipo == null || !m.Tipo.equalsIgnoreCase("FIAT")) continue;
+                if (m.Tipo == null || !m.Tipo.equalsIgnoreCase("FIAT") || FallimentiPiattaforme.isTokenCredito(m.Moneta)) continue;
                 BigDecimal q;
                 try {
                     q = new BigDecimal(m.Qta);
@@ -224,13 +213,16 @@ public final class Principale_Fallimenti {
         return Ris;
     }
 
-    /** Le giacenze FIAT positive alla data: restano FIAT sulla piattaforma, il loro valore entra nel credito. */
+    /**
+     * Le giacenze FIAT positive alla data, sommate su tutta la piattaforma. I crediti in valuta di una procedura
+     * precedente sulla stessa piattaforma non contano: non si bloccano di nuovo.
+     */
     public static Map<String, BigDecimal> GiacenzeFiatAllaData(String Exchange, String DataDomanda) {
         Map<String, BigDecimal> Ris = new TreeMap<>();
         Map<String, Moneta> Qta = Principale_GiacenzeaData.SommaQuantitaAData(MappaCryptoWallet.values(),
                 IstanteDomanda(DataDomanda), Exchange, "tutti");
         for (Moneta m : Qta.values()) {
-            if (m.Tipo == null || !m.Tipo.equalsIgnoreCase("FIAT")) continue;
+            if (m.Tipo == null || !m.Tipo.equalsIgnoreCase("FIAT") || FallimentiPiattaforme.isTokenCredito(m.Moneta)) continue;
             try {
                 BigDecimal q = new BigDecimal(m.Qta);
                 if (q.signum() > 0) Ris.merge(m.Moneta, q, BigDecimal::add);
@@ -243,11 +235,13 @@ public final class Principale_Fallimenti {
 
     /**
      * Valore del credito di ogni posizione alla data della domanda: il prezzo della moneta a quell'istante (può
-     * usare la rete). Lasciato {@code null} dove il prezzo non si trova: l'utente lo inserisce a mano.
+     * usare la rete). Lasciato {@code null} dove il prezzo non si trova: l'utente lo inserisce a mano. Le posizioni
+     * che hanno già un valore (gli euro) non si toccano.
      */
     public static void Valorizza(List<Posizione> Posizioni, String DataDomanda) {
         long Istante = IstanteDomanda(DataDomanda);
         for (Posizione p : Posizioni) {
+            if (p.ValoreEUR != null) continue;
             Moneta m = new Moneta();
             m.Moneta = p.Moneta;
             m.Tipo = p.Tipo;
@@ -303,12 +297,10 @@ public final class Principale_Fallimenti {
         String Identificativo = "Fallimento " + P.NomeBreve;
         Map<String, String> Nomi = NomiToken(P.NomeBreve, Posizioni);
 
-        //1 - Giroconti verso il sotto-wallet del credito, alla mezzanotte della domanda. Anche i FIAT, che restano
-        //FIAT ma fanno parte del credito: le loro quote dei rimborsi e il residuo alla chiusura escono da lì
-        List<Posizione> DaSpostare = new ArrayList<>(Posizioni);
-        DaSpostare.addAll(GiacenzeFiatPerSottoWallet(P.Exchange, P.DataDomanda));
+        //1 - Giroconti verso il sotto-wallet del credito, alla mezzanotte della domanda (anche i FIAT, che fra le
+        //posizioni arrivano da GiacenzeFiatPerSottoWallet)
         int n = 0;
-        for (Posizione p : DaSpostare) {
+        for (Posizione p : Posizioni) {
             if (p.SottoWallet.equalsIgnoreCase(SOTTOWALLET)) continue;
             String Valore = Testo(p.ValoreEUR);
             n++;
@@ -325,7 +317,8 @@ public final class Principale_Fallimenti {
             }
         }
 
-        //2 - Una riga di blocco per moneta, un secondo dopo
+        //2 - Una riga di blocco per moneta, un secondo dopo. Una valuta passa a un credito in valuta, che resta FIAT:
+        //uno scambio FIAT → FIAT (SF), senza effetti fiscali, e i rimborsi mostrano lo scambio dal credito
         Map<String, List<Posizione>> PerMoneta = new LinkedHashMap<>();
         for (Posizione p : Posizioni) PerMoneta.computeIfAbsent(p.ChiaveMoneta(), k -> new ArrayList<>()).add(p);
         int b = 0;
@@ -339,9 +332,10 @@ public final class Principale_Fallimenti {
             }
             //0,2 + 0,8 darebbe "1.0"
             Qta = Qta.stripTrailingZeros();
+            boolean Fiat = "FIAT".equalsIgnoreCase(Prima.Tipo);
             Moneta Credito = new Moneta();
             Credito.Moneta = Nomi.get(e.getKey());
-            Credito.Tipo = "Crypto";
+            Credito.Tipo = Fiat ? "FIAT" : "Crypto";
             Credito.MonetaAddress = "";
             Credito.Rete = Prima.Rete;
             Credito.Qta = Qta.toPlainString();
@@ -350,7 +344,7 @@ public final class Principale_Fallimenti {
                     Istante + 1000, ValoreTesto, "Credito alla data della domanda", ++b, 1, null,
                     "Fallimento " + P.NomeBreve + ": credito alla data della domanda", "M", "", null, Identificativo);
             if (r == null) throw new IllegalStateException("Blocco non creato per " + Prima.Moneta);
-            r[0] = SostituisciCategoria(r[0], "SC");
+            r[0] = SostituisciCategoria(r[0], Fiat ? "SF" : "SC");
             r[5] = "BLOCCO PER FALLIMENTO";
             r[18] = FallimentiPiattaforme.CAMPO18_BLOCCO;
             Completa(r, Chiave, ValoreTesto, IDUsati);
@@ -374,7 +368,7 @@ public final class Principale_Fallimenti {
         return v == null ? "0.00" : v.setScale(2, RoundingMode.HALF_UP).toPlainString();
     }
 
-    /** Il blocco è sempre uno scambio cripto-cripto: la categoria in coda all'ID è {@code SC}. */
+    /** Sostituisce la categoria in coda all'ID ({@code SC} per il blocco di una cripto, {@code SF} di una valuta). */
     private static String SostituisciCategoria(String ID, String Categoria) {
         int i = ID.lastIndexOf('_');
         return i < 0 ? ID : ID.substring(0, i + 1) + Categoria;
@@ -516,20 +510,187 @@ public final class Principale_Fallimenti {
         return Ris;
     }
 
+    /** @return la rete delle monete ricevute: quella del primo token cripto, vuota se il credito è solo in valuta */
+    private static String ReteRicevute(List<FallimentiPiattaforme.TokenCredito> Token) {
+        for (FallimentiPiattaforme.TokenCredito t : Token) {
+            if (!t.Fiat) return t.ReteOriginale;
+        }
+        return "";
+    }
+
+    /** @return {@code true} se almeno un token credito ha ancora una quantità all'istante */
+    private static boolean CreditoResiduo(List<FallimentiPiattaforme.TokenCredito> Token, long Istante) {
+        for (FallimentiPiattaforme.TokenCredito t : Token) {
+            if (t.QtaAl(Istante).signum() > 0) return true;
+        }
+        return false;
+    }
+
+    /** Come una tranche consuma il credito in valuta rispetto a quello cripto ({@link #Consumi}). */
+    public enum CreditoFiat {
+        /** Metodo A' su tutto il credito, valuta compresa. */
+        PROPORZIONALE,
+        /** "Consuma prima il credito FIAT", per il valore ricevuto (predefinito nel dialogo). */
+        PRIMA_PER_VALORE,
+        /** "Consuma prima il credito FIAT", fino all'importo pagato secondo la percentuale. */
+        PRIMA_PER_PERCENTUALE
+    }
+
+    /** Quanto consuma una tranche: per ogni token, nell'ordine, la quantità che esce e la quota del valore ricevuto. */
+    static final class Consumo {
+        final List<BigDecimal> Qta = new ArrayList<>();
+        final List<BigDecimal> Pesi = new ArrayList<>();
+        /** Frazione della quantità originaria dei token cripto consumata (tutti la stessa). */
+        BigDecimal FrazioneCripto = BigDecimal.ZERO;
+        /** Perché "Consuma prima il credito FIAT" non si è applicato, {@code null} se non serve dirlo. */
+        String Avviso;
+    }
+
     /**
-     * Prepara le righe di una tranche senza toccare la mappa. Metodo A': ogni token credito scarica la frazione
-     * {@code min(Percentuale ÷ Atteso, frazione residua)} della quantità bloccata, e il valore delle monete ricevute
-     * si divide fra i token (e i FIAT della procedura) col peso del loro credito alla data della domanda. Per ogni
-     * coppia credito → moneta ricevuta una riga {@code FRB} (o {@code FGC} per la stessa moneta restituita in
-     * natura); per la quota dei FIAT un acquisto della moneta ricevuta con quei FIAT. Le monete ricevute arrivano
-     * sul sotto-wallet {@value #SOTTOWALLET} e da lì escono: verso il deposito importato (giroconto da abbinare) o,
-     * per i FIAT ricevuti fuori dal programma, con un prelievo.
+     * Quanto consuma ogni token credito e quale quota del valore ricevuto gli tocca. Il credito si misura in euro alla
+     * data della domanda ({@code [15]} del blocco): {@code T} il totale, {@code F} la parte in valuta, il pagato della
+     * tranche è {@code Percentuale × T}.
+     * <ul>
+     *   <li><b>Proporzionale</b> (metodo A'): la tranche consuma {@code Percentuale ÷ Atteso × T}, ripartito sui token in
+     *       proporzione al credito che resta a ognuno. Finché tutti i token hanno la stessa frazione residua è la
+     *       frazione {@code Percentuale ÷ Atteso} di ogni token, e il valore va in proporzione al credito alla domanda.
+     *       Se supera il residuo, la tranche consuma tutto.</li>
+     *   <li><b>Prima il credito FIAT</b> (solo con token cripto e in valuta): il credito in valuta si consuma per primo
+     *       e alla pari, e riceve lo stesso valore. Per {@link CreditoFiat#PRIMA_PER_VALORE} consuma
+     *       {@code min(residuo in valuta, valore ricevuto)} a prescindere dalla percentuale (la regola più chiara,
+     *       predefinita), per {@link CreditoFiat#PRIMA_PER_PERCENTUALE} anche al massimo il pagato:
+     *       {@code min(residuo in valuta, pagato, valore ricevuto)} (decisioni dell'utente del 2026-10-29). Il
+     *       resto del pagato, se c'è, tocca alle cripto, che ne consumano la frazione
+     *       {@code max(0, pagato − valuta) ÷ (Atteso × T − F)} della quantità bloccata, e ricevono il resto del valore:
+     *       tutta la differenza fra valore ricevuto e credito va sulle cripto. Non si applica, e si torna al
+     *       proporzionale con un avviso, se {@code Atteso × T} non supera {@code F} o se la tranche chiude il credito
+     *       cripto lasciando un residuo in valuta.</li>
+     * </ul>
+     * @return {@code null} se il valore del credito alla domanda è zero
+     */
+    static Consumo Consumi(List<FallimentiPiattaforme.TokenCredito> Token, long Istante, BigDecimal Percentuale,
+            BigDecimal Atteso, BigDecimal ValoreRicevuto, CreditoFiat Modo) {
+        BigDecimal Totale = BigDecimal.ZERO, ValoreCripto = BigDecimal.ZERO, ValoreFiat = BigDecimal.ZERO;
+        BigDecimal FiatResidua = BigDecimal.ZERO;
+        BigDecimal ResCripto = null;
+        List<BigDecimal> Residui = new ArrayList<>();
+        List<BigDecimal> Frazioni = new ArrayList<>();
+        for (FallimentiPiattaforme.TokenCredito t : Token) {
+            BigDecimal Res = t.QtaAl(Istante).max(BigDecimal.ZERO);
+            BigDecimal Fr = t.Qta.signum() == 0 ? BigDecimal.ZERO : Res.divide(t.Qta, SCALA, RoundingMode.HALF_UP);
+            Residui.add(Res);
+            Frazioni.add(Fr);
+            Totale = Totale.add(t.ValoreEUR);
+            if (t.Fiat) {
+                ValoreFiat = ValoreFiat.add(t.ValoreEUR);
+                FiatResidua = FiatResidua.add(t.ValoreEUR.multiply(Fr));
+            } else {
+                ValoreCripto = ValoreCripto.add(t.ValoreEUR);
+                if (ResCripto == null) ResCripto = Fr;
+            }
+        }
+        if (Totale.signum() <= 0) return null;
+        if (ResCripto == null) ResCripto = BigDecimal.ZERO;
+        Consumo C = new Consumo();
+        BigDecimal Pagato = Totale.multiply(Percentuale).divide(FallimentiPiattaforme.CENTO, SCALA, RoundingMode.HALF_UP);
+
+        if (Modo != CreditoFiat.PROPORZIONALE && ValoreFiat.signum() > 0 && ValoreCripto.signum() > 0 && ValoreRicevuto.signum() > 0) {
+            BigDecimal AttesoCripto = Totale.multiply(Atteso).divide(FallimentiPiattaforme.CENTO, SCALA, RoundingMode.HALF_UP)
+                    .subtract(ValoreFiat);
+            if (AttesoCripto.signum() <= 0) {
+                C.Avviso = "\"Consuma prima il credito FIAT\" non si applica: il recupero atteso non supera il credito in "
+                        + "valuta, quindi alle cripto non resterebbe nulla. Il rimborso si ripartisce in proporzione su "
+                        + "tutto il credito.";
+            } else {
+                BigDecimal Fn = FiatResidua.min(ValoreRicevuto);
+                if (Modo == CreditoFiat.PRIMA_PER_PERCENTUALE) Fn = Fn.min(Pagato);
+                BigDecimal cc = Pagato.subtract(Fn).max(BigDecimal.ZERO).divide(AttesoCripto, SCALA, RoundingMode.HALF_UP);
+                boolean UltimaCripto = cc.compareTo(ResCripto) >= 0;
+                boolean FiatChiusa = Fn.compareTo(FiatResidua) == 0;
+                //Con il credito cripto già finito non c'è nulla da chiudere: la valuta prende il valore, alla pari
+                if (UltimaCripto && ResCripto.signum() > 0 && !FiatChiusa) {
+                    C.Avviso = "\"Consuma prima il credito FIAT\" non si applica: questo rimborso chiude il credito "
+                            + "cripto ma vale meno del credito in valuta rimasto. Il rimborso si ripartisce in proporzione "
+                            + "su tutto il credito residuo, e la parte in valuta ha una differenza che non viene contata.";
+                } else {
+                    C.FrazioneCripto = UltimaCripto ? ResCripto : cc;
+                    for (int k = 0; k < Token.size(); k++) {
+                        FallimentiPiattaforme.TokenCredito t = Token.get(k);
+                        if (t.Fiat) {
+                            //Alla pari: la valuta riceve il valore del credito che consuma, diviso fra le valute in
+                            //proporzione al credito che resta a ognuna
+                            BigDecimal Quota = FiatResidua.signum() == 0 ? BigDecimal.ZERO
+                                    : t.ValoreEUR.multiply(Frazioni.get(k)).divide(FiatResidua, SCALA, RoundingMode.HALF_UP);
+                            C.Qta.add(FiatChiusa ? Residui.get(k)
+                                    : Residui.get(k).multiply(Fn).divide(FiatResidua, 2, RoundingMode.HALF_UP));
+                            C.Pesi.add(Fn.multiply(Quota).divide(ValoreRicevuto, SCALA, RoundingMode.HALF_UP));
+                        } else {
+                            C.Qta.add(UltimaCripto ? Residui.get(k) : t.Qta.multiply(cc).setScale(SCALA, RoundingMode.HALF_UP));
+                            C.Pesi.add(ValoreRicevuto.subtract(Fn).multiply(t.ValoreEUR)
+                                    .divide(ValoreRicevuto.multiply(ValoreCripto), SCALA, RoundingMode.HALF_UP));
+                        }
+                    }
+                    return C;
+                }
+            }
+        }
+
+        //Proporzionale. Finché i token hanno la stessa frazione residua (nessuna tranche "prima il credito FIAT") le
+        //quantità e i pesi sono quelli di sempre, calcolati allo stesso modo
+        BigDecimal c = Percentuale.divide(Atteso, SCALA, RoundingMode.HALF_UP);
+        BigDecimal ResiduoTotale = ValoreCripto.multiply(ResCripto).add(FiatResidua).divide(Totale, SCALA, RoundingMode.HALF_UP);
+        boolean Uniforme = true;
+        for (BigDecimal Fr : Frazioni) {
+            if (Fr.compareTo(Frazioni.get(0)) != 0) Uniforme = false;
+        }
+        if (Uniforme) ResiduoTotale = Frazioni.get(0);
+        boolean Ultima = c.compareTo(ResiduoTotale) >= 0;
+        BigDecimal Consumato = BigDecimal.ZERO;
+        List<BigDecimal> Nominali = new ArrayList<>();
+        for (int k = 0; k < Token.size(); k++) {
+            FallimentiPiattaforme.TokenCredito t = Token.get(k);
+            BigDecimal Q;
+            if (Ultima) Q = Residui.get(k);
+            else {
+                //La frazione del token: c, corretta per quanto gli resta rispetto al resto del credito
+                BigDecimal Fr = Frazioni.get(k).compareTo(ResiduoTotale) == 0 ? c
+                        : c.multiply(Frazioni.get(k)).divide(ResiduoTotale, SCALA, RoundingMode.HALF_UP);
+                Q = t.Qta.multiply(Fr).setScale(t.Fiat ? 2 : SCALA, RoundingMode.HALF_UP);
+            }
+            C.Qta.add(Q);
+            BigDecimal Nominale = t.Qta.signum() == 0 ? BigDecimal.ZERO : t.ValoreEUR.multiply(Q).divide(t.Qta, SCALA, RoundingMode.HALF_UP);
+            Nominali.add(Nominale);
+            Consumato = Consumato.add(Nominale);
+            if (!t.Fiat && C.FrazioneCripto.signum() == 0 && t.Qta.signum() > 0) C.FrazioneCripto = Q.divide(t.Qta, SCALA, RoundingMode.HALF_UP);
+        }
+        for (int k = 0; k < Token.size(); k++) {
+            if (Uniforme) C.Pesi.add(Token.get(k).ValoreEUR.divide(Totale, SCALA, RoundingMode.HALF_UP));
+            else C.Pesi.add(Consumato.signum() == 0 ? BigDecimal.ZERO : Nominali.get(k).divide(Consumato, SCALA, RoundingMode.HALF_UP));
+        }
+        return C;
+    }
+
+    /** {@link #PreparaTranche(FallimentiPiattaforme.Procedura, String, BigDecimal, BigDecimal, List, CreditoFiat)} con la ripartizione proporzionale. */
+    public static Tranche PreparaTranche(FallimentiPiattaforme.Procedura P, String Data, BigDecimal Percentuale,
+            BigDecimal Atteso, List<Ricevuta> Ricevute) {
+        return PreparaTranche(P, Data, Percentuale, Atteso, Ricevute, CreditoFiat.PROPORZIONALE);
+    }
+
+    /**
+     * Prepara le righe di una tranche senza toccare la mappa. Le parti del credito sono i token credito, cripto e in
+     * valuta: quanto consuma ognuna e quale quota del valore ricevuto le tocca lo decide {@link #Consumi}. Per ogni
+     * coppia parte → moneta ricevuta una riga: da un token cripto {@code FRB} (o {@code FGC} per la stessa moneta
+     * restituita in natura, o un deposito {@code FRT} se la parte riceve valore senza consumare credito), da un
+     * credito in valuta un acquisto della moneta ricevuta (o uno scambio FIAT, senza effetti, se è FIAT). Le monete
+     * ricevute arrivano sul sotto-wallet {@value #SOTTOWALLET} e da lì escono: verso il deposito importato (giroconto
+     * da abbinare) o, per i FIAT ricevuti fuori dal programma, con un prelievo.
      * @param Data data e ora del rimborso, {@code yyyy-MM-dd HH:mm}
      * @param Percentuale percentuale del credito pagata dalla tranche
      * @param Atteso recupero atteso in percentuale
+     * @param Modo come si consuma il credito in valuta ({@link #Consumi})
      */
     public static Tranche PreparaTranche(FallimentiPiattaforme.Procedura P, String Data, BigDecimal Percentuale,
-            BigDecimal Atteso, List<Ricevuta> Ricevute) {
+            BigDecimal Atteso, List<Ricevuta> Ricevute, CreditoFiat Modo) {
         Tranche T = new Tranche();
         long Istante = IstanteDigitato(Data);
         if (Istante <= 0) {
@@ -557,7 +718,8 @@ public final class Principale_Fallimenti {
                     + FunzioniDate.ConvertiDatadaLongAlSecondo(Precedente).substring(0, 16) + ").";
             return T;
         }
-        if (Percentuale == null || Percentuale.signum() <= 0 || Atteso == null || Atteso.signum() <= 0) {
+        //A credito esaurito la percentuale non serve: il rimborso non scarica nulla ed è tutto plusvalenza
+        if ((Percentuale == null || Percentuale.signum() <= 0 || Atteso == null || Atteso.signum() <= 0) && !CreditoEsaurito(P)) {
             T.Errore = "Percentuale pagata e recupero atteso devono essere maggiori di zero.";
             return T;
         }
@@ -609,13 +771,16 @@ public final class Principale_Fallimenti {
             T.Errore = "La procedura non ha token credito: il blocco manca o è stato tolto.";
             return T;
         }
-        //Frazione residua, uguale per tutti i token perché ogni tranche li consuma nella stessa proporzione
-        FallimentiPiattaforme.TokenCredito Primo = Token.get(0);
-        BigDecimal Residua = Primo.QtaAl(IstanteResiduo).divide(Primo.Qta, SCALA, RoundingMode.HALF_UP);
-        if (Residua.signum() <= 0) return OltreIlCredito(T, P, Istante, Percentuale, Ricevute, Primo.ReteOriginale);
-        //In natura: con più parti (più monete, o FIAT) il rimborso si ripartirebbe su tutte e consumerebbe tutti i
-        //token, mentre è tornata una moneta sola. Limite noto: si esclude quella posizione al blocco
-        boolean PiuParti = Token.size() > 1 || (P.FiatEUR != null && P.FiatEUR.signum() > 0);
+        String Rete = ReteRicevute(Token);
+        if (!CreditoResiduo(Token, IstanteResiduo)) return OltreIlCredito(T, P, Istante, Percentuale, Ricevute, Rete);
+        //Il controllo iniziale guarda il credito alla fine (CreditoEsaurito): qui conta quello alla data del rimborso
+        if (Percentuale == null || Percentuale.signum() <= 0 || Atteso == null || Atteso.signum() <= 0) {
+            T.Errore = "Percentuale pagata e recupero atteso devono essere maggiori di zero.";
+            return T;
+        }
+        //In natura: con più parti (più monete, o un credito in valuta) il rimborso si ripartirebbe su tutte e
+        //consumerebbe tutti i token, mentre è tornata una moneta sola. Limite noto: si esclude quella posizione al blocco
+        boolean PiuParti = Token.size() > 1;
         for (Ricevuta r : Ricevute) {
             if (r.InNatura && PiuParti) {
                 T.Errore = "La restituzione in natura si può registrare solo se il credito è di una moneta sola. "
@@ -624,37 +789,14 @@ public final class Principale_Fallimenti {
                 return T;
             }
         }
-        BigDecimal c =Percentuale.divide(Atteso, SCALA, RoundingMode.HALF_UP).min(Residua);
-        boolean Ultima = c.compareTo(Residua) == 0;
-        T.Frazione = c;
-
-        //Pesi: credito di ogni token e FIAT della procedura alla data della domanda
-        Map<String, BigDecimal> Fiat = GiacenzeFiatAllaData(P.Exchange, P.DataDomanda);
-        BigDecimal FiatEUR = P.FiatEUR == null ? BigDecimal.ZERO : P.FiatEUR;
-        if (Fiat.isEmpty()) FiatEUR = BigDecimal.ZERO;
-        BigDecimal Totale = FiatEUR;
-        for (FallimentiPiattaforme.TokenCredito t : Token) Totale = Totale.add(t.ValoreEUR);
-        if (Totale.signum() <= 0) {
+        Consumo C = Consumi(Token, IstanteResiduo, Percentuale, Atteso, ValoreRicevuto, Modo);
+        if (C == null) {
             T.Errore = "Il valore del credito alla data della domanda è zero: non si può ripartire il rimborso.";
             return T;
         }
-        //Parti del credito: i token e, se ci sono, le valute FIAT (il loro valore diviso per quantità)
-        List<String> Parti = new ArrayList<>();
-        List<BigDecimal> Pesi = new ArrayList<>();
-        for (FallimentiPiattaforme.TokenCredito t : Token) {
-            Parti.add(t.Simbolo);
-            Pesi.add(t.ValoreEUR.divide(Totale, SCALA, RoundingMode.HALF_UP));
-        }
-        if (FiatEUR.signum() > 0) {
-            BigDecimal FiatQta = BigDecimal.ZERO;
-            for (BigDecimal q : Fiat.values()) FiatQta = FiatQta.add(q);
-            for (Map.Entry<String, BigDecimal> e : Fiat.entrySet()) {
-                Parti.add("FIAT:" + e.getKey());
-                //Senza un cambio per valuta, le valute pesano in proporzione alla quantità dentro la quota FIAT
-                Pesi.add(FiatEUR.multiply(e.getValue()).divide(FiatQta, SCALA, RoundingMode.HALF_UP)
-                        .divide(Totale, SCALA, RoundingMode.HALF_UP));
-            }
-        }
+        T.Frazione = C.FrazioneCripto;
+        if (C.Avviso != null) T.Avviso = T.Avviso == null ? C.Avviso : C.Avviso + " " + T.Avviso;
+        List<BigDecimal> Pesi = C.Pesi;
 
         String Chiave = FallimentiPiattaforme.PREFISSO_CHIAVE + P.Id;
         String Identificativo = "Fallimento " + P.NomeBreve;
@@ -671,15 +813,8 @@ public final class Principale_Fallimenti {
 
         //Quantità uscita per parte e moneta ricevuta; quantità e valore entrati per moneta ricevuta e parte
         List<List<BigDecimal>> UscitePerParte = new ArrayList<>();
-        for (int p = 0; p < Parti.size(); p++) {
-            BigDecimal QtaParte;
-            if (p < Token.size()) {
-                FallimentiPiattaforme.TokenCredito t = Token.get(p);
-                QtaParte = Ultima ? t.QtaAl(IstanteResiduo) : t.Qta.multiply(c).setScale(SCALA, RoundingMode.HALF_UP);
-            } else {
-                QtaParte = Fiat.get(Parti.get(p).substring(5)).multiply(c).setScale(2, RoundingMode.HALF_UP);
-            }
-            UscitePerParte.add(Ripartisci(QtaParte, Quote, p < Token.size() ? SCALA : 2));
+        for (int p = 0; p < Token.size(); p++) {
+            UscitePerParte.add(Ripartisci(C.Qta.get(p), Quote, Token.get(p).Fiat ? 2 : SCALA));
         }
         List<List<BigDecimal>> EntratePerMoneta = new ArrayList<>();
         List<List<BigDecimal>> ValoriPerMoneta = new ArrayList<>();
@@ -690,44 +825,50 @@ public final class Principale_Fallimenti {
 
         for (int j = 0; j < Ricevute.size(); j++) {
             Ricevuta r = Ricevute.get(j);
-            for (int p = 0; p < Parti.size(); p++) {
+            for (int p = 0; p < Token.size(); p++) {
                 BigDecimal Out = UscitePerParte.get(p).get(j);
                 BigDecimal In = EntratePerMoneta.get(j).get(p);
                 BigDecimal Val = ValoriPerMoneta.get(j).get(p);
                 if (Out.signum() == 0 && In.signum() == 0) continue;
+                FallimentiPiattaforme.TokenCredito t = Token.get(p);
                 Moneta Uscita = new Moneta();
                 Moneta Entrata = new Moneta();
                 Entrata.Moneta = r.Moneta;
                 Entrata.Tipo = r.Tipo;
                 Entrata.MonetaAddress = "";
                 Entrata.Qta = In.toPlainString();
+                Uscita.Moneta = t.Simbolo;
+                Uscita.Tipo = t.Fiat ? "FIAT" : "Crypto";
+                Uscita.MonetaAddress = "";
+                Uscita.Rete = t.ReteOriginale;
                 RigaAnteprima A = new RigaAnteprima();
+                A.Credito = t.Fiat ? t.Simbolo + " (FIAT)" : t.Simbolo;
                 String Campo18;
                 String Campo5;
-                if (p < Token.size()) {
-                    FallimentiPiattaforme.TokenCredito t = Token.get(p);
-                    Uscita.Moneta = t.Simbolo;
-                    Uscita.Tipo = "Crypto";
-                    Uscita.MonetaAddress = "";
-                    Uscita.Rete = t.ReteOriginale;
+                if (t.Fiat) {
+                    //Credito in valuta: acquisto della moneta ricevuta, o scambio FIAT senza effetti se è una valuta
+                    Campo18 = "";
+                    Campo5 = r.isFiat() ? FallimentiPiattaforme.CAMPO5_RIMBORSO_FIAT : FallimentiPiattaforme.CAMPO5_ACQUISTO_FIAT;
+                    A.Trattamento = r.isFiat() ? "FIAT: nessun effetto" : "Acquisto: costo = valore ricevuto";
+                } else if (Out.signum() == 0) {
+                    //Il token riceve valore senza consumare credito (con "Consuma prima il credito FIAT", la tranche
+                    //vale più del credito in valuta rimasto ma paga meno di quello, o il credito cripto è già finito,
+                    //e "secondo la percentuale" anche quando vale più del pagato):
+                    //come un rimborso oltre il credito, tutto plusvalenza
+                    Entrata.Rete = t.ReteOriginale;
+                    Campo18 = FallimentiPiattaforme.CAMPO18_RIMBORSO_OLTRE_IL_CREDITO;
+                    Campo5 = FallimentiPiattaforme.CAMPO5_RIMBORSO_OLTRE_IL_CREDITO;
+                    A.Costo = BigDecimal.ZERO;
+                    A.Trattamento = "Rimborso oltre il credito consumato: tutto plusvalenza";
+                } else {
                     Entrata.Rete = t.ReteOriginale;
                     boolean Natura = r.InNatura && r.Moneta.equalsIgnoreCase(t.MonetaOriginale);
                     Campo18 = Natura ? FallimentiPiattaforme.CAMPO18_RESTITUZIONE_IN_NATURA : FallimentiPiattaforme.CAMPO18_RIMBORSO;
                     Campo5 = Natura ? "RESTITUZIONE IN NATURA" : "RIMBORSO DA FALLIMENTO";
-                    A.Credito = t.Simbolo;
                     if (t.Costo != null && t.Qta.signum() > 0) {
                         A.Costo = t.Costo.multiply(Out).divide(t.Qta, 2, RoundingMode.HALF_UP);
                     }
                     A.Trattamento = Natura ? "Giroconto: costo trasferito" : "Rimborso: plusvalenza o minusvalenza";
-                } else {
-                    String Valuta = Parti.get(p).substring(5);
-                    Uscita.Moneta = Valuta;
-                    Uscita.Tipo = "FIAT";
-                    Uscita.MonetaAddress = "";
-                    Campo18 = "";
-                    Campo5 = r.isFiat() ? FallimentiPiattaforme.CAMPO5_RIMBORSO_FIAT : FallimentiPiattaforme.CAMPO5_ACQUISTO_FIAT;
-                    A.Credito = Valuta + " (FIAT)";
-                    A.Trattamento = r.isFiat() ? "FIAT: nessun effetto" : "Acquisto: costo = valore ricevuto";
                 }
                 Uscita.Qta = Out.negate().toPlainString();
                 A.QtaUscita = Out;
@@ -737,37 +878,19 @@ public final class Principale_Fallimenti {
                 T.Anteprima.add(A);
 
                 String ValTesto = Val.setScale(2, RoundingMode.HALF_UP).toPlainString();
-                List<String[]> Nuove = new ArrayList<>();
-                if (Uscita.Tipo.equals("FIAT") && r.isFiat()) {
-                    //FIAT contro FIAT: un prelievo e un deposito, nessun effetto fiscale
-                    for (String[] Riga : new String[][]{
-                        MovimentiCrypto.creaMovimento(Uscita, null, P.Exchange, SOTTOWALLET, Istante, ValTesto,
-                            "Rimborso da fallimento", ++n, 1, null, Nota, "M", "", null, Identificativo),
-                        MovimentiCrypto.creaMovimento(null, Entrata, P.Exchange, SOTTOWALLET, Istante, ValTesto,
-                            "Rimborso da fallimento", n, 2, null, Nota, "M", "", null, Identificativo)}) {
-                        if (Riga != null) Riga[5] = Campo5;
-                        Nuove.add(Riga);
-                    }
-                } else {
-                    String[] Riga = MovimentiCrypto.creaMovimento(Out.signum() == 0 ? null : Uscita, Entrata, P.Exchange,
-                            SOTTOWALLET, Istante, ValTesto, "Rimborso da fallimento", ++n, 1, null, Nota, "M", "", null, Identificativo);
-                    if (Riga != null) {
-                        Riga[5] = Campo5;
-                        Riga[18] = Campo18;
-                    }
-                    Nuove.add(Riga);
+                String[] Riga = MovimentiCrypto.creaMovimento(Out.signum() == 0 ? null : Uscita, Entrata, P.Exchange,
+                        SOTTOWALLET, Istante, ValTesto, "Rimborso da fallimento", ++n, 1, null, Nota, "M", "", null, Identificativo);
+                if (Riga == null) {
+                    T.Errore = "Riga del rimborso non creata per " + A.Credito + " verso " + r.Moneta + ".";
+                    return T;
                 }
-                for (String[] Riga : Nuove) {
-                    if (Riga == null) {
-                        T.Errore = "Riga del rimborso non creata per " + A.Credito + " verso " + r.Moneta + ".";
-                        return T;
-                    }
-                    Completa(Riga, Chiave, ValTesto, IDUsati);
-                    T.Righe.add(Riga);
-                }
+                Riga[5] = Campo5;
+                Riga[18] = Campo18;
+                Completa(Riga, Chiave, ValTesto, IDUsati);
+                T.Righe.add(Riga);
             }
 
-            if (!UscitaRicevuta(T, P, r, Istante, Primo.ReteOriginale, Nota, ++n, IDUsati)) return T;
+            if (!UscitaRicevuta(T, P, r, Istante, Rete, Nota, ++n, IDUsati)) return T;
         }
         return T;
     }
@@ -814,8 +937,9 @@ public final class Principale_Fallimenti {
             }
         }
         String Chiave = FallimentiPiattaforme.PREFISSO_CHIAVE + P.Id;
-        String Nota = "Fallimento " + P.NomeBreve + ": rimborso del " + Percentuale.stripTrailingZeros().toPlainString()
-                + "% oltre il credito";
+        String Nota = "Fallimento " + P.NomeBreve + ": rimborso "
+                + (Percentuale == null || Percentuale.signum() <= 0 ? "" : "del " + Percentuale.stripTrailingZeros().toPlainString() + "% ")
+                + "oltre il credito";
         Map<String, String[]> IDUsati = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         int n = 0;
         for (Ricevuta r : Ricevute) {
@@ -855,15 +979,22 @@ public final class Principale_Fallimenti {
         return T;
     }
 
+    /** {@link #RegistraTranche(FallimentiPiattaforme.Procedura, String, BigDecimal, BigDecimal, BigDecimal, List, CreditoFiat)} con la ripartizione proporzionale. */
+    public static String RegistraTranche(FallimentiPiattaforme.Procedura P, String Data, BigDecimal Percentuale,
+            BigDecimal USDPagati, BigDecimal Atteso, List<Ricevuta> Ricevute) {
+        return RegistraTranche(P, Data, Percentuale, USDPagati, Atteso, Ricevute, CreditoFiat.PROPORZIONALE);
+    }
+
     /**
      * Registra una tranche: righe nella mappa, abbinamento ai depositi importati, tranche e recupero atteso nella
      * tabella. Il ricalcolo resta al chiamante.
      * @param USDPagati dollari pagati dalla tranche, {@code null} = percentuale × credito in dollari
+     * @param Modo come si consuma il credito in valuta ({@link #Consumi})
      * @return {@code null} se è andato tutto bene, altrimenti il motivo
      */
     public static String RegistraTranche(FallimentiPiattaforme.Procedura P, String Data, BigDecimal Percentuale,
-            BigDecimal USDPagati, BigDecimal Atteso, List<Ricevuta> Ricevute) {
-        Tranche T = PreparaTranche(P, Data, Percentuale, Atteso, Ricevute);
+            BigDecimal USDPagati, BigDecimal Atteso, List<Ricevuta> Ricevute, CreditoFiat Modo) {
+        Tranche T = PreparaTranche(P, Data, Percentuale, Atteso, Ricevute, Modo);
         if (T.Errore != null) return T.Errore;
         //Procedura chiusa (decisione dell'utente del 2026-10-28): la chiusura si toglie e si rifà dopo il rimborso, così
         //un residuo rimasto serve a questo rimborso invece di uscire senza valore
@@ -879,14 +1010,15 @@ public final class Principale_Fallimenti {
         FallimentiPiattaforme.Tranche t = new FallimentiPiattaforme.Tranche();
         //Nella forma del campo 1 dei movimenti: è così che la tranche si ritrova nella mappa (TrancheValide)
         t.Data = FunzioniDate.ConvertiDatadaLongAlSecondo(IstanteDigitato(Data)).substring(0, 16);
-        t.Percentuale = Percentuale;
+        //Senza percentuale (credito esaurito) la tranche resta nel piano a zero: il credito in dollari non cambia
+        t.Percentuale = Percentuale == null ? BigDecimal.ZERO : Percentuale;
         t.USDPagati = USDPagati != null ? USDPagati : P.CreditoUSD == null ? BigDecimal.ZERO
-                : P.CreditoUSD.multiply(Percentuale).divide(FallimentiPiattaforme.CENTO, 2, RoundingMode.HALF_UP);
+                : P.CreditoUSD.multiply(t.Percentuale).divide(FallimentiPiattaforme.CENTO, 2, RoundingMode.HALF_UP);
         //Le tranche registrate e mai salvate non si riscrivono
         List<FallimentiPiattaforme.Tranche> Valide = FallimentiPiattaforme.TrancheValide(P);
         P.Tranche.retainAll(Valide);
         P.Tranche.add(t);
-        P.RecuperoAtteso = Atteso;
+        if (Atteso != null && Atteso.signum() > 0) P.RecuperoAtteso = Atteso;
         if (!FallimentiPiattaforme.ScriviProcedura(P)) return "Rimborso registrato nei movimenti ma non nel database della procedura.";
         FallimentiPiattaforme.Invalida();
         if (EraChiusa) {
@@ -936,6 +1068,20 @@ public final class Principale_Fallimenti {
             Ultimo = Math.max(Ultimo, FunzioniDate.ConvertiDatainLongMinuto(d));
         }
         return Ultimo;
+    }
+
+    /**
+     * @return {@code true} se un nuovo rimborso troverebbe il credito già esaurito dalle tranche registrate, cioè
+     *         sarebbe un rimborso oltre il credito. Una chiusura non conta: il rimborso la sposta e legge il credito
+     *         com'era prima (come {@link #PreparaTranche}). {@code false} se la procedura non ha il blocco
+     */
+    public static boolean CreditoEsaurito(FallimentiPiattaforme.Procedura P) {
+        List<FallimentiPiattaforme.TokenCredito> Token = TokenDellaProcedura(P.Id);
+        if (Token.isEmpty()) return false;
+        String Chiusa = FallimentiPiattaforme.DataChiusura(P.Id);
+        long Istante = Chiusa == null ? Long.MAX_VALUE : FunzioniDate.ConvertiDatainLongMinuto(Chiusa) - 1;
+        //Tutti i token: con "Consuma prima il credito FIAT" il credito in valuta e quello cripto non finiscono insieme
+        return !CreditoResiduo(Token, Istante);
     }
 
     /** @return l'istante (al minuto) dell'ultimo movimento della procedura, 0 se non ce ne sono */
@@ -989,7 +1135,7 @@ public final class Principale_Fallimenti {
             if (Residuo.signum() <= 0) continue;
             Moneta m = new Moneta();
             m.Moneta = t.Simbolo;
-            m.Tipo = "Crypto";
+            m.Tipo = t.Fiat ? "FIAT" : "Crypto";
             m.MonetaAddress = "";
             m.Rete = t.ReteOriginale;
             m.Qta = Residuo.stripTrailingZeros().negate().toPlainString();
@@ -999,28 +1145,34 @@ public final class Principale_Fallimenti {
                 C.Errore = "Riga di chiusura non creata per " + t.Simbolo + ".";
                 return C;
             }
-            r[0] = SostituisciCategoria(r[0], "PC");
             r[5] = FallimentiPiattaforme.CAMPO5_CHIUSURA;
-            r[18] = FallimentiPiattaforme.CAMPO18_CHIUSURA;
+            //Il credito in valuta esce con un prelievo FIAT senza marcatore, come i FIAT rimasti: nessun effetto
+            if (!t.Fiat) {
+                r[0] = SostituisciCategoria(r[0], "PC");
+                r[18] = FallimentiPiattaforme.CAMPO18_CHIUSURA;
+            }
             Completa(r, Chiave, "0.00", IDUsati);
             C.Righe.add(r);
             String Costo = "";
-            if (t.Costo != null && t.Qta.signum() > 0) {
+            if (t.Fiat) Costo = " (FIAT)";
+            else if (t.Costo != null && t.Qta.signum() > 0) {
                 Costo = " (costo residuo " + t.Costo.multiply(Residuo).divide(t.Qta, 2, RoundingMode.HALF_UP).toPlainString()
                         + " EUR non dedotto)";
             }
             C.Descrizione.add(Residuo.stripTrailingZeros().toPlainString() + " " + t.Simbolo + Costo);
         }
 
-        //I FIAT rimasti nel sotto-wallet del credito: le quote non consumate dalle tranche. Solo le righe di questa
+        //I FIAT rimasti nel sotto-wallet del credito (i crediti in valuta escono sopra). Solo le righe di questa
         //procedura, perché una seconda procedura sulla stessa piattaforma usa lo stesso sotto-wallet
         Map<String, BigDecimal> Fiat = new TreeMap<>();
         for (String[] v : MappaCryptoWallet.values()) {
             if (v[3] == null || !v[3].trim().equalsIgnoreCase(P.Exchange) || v[4] == null
                     || !v[4].trim().equalsIgnoreCase(SOTTOWALLET) || !Chiave.equals(GruppoOperazione.Chiave(v))) continue;
             if (FunzioniDate.ConvertiDatainLongMinuto(v[1]) > Istante) continue;
-            if ("FIAT".equalsIgnoreCase(v[9]) && !v[8].isBlank()) Fiat.merge(v[8], Qta(v[10]), BigDecimal::add);
-            if ("FIAT".equalsIgnoreCase(v[12]) && !v[11].isBlank()) Fiat.merge(v[11], Qta(v[13]), BigDecimal::add);
+            if ("FIAT".equalsIgnoreCase(v[9]) && !v[8].isBlank() && !FallimentiPiattaforme.isTokenCredito(v[8]))
+                Fiat.merge(v[8], Qta(v[10]), BigDecimal::add);
+            if ("FIAT".equalsIgnoreCase(v[12]) && !v[11].isBlank() && !FallimentiPiattaforme.isTokenCredito(v[11]))
+                Fiat.merge(v[11], Qta(v[13]), BigDecimal::add);
         }
         for (Map.Entry<String, BigDecimal> e : Fiat.entrySet()) {
             if (e.getValue().signum() <= 0) continue;
@@ -1131,11 +1283,16 @@ public final class Principale_Fallimenti {
         String Coda = Oltre == 0 ? "" : ", " + Oltre + (Oltre == 1 ? " rimborso" : " rimborsi") + " oltre il credito";
         String Chiusa = FallimentiPiattaforme.DataChiusura(Id);
         if (Chiusa != null) return "Chiusa il " + Chiusa + Coda;
+        //Il residuo di tutto il credito, pesato col valore alla domanda: cripto e valuta possono finire in tempi diversi
+        BigDecimal Valore = BigDecimal.ZERO, Resta = BigDecimal.ZERO;
         for (FallimentiPiattaforme.TokenCredito t : FallimentiPiattaforme.Registro().Token.values()) {
             if (!Id.equals(t.IdProcedura) || t.Qta.signum() <= 0) continue;
-            BigDecimal Residua = t.QtaAl(Long.MAX_VALUE).multiply(FallimentiPiattaforme.CENTO)
-                    .divide(t.Qta, 2, RoundingMode.HALF_UP);
-            return Residua.signum() <= 0 ? "Credito esaurito" + Coda
+            Valore = Valore.add(t.ValoreEUR);
+            Resta = Resta.add(t.ValoreEUR.multiply(t.QtaAl(Long.MAX_VALUE).max(BigDecimal.ZERO)).divide(t.Qta, SCALA, RoundingMode.HALF_UP));
+        }
+        if (Valore.signum() > 0) {
+            BigDecimal Residua = Resta.multiply(FallimentiPiattaforme.CENTO).divide(Valore, 2, RoundingMode.HALF_UP);
+            return Resta.signum() <= 0 ? "Credito esaurito" + Coda
                     : "Aperta, residuo " + Residua.stripTrailingZeros().toPlainString() + "%" + Coda;
         }
         return "Aperta" + Coda;
@@ -1157,8 +1314,10 @@ public final class Principale_Fallimenti {
         public BigDecimal ValoreEUR = BigDecimal.ZERO;
         /** Plusvalenze meno minusvalenze delle righe, come le ha lasciate l'ultimo ricalcolo. */
         public BigDecimal Risultato = BigDecimal.ZERO;
-        /** Quanti movimenti compongono il rimborso. */
+        /** Quanti movimenti della procedura compongono il rimborso (i depositi importati abbinati non contano). */
         public int Movimenti;
+        /** Gli ID dei movimenti del rimborso più quelli dei depositi importati abbinati, in ordine di ID. */
+        public List<String> ID = new ArrayList<>();
     }
 
     /**
@@ -1186,12 +1345,16 @@ public final class Principale_Fallimenti {
             RimborsoRegistrato R = new RimborsoRegistrato();
             R.Data = e.getKey();
             R.Movimenti = e.getValue().size();
+            java.util.Set<String> Tutti = new java.util.TreeSet<>();
             Map<String, BigDecimal> Entrate = new LinkedHashMap<>();
             Map<String, String> Arrivi = new LinkedHashMap<>();
-            boolean Natura = false, Oltre = false;
+            boolean Natura = false, Oltre = false, ConCredito = false;
             for (String[] v : e.getValue()) {
+                Tutti.add(v[0]);
                 if (FallimentiPiattaforme.Inizia(v[18], FallimentiPiattaforme.RESTITUZIONE_IN_NATURA)) Natura = true;
+                //Un FRT accanto a righe che consumano credito è la parte cripto che riceve valore senza consumare
                 if (FallimentiPiattaforme.RimborsoOltreIlCredito(v[18])) Oltre = true;
+                else if (FallimentiPiattaforme.isRigaDiRimborso(v)) ConCredito = true;
                 if ("S".equals(v[33])) {
                     BigDecimal Plus = FallimentiPiattaforme.Numero(v[19]);
                     if (Plus != null) R.Risultato = R.Risultato.add(Plus);
@@ -1207,17 +1370,22 @@ public final class Principale_Fallimenti {
                 if (!v[8].isBlank() && v[11].isBlank() && !FallimentiPiattaforme.isTokenCredito(v[8]) && v[20] != null) {
                     for (String Altro : v[20].split(",")) {
                         String[] d = MappaCryptoWallet.get(Altro.trim());
-                        if (d != null && !Chiave.equals(GruppoOperazione.Chiave(d))) Arrivi.put(v[8], d[3] + " / " + d[4]);
+                        if (d != null && !Chiave.equals(GruppoOperazione.Chiave(d))) {
+                            Arrivi.put(v[8], d[3] + " / " + d[4]);
+                            Tutti.add(d[0]);
+                        }
                     }
                 }
             }
+            R.ID.addAll(Tutti);
             if (R.Data.equals(Chiusa)) {
                 R.Tipo = "Chiusura";
                 R.ValoreEUR = null;
             } else {
-                R.Tipo = Oltre ? "Oltre il credito" : Natura ? "Restituzione in natura" : "Rimborso";
+                R.Tipo = Oltre && !ConCredito ? "Oltre il credito" : Natura ? "Restituzione in natura" : "Rimborso";
                 FallimentiPiattaforme.Tranche t = Piano.get(R.Data);
-                if (t != null) {
+                //Un rimborso oltre il credito si registra senza percentuale: nel piano ha zero, qui resta vuoto
+                if (t != null && t.Percentuale.signum() > 0) {
                     R.Percentuale = t.Percentuale;
                     R.USD = t.USDPagati;
                 }

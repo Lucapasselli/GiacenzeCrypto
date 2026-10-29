@@ -1,9 +1,13 @@
 package com.giacenzecrypto.giacenze_crypto;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Window;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -48,6 +52,10 @@ public class GUI_FallimentiPiattaforme_Pannello extends JPanel {
     private final DefaultTableModel ModelloRimborsi;
     private final JTable TabellaRimborsi;
     private final JLabel TitoloRimborsi = new JLabel(" ");
+    /** Gli ID dei movimenti di ogni riga dei rimborsi, nell'ordine del model. */
+    private final List<List<String>> IDRimborsi = new ArrayList<>();
+    private final DefaultTableModel ModelloMovimenti;
+    private final JLabel TitoloMovimenti = new JLabel(" ");
 
     /**
      * @param AggiornaTutto ricalcolo e ricarica delle tabelle della finestra principale, da chiamare una volta dopo
@@ -95,20 +103,66 @@ public class GUI_FallimentiPiattaforme_Pannello extends JPanel {
             }
         };
         TabellaRimborsi = new JTable(ModelloRimborsi);
+        TabellaRimborsi.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         TabellaRimborsi.setAutoCreateRowSorter(true);
         Tabelle.Tabelle_InizializzaHeader(TabellaRimborsi);
         Tabelle.ColoraTabellaSemplice(TabellaRimborsi);
         Tabelle.TooltipHeaderColonne(TabellaRimborsi, null, null, "Percentuale del credito pagata, dal piano",
                 "Dollari pagati, dal piano", null, "Piattaforma e wallet del deposito abbinato",
-                "Valore delle monete ricevute", "Plusvalenze meno minusvalenze del rimborso, dopo l'ultimo ricalcolo", null);
+                "Valore delle monete ricevute", "Plusvalenze meno minusvalenze del rimborso, dopo l'ultimo ricalcolo",
+                "Movimenti scritti dalla procedura, senza i depositi importati abbinati");
         TabellaRimborsi.getColumnModel().getColumn(0).setPreferredWidth(130);
         TabellaRimborsi.getColumnModel().getColumn(4).setPreferredWidth(220);
         TabellaRimborsi.getColumnModel().getColumn(5).setPreferredWidth(220);
         JPanel PannelloRimborsi = new JPanel(new BorderLayout(0, 4));
         PannelloRimborsi.add(TitoloRimborsi, BorderLayout.NORTH);
-        PannelloRimborsi.add(new JScrollPane(TabellaRimborsi), BorderLayout.CENTER);
-        JSplitPane Divisione = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(Tabella), PannelloRimborsi);
-        Divisione.setResizeWeight(0.5);
+        JScrollPane ScorriRimborsi = new JScrollPane(TabellaRimborsi);
+        //Altezze preferite piccole: lo spazio che avanza lo dividono le due tabelle, senza schiacciare le procedure
+        ScorriRimborsi.setPreferredSize(new Dimension(100, 120));
+        PannelloRimborsi.add(ScorriRimborsi, BorderLayout.CENTER);
+
+        //Sotto ancora, i movimenti del rimborso selezionato: quelli della procedura e il deposito abbinato
+        ModelloMovimenti = new DefaultTableModel(new Object[]{"Data e ora", "Piattaforma", "Wallet", "Tipo", "Esce",
+            "Quantità uscita", "Entra", "Quantità entrata", "Valore (EUR)", "Plus/minus (EUR)", "ID"}, 0) {
+            /** @return sempre {@code false}: la tabella è solo un elenco */
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
+        };
+        JTable TabellaMovimenti = new JTable(ModelloMovimenti);
+        TabellaMovimenti.setAutoCreateRowSorter(true);
+        //Le quantità sono di monete diverse: sommarle nell'intestazione non ha senso
+        TabellaMovimenti.putClientProperty("ColonneSenzaSomma", java.util.Set.of(5, 7));
+        Tabelle.Tabelle_InizializzaHeader(TabellaMovimenti);
+        Tabelle.ColoraTabellaSemplice(TabellaMovimenti);
+        Tabelle.TooltipHeaderColonne(TabellaMovimenti, null, null, null, "Tipo di movimento", null, null, null, null,
+                null, "Plusvalenza o minusvalenza del movimento, dopo l'ultimo ricalcolo", null);
+        TabellaMovimenti.getColumnModel().getColumn(0).setPreferredWidth(130);
+        TabellaMovimenti.getColumnModel().getColumn(2).setPreferredWidth(140);
+        TabellaMovimenti.getColumnModel().getColumn(3).setPreferredWidth(220);
+        TabellaMovimenti.getColumnModel().getColumn(4).setPreferredWidth(170);
+        TabellaMovimenti.getColumnModel().getColumn(6).setPreferredWidth(170);
+        TabellaMovimenti.getColumnModel().getColumn(10).setPreferredWidth(260);
+        JPanel PannelloMovimenti = new JPanel(new BorderLayout(0, 4));
+        PannelloMovimenti.add(TitoloMovimenti, BorderLayout.NORTH);
+        JScrollPane ScorriMovimenti = new JScrollPane(TabellaMovimenti);
+        ScorriMovimenti.setPreferredSize(new Dimension(100, 160));
+        PannelloMovimenti.add(ScorriMovimenti, BorderLayout.CENTER);
+        TabellaRimborsi.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) CaricaMovimenti();
+        });
+
+        //Le procedure sono poche: la loro tabella resta bassa, cinque righe, e lo spazio va a rimborsi e movimenti
+        JScrollPane ScorriProcedure = new JScrollPane(Tabella);
+        ScorriProcedure.setPreferredSize(new Dimension(100, Tabella.getRowHeight() * 5
+                + Tabella.getTableHeader().getPreferredSize().height + 6));
+        ScorriProcedure.setMinimumSize(new Dimension(100, Tabella.getRowHeight() * 2
+                + Tabella.getTableHeader().getPreferredSize().height + 6));
+        JSplitPane DivisioneRimborsi = new JSplitPane(JSplitPane.VERTICAL_SPLIT, PannelloRimborsi, PannelloMovimenti);
+        DivisioneRimborsi.setResizeWeight(0.4);
+        JSplitPane Divisione = new JSplitPane(JSplitPane.VERTICAL_SPLIT, ScorriProcedure, DivisioneRimborsi);
+        Divisione.setResizeWeight(0);
         add(Divisione, BorderLayout.CENTER);
 
         JButton Nuova = new JButton("Nuova procedura...");
@@ -231,12 +285,16 @@ public class GUI_FallimentiPiattaforme_Pannello extends JPanel {
         CaricaRimborsi();
     }
 
-    /** Riempie l'elenco dei rimborsi registrati della procedura selezionata. */
+    /** Riempie l'elenco dei rimborsi registrati della procedura selezionata, tenendo selezionato quello che lo era. */
     private void CaricaRimborsi() {
+        String DataSelezionata = TabellaRimborsi.getSelectedRow() < 0 ? null
+                : (String) ModelloRimborsi.getValueAt(TabellaRimborsi.convertRowIndexToModel(TabellaRimborsi.getSelectedRow()), 0);
         ModelloRimborsi.setRowCount(0);
+        IDRimborsi.clear();
         String Id = IdSelezionato();
         if (Id == null) {
             TitoloRimborsi.setText("Seleziona una procedura per vedere i rimborsi registrati.");
+            CaricaMovimenti();
             return;
         }
         java.util.List<Principale_Fallimenti.RimborsoRegistrato> L = Principale_Fallimenti.RimborsiRegistrati(Id);
@@ -248,7 +306,47 @@ public class GUI_FallimentiPiattaforme_Pannello extends JPanel {
                 R.USD == null ? "" : R.USD.toPlainString(), R.Ricevute, R.Arrivo,
                 R.ValoreEUR == null ? "" : R.ValoreEUR.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString(),
                 R.Risultato.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString(), R.Movimenti});
+            IDRimborsi.add(R.ID);
         }
+        for (int r = 0; DataSelezionata != null && r < TabellaRimborsi.getRowCount(); r++) {
+            if (DataSelezionata.equals(ModelloRimborsi.getValueAt(TabellaRimborsi.convertRowIndexToModel(r), 0))) {
+                TabellaRimborsi.setRowSelectionInterval(r, r);
+                break;
+            }
+        }
+        CaricaMovimenti();
+    }
+
+    /** Riempie l'elenco dei movimenti del rimborso selezionato, letti dalla mappa dei movimenti. */
+    private void CaricaMovimenti() {
+        ModelloMovimenti.setRowCount(0);
+        int r = TabellaRimborsi.getSelectedRow();
+        if (r < 0) {
+            TitoloMovimenti.setText(ModelloRimborsi.getRowCount() == 0 ? " "
+                    : "Seleziona un rimborso per vedere i suoi movimenti.");
+            return;
+        }
+        int m = TabellaRimborsi.convertRowIndexToModel(r);
+        TitoloMovimenti.setText("Movimenti del " + ModelloRimborsi.getValueAt(m, 0) + " (" + ModelloRimborsi.getValueAt(m, 1)
+                + "), compresi i depositi importati abbinati:");
+        for (String ID : IDRimborsi.get(m)) {
+            String[] v = Principale.MappaCryptoWallet.get(ID);
+            if (v == null) continue;
+            BigDecimal Plus = "S".equals(v[33]) ? FallimentiPiattaforme.Numero(v[19]) : null;
+            ModelloMovimenti.addRow(new Object[]{v[1], v[3], v[4], v[5], v[8], Quantita(v[10]), v[11], Quantita(v[13]),
+                Euro(FallimentiPiattaforme.Numero(v[15])), Euro(Plus), v[0]});
+        }
+    }
+
+    /** @return l'importo a due decimali, vuoto se non c'è */
+    private static String Euro(BigDecimal e) {
+        return e == null ? "" : e.setScale(2, RoundingMode.HALF_UP).toPlainString();
+    }
+
+    /** @return la quantità a 8 decimali al massimo, vuota se non c'è: solo per la lettura */
+    private static String Quantita(String q) {
+        BigDecimal n = FallimentiPiattaforme.Numero(q);
+        return n == null ? "" : n.setScale(8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
     }
 
     private Window Finestra() {

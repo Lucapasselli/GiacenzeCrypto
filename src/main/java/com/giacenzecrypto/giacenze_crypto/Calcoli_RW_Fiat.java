@@ -276,6 +276,9 @@ public final class Calcoli_RW_Fiat {
         if (importo == null) {
             return;
         }
+        //Un credito in valuta verso una piattaforma fallita (CELSIUS.CREDITO.EUR) resta la sua valuta: il blocco è uno
+        //scambio EUR → credito che qui si annulla, e il rimborso spende quella valuta come prima del blocco
+        simbolo = FallimentiPiattaforme.ValutaDelCredito(trim(simbolo));
         gambe.add(new GambaFiat(giorno, trim(simbolo).toUpperCase(),
                 entrata ? importo : importo.negate(), id, natura));
     }

@@ -319,6 +319,12 @@ class FallimentiPiattaformeTest {
         Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
     }
 
+    private static Moneta creditoFiat(String simbolo, String qta) {
+        Moneta m = credito(simbolo, qta);
+        m.Tipo = "FIAT";
+        return m;
+    }
+
     private static FallimentiPiattaforme.Procedura pianoCelsius() {
         FallimentiPiattaforme.Procedura p = new FallimentiPiattaforme.Procedura();
         p.Id = "CELSIUS";
@@ -622,14 +628,19 @@ class FallimentiPiattaformeTest {
     @Test
     void valoreCredito_iFiatDellaPiattaformaPesanoNelCredito() {
         procedura("0.5765");
-        FallimentiPiattaforme.Procedura P = pianoCelsius();
-        //20.000 euro di FIAT accanto ai 20.000 del BTC: al BTC tocca metà del credito
-        P.FiatEUR = new BigDecimal("20000");
-        assertTrue(FallimentiPiattaforme.ScriviProcedura(P));
+        //20.000 euro di FIAT accanto ai 20.000 del BTC, bloccati nel loro credito in valuta: al BTC tocca metà del credito
+        String[] Eur = movimento("2022-07-13 00:00", "SF", FallimentiPiattaforme.CAMPO18_BLOCCO,
+                "EUR", "FIAT", "20000", "CELSIUS.CREDITO.EUR", "FIAT", "20000", "20000");
+        Eur[GruppoOperazione.CAMPO] = FallimentiPiattaforme.PREFISSO_CHIAVE + "CELSIUS";
+        assertTrue(FallimentiPiattaforme.ScriviProcedura(pianoCelsius()));
         FallimentiPiattaforme.Ricostruisci();
 
         assertCirca("9450", valore("1", FINE_2023));
-        assertEquals(0, new BigDecimal("20000").compareTo(FallimentiPiattaforme.LeggiProcedure().get("CELSIUS").FiatEUR));
+        //Il credito in valuta vale la sua quantità, con ogni opzione, e nel quadro W/RW FIAT resta euro
+        Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(creditoFiat("CELSIUS.CREDITO.EUR", "20000"), null, FINE_2023, null, "");
+        assertCirca("20000", IP.prezzoQta);
+        assertEquals("EUR", FallimentiPiattaforme.ValutaDelCredito("CELSIUS.CREDITO.EUR"));
+        assertEquals("USD", FallimentiPiattaforme.ValutaDelCredito("USD"));
     }
 
     @Test
@@ -670,9 +681,14 @@ class FallimentiPiattaformeTest {
 
     /** Procedura Celsius creata col dialogo: 1 BTC (costo 5.000, credito 20.000 euro, 21.000 dollari). */
     private static FallimentiPiattaforme.Procedura proceduraCreata(String atteso) {
+        return proceduraCreata(atteso, false);
+    }
+
+    private static FallimentiPiattaforme.Procedura proceduraCreata(String atteso, boolean conFiat) {
         acquistoSu("2021-01-01 10:00", "Earn", "BTC", "1", "5000");
         List<Principale_Fallimenti.Posizione> Pos = Principale_Fallimenti.GiacenzeAllaData("Celsius", "2022-07-13");
         Pos.forEach(p -> p.ValoreEUR = new BigDecimal("20000"));
+        if (conFiat) Pos.addAll(Principale_Fallimenti.GiacenzeFiatPerSottoWallet("Celsius", "2022-07-13"));
         FallimentiPiattaforme.Procedura P = new FallimentiPiattaforme.Procedura();
         P.Id = "CELSIUS";
         P.NomeBreve = "CELSIUS";
@@ -760,11 +776,9 @@ class FallimentiPiattaformeTest {
                 .CostoDelleRimanenze("Tutti", Principale_GiacenzeaData.ChiaveRiga("BTC", "Crypto", "", ""), "0.3"));
     }
 
+    /** Come {@link #proceduraCreata} con anche gli euro della piattaforma nel blocco (credito in valuta). */
     private static FallimentiPiattaforme.Procedura proceduraCreataConFiat() {
-        FallimentiPiattaforme.Procedura P = proceduraCreata("100");
-        P.FiatEUR = new BigDecimal("10000");
-        assertTrue(FallimentiPiattaforme.ScriviProcedura(P));
-        return P;
+        return proceduraCreata("100", true);
     }
 
     @Test
@@ -830,6 +844,12 @@ class FallimentiPiattaformeTest {
         assertEquals("550 EUR", Secondo.Ricevute);
         assertEquals("fuori dal programma", Secondo.Arrivo);
         assertCirca("354.17", Secondo.Risultato);
+        //I movimenti di ogni rimborso: quelli della procedura e il deposito importato abbinato, che è di Coinbase
+        assertTrue(Primo.ID.contains(Dep[0]), Primo.ID.toString());
+        assertTrue(Primo.ID.stream().filter(id -> !id.equals(Dep[0]))
+                .allMatch(id -> "FALL-CELSIUS".equals(Principale.MappaCryptoWallet.get(id)[GruppoOperazione.CAMPO])));
+        assertTrue(Secondo.ID.stream()
+                .allMatch(id -> "FALL-CELSIUS".equals(Principale.MappaCryptoWallet.get(id)[GruppoOperazione.CAMPO])));
     }
 
     @Test
@@ -958,6 +978,11 @@ class FallimentiPiattaformeTest {
         List<Principale_Fallimenti.Posizione> Pos = Principale_Fallimenti.GiacenzeAllaData("Celsius", "2022-07-13");
         assertEquals(1, Pos.size());
         Pos.forEach(p -> p.ValoreEUR = new BigDecimal("20000"));
+        //Gli euro fra le posizioni, come li propone il dialogo: valore = quantità
+        List<Principale_Fallimenti.Posizione> Euro = Principale_Fallimenti.GiacenzeFiatPerSottoWallet("Celsius", "2022-07-13");
+        assertEquals(1, Euro.size());
+        assertEquals(0, new BigDecimal("15000").compareTo(Euro.get(0).ValoreEUR));
+        Pos.addAll(Euro);
         FallimentiPiattaforme.Procedura P = new FallimentiPiattaforme.Procedura();
         P.Id = "CELSIUS";
         P.NomeBreve = "CELSIUS";
@@ -994,7 +1019,7 @@ class FallimentiPiattaformeTest {
         assertNotNull(Principale_Fallimenti.PreparaChiusura(P, "2024-01-15 10:00").Errore);
         Principale_Fallimenti.Chiusura C = Principale_Fallimenti.PreparaChiusura(P, "2025-06-30 12:00");
         assertNull(C.Errore);
-        assertEquals(List.of("0.5 CELSIUS.CREDITO.BTC (costo residuo 2500.00 EUR non dedotto)", "7500 EUR (FIAT)"), C.Descrizione);
+        assertEquals(List.of("0.5 CELSIUS.CREDITO.BTC (costo residuo 2500.00 EUR non dedotto)", "7500 CELSIUS.CREDITO.EUR (FIAT)"), C.Descrizione);
         assertNull(Principale_Fallimenti.ChiudiProcedura(P, "2025-06-30 12:00"));
         Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
 
@@ -1037,8 +1062,8 @@ class FallimentiPiattaformeTest {
         Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
         assertCirca("0", sommaPlusvalenze(v -> true));
         assertEquals("Aperta, residuo 100%", Principale_Fallimenti.Stato("CELSIUS"));
-        //Restano il blocco: giroconti di BTC ed euro e la riga FBL
-        assertEquals(5, Principale_Fallimenti.MovimentiProcedura("CELSIUS").size());
+        //Restano il blocco: giroconti di BTC ed euro e le due righe FBL
+        assertEquals(6, Principale_Fallimenti.MovimentiProcedura("CELSIUS").size());
     }
 
     @Test
@@ -1048,6 +1073,7 @@ class FallimentiPiattaformeTest {
         acquistoSu("2021-01-01 10:00", "Card", "BTC", "1", "5000");
         List<Principale_Fallimenti.Posizione> Pos = Principale_Fallimenti.GiacenzeAllaData("Celsius", "2022-07-13");
         Pos.forEach(p -> p.ValoreEUR = new BigDecimal("20000"));
+        Pos.addAll(Principale_Fallimenti.GiacenzeFiatPerSottoWallet("Celsius", "2022-07-13"));
         FallimentiPiattaforme.Procedura P = new FallimentiPiattaforme.Procedura();
         P.Id = "CELSIUS";
         P.NomeBreve = "CELSIUS";
@@ -1060,7 +1086,7 @@ class FallimentiPiattaformeTest {
         assertEquals(0, new BigDecimal("15000").compareTo(new BigDecimal(Giroconto[13])), "si sposta il netto, non i 20.000 di Main");
 
         Principale_Fallimenti.Chiusura C = Principale_Fallimenti.PreparaChiusura(P, "2025-06-30 12:00");
-        assertEquals(List.of("1 CELSIUS.CREDITO.BTC", "15000 EUR (FIAT)"), C.Descrizione);
+        assertEquals(List.of("1 CELSIUS.CREDITO.BTC", "15000 CELSIUS.CREDITO.EUR (FIAT)"), C.Descrizione);
         assertNull(Principale_Fallimenti.ChiudiProcedura(P, "2025-06-30 12:00"));
         //Il sotto-wallet del credito non va mai in negativo e la piattaforma torna a zero (Main +5.000, Card −5.000)
         assertTrue(saldiNegativi().stream().noneMatch(s -> s.contains(Principale_Fallimenti.SOTTOWALLET)), saldiNegativi().toString());
@@ -1164,6 +1190,39 @@ class FallimentiPiattaformeTest {
         assertNull(Principale_Fallimenti.AnnullaUltimaOperazione("CELSIUS"));
         assertEquals("", Dep[18]);
         assertEquals("Credito esaurito", Principale_Fallimenti.Stato("CELSIUS"));
+    }
+
+    @Test
+    void oltreIlCredito_senzaPercentuale() {
+        FallimentiPiattaforme.Procedura Aperta = proceduraCreata("60");
+        assertFalse(Principale_Fallimenti.CreditoEsaurito(Aperta));
+        //Credito non esaurito: la percentuale resta obbligatoria
+        assertNotNull(Principale_Fallimenti.PreparaTranche(Aperta, "2024-01-15 10:00", null, null,
+                List.of(ricevuta("EUR", "FIAT", "100", "100", null))).Errore);
+        Principale.MappaCryptoWallet.clear();
+        FallimentiPiattaforme.CancellaProcedura("CELSIUS");
+        FallimentiPiattaforme.Invalida();
+
+        FallimentiPiattaforme.Procedura P = creditoEsaurito();
+        assertTrue(Principale_Fallimenti.CreditoEsaurito(P));
+        BigDecimal Atteso = FallimentiPiattaforme.LeggiProcedure().get("CELSIUS").RecuperoAtteso;
+        assertNull(Principale_Fallimenti.RegistraTranche(P, "2025-09-15 10:00", null, null, null,
+                List.of(ricevuta("EUR", "FIAT", "900", "900", null))));
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        String[] Frt = Principale.MappaCryptoWallet.values().stream()
+                .filter(v -> FallimentiPiattaforme.RimborsoOltreIlCredito(v[18])).findFirst().orElseThrow();
+        assertCirca("900", new BigDecimal(Frt[19]));
+        //Nel piano la tranche ha zero e il recupero atteso non cambia, nell'elenco la percentuale resta vuota
+        FallimentiPiattaforme.Procedura Letta = FallimentiPiattaforme.LeggiProcedure().get("CELSIUS");
+        assertEquals(0, Atteso.compareTo(Letta.RecuperoAtteso));
+        FallimentiPiattaforme.Tranche Ultima = Letta.Tranche.get(Letta.Tranche.size() - 1);
+        assertEquals(0, Ultima.Percentuale.signum());
+        assertEquals(0, Ultima.USDPagati.signum());
+        List<Principale_Fallimenti.RimborsoRegistrato> L = Principale_Fallimenti.RimborsiRegistrati("CELSIUS");
+        Principale_Fallimenti.RimborsoRegistrato R = L.get(L.size() - 1);
+        assertEquals("Oltre il credito", R.Tipo);
+        assertNull(R.Percentuale);
+        assertNull(R.USD);
     }
 
     @Test
@@ -1285,7 +1344,8 @@ class FallimentiPiattaformeTest {
         assertEquals(2, Chiusura.size());
         assertTrue(Chiusura.stream().anyMatch(v -> new BigDecimal("0.4").compareTo(new BigDecimal(v[10]).abs()) == 0
                 && FallimentiPiattaforme.CAMPO18_CHIUSURA.equals(v[18])));
-        assertTrue(Chiusura.stream().anyMatch(v -> "EUR".equals(v[8]) && new BigDecimal("6000").compareTo(new BigDecimal(v[10]).abs()) == 0));
+        assertTrue(Chiusura.stream().anyMatch(v -> "CELSIUS.CREDITO.EUR".equals(v[8]) && v[0].endsWith("_PF") && v[18].isBlank()
+                && new BigDecimal("6000").compareTo(new BigDecimal(v[10]).abs()) == 0));
         java.util.Map<String, Moneta> Dopo = Principale_GiacenzeaData.SommaQuantitaAData(Principale.MappaCryptoWallet.values(),
                 FunzioniDate.ConvertiDatainLong("2025-09-02"), "Celsius", "tutti");
         assertTrue(Dopo.values().stream().allMatch(m -> new BigDecimal(m.Qta).signum() == 0),
@@ -1294,12 +1354,14 @@ class FallimentiPiattaformeTest {
 
     @Test
     void depositiCandidati_nonPropongonoLeRigheDiUnAltraProcedura() {
-        //La tranche in euro di Celsius scrive un deposito FIAT sul sotto-wallet del credito, senza campo 18
+        //La tranche in euro di Celsius scrive righe FIAT senza campo 18 sul sotto-wallet del credito: lo scambio dal
+        //credito in valuta agli euro ricevuti
         FallimentiPiattaforme.Procedura P = proceduraConEuro();
         assertNull(Principale_Fallimenti.RegistraTranche(P, "2024-01-15 10:00", new BigDecimal("50"), null,
                 new BigDecimal("100"), List.of(ricevuta("EUR", "FIAT", "17500", "17500", null))));
-        assertTrue(Principale.MappaCryptoWallet.values().stream().anyMatch(v -> v[0].endsWith("_DF")
-                && "FALL-CELSIUS".equals(v[GruppoOperazione.CAMPO]) && v[18].isBlank()));
+        assertTrue(Principale.MappaCryptoWallet.values().stream().anyMatch(v -> v[0].endsWith("_SF")
+                && "FALL-CELSIUS".equals(v[GruppoOperazione.CAMPO]) && v[18].isBlank()
+                && "CELSIUS.CREDITO.EUR".equals(v[8]) && "EUR".equals(v[11])));
         String[] Kraken = depositoSu("Kraken", "20250218100500", "2025-02-18 10:05", "USD", "FIAT", "2163", "2075");
 
         FallimentiPiattaforme.Procedura Altra = new FallimentiPiattaforme.Procedura();
@@ -1308,6 +1370,228 @@ class FallimentiPiattaformeTest {
         Altra.DataDomanda = "2022-11-11";
         List<String[]> Candidati = Principale_Fallimenti.DepositiCandidati(Altra);
         assertEquals(List.of(Kraken[0]), Candidati.stream().map(v -> v[0]).toList());
+    }
+
+    // ------------------------------------------------------------------
+    // Credito in valuta e "Consuma prima il credito FIAT" (esempi concordati con l'utente il 2026-10-29)
+    // ------------------------------------------------------------------
+
+    /**
+     * Credito di 1.000 euro: 200 euro rimasti su Main (credito in valuta) e 1 BTC con credito 800 e costo 500. Credito in
+     * dollari 1.100, cambio di prova 0,9.
+     */
+    private static FallimentiPiattaforme.Procedura proceduraMille(String atteso) {
+        depositoSu("Celsius", "20201201100000", "2020-12-01 10:00", "EUR", "FIAT", "700", "700");
+        acquistoSu("2021-01-01 10:00", "Main", "BTC", "1", "500");
+        List<Principale_Fallimenti.Posizione> Pos = Principale_Fallimenti.PosizioniAllaData("Celsius", "2022-07-13");
+        assertEquals(2, Pos.size(), () -> Pos.stream().map(p -> p.Moneta + " " + p.Qta).toList().toString());
+        Pos.stream().filter(p -> p.Moneta.equals("BTC")).forEach(p -> p.ValoreEUR = new BigDecimal("800"));
+        FallimentiPiattaforme.Procedura P = new FallimentiPiattaforme.Procedura();
+        P.Id = "CELSIUS";
+        P.NomeBreve = "CELSIUS";
+        P.Exchange = "Celsius";
+        P.DataDomanda = "2022-07-13";
+        P.CreditoUSD = new BigDecimal("1100");
+        P.RecuperoAtteso = new BigDecimal(atteso);
+        assertNull(Principale_Fallimenti.CreaProcedura(P, Pos));
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        return P;
+    }
+
+    private static BigDecimal residuo(String token) {
+        FallimentiPiattaforme.Invalida();
+        return FallimentiPiattaforme.Registro().Token.get(token).QtaAl(Long.MAX_VALUE);
+    }
+
+    private static BigDecimal costoScaricato(java.util.function.Predicate<String[]> filtro) {
+        BigDecimal s = BigDecimal.ZERO;
+        for (String[] v : Principale.MappaCryptoWallet.values()) {
+            if (filtro.test(v) && "CELSIUS.CREDITO.BTC".equals(v[8]) && !v[16].isBlank()) s = s.add(new BigDecimal(v[16]));
+        }
+        return s;
+    }
+
+    @Test
+    void creditoInValuta_bloccoComeScambioFiatSenzaEffetti() {
+        proceduraMille("100");
+        String[] Blocco = Principale.MappaCryptoWallet.values().stream()
+                .filter(v -> FallimentiPiattaforme.TrasferisceCosto(v[18]) && v[8].equals("EUR")).findFirst().orElseThrow();
+        assertTrue(Blocco[0].endsWith("_SF"), Blocco[0]);
+        assertEquals("CELSIUS.CREDITO.EUR", Blocco[11]);
+        assertEquals("FIAT", Blocco[12]);
+        assertEquals("200.00", Blocco[15]);
+        assertEquals("", Blocco[38], "nessuna anomalia del motore sullo scambio FIAT");
+        assertNotEquals("S", Blocco[33]);
+        assertEquals(List.of(), saldiNegativi());
+        assertEquals("Aperta, residuo 100%", Principale_Fallimenti.Stato("CELSIUS"));
+        //Una seconda procedura sulla stessa piattaforma non ripropone il credito in valuta della prima
+        assertTrue(Principale_Fallimenti.PosizioniAllaData("Celsius", "2022-07-20").isEmpty());
+    }
+
+    @Test
+    void primaFiat_tranche30Percento_valore360() {
+        FallimentiPiattaforme.Procedura P = proceduraMille("100");
+        String[] Dep = depositoSu("Coinbase", "20240115100500", "2024-01-15 10:05", "BTC", "Crypto", "0.006", "360");
+        Principale_Fallimenti.Tranche T = Principale_Fallimenti.PreparaTranche(P, "2024-01-15 10:00", new BigDecimal("30"),
+                new BigDecimal("100"), List.of(ricevuta("BTC", "Crypto", "0.006", "360", Dep[0])), Principale_Fallimenti.CreditoFiat.PRIMA_PER_VALORE);
+        assertNull(T.Errore);
+        assertNull(T.Avviso);
+        assertNull(Principale_Fallimenti.RegistraTranche(P, "2024-01-15 10:00", new BigDecimal("30"), null,
+                new BigDecimal("100"), List.of(ricevuta("BTC", "Crypto", "0.006", "360", Dep[0])), Principale_Fallimenti.CreditoFiat.PRIMA_PER_VALORE));
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        //Gli euro: 200 alla pari, comprano BTC per 200. Il BTC: 100 di credito su 800, 12,5%, costo 62,50, valore 160
+        String[] Acquisto = Principale.MappaCryptoWallet.values().stream()
+                .filter(v -> "CELSIUS.CREDITO.EUR".equals(v[8]) && v[1].startsWith("2024")).findFirst().orElseThrow();
+        assertTrue(Acquisto[0].endsWith("_AC"), Acquisto[0]);
+        assertEquals("200.00", Acquisto[15]);
+        assertEquals(0, new BigDecimal("200").compareTo(new BigDecimal(Acquisto[10]).abs()));
+        assertCirca("97.50", sommaPlusvalenze(v -> v[1].startsWith("2024")));
+        assertCirca("62.50", costoScaricato(v -> v[1].startsWith("2024")));
+        assertEquals(0, new BigDecimal("0.875").compareTo(residuo("CELSIUS.CREDITO.BTC")));
+        assertEquals(0, residuo("CELSIUS.CREDITO.EUR").signum());
+        assertEquals("Aperta, residuo 70%", Principale_Fallimenti.Stato("CELSIUS"));
+        assertEquals(List.of(), saldiNegativi());
+
+        //Opzione B: dei 770 dollari ancora da pagare nessuno va agli euro (finiti), tutti al BTC: 693 euro
+        FallimentiPiattaforme.Ricostruisci();
+        assertCirca("693", valore("0.875", FINE_2024));
+    }
+
+    @Test
+    void primaFiat_recuperoAtteso50_dueTranche25() {
+        FallimentiPiattaforme.Procedura P = proceduraMille("50");
+        assertNull(Principale_Fallimenti.RegistraTranche(P, "2024-01-15 10:00", new BigDecimal("25"), null,
+                new BigDecimal("50"), List.of(ricevuta("EUR", "FIAT", "250", "250", null)), Principale_Fallimenti.CreditoFiat.PRIMA_PER_VALORE));
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        //Gli euro: 200 alla pari. Il BTC: 50 di pagato su 300 di recupero atteso sulle cripto, costo 83,33, valore 50
+        assertCirca("-33.33", sommaPlusvalenze(v -> v[1].startsWith("2024")));
+        assertEquals(0, residuo("CELSIUS.CREDITO.EUR").signum());
+
+        assertNull(Principale_Fallimenti.RegistraTranche(P, "2025-01-15 10:00", new BigDecimal("25"), null,
+                new BigDecimal("50"), List.of(ricevuta("EUR", "FIAT", "250", "250", null)), Principale_Fallimenti.CreditoFiat.PRIMA_PER_VALORE));
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        //Il resto: 250 su 300, il credito si chiude con il costo rimasto, 416,67
+        assertCirca("-166.67", sommaPlusvalenze(v -> v[1].startsWith("2025")));
+        assertCirca("-200", sommaPlusvalenze(v -> true));
+        assertCirca("500", costoScaricato(v -> true));
+        assertEquals(0, residuo("CELSIUS.CREDITO.BTC").signum());
+        assertEquals("Credito esaurito", Principale_Fallimenti.Stato("CELSIUS"));
+        assertEquals(List.of(), saldiNegativi());
+    }
+
+    @Test
+    void primaFiat_ultimaTrancheSottoLaValuta_ripartizioneProporzionaleConAvviso() {
+        FallimentiPiattaforme.Procedura P = proceduraMille("100");
+        //Il 100% del credito ne vale 150: gli euro (200) non tornerebbero alla pari
+        Principale_Fallimenti.Tranche T = Principale_Fallimenti.PreparaTranche(P, "2024-01-15 10:00", new BigDecimal("100"),
+                new BigDecimal("100"), List.of(ricevuta("EUR", "FIAT", "150", "150", null)), Principale_Fallimenti.CreditoFiat.PRIMA_PER_VALORE);
+        assertNull(T.Errore);
+        assertNotNull(T.Avviso);
+        assertTrue(T.Avviso.contains("non si applica"), T.Avviso);
+        assertNull(Principale_Fallimenti.RegistraTranche(P, "2024-01-15 10:00", new BigDecimal("100"), null,
+                new BigDecimal("100"), List.of(ricevuta("EUR", "FIAT", "150", "150", null)), Principale_Fallimenti.CreditoFiat.PRIMA_PER_VALORE));
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        //In proporzione: 30 agli euro (200, differenza non contata), 120 al BTC per tutto il suo costo
+        assertCirca("-380", sommaPlusvalenze(v -> v[1].startsWith("2024")));
+        assertEquals("Credito esaurito", Principale_Fallimenti.Stato("CELSIUS"));
+        assertEquals(List.of(), saldiNegativi());
+    }
+
+    @Test
+    void primaFiat_trancheCheValePiuDelPagato_gliEuroPrendonoTuttoIlValore() {
+        FallimentiPiattaforme.Procedura P = proceduraMille("100");
+        //Il 10% (100 di credito) vale 150: gli euro consumano 150 alla pari, a prescindere dalla percentuale, il BTC no
+        assertNull(Principale_Fallimenti.RegistraTranche(P, "2024-01-15 10:00", BigDecimal.TEN, null,
+                new BigDecimal("100"), List.of(ricevuta("EUR", "FIAT", "150", "150", null)), Principale_Fallimenti.CreditoFiat.PRIMA_PER_VALORE));
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        assertCirca("0", sommaPlusvalenze(v -> v[1].startsWith("2024")));
+        assertEquals(0, BigDecimal.ONE.compareTo(residuo("CELSIUS.CREDITO.BTC")));
+        assertEquals(0, new BigDecimal("50").compareTo(residuo("CELSIUS.CREDITO.EUR")));
+        assertEquals("Aperta, residuo 85%", Principale_Fallimenti.Stato("CELSIUS"));
+        assertTrue(Principale.MappaCryptoWallet.values().stream().noneMatch(v -> FallimentiPiattaforme.RimborsoOltreIlCredito(v[18])));
+
+        //Il resto, 90% che vale 900: gli ultimi 50 euro, poi 850 di pagato chiudono il credito BTC (costo 500)
+        assertNull(Principale_Fallimenti.RegistraTranche(P, "2025-01-15 10:00", new BigDecimal("90"), null,
+                new BigDecimal("100"), List.of(ricevuta("EUR", "FIAT", "900", "900", null)), Principale_Fallimenti.CreditoFiat.PRIMA_PER_VALORE));
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        assertCirca("350", sommaPlusvalenze(v -> v[1].startsWith("2025")));
+        assertEquals("Credito esaurito", Principale_Fallimenti.Stato("CELSIUS"));
+        assertEquals(List.of(), saldiNegativi());
+    }
+
+    @Test
+    void primaFiat_trancheCheValePiuDegliEuroMaPagaMeno_laParteCriptoETuttaPlusvalenza() {
+        FallimentiPiattaforme.Procedura P = proceduraMille("100");
+        //Il 10% (100 di credito) vale 300: gli euro si chiudono con 200, al BTC restano 100 senza credito da consumare
+        assertNull(Principale_Fallimenti.RegistraTranche(P, "2024-01-15 10:00", BigDecimal.TEN, null,
+                new BigDecimal("100"), List.of(ricevuta("EUR", "FIAT", "300", "300", null)), Principale_Fallimenti.CreditoFiat.PRIMA_PER_VALORE));
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        assertCirca("100", sommaPlusvalenze(v -> v[1].startsWith("2024")));
+        assertEquals(0, BigDecimal.ONE.compareTo(residuo("CELSIUS.CREDITO.BTC")));
+        assertEquals(0, residuo("CELSIUS.CREDITO.EUR").signum());
+        //Non è un rimborso oltre il credito: il credito c'è ancora
+        assertEquals("Aperta, residuo 80%", Principale_Fallimenti.Stato("CELSIUS"));
+        assertEquals("Rimborso", Principale_Fallimenti.RimborsiRegistrati("CELSIUS").get(0).Tipo);
+        assertFalse(Principale_Fallimenti.CreditoEsaurito(P));
+        assertEquals(List.of(), saldiNegativi());
+    }
+
+    @Test
+    void primaFiatSecondoLaPercentuale_trancheCheValePiuDelPagato_laParteCriptoETuttaPlusvalenza() {
+        FallimentiPiattaforme.Procedura P = proceduraMille("100");
+        //Il 10% (100 di credito) vale 150: gli euro consumano al massimo il pagato, 100, il BTC non consuma e riceve 50
+        assertNull(Principale_Fallimenti.RegistraTranche(P, "2024-01-15 10:00", BigDecimal.TEN, null,
+                new BigDecimal("100"), List.of(ricevuta("EUR", "FIAT", "150", "150", null)),
+                Principale_Fallimenti.CreditoFiat.PRIMA_PER_PERCENTUALE));
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        assertCirca("50", sommaPlusvalenze(v -> v[1].startsWith("2024")));
+        assertEquals(0, BigDecimal.ONE.compareTo(residuo("CELSIUS.CREDITO.BTC")));
+        assertEquals(0, new BigDecimal("100").compareTo(residuo("CELSIUS.CREDITO.EUR")));
+        assertEquals("Aperta, residuo 90%", Principale_Fallimenti.Stato("CELSIUS"));
+        assertEquals("Rimborso", Principale_Fallimenti.RimborsiRegistrati("CELSIUS").get(0).Tipo);
+
+        //Il resto, 90% che vale 900: gli ultimi 100 euro, 800 di pagato chiudono il BTC (costo 500). Stesso totale, 350
+        assertNull(Principale_Fallimenti.RegistraTranche(P, "2025-01-15 10:00", new BigDecimal("90"), null,
+                new BigDecimal("100"), List.of(ricevuta("EUR", "FIAT", "900", "900", null)),
+                Principale_Fallimenti.CreditoFiat.PRIMA_PER_PERCENTUALE));
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        assertCirca("300", sommaPlusvalenze(v -> v[1].startsWith("2025")));
+        assertCirca("350", sommaPlusvalenze(v -> true));
+        assertEquals("Credito esaurito", Principale_Fallimenti.Stato("CELSIUS"));
+        assertEquals(List.of(), saldiNegativi());
+    }
+
+    @Test
+    void primaFiat_alternatoAlProporzionale_ilCreditoFinisceConTuttoIlCosto() {
+        //Prima proporzionale, poi prima il credito FIAT
+        FallimentiPiattaforme.Procedura P = proceduraMille("100");
+        assertNull(Principale_Fallimenti.RegistraTranche(P, "2024-01-15 10:00", new BigDecimal("30"), null,
+                new BigDecimal("100"), List.of(ricevuta("EUR", "FIAT", "300", "300", null)), Principale_Fallimenti.CreditoFiat.PROPORZIONALE));
+        assertEquals(0, new BigDecimal("140").compareTo(residuo("CELSIUS.CREDITO.EUR")));
+        assertNull(Principale_Fallimenti.RegistraTranche(P, "2025-01-15 10:00", new BigDecimal("70"), null,
+                new BigDecimal("100"), List.of(ricevuta("EUR", "FIAT", "700", "700", null)), Principale_Fallimenti.CreditoFiat.PRIMA_PER_VALORE));
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        assertEquals(0, residuo("CELSIUS.CREDITO.BTC").signum());
+        assertEquals(0, residuo("CELSIUS.CREDITO.EUR").signum());
+        assertCirca("500", costoScaricato(v -> true));
+        assertEquals(List.of(), saldiNegativi());
+
+        //Prima il credito FIAT, poi proporzionale
+        setUp();
+        P = proceduraMille("100");
+        assertNull(Principale_Fallimenti.RegistraTranche(P, "2024-01-15 10:00", new BigDecimal("30"), null,
+                new BigDecimal("100"), List.of(ricevuta("EUR", "FIAT", "300", "300", null)), Principale_Fallimenti.CreditoFiat.PRIMA_PER_VALORE));
+        assertEquals(0, new BigDecimal("0.875").compareTo(residuo("CELSIUS.CREDITO.BTC")));
+        assertNull(Principale_Fallimenti.RegistraTranche(P, "2025-01-15 10:00", new BigDecimal("70"), null,
+                new BigDecimal("100"), List.of(ricevuta("EUR", "FIAT", "700", "700", null)), Principale_Fallimenti.CreditoFiat.PROPORZIONALE));
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        assertEquals(0, residuo("CELSIUS.CREDITO.BTC").signum());
+        assertEquals(0, residuo("CELSIUS.CREDITO.EUR").signum());
+        assertCirca("500", costoScaricato(v -> true));
+        //1.000 ricevuti: 200 agli euro alla pari, 800 al BTC che costava 500
+        assertCirca("300", sommaPlusvalenze(v -> true));
+        assertEquals(List.of(), saldiNegativi());
     }
 
     @Test

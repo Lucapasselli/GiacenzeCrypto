@@ -25,7 +25,7 @@ I pacchetti pronti all'uso vengono pubblicati a ogni rilascio:
 > sicurezza, che si può fare dal programma stesso con *Opzioni – Backup / Ripristino*.
 
 In caso di problemi si può chiedere supporto sul
-[gruppo Telegram](https://t.me/+6kfy5mjov-I2ODY8).
+[gruppo Telegram](https://t.me/giacenzecrypto).
 
 ## Versione 1.0.66 (in lavorazione) {#versione-1066}
 

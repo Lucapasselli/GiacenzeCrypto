@@ -123,5 +123,5 @@ Il JAR va distribuito insieme alla cartella `Immagini/` (icone e immagini non so
 - **Documentazione**: https://lucapasselli.github.io/GiacenzeCrypto/documentazione/
 - **Novità delle versioni**: https://lucapasselli.github.io/GiacenzeCrypto/documentazione/changelog.html
 - **Canale YouTube**: https://www.youtube.com/@cryptofer82
-- **Gruppo Telegram**: https://t.me/+6kfy5mjov-I2ODY8
+- **Gruppo Telegram**: https://t.me/giacenzecrypto
 - **Changelog Completo**: https://lucapasselli.github.io/GiacenzeCrypto/documentazione/changelog.html

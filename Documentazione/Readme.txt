@@ -20,7 +20,7 @@ Verranno distribuiti i seguenti pacchetti:
 - Installer DMG per MacOS (Siccome l'app non è firmata può richiedere l'esecuzione di questo comando "xattr -cr /Applications/Giacenze_Crypto.app" affinchè l'app parta)
 - Installer DMG per MacOS con processori Intel (Siccome l'app non è firmata può richiedere l'esecuzione di questo comando "xattr -cr /Applications/Giacenze_Crypto.app" affinchè l'app parta)
 
-Se doveste riscontrare problemi chiedete supporto sul gruppo telegram https://t.me/+6kfy5mjov-I2ODY8
+Se doveste riscontrare problemi chiedete supporto sul gruppo telegram https://t.me/giacenzecrypto
 
 NB: Per aggiornare la versione portable/multipiattaforma del programma basta sovrascrivere la cartella originale facendo prima un backup della cartella per sicurezza.
     Per gli utenti MAC attenzione che la sovrascrittura della cartella comporterà la perdita di tutti i dati, bisognerà aggiornare manualmente solo il contenuto della stessa.

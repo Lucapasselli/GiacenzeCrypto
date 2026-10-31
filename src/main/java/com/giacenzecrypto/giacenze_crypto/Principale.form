@@ -2544,7 +2544,10 @@
                                       <Component id="GiacenzeaData_CheckBox_MostraQtaZero" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="44" max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_CheckBox_NascondiScam" min="-2" pref="176" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="44" max="-2" attributes="0"/>
+                                      <Component id="GiacenzeaData_CheckBox_MostraCostoNetto" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                      <Component id="GiacenzeaData_Bottone_Guida" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="1" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
@@ -2612,6 +2615,8 @@
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="GiacenzeaData_CheckBox_MostraQtaZero" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_CheckBox_NascondiScam" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="GiacenzeaData_CheckBox_MostraCostoNetto" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="GiacenzeaData_Bottone_Guida" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
@@ -2700,7 +2705,7 @@
                           <Properties>
                             <Property name="autoCreateRowSorter" type="boolean" value="true"/>
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                              <Table columnCount="13" rowCount="0">
+                              <Table columnCount="18" rowCount="0">
                                 <Column editable="false" title="Nome" type="java.lang.Object"/>
                                 <Column editable="false" title="Rete" type="java.lang.Object"/>
                                 <Column editable="false" title="Address Defi del Token" type="java.lang.Object"/>
@@ -2714,6 +2719,11 @@
                                 <Column editable="false" title="Errori" type="java.lang.Object"/>
                                 <Column editable="false" title="InfoPrezzo" type="java.lang.Object"/>
                                 <Column editable="false" title="&lt;html&gt;&lt;center&gt;Qta&lt;br&gt;Blockchain&lt;/html&gt;" type="java.lang.Object"/>
+                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;Costo totale&lt;br&gt;(in Euro)&lt;/html&gt;" type="java.lang.Double"/>
+                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;Vendite&lt;br&gt;(in Euro)&lt;/html&gt;" type="java.lang.Double"/>
+                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;Costo medio netto&lt;br&gt;(tutti i wallet)&lt;/html&gt;" type="java.lang.Double"/>
+                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;Profitti/Perdite totali&lt;br&gt;(tutti i wallet)&lt;/html&gt;" type="java.lang.Double"/>
+                                <Column editable="false" title="Note costo netto" type="java.lang.Object"/>
                               </Table>
                             </Property>
                             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -2769,6 +2779,31 @@
                                   <Renderer/>
                                 </Column>
                                 <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
                                   <Title/>
                                   <Editor/>
                                   <Renderer/>
@@ -3168,6 +3203,26 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_CheckBox_NascondiScamActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="GiacenzeaData_Bottone_Guida">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/Images/24_Libro.png"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Guida..."/>
+                        <Property name="toolTipText" type="java.lang.String" value="Apre il manuale di Giacenze a data: tabella, dettaglio movimenti, rettifiche e costi netti"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_Bottone_GuidaActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="GiacenzeaData_CheckBox_MostraCostoNetto">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Mostra costi netti"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_CheckBox_MostraCostoNettoActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JLabel" name="GiacenzeaData_Label_Aggiornare">

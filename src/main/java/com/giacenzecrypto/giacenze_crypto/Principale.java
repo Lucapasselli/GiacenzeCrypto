@@ -479,7 +479,7 @@ private static final long serialVersionUID = 3L;
                 GiacenzeaData_TabellaDettaglioMovimenti.getModel(), TransazioniCryptoTabella.getModel()));
         Tabelle.Tabelle_InizializzaHeader(GiacenzeaData_TabellaDettaglioMovimenti);
         //Valore/costo unitario (7, 8) e le quattro colonne di costo del dettaglio (13-16) : sommarli non ha senso
-        GiacenzeaData_Tabella.putClientProperty("ColonneSenzaSomma", java.util.Set.of(7, 8, 12));
+        GiacenzeaData_Tabella.putClientProperty("ColonneSenzaSomma", java.util.Set.of(7, 8, 12, 13, 14, 15, 16, 17));
         //Qta letta dalla blockchain (colonna 12 del model, in coda per non spostare Errori e InfoPrezzo) : a video
         //subito dopo la Qta dell'archivio, larga zero finche' non si sceglie un singolo wallet DeFi
         GiacenzeaData_Tabella.moveColumn(GiacenzeaData_Tabella.convertColumnIndexToView(12), 5);
@@ -839,6 +839,8 @@ private static final long serialVersionUID = 3L;
         GiacenzeaData_Wallet2_ComboBox = new javax.swing.JComboBox<>();
         Giacenzeadata_Walletb_Label = new javax.swing.JLabel();
         GiacenzeaData_CheckBox_NascondiScam = new javax.swing.JCheckBox();
+        GiacenzeaData_CheckBox_MostraCostoNetto = new javax.swing.JCheckBox();
+        GiacenzeaData_Bottone_Guida = new javax.swing.JButton();
         GiacenzeaData_Label_Aggiornare = new javax.swing.JLabel();
         GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative = new javax.swing.JCheckBox();
         GiacenzeaData_Bottone_ColonneDettaglio = new javax.swing.JButton();
@@ -2678,14 +2680,14 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Nome", "Rete", "Address Defi del Token", "Tipo", "Qta", "<html><center>Valore<br>(in Euro)</html>", "<html><center>Costo Carico<br>(in Euro)</html>", "<html><center>Valore<br>Unitario</html>", "<html><center>Costo<br>Unitario</html>", "<html><center>Plus/Minus<br>Latente</html>", "Errori", "InfoPrezzo", "<html><center>Qta<br>Blockchain</html>"
+                "Nome", "Rete", "Address Defi del Token", "Tipo", "Qta", "<html><center>Valore<br>(in Euro)</html>", "<html><center>Costo Carico<br>(in Euro)</html>", "<html><center>Valore<br>Unitario</html>", "<html><center>Costo<br>Unitario</html>", "<html><center>Plus/Minus<br>Latente</html>", "Errori", "InfoPrezzo", "<html><center>Qta<br>Blockchain</html>", "<html><center>Costo totale<br>(in Euro)</html>", "<html><center>Vendite<br>(in Euro)</html>", "<html><center>Costo medio netto<br>(tutti i wallet)</html>", "<html><center>Profitti/Perdite totali<br>(tutti i wallet)</html>", "Note costo netto"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Object.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -2735,6 +2737,21 @@ private static final long serialVersionUID = 3L;
             GiacenzeaData_Tabella.getColumnModel().getColumn(12).setMinWidth(0);
             GiacenzeaData_Tabella.getColumnModel().getColumn(12).setPreferredWidth(0);
             GiacenzeaData_Tabella.getColumnModel().getColumn(12).setMaxWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(13).setMinWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(13).setPreferredWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(13).setMaxWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(14).setMinWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(14).setPreferredWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(14).setMaxWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(15).setMinWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(15).setPreferredWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(15).setMaxWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(16).setMinWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(16).setPreferredWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(16).setMaxWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(17).setMinWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(17).setPreferredWidth(0);
+            GiacenzeaData_Tabella.getColumnModel().getColumn(17).setMaxWidth(0);
         }
         GiacenzeaData_Tabella.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_Tabella.getColumnModel().getTotalColumnWidth(), 42));
         Tabelle.ColoraRigheTabella0GiacenzeaData(GiacenzeaData_Tabella);
@@ -2941,6 +2958,22 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        GiacenzeaData_Bottone_Guida.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Libro.png"))); // NOI18N
+        GiacenzeaData_Bottone_Guida.setText("Guida...");
+        GiacenzeaData_Bottone_Guida.setToolTipText("Apre il manuale di Giacenze a data: tabella, dettaglio movimenti, rettifiche e costi netti");
+        GiacenzeaData_Bottone_Guida.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GiacenzeaData_Bottone_GuidaActionPerformed(evt);
+            }
+        });
+
+        GiacenzeaData_CheckBox_MostraCostoNetto.setText("Mostra costi netti");
+        GiacenzeaData_CheckBox_MostraCostoNetto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GiacenzeaData_CheckBox_MostraCostoNettoActionPerformed(evt);
+            }
+        });
+
         GiacenzeaData_Label_Aggiornare.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
         GiacenzeaData_Label_Aggiornare.setForeground(Tabelle.rosso);
         GiacenzeaData_Label_Aggiornare.setText("ATTENZIONE! Sono variate delle informazioni, premere CALCOLA per vedere i valori corretti!");
@@ -3008,7 +3041,10 @@ private static final long serialVersionUID = 3L;
                         .addComponent(GiacenzeaData_CheckBox_MostraQtaZero)
                         .addGap(44, 44, 44)
                         .addComponent(GiacenzeaData_CheckBox_NascondiScam, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addGap(44, 44, 44)
+                        .addComponent(GiacenzeaData_CheckBox_MostraCostoNetto)
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(GiacenzeaData_Bottone_Guida))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, GiacenzeaDataLayout.createSequentialGroup()
                         .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(GiacenzeaDataLayout.createSequentialGroup()
@@ -3060,7 +3096,9 @@ private static final long serialVersionUID = 3L;
                 .addGap(9, 9, 9)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(GiacenzeaData_CheckBox_MostraQtaZero)
-                    .addComponent(GiacenzeaData_CheckBox_NascondiScam))
+                    .addComponent(GiacenzeaData_CheckBox_NascondiScam)
+                    .addComponent(GiacenzeaData_CheckBox_MostraCostoNetto)
+                    .addComponent(GiacenzeaData_Bottone_Guida))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(GiacenzeaData_Bottone_ConfermaPrezzoZero, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -7001,6 +7039,11 @@ private void SettaIcone(){
         if(EscludiAnnoCorrente!=null && EscludiAnnoCorrente.equalsIgnoreCase("SI")){
             RT_CheckBox_EscludiAnnoCorrente.setSelected(true);
         }
+
+        //Colonne del costo medio netto di Giacenze a data: nascoste salvo esplicito "SI"
+        boolean MostraCostoNetto = "SI".equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_GIACENZE_MOSTRA_COSTO_NETTO, "NO"));
+        GiacenzeaData_CheckBox_MostraCostoNetto.setSelected(MostraCostoNetto);
+        GiacenzeaData_MostraColonneCostoNetto(MostraCostoNetto);
 
         //Ricalcolo incrementale: attivo salvo esplicito "NO", come lo legge Calcoli_PlusvalenzeNew
         Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale.setSelected(
@@ -12524,6 +12567,17 @@ if (result.isAction("delete-all")) {
                 if(GiacenzeaData_Tabella.getRowCount()!=0)
             GiacenzeaData_CompilaTabellaToken(true);
     }//GEN-LAST:event_GiacenzeaData_CheckBox_NascondiScamActionPerformed
+
+    private void GiacenzeaData_Bottone_GuidaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_GuidaActionPerformed
+        DocumentiAiuto.Apri(DocumentiAiuto.GIACENZE_A_DATA);
+    }//GEN-LAST:event_GiacenzeaData_Bottone_GuidaActionPerformed
+
+    private void GiacenzeaData_CheckBox_MostraCostoNettoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_CheckBox_MostraCostoNettoActionPerformed
+        //Le colonne sono sempre calcolate : mostrarle o nasconderle non ricarica la tabella
+        boolean Mostra = GiacenzeaData_CheckBox_MostraCostoNetto.isSelected();
+        GiacenzeaData_MostraColonneCostoNetto(Mostra);
+        DatabaseH2.Pers_Opzioni_Scrivi(OPZIONE_GIACENZE_MOSTRA_COSTO_NETTO, Mostra ? "SI" : "NO");
+    }//GEN-LAST:event_GiacenzeaData_CheckBox_MostraCostoNettoActionPerformed
 
     private void RW_Opzioni_CheckBox_LiFoComplessivoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_CheckBox_LiFoComplessivoActionPerformed
         // TODO add your handling code here:
@@ -18492,6 +18546,31 @@ try {
     /** Generazione della lettura delle giacenze dalla blockchain: una lettura superata non scrive nella tabella. */
     private volatile int GiacenzeaData_GenerazioneBlockchain = 0;
 
+    /** Opzione personale che ricorda se le colonne del costo medio netto sono in vista ("SI"), nascoste per default. */
+    private static final String OPZIONE_GIACENZE_MOSTRA_COSTO_NETTO = "GiacenzeaData_MostraCostoNetto";
+
+    /**
+     * Mostra o nasconde (larghezza zero) le cinque colonne del costo medio netto della tabella principale di
+     * "Giacenze a data": costo totale, vendite, costo medio netto, profitti/perdite totali e note (indici di model 13-17).
+     * Le colonne sono calcolate in ogni caso, quindi cambiare la visibilita' non ricarica nulla.
+     */
+    private void GiacenzeaData_MostraColonneCostoNetto(boolean Mostra) {
+        for (int ColonnaModello = 13; ColonnaModello <= 17; ColonnaModello++) {
+            javax.swing.table.TableColumn Colonna = GiacenzeaData_Tabella.getColumnModel()
+                    .getColumn(GiacenzeaData_Tabella.convertColumnIndexToView(ColonnaModello));
+            if (Mostra) {
+                Colonna.setMaxWidth(Integer.MAX_VALUE);
+                Colonna.setMinWidth(60);
+                Colonna.setPreferredWidth(ColonnaModello == 17 ? 560 : 120);
+            } else {
+                Colonna.setMinWidth(0);
+                Colonna.setPreferredWidth(0);
+                Colonna.setMaxWidth(0);
+            }
+        }
+        GiacenzeaData_Tabella.getTableHeader().repaint();
+    }
+
     /**
      * Mostra o nasconde (larghezza zero) la colonna "Qta Blockchain" della tabella principale di "Giacenze a data".
      * Si mostra solo quando la tabella e' di un singolo wallet DeFi di una rete leggibile (vedi
@@ -18711,6 +18790,10 @@ try {
                 Principale_GiacenzeaData.CostiCaricoRimanenze CostiCarico =
                         Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(DataRiferimento,
                                 () -> progress.FineThread);
+                //Costo medio netto (speso - incassato) / quantita' : una passata sola su tutti i wallet, calcolata anche
+                //con le colonne nascoste (mostrarle non ricarica la tabella)
+                Principale_GiacenzeaData_CostoNetto.Risultato CostiNetti = Principale_GiacenzeaData_CostoNetto.Calcola(
+                        MappaCryptoWallet.values(), DataRiferimento, () -> progress.FineThread);
                 //Pre-scarico prezzi: qui l'elenco delle monete da valorizzare e' gia' completo e la
                 //data e' una sola, quindi si chiedono tutte le quotazioni in un lotto solo invece di
                 //lasciare che il ciclo qui sotto lanci un processo Node per ogni moneta non in cache.
@@ -18766,7 +18849,7 @@ try {
                     Moneta M1 = QtaCrypto.get(moneta);
                     String Rete = M1.Rete;
                     String Address = M1.MonetaAddress;
-                    Object riga[] = new Object[13];
+                    Object riga[] = new Object[18];
                     riga[0] = M1.Moneta;
                     riga[2] = Address;//qui ci va l'address della moneta se non sto analizzando i wallet nel complesso
                     riga[3] = M1.Tipo;
@@ -18820,6 +18903,14 @@ try {
                         riga[7] = Derivati[0];
                         riga[8] = Derivati[1];
                         riga[9] = Derivati[2];
+                        //Costo medio netto : costo totale, vendite, costo medio netto, profitti/perdite totali, note (13-17)
+                        Principale_GiacenzeaData_CostoNetto.Riga CostoNetto = Principale_GiacenzeaData_CostoNetto.PerRiga(
+                                CostiNetti, M1.Moneta, M1.Tipo, PrezzoUnitario);
+                        riga[13] = CostoNetto.Speso;
+                        riga[14] = CostoNetto.Incassato;
+                        riga[15] = CostoNetto.CostoMedioNetto;
+                        riga[16] = CostoNetto.ProfittoPerdita;
+                        riga[17] = CostoNetto.Note;
 
                         //Giacenza sulla blockchain : la riga si segna "in lettura", la legge un thread a tabella pronta
                         if (WalletBlockchain != null) {
@@ -20779,6 +20870,7 @@ try {
     private javax.swing.JButton GiacenzeaData_Bottone_Calcola;
     private javax.swing.JButton GiacenzeaData_Bottone_CambiaNomeToken;
     private javax.swing.JButton GiacenzeaData_Bottone_ColonneDettaglio;
+    private javax.swing.JButton GiacenzeaData_Bottone_Guida;
     private javax.swing.JButton GiacenzeaData_Bottone_ConfermaPrezzoZero;
     private javax.swing.JButton GiacenzeaData_Bottone_GiacenzeExplorer;
     private javax.swing.JButton GiacenzeaData_Bottone_ModificaValore;
@@ -20786,6 +20878,7 @@ try {
     private javax.swing.JButton GiacenzeaData_Bottone_RettificaQta;
     private javax.swing.JButton GiacenzeaData_Bottone_Scam;
     private javax.swing.JCheckBox GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative;
+    private javax.swing.JCheckBox GiacenzeaData_CheckBox_MostraCostoNetto;
     private javax.swing.JCheckBox GiacenzeaData_CheckBox_MostraQtaZero;
     private javax.swing.JCheckBox GiacenzeaData_CheckBox_NascondiScam;
     private com.toedter.calendar.JDateChooser GiacenzeaData_Data_DataChooser;

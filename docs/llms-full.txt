@@ -530,6 +530,694 @@ Si ricorda inoltre che:
 - [Filippo Angeloni](https://youtu.be/pDRzvLjlgB0?si=MR5GU2aWmftNWXUK)
 
 ================================================================================
+Fonte: https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html
+================================================================================
+
+# Giacenze a data
+
+- [A cosa serve](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#a-cosa-serve)
+- [Dove si trova](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#dove-si-trova)
+- [Scegliere cosa guardare](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#scegliere)
+- [La tabella dei token](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#tabella)
+- [Costo di carico e plus/minus latente](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#costo-di-carico)
+- [Token senza prezzo e prezzi da correggere](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#prezzi)
+- [Il dettaglio dei movimenti di un token](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#dettaglio)
+- [Il grafico di un token](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#grafico)
+- [Guardare un solo wallet](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#wallet)
+- [Correggere una giacenza](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#rettifica)
+- [Rinominare un token e segnalare i token SCAM](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#nome-scam)
+- [Confronto con blockchain ed exchange](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#confronto)
+- [I costi netti](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#costi-netti)
+- [Domande frequenti](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#domande)
+- [Limiti e cose da sapere](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#limiti)
+
+## A cosa serve
+
+*Giacenze a data* risponde alla domanda **«che cosa possedevo a questa data, e quanto valeva?»**. Per ogni token mostra:
+
+- la **quantità** posseduta alla data scelta, sommando tutti i movimenti dell'archivio fino a quel giorno,
+- il suo **valore** in euro al prezzo di quella data,
+- il **costo di carico** di quella quantità, calcolato con il metodo LIFO dello stesso motore che calcola le plusvalenze,
+- la differenza fra i due, il **plus/minus latente**,
+- su richiesta, il **costo medio netto** (vedi [I costi netti](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#costi-netti)).
+
+Serve soprattutto a tre cose:
+
+1. **controllare i saldi**: confrontare quello che il programma ritiene di avere con la situazione vera di un exchange o di
+   un wallet, e trovare i movimenti mancanti o sbagliati,
+2. **scoprire gli errori**: giacenze negative, token senza prezzo, movimenti non classificati,
+3. **conoscere la situazione patrimoniale** a una data, per esempio a fine anno.
+
+La scheda non modifica nulla da sola. Le modifiche, come la correzione di una quantità, si fanno sempre con una funzione
+esplicita e vanno poi salvate dalla scheda *Transazioni Crypto*.
+
+> Gli screenshot di questo manuale usano **dati inventati**: tre wallet di fantasia (*Alfa Exchange*, *Beta Exchange*,
+> *Wallet Hardware*), quantità e importi di fantasia, prezzi di mercato veri alle date indicate. Il token *ZZDEMO* è
+> inventato e non ha un prezzo.
+
+## Dove si trova
+
+Nella scheda **Analisi Crypto – Giacenze a Data**. Il pulsante **Guida...** in basso a destra, sopra il dettaglio, apre
+questo manuale.
+
+![La scheda Giacenze a data con la tabella dei token e il dettaglio dei movimenti del BTC](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/01.png)
+
+La scheda ha tre zone:
+
+- in alto i **selettori** (wallet, sotto-wallet, data) e il pulsante *Calcola*,
+- al centro la **tabella dei token**, con le caselle e i pulsanti che lavorano sul token selezionato,
+- in basso il **dettaglio dei movimenti** del token selezionato, in forma di tabella o di grafico.
+
+## Scegliere cosa guardare
+
+![I selettori: wallet, sotto-wallet, data, Vedi situazione Wallet ad Oggi e Calcola](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/02.png)
+
+- **Wallet**: *Tutti*, un singolo wallet oppure un gruppo di wallet (le voci *Gruppo : ...*). Con *Tutti* si vede la
+  situazione complessiva.
+- **Dett.Wallet**: il sotto-wallet, per esempio *Principale* di un exchange. Si popola quando si sceglie un wallet.
+- **Data**: il giorno di riferimento. Contano i movimenti fino alla **fine di quel giorno** e il valore è quello alla
+  mezzanotte che lo chiude. Scegliendo **oggi**, o una data futura, si vede la situazione fino a questo momento, con i prezzi
+  attuali.
+- **Calcola**: costruisce la tabella. Cambiare un selettore non la aggiorna da solo, bisogna premere *Calcola*.
+- **Wallet in Esame**: ricorda, sotto i selettori, che cosa ha usato l'ultimo calcolo.
+- **Vedi situazione Wallet ad Oggi**: si abilita solo per i wallet DeFi e apre nel browser la situazione attuale di quel
+  wallet sull'explorer della sua rete.
+
+![La tendina dei wallet con Tutti, i tre wallet di fantasia e il gruppo](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/03.png)
+
+Se dopo il calcolo cambia qualcosa che incide sui valori (una classificazione, un prezzo), compare in rosso l'avviso
+*«ATTENZIONE! Sono variate delle informazioni, premere CALCOLA per vedere i valori corretti!»*.
+
+## La tabella dei token
+
+![La tabella dei token alla data del 31/12/2025](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/04.png)
+
+Ogni riga è un token. Le colonne sono:
+
+| Colonna | Che cosa mostra |
+|---|---|
+| **Nome** | il simbolo del token. Un token marcato come SCAM ha due asterischi in coda al nome |
+| **Rete** | la rete, se il token ha un indirizzo di contratto (token DeFi) |
+| **Address Defi del Token** | l'indirizzo di contratto, per i token DeFi |
+| **Tipo** | *Crypto*, *FIAT*, *NFT* |
+| **Qta** | la quantità posseduta alla data |
+| **Valore (in Euro)** | quantità × prezzo alla data |
+| **Costo Carico (in Euro)** | il costo di carico LIFO di quella quantità, vedi [sotto](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#costo-di-carico) |
+| **Valore Unitario** | il prezzo di un'unità alla data |
+| **Costo Unitario** | il costo di carico diviso la quantità |
+| **Plus/Minus Latente** | valore meno costo di carico, in verde se positivo e in rosso se negativo |
+| **Errori** | cosa non va nella riga, per esempio *Token senza prezzo* |
+| **Qta Blockchain** (o *Qta OKX*, *Qta Binance*) | la quantità letta da blockchain o da exchange, solo quando si confronta, vedi [Confronto](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#confronto) |
+
+In fondo, a sinistra, **TOTALE in EURO** è la somma dei valori delle righe mostrate. Comprende anche le righe FIAT (in
+questo esempio gli euro) e le righe con quantità negativa, che riducono il totale.
+
+Cose da sapere sulle righe:
+
+- una riga con **quantità negativa** è in rosso: significa che il programma ha registrato più uscite che entrate.
+  Di solito è un movimento mancante (vedi [Correggere una giacenza](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#rettifica)),
+- le righe **FIAT** non hanno costo di carico, valore unitario né plus/minus latente,
+- le colonne unitarie e il plus/minus latente restano **vuote**, non a zero, quando non c'è nulla da confrontare:
+  token FIAT, quantità nulla o negativa, token senza prezzo,
+- le colonne si **ordinano** con un clic sull'intestazione e si **filtrano** dal menu dell'intestazione.
+
+Due caselle sotto la tabella cambiano le righe mostrate, e la tabella si ricalcola da sola:
+
+- **Mostra Giacenze a Zero**: include anche i token con quantità zero, normalmente nascosti,
+- **Nascondi Token Scam**: nasconde i token marcati come SCAM. È attiva di default.
+
+## Costo di carico e plus/minus latente
+
+Il costo di carico è il costo **dei lotti che compongono ancora la giacenza**, secondo il metodo LIFO: ogni vendita scarica
+per primi i lotti acquistati più di recente. È calcolato dallo stesso motore delle plusvalenze e quindi segue le stesse
+opzioni di calcolo, senza ricalcolarlo.
+
+Un esempio con il BTC del dettaglio che segue: alla vendita di 0,06 BTC (5.500 €) il LIFO scarica prima il lotto da 0,04 BTC
+pagato 3.200 € e poi 0,02 BTC dal lotto da 0,05 BTC pagato 2.650 €, cioè 1.060 €. Il costo scaricato è 3.200 + 1.060 = 4.260 € e
+la plusvalenza è 5.500 − 4.260 = 1.240 €. Quello che resta ha costo 4.706,10 €, che è il *Costo Carico* della riga BTC.
+
+Il plus/minus latente è il valore attuale meno questo costo: per il BTC 8.159,53 − 4.706,10 = 3.453,43.
+
+Con un wallet selezionato, il costo di carico mostrato è quello dei lotti **più recenti** che coprono la quantità di quel
+wallet. I giroconti fra i propri wallet non portano con sé nessun costo e non lo fanno sparire: la pila dei lotti resta
+quella dell'insieme dei wallet.
+
+## Token senza prezzo e prezzi da correggere
+
+Se per un token non si trova un prezzo alla data, la riga mostra in rosso **Token senza prezzo** nella colonna *Errori*,
+il valore è zero e il plus/minus latente resta vuoto. Con la riga selezionata si può intervenire con due pulsanti.
+
+**Modifica Valore** apre l'elenco dei prezzi che il programma conosce per quel token vicino alla data.
+
+![La finestra Modifica Valore con il prezzo attuale e i prezzi disponibili più vicini](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/13.png)
+
+Si può:
+
+- scegliere uno dei prezzi disponibili e premere *Applica prezzo selezionato*,
+- inserire un **prezzo personalizzato** con *Prezzo Personalizzato*,
+- ricaricare i prezzi con *Riscarica tutti i prezzi dalle fonti*.
+
+Il prezzo scelto o inserito vale per quel token a quella data e sostituisce quello di prima.
+
+**Conferma prezzo ZERO** è abilitato solo sulle righe con *Token senza prezzo*. Chiede conferma e, se la si dà, assegna il
+valore zero a quel token a quella data. Va usato per i token che davvero non valgono nulla (per esempio un airdrop spam), perché
+il valore zero entra nel totale.
+
+![La conferma per assegnare il valore zero a un token senza prezzo](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/14.png)
+
+## Il dettaglio dei movimenti di un token
+
+Selezionando una riga della tabella, in basso compare il **dettaglio**: tutti i movimenti di quel token fino alla data,
+dal più vecchio al più recente, con la quantità che resta dopo ciascuno. Rispetta la selezione di wallet e sotto-wallet.
+
+![Il dettaglio dei movimenti del BTC](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/05.png)
+
+Le colonne di default sono:
+
+| Colonna | Che cosa mostra |
+|---|---|
+| **Data**, **Wallet**, **Moneta**, **Address Moneta**, **Tipo Movimento** | quando, dove e che cosa |
+| **Quantità** | la quantità del movimento, in verde se entra e in rosso se esce |
+| **Valore in Euro** | il valore del movimento |
+| **Costo Carico Movimento** | il costo dei lotti caricati o scaricati dal movimento |
+| **Qta Residua** | la giacenza subito dopo il movimento |
+| **Prezzo Unitario** | il prezzo di un'unità al momento del movimento |
+| **Valore Qta Residua**, **Costo Carico Qta Residua**, **Plus/Minus Latente Qta Residua** | gli stessi tre numeri della tabella, ma per la quantità che resta dopo quel movimento |
+
+Sotto le intestazioni di quantità e valore compare la **somma** della colonna. Le ultime cifre del dettaglio, cioè la quantità residua e il costo di carico dopo l'ultimo movimento, coincidono con la
+riga della tabella principale.
+
+Nell'esempio, la seconda riga è lo scambio di 0,02 BTC con ETH: il costo di quei 0,02 BTC è 780 € (0,02 × 3.900 €) e, con le
+opzioni di default, passa all'ETH ricevuto senza generare plusvalenza, mentre la quantità residua scende a 0,08. Le due righe del *TRASFERIMENTO TRA WALLET* non hanno costo: il BTC
+cambia wallet, ma la quantità totale scende solo di 0,0001 BTC, che è la commissione di rete trattenuta (da 0,13 a 0,1299).
+
+Con il tasto destro su una riga si apre il **menu dei movimenti**, lo stesso della tabella *Transazioni Crypto*: dettagli e
+LiFo del movimento, modifica, eliminazione, classificazione, modifica del prezzo, esportazione in Excel e altre funzioni.
+
+![Il menu del tasto destro sul dettaglio](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/12.png)
+
+I pulsanti e le caselle sopra il dettaglio:
+
+- **Colonne...** sceglie quali colonne mostrare e in che ordine, anche prendendole dalla tabella dei movimenti (per esempio
+  *Causale originale*, *Hash Transazione*, *Note*). Le colonne si spostano e si allargano trascinando le intestazioni e la
+  disposizione viene ricordata. *Ripristina predefinito* torna alle colonne iniziali.
+- **Mostra solo Qta residue negative** tiene solo le righe in cui la giacenza dopo il movimento è negativa, per trovare il
+  punto in cui il saldo è andato sotto zero.
+
+![La finestra per scegliere le colonne del dettaglio](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/07.png)
+
+## Il grafico di un token
+
+La scheda **Grafico** del dettaglio disegna la storia del token selezionato.
+
+![Il grafico del BTC: giacenza e valore in euro nel tempo](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/06.png)
+
+- la linea blu (asse sinistro) è la **giacenza** nel tempo,
+- la linea arancione (asse destro) è il **valore in euro** di quella giacenza,
+- i triangoli verdi e rossi sono i **movimenti** che l'hanno aumentata o ridotta.
+
+Con la rotella del mouse si fa lo zoom, trascinando si sposta il grafico, con un doppio clic si torna a tutto il periodo.
+Un clic su un triangolo seleziona quel movimento nella tabella.
+
+I prezzi del grafico sono prezzi giornalieri e servono solo a disegnarlo: **non** sono usati per nessun calcolo e non
+modificano i prezzi del programma.
+
+## Guardare un solo wallet
+
+Scegliendo un wallet (o un gruppo) e premendo *Calcola*, le quantità sono quelle di quel wallet.
+
+![La tabella di Beta Exchange: il SOL ha quantità negativa](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/09.png)
+
+Nell'esempio *Beta Exchange* risulta con **−5 SOL**: in archivio c'è la vendita di 5 SOL, ma non il loro acquisto o il loro
+arrivo. Sul totale di tutti i wallet il SOL è positivo, perché gli altri wallet ne hanno, ma su quel wallet il saldo è
+sbagliato. È il caso tipico in cui si usa [la rettifica della giacenza](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#rettifica) o si cerca il movimento mancante.
+
+![Il dettaglio del SOL su Beta Exchange: la quantità residua è −5, in rosso](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/10.png)
+
+Cose da sapere con un wallet selezionato:
+
+- **Valore** e **Plus/Minus Latente** sono quelli della quantità di quel wallet,
+- le colonne dei [costi netti](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#costi-netti) restano quelle di **tutti i wallet**,
+- il **TOTALE in EURO** somma i valori di quel solo wallet.
+
+## Correggere una giacenza
+
+Quando la quantità calcolata non coincide con quella vera, il pulsante **Sistema Qta Residua** crea un movimento di
+rettifica che porta la giacenza al valore voluto. Funziona così:
+
+1. scegli un **singolo wallet** dalla tendina in alto: con *Tutti* la funzione non è disponibile,
+2. seleziona il token nella tabella e, nel dettaglio, il **movimento** dopo il quale vuoi correggere la quantità,
+3. premi *Sistema Qta Residua* e scrivi nella finestra la **giacenza finale** che il token deve avere.
+
+![La finestra Imposta giacenza finale](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/11.png)
+
+Il programma calcola la differenza e propone la classificazione del movimento da creare:
+
+- se serve un **deposito** (la giacenza voluta è maggiore): *Nessuna Classificazione*, *Provento* (il valore diventa una
+  plusvalenza, come una reward) oppure *Costo 0* (carico del lotto a costo di carico zero),
+- se serve un **prelievo**: *Nessuna Classificazione*, *Cash out* (si calcola la plusvalenza), *Commissione* (trattato come
+  una commissione) oppure *Rettifica giacenza* (nessuna plusvalenza, il costo esce dal LIFO),
+- per i token **FIAT** si crea un semplice deposito o prelievo FIAT.
+
+Il movimento nasce nello stesso istante di quello selezionato. Se il token ha già avuto saldi negativi in passato il programma
+avverte che conviene correggere i movimenti in ordine cronologico.
+
+Il nuovo movimento va **salvato** dalla scheda *Transazioni Crypto*, come ogni altra modifica. La funzione non è
+disponibile per gli NFT né con la selezione *Tutti*.
+
+Con un wallet DeFi su una rete leggibile, la finestra mostra anche la giacenza letta dalla blockchain e propone quella come
+valore da impostare, vedi [Confronto con blockchain ed exchange](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#confronto).
+
+## Rinominare un token e segnalare i token SCAM
+
+Con una riga selezionata sono abilitati altri due pulsanti.
+
+**Cambia Nome Token** rinomina il token.
+
+![La finestra per rinominare un token che non ha indirizzo né rete](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/15.png)
+
+- Un token **con indirizzo di contratto e rete** viene rinominato in tutto l'archivio, per ogni wallet, e il programma
+  ricorda il nuovo nome anche alle importazioni future.
+- Un token **senza indirizzo** (quelli degli exchange) viene rinominato solo sui movimenti già importati, e solo nel
+  wallet o nel gruppo selezionato. Le importazioni future porteranno di nuovo il nome originale.
+
+I nomi sono sensibili alle maiuscole: *BTC* e *Btc* sono due token diversi.
+
+**Identifica come SCAM** segna il token come truffa, tipicamente un airdrop non voluto. Il programma esegue prima dei
+controlli e può avvisare:
+
+- se il token ha **movimenti valorizzati**, perché di solito i token SCAM non hanno prezzo,
+- se ha **movimenti diversi da deposito e prelievo**, come l'airdrop dell'esempio, perché i token SCAM di solito hanno solo
+  quelli.
+
+![L'avviso quando un token ha movimenti diversi dal semplice deposito o prelievo](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/16.png)
+
+Se si prosegue, una seconda finestra chiede conferma. Per un token con indirizzo e rete il segno vale per il token ovunque
+compaia, per uno senza indirizzo vale per i movimenti presenti nel wallet selezionato.
+
+![La conferma per marcare un token come SCAM](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/17.png)
+
+Un token SCAM compare con i due asterischi in coda al nome e viene nascosto dalla casella *Nascondi Token Scam*. Sulla stessa riga il
+pulsante diventa **Rimuovi da SCAM** e annulla il segno. L'elenco dei token segnati si gestisce da *Analisi Crypto – Gestione
+Token Scam*.
+
+## Confronto con blockchain ed exchange
+
+In alcuni casi la tabella mostra una colonna in più, accanto alla quantità, che confronta la giacenza dell'archivio con
+quella vera.
+
+- **Qta Blockchain**: scegliendo un **singolo wallet DeFi** di una rete leggibile, il programma legge in background dai nodi
+  pubblici la quantità che il wallet aveva davvero alla data e la mette accanto a *Qta*. È **verde** se coincide con
+  l'archivio, **rossa** se è diversa. Un saldo che non si riesce a leggere è *n.d.* e non viene mai mostrato come zero.
+  Si confronta il solo sotto-wallet *Wallet*, cioè l'indirizzo sulla blockchain: monete messe in una farm o in garanzia
+  hanno lasciato l'indirizzo e non fanno parte del confronto.
+- **Qta OKX**: scegliendo il wallet di OKX con sotto-wallet *Tutti*, il confronto usa i saldi riportati dalle operazioni già
+  scaricate, alla data scelta, senza collegamento alla rete.
+- **Qta Binance**: lo stesso per Binance, ma **solo per la data di oggi**, perché Binance non fornisce lo storico dei saldi.
+
+Anche il dettaglio dei movimenti ha la colonna di confronto, riga per riga, e *Sistema Qta Residua* propone come
+giacenza finale quella letta dalla fonte esterna.
+
+Il pulsante **Movimenti Defi** apre nel browser, sull'explorer della rete, i movimenti del wallet selezionato per il token
+della riga. Funziona solo con un singolo wallet DeFi e per token con indirizzo di contratto, non per la moneta nativa della
+rete.
+
+## I costi netti
+
+Spuntando **Mostra costi netti** compaiono, in fondo alla tabella, cinque colonne nascoste di default: *Costo totale*,
+*Vendite*, *Costo medio netto*, *Profitti/Perdite totali* e *Note costo netto*. Raccontano un'altra storia rispetto al costo
+di carico: quanto denaro hai messo e tolto da ogni token, e a che prezzo dovresti vendere quello che resta per essere in
+pareggio.
+
+![La tabella con le colonne dei costi netti](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/08.png)
+
+Sono solo informative e non cambiano nessun calcolo fiscale. Come si calcolano, come trattano ogni tipo di movimento e come
+si leggono le note sono spiegati nel manuale dedicato: **[Costo medio netto in Giacenze a data](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/costo-medio-netto.html)**.
+
+## Domande frequenti
+
+**Perché devo premere Calcola?** Il calcolo scarica i prezzi e può richiedere tempo, quindi parte solo quando lo chiedi. Dopo
+una modifica che cambia i valori compare l'avviso rosso che ricorda di premere *Calcola*.
+
+**Perché con la data di oggi è più lento?** Per oggi non esiste una quotazione già salvata, quindi il programma cerca i prezzi
+attuali dei token che non ne hanno. La prima volta può richiedere anche più di un minuto se ci sono molti token senza prezzo.
+Per una data passata i prezzi trovati, e quelli non trovabili, vengono ricordati e le volte dopo il calcolo è rapido.
+
+**Perché un token ha quantità negativa?** Perché in archivio ci sono più uscite che entrate: di solito manca un deposito, un
+acquisto o un trasferimento, oppure un'importazione è incompleta. Il dettaglio con *Mostra solo Qta residue negative* mostra
+il primo movimento in cui il saldo diventa negativo.
+
+**Perché il costo di carico di un wallet non coincide con quello che si aspetta?** Perché il LIFO ragiona sull'insieme dei
+wallet: con un solo wallet selezionato il costo mostrato è quello dei lotti più recenti che coprono la sua quantità.
+
+**Il valore di un token è zero ma il token ha un prezzo.** Controlla la colonna *Errori*: se compare *Token senza prezzo*
+puoi assegnare un prezzo con *Modifica Valore*. Se compare un prezzo ma il valore è zero, la quantità del wallet scelto è zero.
+
+**Posso usare Giacenze a data per il quadro W/RW?** La scheda mostra la situazione, ma il quadro W/RW ha un calcolo proprio,
+con le sue opzioni e i suoi periodi, descritto nel manuale
+**[Opzioni di calcolo del Quadro RW](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/opzioni-calcolo-rw.html)**.
+
+## Limiti e cose da sapere
+
+- **Il valore dipende dai prezzi**: un prezzo mancante vale zero finché non lo si assegna, e un prezzo sbagliato falsa valore
+  e plus/minus latente. I token senza prezzo sono segnalati in rosso.
+- **Il costo di carico non si ricalcola qui**: è quello scritto dal motore delle plusvalenze. Dopo una modifica ai
+  movimenti vale quello dell'ultimo calcolo.
+- **I giroconti fra wallet** non portano costo, ma se la controparte non è classificata come trasferimento il token arriva
+  senza costo e il plus/minus latente risulta falsato.
+- **La quantità mostrata con un wallet selezionato** può essere negativa anche se il totale non lo è: succede quando i
+  movimenti di un wallet sono incompleti.
+- **Il grafico** usa prezzi giornalieri solo per il disegno.
+- **Il confronto con la blockchain** vale per i wallet DeFi su reti supportate e per le date in cui un nodo pubblico
+  conserva lo storico. Dove non è disponibile la colonna non compare.
+
+[Torna all'elenco dei manuali](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/index.html)
+
+================================================================================
+Fonte: https://lucapasselli.github.io/GiacenzeCrypto/documentazione/costo-medio-netto.html
+================================================================================
+
+# Costo medio netto in Giacenze a data
+
+- [A cosa serve](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/costo-medio-netto.html#a-cosa-serve)
+- [Dove si trova](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/costo-medio-netto.html#dove-si-trova)
+- [Le colonne](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/costo-medio-netto.html#le-colonne)
+- [Come si calcola](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/costo-medio-netto.html#come-si-calcola)
+- [Un esempio completo in cinque passi](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/costo-medio-netto.html#esempio)
+- [Confronto con il costo di carico LIFO](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/costo-medio-netto.html#confronto-lifo)
+- [Quali movimenti contano e come](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/costo-medio-netto.html#movimenti)
+- [Quando le colonne restano vuote e cosa dicono le note](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/costo-medio-netto.html#colonne-vuote)
+- [Come confrontare i numeri con altri strumenti](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/costo-medio-netto.html#confronto-strumenti)
+- [Domande frequenti](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/costo-medio-netto.html#domande)
+- [Limiti e cose da sapere](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/costo-medio-netto.html#limiti)
+
+## A cosa serve
+
+La tabella *Giacenze a data* mostra, per ogni token, la quantità posseduta, il suo valore alla data scelta e il
+**costo di carico** calcolato con il metodo LIFO. Il costo di carico risponde alla domanda «quanto è costato
+quello che mi resta», secondo le regole del calcolo delle plusvalenze.
+
+Il **costo medio netto** risponde a un'altra domanda, più semplice e più vicina all'esperienza di chi guarda il
+proprio portafoglio: **quanto denaro ho messo in questo token e quanto ne ho tolto, e a che prezzo dovrei vendere
+quello che mi resta per essere in pareggio?**
+
+Le colonne nuove permettono di:
+
+- vedere **quanto hai speso davvero** per acquistare un token (*Costo totale*) e **quanto hai incassato** cedendolo
+  (*Vendite*), sommando tutte le piattaforme e tutti i wallet,
+- conoscere il **prezzo di pareggio** (*Costo medio netto*): sopra quel prezzo il token, considerando tutto quello
+  che hai già incassato, è in utile, sotto è in perdita,
+- leggere il **risultato complessivo** del token (*Profitti/Perdite totali*), che somma la parte già incassata e il
+  valore di quello che possiedi ancora,
+- fare un **confronto** con il metodo LIFO, o con strumenti esterni che mostrano gli stessi numeri, per esempio la
+  scheda *My Portfolio* di CoinGecko.
+
+> **Non è un calcolo fiscale.** Le colonne sono solo informative: non cambiano nessun movimento, non entrano nel
+> calcolo delle plusvalenze (quadro RT) né nel quadro W/RW. Il costo di carico LIFO, le plusvalenze e le loro opzioni
+> restano quelli di sempre e non vengono toccati. Il manuale descrive cosa calcola il programma, le valutazioni
+> sulla propria dichiarazione restano dell'utente.
+
+## Dove si trova
+
+Nella scheda **Analisi Crypto – Giacenze a Data**, sotto la tabella dei token, accanto a *Mostra Giacenze a Zero* e a
+*Nascondi Token Scam*, c'è la casella **Mostra costi netti**. Il manuale dell'intera scheda è **[Giacenze a data](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html)**,
+raggiungibile anche dal pulsante *Guida...* della scheda stessa.
+
+- Le colonne sono **nascoste di default**: spuntando la casella compaiono, togliendo la spunta spariscono.
+- La scelta viene **ricordata** fra una sessione e l'altra.
+- Le colonne sono calcolate **sempre**, anche quando sono nascoste: mostrarle o nasconderle è immediato e non
+  ricarica la tabella.
+- Il calcolo considera i movimenti **anteriori alla data** scelta in alto a destra, come il resto della tabella.
+
+## Le colonne
+
+Le cinque colonne si trovano in fondo alla tabella, dopo *Qta Blockchain*. Gli esempi di questo manuale usano i dati
+inventati degli screenshot di *Giacenze a data* (tre wallet di fantasia, prezzi di mercato veri al 31/12/2025).
+
+![La tabella con le colonne dei costi netti: Costo totale, Vendite, Costo medio netto, Profitti/Perdite totali e Note](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/costo-medio-netto/01.png)
+
+| Colonna | Che cosa mostra |
+|---|---|
+| **Costo totale (in Euro)** | la somma di quanto è stato speso per ottenere il token: acquisti, scambi nei quali il token è stato ricevuto, commissioni in euro collegate all'acquisto |
+| **Vendite (in Euro)** | la somma di quanto è stato incassato cedendo il token: vendite, scambi nei quali il token è stato dato, prelievi classificati come cashout |
+| **Costo medio netto (tutti i wallet)** | (Costo totale − Vendite) diviso la quantità posseduta. È il prezzo di pareggio |
+| **Profitti/Perdite totali (tutti i wallet)** | quantità × prezzo alla data + Vendite − Costo totale. Il risultato complessivo del token, realizzato e latente insieme |
+| **Note costo netto** | cosa rende incerto il numero, in rosso. Vuota se non c'è nulla da segnalare |
+
+L'intestazione dice «tutti i wallet» perché il calcolo ignora il wallet scelto in alto: vedi [Limiti](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/costo-medio-netto.html#limiti).
+Nell'intestazione non compare la somma delle colonne, perché lo stesso token può comparire su più righe di rete
+con lo stesso valore e la somma lo conterebbe più volte.
+
+## Come si calcola
+
+Per ogni token il programma tiene **due conti separati**.
+
+**1. La quantità.** È la somma con segno di tutte le entrate e le uscite del token, di tutti i movimenti anteriori
+alla data, di tutti i wallet, **trasferimenti compresi**. È la stessa quantità che la tabella mostra con la selezione
+«Tutti». Quello che entra aumenta la quantità, quello che esce la riduce, qualunque sia il motivo (vendita,
+commissione, trasferimento con commissione di rete trattenuta, prelievo non classificato).
+
+**2. Il denaro.** Due totali, in euro: quanto è stato **speso** per avere il token e quanto è stato **incassato**
+cedendolo. Cosa viene considerato speso o incassato lo decide il tipo di movimento (vedi [la tabella](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/costo-medio-netto.html#movimenti)),
+usando il **valore in euro** che il movimento ha già nella tabella dei movimenti, cioè il prezzo del momento.
+
+Da questi due conti nascono le colonne:
+
+- **Costo medio netto** = (speso − incassato) / quantità posseduta
+- **Profitti/Perdite totali** = quantità × prezzo alla data + incassato − speso
+
+Due proprietà utili:
+
+- il costo medio netto è il **prezzo di pareggio**: se il prezzo fosse esattamente quel valore, i profitti/perdite
+  totali sarebbero zero,
+- i profitti/perdite totali dipendono **solo da cosa è entrato e cosa è uscito**, non dall'ordine dei movimenti né da
+  come si abbina il costo alle vendite.
+
+Il token è identificato dal **simbolo e dal tipo** (per esempio *ETH Crypto*), senza guardare indirizzo di contratto e
+rete: lo stesso simbolo su due reti è un token solo. Così un bridge fra reti non sposta nessun costo.
+
+## Un esempio completo in cinque passi
+
+Il token XYZ, tutti i valori in euro, prezzo di mercato alla data scelta 6 €. Ogni riga della tabella è la situazione
+**dopo** il movimento indicato.
+
+| Passo | Movimento | Quantità | Speso (totale) | Incassato (totale) | Costo medio netto |
+|---|---|---|---|---|---|
+| 1 | Acquisto di 100 XYZ pagati 100 € (1 € l'uno) | 100 | 100 | 0 | (100 − 0) / 100 = **1,00** |
+| 2 | Acquisto di 100 XYZ pagati 300 € (3 € l'uno) | 200 | 400 | 0 | (400 − 0) / 200 = **2,00** |
+| 3 | Vendita di 100 XYZ per 400 € (4 € l'uno) | 100 | 400 | 400 | (400 − 400) / 100 = **0,00** |
+| 4 | Vendita di 50 XYZ per 250 € (5 € l'uno) | 50 | 400 | 650 | (400 − 650) / 50 = **−5,00** |
+| 5 | Acquisto di 100 XYZ pagati 200 € (2 € l'uno) | 150 | 600 | 650 | (600 − 650) / 150 = **−0,33** |
+
+Come si leggono i passi:
+
+- **Passi 1 e 2.** Finché non ci sono vendite, il costo medio netto coincide con il prezzo medio di acquisto.
+- **Passo 3.** Hai incassato 400 € e ne avevi spesi 400. Le 100 unità che restano sono «gratis»: il pareggio è a 0.
+- **Passo 4.** Hai incassato 250 € in più di quanto speso. Il valore negativo dice che i soldi sono già rientrati e che
+  c'è un utile in tasca, anche se il token scendesse a zero.
+- **Passo 5.** Hai ricomprato a 2 €, ma il conto complessivo resta sotto zero: hai speso 600 € e ne hai già incassati 650.
+
+Alla fine, con il prezzo a 6 € e 150 XYZ in giacenza:
+
+| Colonna | Valore |
+|---|---|
+| Costo totale | 600,00 |
+| Vendite | 650,00 |
+| Costo medio netto | −0,33 |
+| Profitti/Perdite totali | 150 × 6 + 650 − 600 = **950,00** |
+
+Prova del pareggio al passo 2: con 200 XYZ, speso 400 e incassato 0, il costo medio netto è 2,00 e a un prezzo di
+2 € i profitti/perdite sarebbero 200 × 2 + 0 − 400 = 0.
+
+## Confronto con il costo di carico LIFO
+
+Il costo di carico LIFO e il costo medio netto non devono coincidere, perché misurano cose diverse. Il LIFO
+abbina ogni vendita ai lotti acquistati più di recente e dice quanto è costato quello che resta. Il costo medio netto
+guarda solo il denaro entrato e uscito.
+
+Esempio con quattro movimenti semplici (acquisti e vendite per euro, prezzo alla data 6 €):
+
+| Passo | Movimento |
+|---|---|
+| 1 | Acquisto di 100 XYZ pagati 100 € |
+| 2 | Acquisto di 100 XYZ pagati 300 € |
+| 3 | Vendita di 100 XYZ per 400 € |
+| 4 | Acquisto di 100 XYZ pagati 500 € |
+
+Alla fine si hanno 200 XYZ, che valgono 200 × 6 = 1.200 €.
+
+| | Costo medio netto | Costo di carico LIFO |
+|---|---|---|
+| Come si ottiene | (speso 900 − incassato 400) / 200 | la vendita del passo 3 scarica il lotto più recente (quello da 3 €), restano il lotto da 1 € e quello da 5 € |
+| Risultato | **2,50 € per unità** | 100 + 500 = 600 €, cioè **3,00 € per unità** |
+| Parte già realizzata | non distingue | 400 − 300 = 100 € |
+| Parte latente | non distingue | 1.200 − 600 = 600 € |
+| Risultato complessivo | 1.200 + 400 − 900 = **700 €** | 100 + 600 = **700 €** |
+
+Il **risultato complessivo è lo stesso** con qualunque metodo, perché dipende solo da quanto è entrato e uscito. Cambia
+solo come lo si divide fra utile già realizzato e utile ancora latente, e il prezzo per unità del residuo: 2,50 contro 3,00.
+
+Una media ponderata classica darebbe un terzo numero ancora (3,50 in questo esempio): il programma non la calcola. Il costo medio netto non è
+una media del costo di acquisto ma un prezzo di pareggio, e per questo può scendere sotto zero o valere zero, cosa che
+una media del costo non fa mai.
+
+## Quali movimenti contano e come
+
+Il programma classifica ogni movimento e decide cosa aggiunge a «speso» e a «incassato». Il **valore** usato è sempre
+il *Valore transazione in EURO* del movimento.
+
+| Movimento | Effetto sul token | Speso | Incassato |
+|---|---|---|---|
+| **Acquisto con euro** (o con un'altra valuta FIAT) | entra il token | valore dell'acquisto | |
+| **Vendita per euro** | esce il token | | valore della vendita |
+| **Scambio fra due cripto** | esce A ed entra B | B: valore dello scambio | A: valore dello scambio |
+| **Acquisto o vendita di un NFT** pagato con cripto | la cripto esce o entra | se entra: valore | se esce: valore |
+| **Deposito classificato come acquisto** (acquisto tramite contanti o servizi esterni) | entra il token | valore | |
+| **Reward, staking, airdrop, earn, cashback** | entra il token | **zero** | |
+| **Deposito a costo zero, donazione ricevuta, rimborso oltre il credito di un fallimento** | entra il token | **zero** | |
+| **Deposito non classificato** | entra il token | **zero**, con nota | |
+| **Prelievo non classificato** | esce il token | | **zero**, con nota |
+| **Cashout o pagamento di un servizio** (prelievo classificato come cashout) | esce il token | | valore |
+| **Commissione pagata in cripto** | esce il token | | **zero** |
+| **Rettifica di giacenza, rimborso di una reward** | esce il token | | **zero** |
+| **Commissione in euro di un acquisto** | nessuno | si somma al token acquistato, se collegata | |
+| **Trasferimento fra i propri wallet** | entra ed esce la stessa quantità | non cambia | non cambia |
+| **Deposito o prelievo in euro**, scambio fra valute FIAT | nessuno sul token | | |
+
+Alcuni casi meritano un esempio. Negli esempi parte sempre da 100 XYZ acquistati con 100 € (speso 100 €, nessun
+incasso), salvo diversa indicazione.
+
+**Scambio fra due cripto.** Scambi 50 XYZ con 20 ABC e il valore dello scambio è 100 €. Per il programma è una
+**vendita di XYZ e un acquisto di ABC**, entrambi a 100 €, anche se ai fini del calcolo delle plusvalenze lo scambio
+può essere neutro. XYZ: incassato 100, quantità 50, costo medio netto (100 − 100) / 50 = **0,00**. ABC: speso 100,
+quantità 20, costo medio netto 100 / 20 = **5,00**.
+
+**Reward.** Ricevi 10 XYZ di staking, che in quel momento valgono 15 €. Entrano a **costo zero**: speso resta 100,
+quantità 110, costo medio netto 100 / 110 = **0,909**. Il costo netto conta solo i soldi usciti davvero dal tuo
+portafoglio, quindi tutta la reward è utile. Con il prezzo a 2 € i profitti/perdite sono 110 × 2 + 0 − 100 = **120**.
+Questa scelta non segue le opzioni del calcolo delle plusvalenze sulle reward.
+
+**Deposito non classificato.** Arrivano 50 XYZ da una provenienza che il programma non conosce: un wallet tuo non
+importato, un regalo, un acquisto fatto altrove. Entrano a **costo zero** e la nota lo segnala: speso 100, quantità 150,
+costo medio netto 100 / 150 = **0,667**. Se erano tuoi e arrivavano da un wallet non importato, il numero è
+ottimistico: classificare il movimento (per esempio come trasferimento) lo corregge.
+
+**Prelievo non classificato.** Escono 50 XYZ verso una destinazione sconosciuta. Escono **senza incasso**, e la nota lo
+segnala: speso 100, incassato 0, quantità 50, costo medio netto 100 / 50 = **2,00**. Non viene contato come una vendita
+perché potrebbe essere un trasferimento verso un tuo wallet non importato, e contarlo come vendita accrediterebbe un
+incasso mai avvenuto.
+
+**Commissione in cripto.** Paghi una commissione di 1 XYZ, che vale 2 €. Esce senza incasso: speso 100, incassato 0,
+quantità 99, costo medio netto 100 / 99 = **1,0101**. Con il prezzo a 2 € i profitti/perdite sono 99 × 2 + 0 − 100 = **98**:
+la commissione è un costo vero e pesa sul risultato.
+
+**Commissione in euro su un acquisto.** Compri 100 XYZ con un addebito totale di 105 €, cioè acquisto 100 € più
+commissione 5 € (alcune piattaforme la registrano come movimento a parte). La commissione si **somma allo speso**:
+speso 105, costo medio netto 105 / 100 = **1,05**, e con il prezzo a 2 € i profitti/perdite sono 200 − 105 = **95**.
+Funziona solo se il programma ha **collegato** la commissione a quell'acquisto e se in quel gruppo c'è **un solo**
+movimento che fa entrare un token. In ogni altro caso la commissione non viene attribuita a nessun token.
+
+**Trasferimento fra i propri wallet con commissione di rete.** Sposti 40 XYZ su un altro tuo wallet e ne arrivano 39,5.
+Il trasferimento **non sposta denaro**, ma i 0,5 XYZ trattenuti come commissione di rete escono dalla quantità senza
+incasso: quantità 99,5, speso 100, costo medio netto 100 / 99,5 = **1,005**.
+
+**Bridge fra reti.** Compri 100 ETH per 100 € e ne sposti 40 su un'altra rete. Il token è lo stesso, quindi entrambe le
+righe mostrano costo totale 100, quantità 100 e costo medio netto **1,00**.
+
+**Fallimenti di piattaforme.** Il blocco del credito, la restituzione in natura e i rimborsi sono scambi fra cripto e
+si trattano come tali. Esempio: 1 BTC acquistato per 50.000 € viene bloccato in una procedura quando vale 30.000 €. Il
+BTC ha costo totale 50.000, vendite 30.000 e quantità 0, quindi il costo medio netto resta vuoto. Il token credito ha
+costo totale 30.000 e quantità 1: costo medio netto **30.000**.
+
+Cosa non entra mai nel pool: i token **FIAT** (euro, dollari), gli **NFT**, e le monete che non hanno alcun movimento
+anteriore alla data.
+
+## Quando le colonne restano vuote e cosa dicono le note
+
+Il programma preferisce **lasciare vuoto un numero** piuttosto che mostrarne uno sbagliato.
+
+| Situazione | Costo totale e Vendite | Costo medio netto | Profitti/Perdite |
+|---|---|---|---|
+| Tutto regolare | mostrati | mostrato | mostrato |
+| Quantità nulla o negativa (venduto tutto, o più di quanto posseduto) | mostrati | vuoto | vuoto |
+| Il token non ha un prezzo alla data | mostrati | mostrato | vuoto |
+| Un movimento che porta denaro non ha il valore in euro | mostrati (parziali) | vuoto | vuoto |
+| Token FIAT o NFT | vuoti | vuoto | vuoto |
+
+La colonna **Note costo netto**, in rosso, dice cosa rende il numero incerto. I testi possibili sono:
+
+- *N movimenti senza prezzo*: la riga ha almeno un movimento che porta denaro (acquisto, vendita, scambio, cashout)
+  senza valore in euro. Per ritrovare il numero basta assegnare il prezzo al movimento dalla tabella dei movimenti.
+  Un valore scritto `0,00` è invece un valore valido, per esempio un importo sotto il centesimo o un movimento il cui
+  prezzo è davvero zero.
+- *N depositi non classificati a zero*: ci sono depositi che il programma ha contato a costo zero perché non sa da dove
+  arrivano. Il costo medio netto è da prendere con cautela finché non vengono classificati.
+- *N prelievi non classificati senza incasso*: ci sono prelievi contati come uscite senza incasso.
+
+Le tre segnalazioni possono comparire insieme, separate da virgole.
+
+## Come confrontare i numeri con altri strumenti
+
+Schede come *My Portfolio* di CoinGecko mostrano gli stessi concetti con altri nomi: *Costo totale* (quanto è stato
+speso), le vendite registrate, *Costo medio netto* e *Profitti/perdite totali*. Il calcolo è lo stesso, quindi i numeri
+**tornano** quando gli stessi movimenti sono registrati nello stesso modo.
+
+Se non tornano, di solito la differenza viene da come sono trattati alcuni movimenti:
+
+- le **reward** qui hanno costo zero, in una scheda manuale dipende da cosa l'utente ha inserito,
+- gli **scambi fra cripto** qui sono sempre una vendita e un acquisto al valore del momento,
+- le **commissioni** in cripto escono senza incasso,
+- i movimenti che nello strumento esterno **mancano** (trasferimenti da altre piattaforme, depositi non classificati),
+- il **prezzo** usato per il valore del movimento, che può essere di un'altra fonte.
+
+Per verificare un numero conviene guardare prima *Costo totale* e *Vendite*: se coincidono, il resto del calcolo è
+aritmetica.
+
+## Domande frequenti
+
+**Perché il costo medio netto è negativo?** Perché hai già incassato più di quanto hai speso su quel token. Non è un
+errore: significa che anche se il token valesse zero resteresti in utile (passi 4 e 5 dell'[esempio](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/costo-medio-netto.html#esempio)).
+
+**Perché è zero?** Perché le vendite hanno restituito esattamente quanto speso: le unità che restano sono a costo zero.
+
+**Perché la cella è vuota?** Vedi [la tabella](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/costo-medio-netto.html#colonne-vuote) e leggi la colonna *Note costo netto*.
+
+**Perché ogni riga dello stesso token ha lo stesso costo medio netto?** Perché il calcolo è per simbolo e tipo, sommando
+tutte le reti.
+
+**Perché non cambia se scelgo un solo wallet?** Perché il denaro speso e incassato non si può attribuire a un singolo
+wallet: i trasferimenti fra wallet non spostano denaro. Con un wallet selezionato la tabella mostra la quantità di
+quel wallet e il costo medio netto del token su tutti i wallet.
+
+**Perché non coincide con il costo di carico?** Perché sono due conteggi diversi: vedi
+[il confronto](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/costo-medio-netto.html#confronto-lifo). Il costo di carico segue le regole del calcolo delle plusvalenze, il costo medio netto
+no.
+
+**Se classifico un movimento, i numeri cambiano?** Sì, alla prossima apertura della tabella: le colonne si ricalcolano
+a ogni calcolo della tabella.
+
+## Limiti e cose da sapere
+
+- **Solo informativo.** Non entra in nessun quadro della dichiarazione e non modifica nessun movimento.
+- **Globale.** Ignora il wallet e il gruppo selezionati. Il profitto/perdita di una riga usa la quantità totale del
+  token e il prezzo della riga, non la quantità del singolo wallet.
+- **Per simbolo e tipo.** Due token diversi con lo stesso simbolo (per esempio due contratti con lo stesso nome) vengono
+  fusi.
+- **Il valore è quello del movimento.** Prezzi mancanti o sbagliati entrano nel calcolo così come sono.
+- **Lo `0,00` è un valore valido.** Un movimento il cui valore è realmente `0,00` e uno che non ha trovato un prezzo
+  possono sembrare uguali: lo `0,00` non viene segnalato.
+- **Movimenti non classificati.** Più ce ne sono, meno il numero è affidabile: la nota lo ricorda.
+- **Commissioni in euro.** Entrano nello speso solo se il programma le ha collegate a un unico acquisto.
+- **Prezzo alla data.** I profitti/perdite usano il prezzo che la tabella mostra per la data scelta. Con la data di oggi
+  il prezzo è quello attuale. Se il token non ha prezzo, la colonna resta vuota.
+- **Nessuna distinzione fra periodi.** Il calcolo parte dal primo movimento dell'archivio, a prescindere dall'anno.
+
+Per le altre funzioni della scheda (dettaglio dei movimenti, grafico, rettifica delle giacenze, confronto con blockchain ed
+exchange) vedi il manuale **[Giacenze a data](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html)**.
+
+[Torna all'elenco dei manuali](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/index.html)
+
+================================================================================
 Fonte: https://lucapasselli.github.io/GiacenzeCrypto/documentazione/opzioni-calcolo-rw.html
 ================================================================================
 

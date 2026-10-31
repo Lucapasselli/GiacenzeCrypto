@@ -16,6 +16,8 @@ scaricarla o stamparla.
 | **[Classificazione dei movimenti](classificazioni-movimenti.html)** — come classificare depositi e prelievi, opzione per opzione | | [PDF](classificazioni-movimenti.pdf) |
 | **[Esportazione e importazione da CSV](export-import-csv.html)** — come estrarre i file dalle piattaforme e caricarli nel programma | | [PDF](export-import-csv.pdf) |
 | **[Particolarità degli import per exchange](particolarita-exchange.html)** — exchange per exchange, quali file scaricare, quali file accessori servono e in che ordine importarli | | [PDF](particolarita-exchange.pdf) |
+| **[Giacenze a data](giacenze-a-data.html)** — la scheda che mostra i token posseduti a una data: tabella, costo di carico, prezzi da correggere, dettaglio dei movimenti, grafico, rettifica delle giacenze, token SCAM e confronto con blockchain ed exchange | | [PDF](giacenze-a-data.pdf) |
+| **[Costo medio netto in Giacenze a data](costo-medio-netto.html)** — a cosa servono le colonne dei costi netti, come si calcolano speso, incassato, prezzo di pareggio e profitti/perdite totali, e come trattano ogni tipo di movimento | | [PDF](costo-medio-netto.pdf) |
 | **[Fallimenti delle piattaforme](fallimenti-piattaforme.html)** — Celsius, FTX e simili: blocco del credito, rimborsi, chiusura e valore nel quadro W/RW, passo per passo | | [PDF](fallimenti-piattaforme.pdf) |
 | **[Configurazione JSON per le importazioni personalizzate](creazione-json-importazioni-personalizzate.html)** — riferimento completo dei descrittori JSON | | [PDF](creazione-json-importazioni-personalizzate.pdf) |
 | **[Avvertenze e problemi noti](avvertenze-problemi-noti.html)** — limiti conosciuti e verifiche consigliate | | [PDF](avvertenze-problemi-noti.pdf) |

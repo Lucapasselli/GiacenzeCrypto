@@ -9,6 +9,8 @@ Tutti i manuali qui sotto, in un solo file di testo: https://lucapasselli.github
 ## Manuali
 
 - [Calcolo delle plusvalenze e opzioni](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/calcolo-plusvalenze-opzioni.html): normativa di riferimento, metodo LIFO con esempi, opzioni di calcolo, funzione RT & Analisi P&L
+- [Giacenze a data](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html): la scheda Analisi Crypto, Giacenze a Data: selettori, tabella dei token, costo di carico LIFO, token senza prezzo, dettaglio dei movimenti, grafico, correzione delle giacenze, rinomina e token SCAM, confronto con blockchain ed exchange, con screenshot su dati inventati
+- [Costo medio netto in Giacenze a data](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/costo-medio-netto.html): le colonne dei costi netti della tabella Giacenze a data (costo totale, vendite, costo medio netto come prezzo di pareggio, profitti/perdite totali): a cosa servono, come si calcolano con esempi completi, come trattano ogni tipo di movimento e quando restano vuote
 - [Opzioni di calcolo del Quadro RW](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/opzioni-calcolo-rw.html): come vengono composti i righi del quadro W/RW, casi studio e gestione degli errori
 - [Classificazione dei movimenti](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/classificazioni-movimenti.html): come classificare depositi e prelievi, opzione per opzione
 - [Esportazione e importazione da CSV](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/export-import-csv.html): come estrarre i file dalle piattaforme e caricarli nel programma

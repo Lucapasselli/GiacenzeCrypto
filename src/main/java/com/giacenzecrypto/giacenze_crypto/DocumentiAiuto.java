@@ -44,6 +44,19 @@ public class DocumentiAiuto {
     /** Guida passo per passo ai fallimenti delle piattaforme (scheda Analisi Crypto, Fallimenti piattaforme). */
     public static final String FALLIMENTI_PIATTAFORME = "fallimenti-piattaforme.html";
 
+    /**
+     * Il manuale della scheda Analisi Crypto, Giacenze a Data: la tabella dei token, il dettaglio movimenti, la
+     * rettifica della giacenza, i confronti con blockchain ed exchange e le colonne del costo medio netto (che
+     * hanno anche un manuale proprio, {@link #COSTO_MEDIO_NETTO}).
+     */
+    public static final String GIACENZE_A_DATA = "giacenze-a-data.html";
+
+    /**
+     * Che cosa sono le colonne del costo medio netto di Giacenze a data (casella <i>Mostra costi netti</i>) e come si
+     * calcolano: speso, incassato, prezzo di pareggio, profitti/perdite totali e il trattamento di ogni movimento.
+     */
+    public static final String COSTO_MEDIO_NETTO = "costo-medio-netto.html";
+
     /** Elenco delle novità di ogni versione: pagina sola, non ha una copia in PDF */
     public static final String NOVITA_VERSIONI = "changelog.html";
 
@@ -51,7 +64,7 @@ public class DocumentiAiuto {
     static final String[] TUTTI = {
         OPZIONI_CALCOLO_RW, DISCLAIMER, AVVERTENZE_PROBLEMI_NOTI, CALCOLO_PLUSVALENZE_OPZIONI,
         CLASSIFICAZIONI_MOVIMENTI, EXPORT_IMPORT_CSV, CREAZIONE_JSON_IMPORTAZIONI, PARTICOLARITA_EXCHANGE,
-        FALLIMENTI_PIATTAFORME, NOVITA_VERSIONI
+        FALLIMENTI_PIATTAFORME, GIACENZE_A_DATA, COSTO_MEDIO_NETTO, NOVITA_VERSIONI
     };
 
     private DocumentiAiuto() {

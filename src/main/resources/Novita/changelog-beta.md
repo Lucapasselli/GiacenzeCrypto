@@ -5,6 +5,14 @@ programma all'avvio di una beta, ed è la descrizione della beta su GitHub. L'el
 in preparazione è nella sezione "in lavorazione" di docs/documentazione/changelog.md, dove ogni voce di questo file
 compare con lo stesso titolo. Questo file non è una pagina del sito.
 
+## Versione 1.0.65.16
+
+**Nuove implementazioni**
+
+- **Giacenze a data, costo medio netto**: spuntando la casella *Mostra costi netti* sotto la tabella compaiono cinque colonne, nascoste di default: *Costo totale*, *Vendite*, *Costo medio netto*, *Profitti/Perdite totali* e le *Note*. Il costo medio netto è (speso - incassato) diviso la quantità posseduta, come nella scheda *My Portfolio* di CoinGecko, e può scendere sotto zero. Non è il costo di carico LIFO e non entra nelle dichiarazioni. Il calcolo vale per tutti i wallet insieme e per simbolo e tipo del token. Un movimento senza valore in euro lascia vuote le colonne e le note lo segnalano.
+
+- **Giacenze a data, manuale e pulsante Guida**: la scheda ha ora il pulsante *Guida...*, sopra il dettaglio dei movimenti, che apre un manuale completo con screenshot su dati inventati. Spiega la tabella, il costo di carico, il dettaglio dei movimenti, il grafico, la lettura di un solo wallet, *Sistema Qta Residua*, i token SCAM e il confronto con blockchain ed exchange. Le colonne dei costi netti hanno un manuale a parte, richiamato dal primo.
+
 ## Versione 1.0.65.15
 
 **Nuove implementazioni**

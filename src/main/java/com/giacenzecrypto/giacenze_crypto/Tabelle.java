@@ -387,7 +387,7 @@ public class Tabelle {
                     c.setBackground(bg);
                     c.setForeground(rosso);
                 }
-                else if (table.convertColumnIndexToModel(col)==10) {
+                else if (table.convertColumnIndexToModel(col)==10 || table.convertColumnIndexToModel(col)==17) {
                     c.setBackground(bg);
                     c.setForeground(rosso);
                 }
@@ -405,6 +405,18 @@ public class Tabelle {
                     //BigDecimal e non Double.toString, che sopra i dieci milioni scrive in notazione scientifica
                     setText(java.math.BigDecimal.valueOf((Double) value).toPlainString());
                     if (!isSelected && !((Double) value).equals(0.0)) {
+                        c.setForeground(((Double) value) > 0 ? verdeScuro : rosso);
+                    }
+                } else if (colModello >= 13 && colModello <= 16 && value instanceof Double) {
+                    //Costo medio netto (15) con otto cifre significative come i valori unitari, gli altri a due decimali.
+                    //BigDecimal e non Double.toString: sopra i dieci milioni scriverebbe la notazione scientifica
+                    if (colModello == 15) {
+                        setText(Principale_GiacenzeaData.FormattaUnitario((Double) value));
+                    } else {
+                        setText(java.math.BigDecimal.valueOf((Double) value).setScale(2, java.math.RoundingMode.HALF_UP).toPlainString());
+                    }
+                    //Profitti/perdite totali (16): verde se positivi, rossi se negativi
+                    if (colModello == 16 && !isSelected && !((Double) value).equals(0.0)) {
                         c.setForeground(((Double) value) > 0 ? verdeScuro : rosso);
                     }
                 } else if (colModello == 12 && !isSelected) {

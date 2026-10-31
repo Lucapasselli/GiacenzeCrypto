@@ -85,7 +85,15 @@ public class Calcoli_RW {
      */
     public static boolean ScambioRilevante(Moneta[] m,String Data,String Rilevanza,String Campo18){
         if (FallimentiPiattaforme.TrasferisceCosto(Campo18)) return false;
-        if (FallimentiPiattaforme.Realizza(Campo18)) return !Rilevanza.equalsIgnoreCase("B");
+        if (FallimentiPiattaforme.Realizza(Campo18)) {
+            if (!FallimentiPiattaforme.RimborsoComePermuta()) return !Rilevanza.equalsIgnoreCase("B");
+            //Rimborso trattato come permuta ordinaria: il credito ha il tipo della moneta che era depositata
+            if (Rilevanza.equalsIgnoreCase("D")) return true;
+            if (Rilevanza.equalsIgnoreCase("B")) return false;
+            String Tipo1 = FallimentiPiattaforme.TipoNelRimborso(m[0].Moneta, Data, m[0].Tipo);
+            String Tipo2 = RitornaTipoCrypto(m[1].Moneta, Data, m[1].Tipo);
+            return !Tipo1.equalsIgnoreCase(Tipo2);
+        }
         return ScambioRilevante(m, Data, Rilevanza);
     }
    

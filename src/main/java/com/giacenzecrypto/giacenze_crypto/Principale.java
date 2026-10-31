@@ -13307,6 +13307,9 @@ if (result.isAction("delete-all")) {
         if (FallimentiPiattaforme.InfluisconoSullAnno(Anno)) {
             o.put(FallimentiPiattaforme.NOME_OPZIONE, FallimentiPiattaforme.DescrizioneValore());
         }
+        if (FallimentiPiattaforme.RimborsiComePermutaNelAnno(Anno)) {
+            o.put(FallimentiPiattaforme.NOME_OPZIONE_RIMBORSO, FallimentiPiattaforme.DESCRIZIONE_RIMBORSO_PERMUTA);
+        }
         Dichiarazioni_OpzioniComuni(o);
         return d;
     }
@@ -13753,7 +13756,10 @@ if (result.isAction("delete-all")) {
                         + "&emsp;• Dalla data della domanda di fallimento le cripto-attività depositate sulla piattaforma "
                         + "sono riportate come credito verso la procedura (token come CELSIUS.CREDITO.BTC, sotto-wallet "
                         + Principale_Fallimenti.SOTTOWALLET + "), con il loro costo di carico.<br>"
-                        + "&emsp;• Valore del credito nel quadro: " + FallimentiPiattaforme.DescrizioneValore() + ".<br></html>";
+                        + "&emsp;• Valore del credito nel quadro: " + FallimentiPiattaforme.DescrizioneValore() + ".<br>"
+                        + (FallimentiPiattaforme.RimborsiComePermutaNelAnno(AnnoDiCompetenza)
+                        ? "&emsp;• Rimborsi da fallimento: " + FallimentiPiattaforme.DESCRIZIONE_RIMBORSO_PERMUTA + ".<br>" : "")
+                        + "</html>";
                 stampa.AggiungiHtml(testo);
             }
 
@@ -17456,6 +17462,9 @@ if (result != null && !result.isAction("cancel")) {
         o.put("LiFo", Opzioni_GruppoWallet_CheckBox_PlusXWallet.isSelected() ? "per gruppo wallet" : "sulla totalità dei wallet");
         o.put("Scambi fra cripto-attività con medesime caratteristiche", Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti.isSelected()
                 ? "fiscalmente rilevanti" : "non rilevanti");
+        if (FallimentiPiattaforme.RimborsiComePermutaNelAnno(bozza.Anno)) {
+            o.put(FallimentiPiattaforme.NOME_OPZIONE_RIMBORSO, FallimentiPiattaforme.DESCRIZIONE_RIMBORSO_PERMUTA);
+        }
         Dichiarazioni_OpzioniComuni(o);
         return bozza;
     }
@@ -17677,6 +17686,10 @@ if (result != null && !result.isAction("cancel")) {
                                     (non generano plusvalenza e il costo di carico della cripto-attività ceduta viene trasferito a quella ricevuta)<br>
                                     <br>
                                                     """;
+                            }
+                            if(FallimentiPiattaforme.RimborsiComePermutaNelAnno(String.valueOf(Anno))){
+                                    testo = testo + "\u2022 I rimborsi da fallimento di una piattaforma sono " + FallimentiPiattaforme.DESCRIZIONE_RIMBORSO_PERMUTA
+                                            + "<br><br>";
                             }
                                 testo = testo + """
                                     \u2022 Le tipologie di Reward scelte come fiscalmente rilevanti sono :<br>                                  

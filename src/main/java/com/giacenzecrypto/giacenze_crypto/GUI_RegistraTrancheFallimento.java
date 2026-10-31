@@ -401,7 +401,7 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
         }
         BigDecimal Risultato = BigDecimal.ZERO;
         for (Principale_Fallimenti.RigaAnteprima a : T.Anteprima) {
-            boolean Realizza = a.Trattamento.startsWith("Rimborso");
+            boolean Realizza = a.Realizza;
             BigDecimal r = Realizza && a.Costo != null ? a.Valore.subtract(a.Costo) : null;
             if (r != null) Risultato = Risultato.add(r);
             Anteprima.addRow(new Object[]{a.Credito, Quantita(a.QtaUscita), a.Ricevuta, Quantita(a.QtaEntrata),

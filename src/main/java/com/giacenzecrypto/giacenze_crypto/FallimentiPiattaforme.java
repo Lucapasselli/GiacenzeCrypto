@@ -89,6 +89,50 @@ public final class FallimentiPiattaforme {
         return Inizia(Campo18, RIMBORSO);
     }
 
+    /** Opzione personale: i rimborsi {@code FRB} seguono le regole ordinarie degli scambi fra cripto, non il realizzo forzato. */
+    public static final String OPZIONE_RIMBORSO_PERMUTA = "Fallimenti_RimborsoComePermuta";
+
+    /** Descrizione dell'opzione attiva, riga delle opzioni usate per il calcolo dei quadri RT e W/RW. */
+    public static final String NOME_OPZIONE_RIMBORSO = "Rimborsi da fallimento di una piattaforma";
+    public static final String DESCRIZIONE_RIMBORSO_PERMUTA =
+            "trattati come scambi fra cripto-attività con le regole ordinarie (nessuna plusvalenza fra monete con medesime "
+            + "caratteristiche, il costo di carico passa alla moneta ricevuta)";
+
+    /** @return {@code true} se l'utente ha scelto di trattare i rimborsi come permute ordinarie (default no) */
+    public static boolean RimborsoComePermuta() {
+        return "SI".equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_RIMBORSO_PERMUTA, "NO"));
+    }
+
+    /**
+     * @param Anno anno del quadro ({@code yyyy})
+     * @return {@code true} se l'opzione dei rimborsi come permuta è attiva e nell'anno c'è almeno un rimborso. Solo
+     *         allora l'opzione entra fra quelle dichiarate nei quadri: scritta sempre, farebbe risultare diversa dal
+     *         ricalcolo ogni dichiarazione archiviata prima
+     */
+    public static boolean RimborsiComePermutaNelAnno(String Anno) {
+        if (!RimborsoComePermuta()) return false;
+        for (String[] v : Principale.MappaCryptoWallet.values()) {
+            if (v != null && v.length > 18 && v[1] != null && v[1].startsWith(Anno) && Realizza(v[18])) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Il tipo di una moneta in un rimborso trattato come permuta ordinaria. Un token credito nasce sempre {@code Crypto}
+     * e il suo nome non è in {@code Mappa_EMoney}: il tipo vero è quello della moneta che era depositata, alla data del
+     * rimborso (la riga di blocco dice quale era). Per ogni altra moneta, o per un credito in valuta, vale il tipo
+     * ordinario.
+     * @param Simbolo simbolo della moneta del movimento
+     * @param Data data del movimento
+     * @param TipoDichiarato tipo scritto nella riga
+     * @return il tipo da confrontare con quello dell'altra gamba
+     */
+    public static String TipoNelRimborso(String Simbolo, String Data, String TipoDichiarato) {
+        TokenCredito t = Simbolo == null ? null : Registro().Token.get(Simbolo);
+        if (t == null || t.Fiat || t.MonetaOriginale == null) return Funzioni.RitornaTipoCrypto(Simbolo, Data, TipoDichiarato);
+        return Funzioni.RitornaTipoCrypto(t.MonetaOriginale, Data, "Crypto");
+    }
+
     /**
      * @return {@code true} se il deposito è un rimborso oltre il credito: costo di carico e plusvalenza pari al valore,
      *         sempre, qualunque siano le opzioni delle reward (non è una reward)

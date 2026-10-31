@@ -56,6 +56,7 @@ class FallimentiPiattaformeTest {
         DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_ScambiSempreRilevanti", "NO");
         DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIAT", "NO");
         DatabaseH2.Pers_Opzioni_Scrivi(FallimentiPiattaforme.OPZIONE_VALORE, FallimentiPiattaforme.VALORE_CREDITO);
+        DatabaseH2.Pers_Opzioni_Scrivi(FallimentiPiattaforme.OPZIONE_RIMBORSO_PERMUTA, "NO");
         FallimentiPiattaforme.CancellaProcedura("CELSIUS");
         FallimentiPiattaforme.CambioUSDEUR = (usd, giorno) -> new BigDecimal(usd).multiply(new BigDecimal("0.9")).toPlainString();
         FallimentiPiattaforme.Invalida();
@@ -292,6 +293,142 @@ class FallimentiPiattaformeTest {
         assertTrue(Calcoli_RW.ScambioRilevante(m, "2024-01-15 10:00", "D", FallimentiPiattaforme.CAMPO18_RIMBORSO));
         //Senza marcatore resta la regola di sempre: stesso tipo, non rilevante col metodo C
         assertFalse(Calcoli_RW.ScambioRilevante(m, "2024-01-15 10:00", "C", ""));
+    }
+
+    // ------------------------------------------------------------------
+    // Opzione "rimborsi come permuta ordinaria" (Fallimenti_RimborsoComePermuta)
+    // ------------------------------------------------------------------
+
+    @Test
+    void rimborsoComePermuta_stessoTipo_trasferisceIlCosto() {
+        acquisto("2021-01-01 10:00", "BTC", "1", "1000");
+        blocco("2022-07-13 00:00", "BTC", "1", "20000");
+        String[] rb = rimborsoInCripto("2024-01-15 10:00", "CELSIUS.CREDITO.BTC", "0.5", "ETH", "4", "11530");
+
+        //Di default il rimborso realizza sempre
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        assertEquals("11030.00", rb[19]);
+        assertEquals("S", rb[33]);
+
+        //Con l'opzione credito BTC verso ETH e' Crypto verso Crypto: costo trasferito, nessuna plusvalenza
+        DatabaseH2.Pers_Opzioni_Scrivi(FallimentiPiattaforme.OPZIONE_RIMBORSO_PERMUTA, "SI");
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        assertEquals("500.00", rb[16]);
+        assertEquals("500.00", rb[17]);
+        assertEquals("0.00", rb[19]);
+        assertEquals("N", rb[33]);
+
+        //E tornando indietro il risultato e' quello di prima
+        DatabaseH2.Pers_Opzioni_Scrivi(FallimentiPiattaforme.OPZIONE_RIMBORSO_PERMUTA, "NO");
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        assertEquals("11030.00", rb[19]);
+    }
+
+    @Test
+    void rimborsoComePermuta_creditoDiUnEmoney_realizza() {
+        DatabaseH2.Pers_Opzioni_Scrivi(FallimentiPiattaforme.OPZIONE_RIMBORSO_PERMUTA, "SI");
+        Principale.Mappa_EMoney.put("USDC", "2000-01-01");
+        acquisto("2024-01-01 10:00", "USDC", "1000", "900");
+        blocco("2024-07-13 00:00", "USDC", "1000", "920");
+        //Il token credito non e' in Mappa_EMoney: il tipo e' quello di USDC, la moneta che era depositata
+        String[] rb = rimborsoInCripto("2025-01-15 10:00", "CELSIUS.CREDITO.USDC", "1000", "ETH", "0.3", "950");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        assertEquals("900.00", rb[16]);
+        assertEquals("950", rb[17]);
+        assertEquals("50.00", rb[19]);
+        assertEquals("S", rb[33]);
+    }
+
+    @Test
+    void rimborsoComePermuta_seguonoLeOpzioniSugliScambi() {
+        DatabaseH2.Pers_Opzioni_Scrivi(FallimentiPiattaforme.OPZIONE_RIMBORSO_PERMUTA, "SI");
+        DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_ScambiSempreRilevanti", "SI");
+        acquisto("2021-01-01 10:00", "BTC", "1", "1000");
+        blocco("2022-07-13 00:00", "BTC", "1", "20000");
+        String[] rb = rimborsoInCripto("2024-01-15 10:00", "CELSIUS.CREDITO.BTC", "0.5", "ETH", "4", "11530");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        assertEquals("11030.00", rb[19]);
+        assertEquals("S", rb[33]);
+    }
+
+    @Test
+    void rimborsoComePermuta_l_anteprimaMostraSeLaRigaRealizza() {
+        FallimentiPiattaforme.Procedura P = proceduraCreata("60");
+        String[] Dep = depositoSu("Coinbase", "20240115100500", "2024-01-15 10:05", "ETH", "Crypto", "4", "11530");
+        List<Principale_Fallimenti.Ricevuta> R = List.of(ricevuta("ETH", "Crypto", "4", "11530", Dep[0]));
+
+        //Di default il rimborso e' un realizzo
+        Principale_Fallimenti.Tranche T = Principale_Fallimenti.PreparaTranche(P, "2024-01-15 10:00", new BigDecimal("60"),
+                new BigDecimal("60"), R);
+        assertNull(T.Errore);
+        assertTrue(T.Anteprima.get(0).Realizza);
+
+        //Con l'opzione BTC verso ETH e' una permuta fra cripto dello stesso tipo: costo trasferito, nessun risultato
+        DatabaseH2.Pers_Opzioni_Scrivi(FallimentiPiattaforme.OPZIONE_RIMBORSO_PERMUTA, "SI");
+        T = Principale_Fallimenti.PreparaTranche(P, "2024-01-15 10:00", new BigDecimal("60"), new BigDecimal("60"), R);
+        assertNull(T.Errore);
+        assertFalse(T.Anteprima.get(0).Realizza);
+        assertEquals("Scambio ordinario fra cripto: costo trasferito", T.Anteprima.get(0).Trattamento);
+    }
+
+    @Test
+    void rimborsoComePermuta_bloccoERestituzioneRestanoNeutri() {
+        DatabaseH2.Pers_Opzioni_Scrivi(FallimentiPiattaforme.OPZIONE_RIMBORSO_PERMUTA, "SI");
+        DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_Pre2023ScambiRilevanti", "SI");
+        Principale.Mappa_EMoney.put("USDC", "2000-01-01");
+        acquisto("2021-01-01 10:00", "BTC", "1", "1000");
+        acquisto("2022-01-01 10:00", "USDC", "1000", "900");
+        String[] b1 = blocco("2022-07-13 00:00", "BTC", "1", "20000");
+        String[] b2 = blocco("2022-07-13 00:00", "USDC", "1000", "920");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        assertEquals("0.00", b1[19]);
+        assertEquals("N", b1[33]);
+        assertEquals("0.00", b2[19]);
+        assertEquals("N", b2[33]);
+    }
+
+    @Test
+    void rimborsoComePermuta_laCopiaDelMotoreEIlQuadroRWSeguonoLaStessaRegola() {
+        Principale.Mappa_EMoney.put("USDC", "2000-01-01");
+        blocco("2022-07-13 00:00", "BTC", "1", "20000");
+        blocco("2024-07-13 00:00", "USDC", "1000", "920");
+        String[] btc = rimborsoInCripto("2025-01-15 10:00", "CELSIUS.CREDITO.BTC", "0.5", "ETH", "4", "11530");
+        String[] usdc = rimborsoInCripto("2025-01-15 10:00", "CELSIUS.CREDITO.USDC", "500", "ETH", "0.3", "475");
+        Moneta[] mBtc = Moneta.RitornaMoneteDaMov(btc);
+        Moneta[] mUsdc = Moneta.RitornaMoneteDaMov(usdc);
+        FallimentiPiattaforme.Invalida();
+
+        assertTrue(Funzioni.MovimentoRilevante(btc));
+        assertTrue(Funzioni.MovimentoRilevante(usdc));
+        assertTrue(Calcoli_RW.ScambioRilevante(mBtc, "2025-01-15 10:00", "C", FallimentiPiattaforme.CAMPO18_RIMBORSO));
+
+        DatabaseH2.Pers_Opzioni_Scrivi(FallimentiPiattaforme.OPZIONE_RIMBORSO_PERMUTA, "SI");
+        FallimentiPiattaforme.Invalida();
+        assertFalse(Funzioni.MovimentoRilevante(btc));
+        assertTrue(Funzioni.MovimentoRilevante(usdc));
+        assertFalse(Calcoli_RW.ScambioRilevante(mBtc, "2025-01-15 10:00", "C", FallimentiPiattaforme.CAMPO18_RIMBORSO));
+        assertTrue(Calcoli_RW.ScambioRilevante(mUsdc, "2025-01-15 10:00", "C", FallimentiPiattaforme.CAMPO18_RIMBORSO));
+        assertFalse(Calcoli_RW.ScambioRilevante(mBtc, "2025-01-15 10:00", "B", FallimentiPiattaforme.CAMPO18_RIMBORSO));
+        assertTrue(Calcoli_RW.ScambioRilevante(mBtc, "2025-01-15 10:00", "D", FallimentiPiattaforme.CAMPO18_RIMBORSO));
+    }
+
+    @Test
+    void rimborsoComePermuta_cambiaL_epocaEEntraNelleOpzioniSoloQuandoServe() {
+        rimborsoInCripto("2024-01-15 10:00", "CELSIUS.CREDITO.BTC", "0.5", "ETH", "4", "11530");
+        long spenta = Calcoli_PlusvalenzeNew.EpocaCorrente();
+        assertFalse(FallimentiPiattaforme.RimborsiComePermutaNelAnno("2024"));
+
+        DatabaseH2.Pers_Opzioni_Scrivi(FallimentiPiattaforme.OPZIONE_RIMBORSO_PERMUTA, "SI");
+        assertNotEquals(spenta, Calcoli_PlusvalenzeNew.EpocaCorrente());
+        assertTrue(FallimentiPiattaforme.RimborsiComePermutaNelAnno("2024"));
+        //Un anno senza rimborsi non la dichiara: le dichiarazioni archiviate prima restano confrontabili
+        assertFalse(FallimentiPiattaforme.RimborsiComePermutaNelAnno("2023"));
     }
 
     // ------------------------------------------------------------------

@@ -2224,13 +2224,16 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
         {
             String Tipo1 = RitornaTipoCrypto(m[0].Moneta, Data, m[0].Tipo);
             String Tipo2 = RitornaTipoCrypto(m[1].Moneta, Data, m[1].Tipo);
+            //Rimborso da fallimento trattato come permuta ordinaria: il credito ha il tipo della moneta depositata
+            boolean RimborsoPermuta = FallimentiPiattaforme.Realizza(Mov[18]) && FallimentiPiattaforme.RimborsoComePermuta();
+            if (RimborsoPermuta) Tipo1 = FallimentiPiattaforme.TipoNelRimborso(m[0].Moneta, Data, m[0].Tipo);
             //Stessa condizione del motore (Calcoli_PlusvalenzeNew.ElaboraMovimento, tipologia 1):
             //con ScambiSempreRilevanti attiva anche lo scambio fra monete dello stesso tipo e' rilevante.
             //Blocco, restituzione in natura e rimborso da fallimento decidono da soli (FallimentiPiattaforme)
             if (FallimentiPiattaforme.TrasferisceCosto(Mov[18])) {
                 rilevante = false;
                 plusvalenza = false;
-            } else if (FallimentiPiattaforme.Realizza(Mov[18])) {
+            } else if (FallimentiPiattaforme.Realizza(Mov[18]) && !RimborsoPermuta) {
                 rilevante = true;
                 plusvalenza = true;
             } else if ((DataSuperiore2023 || !Pre2023ScambiRilevanti) && !ScambiSempreRilevanti) {

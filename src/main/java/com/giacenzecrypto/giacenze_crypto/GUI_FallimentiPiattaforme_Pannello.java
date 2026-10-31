@@ -13,6 +13,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -75,7 +76,7 @@ public class GUI_FallimentiPiattaforme_Pannello extends JPanel {
                 + "alla data della domanda di fallimento, le giacenze della piattaforma nel sotto-wallet <i>"
                 + Principale_Fallimenti.SOTTOWALLET + "</i> e trasforma ogni moneta nel suo token credito "
                 + "(per esempio <i>CELSIUS.CREDITO.BTC</i>), che conserva il costo di carico senza generare plusvalenze. "
-                + "I rimborsi si registrano come scambi dal token credito alle monete ricevute, che sono un realizzo.</body></html>");
+                + "I rimborsi si registrano come scambi dal token credito alle monete ricevute, che di default sono un realizzo (vedi l'opzione in fondo).</body></html>");
         add(Testo, BorderLayout.NORTH);
 
         Modello = new DefaultTableModel(new Object[]{"Procedura", "Piattaforma", "Data domanda", "Credito (USD)",
@@ -241,7 +242,28 @@ public class GUI_FallimentiPiattaforme_Pannello extends JPanel {
         Opzione.add(Valore);
         JPanel Sotto = new JPanel(new BorderLayout());
         Sotto.add(Pulsanti, BorderLayout.NORTH);
-        Sotto.add(Opzione, BorderLayout.SOUTH);
+        //Opzione che cambia le plusvalenze: i rimborsi come permuta ordinaria fra cripto-attività
+        JCheckBox Permuta = new JCheckBox("Tratta i rimborsi come scambi ordinari fra cripto-attività", FallimentiPiattaforme.RimborsoComePermuta());
+        Permuta.setToolTipText("<html>Di default ogni rimborso da fallimento è un realizzo: plusvalenza o minusvalenza.<br>"
+                + "Attiva: il rimborso segue le regole degli scambi fra cripto-attività. Fra monete con le medesime<br>"
+                + "caratteristiche (per esempio credito BTC verso ETH) non c'è plusvalenza e il costo di carico passa alla<br>"
+                + "moneta ricevuta, fra monete diverse (per esempio credito USDC E-Money verso ETH) c'è il realizzo.<br>"
+                + "Il tipo del credito è quello della moneta che era depositata, alla data del rimborso.<br>"
+                + "Vale per tutti i rimborsi già registrati e va dichiarato fra le opzioni dei quadri.<br>"
+                + "La parte di credito non rimborsata alla chiusura esce senza minusvalenza, come sempre.</html>");
+        Permuta.addActionListener(e -> {
+            DatabaseH2.Pers_Opzioni_Scrivi(FallimentiPiattaforme.OPZIONE_RIMBORSO_PERMUTA, Permuta.isSelected() ? "SI" : "NO");
+            //Cambia le plusvalenze: l'opzione sta in OpzioniRicalcolo.Epoca(), quindi il ricalcolo riparte da solo
+            AggiornaTutto.run();
+            OpzioneCambiata.run();
+            Ricarica();
+        });
+        JPanel OpzionePermuta = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        OpzionePermuta.add(Permuta);
+        JPanel Opzioni = new JPanel(new BorderLayout());
+        Opzioni.add(Opzione, BorderLayout.NORTH);
+        Opzioni.add(OpzionePermuta, BorderLayout.SOUTH);
+        Sotto.add(Opzioni, BorderLayout.SOUTH);
         add(Sotto, BorderLayout.SOUTH);
 
         //Si rilegge ogni volta che diventa visibile: scelta la scheda, o tornando su Analisi Crypto con la scheda già

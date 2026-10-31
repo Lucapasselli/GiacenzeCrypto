@@ -546,6 +546,8 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
        //dopo darebbe sempre differenza e spegnerebbe l'incrementale in silenzio.
        OpzioniRicalcolo Opzioni = new OpzioniRicalcolo();
        long Epoca = Opzioni.Epoca();
+       //Il tipo di un token credito nei rimborsi trattati come permuta viene dal registro: lo costruisco una volta qui
+       if (Opzioni.RimborsoFallimentoComePermuta) FallimentiPiattaforme.Ricostruisci();
 
        Map<String, Long> Impronte = CalcolaImpronte();
 
@@ -853,7 +855,13 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
         boolean CriptoCripto = !TipoMU.equalsIgnoreCase("FIAT") && !TipoME.equalsIgnoreCase("FIAT")
                 && !TipoMU.isBlank() && !TipoME.isBlank();
         boolean SempreNeutro = CriptoCripto && FallimentiPiattaforme.TrasferisceCosto(v[18]);
-        boolean SempreRealizzo = CriptoCripto && FallimentiPiattaforme.Realizza(v[18]);
+        boolean RimborsoFallimento = CriptoCripto && FallimentiPiattaforme.Realizza(v[18]);
+        //Con l'opzione dei rimborsi come permuta il rimborso e' uno scambio ordinario: decidono i tipi delle due monete
+        //(per il credito quello della moneta che era depositata) e le opzioni sugli scambi, come per ogni altro scambio
+        if (RimborsoFallimento && Opzioni.RimborsoFallimentoComePermuta) {
+            TipoMU = FallimentiPiattaforme.TipoNelRimborso(v[8].trim(), v[1].trim(), v[9].trim());
+        }
+        boolean SempreRealizzo = RimborsoFallimento && !Opzioni.RimborsoFallimentoComePermuta;
 
         //TIPOLOGIA = 0 (Vendita Crypto)
         //System.out.println("aaa "+IDTransazione);
@@ -1299,6 +1307,8 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
         final boolean Pre2023ScambiRilevanti;
         /** Se {@code true} <b>ogni</b> scambio cripto-cripto e' fiscalmente rilevante, anche fra monete dello stesso tipo ({@code Plusvalenze_ScambiSempreRilevanti}). */
         final boolean ScambiSempreRilevanti;
+        /** Se {@code true} i rimborsi da fallimento ({@code FRB}) seguono le regole ordinarie degli scambi ({@code Fallimenti_RimborsoComePermuta}). */
+        final boolean RimborsoFallimentoComePermuta;
         /** 1 gennaio 2023 nel formato long dei minuti, soglia delle due regole qui sopra. */
         final long long2023;
 
@@ -1321,6 +1331,8 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
 
             String ScambiSempre = DatabaseH2.Pers_Opzioni_Leggi("Plusvalenze_ScambiSempreRilevanti");
             ScambiSempreRilevanti = (ScambiSempre != null && ScambiSempre.equalsIgnoreCase("SI"));
+
+            RimborsoFallimentoComePermuta = FallimentiPiattaforme.RimborsoComePermuta();
 
             long2023 = FunzioniDate.ConvertiDatainLongMinuto("2023-01-01 00:00");
         }
@@ -1348,6 +1360,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             h = Mescola(h, Pre2023EarnCostoZero ? "1" : "0");
             h = Mescola(h, Pre2023ScambiRilevanti ? "1" : "0");
             h = Mescola(h, ScambiSempreRilevanti ? "1" : "0");
+            h = Mescola(h, RimborsoFallimentoComePermuta ? "1" : "0");
             h = Mescola(h, Long.toString(long2023));
             //Lette dentro Funzioni.RewardRilevante
             h = Mescola(h, DatabaseH2.Pers_Opzioni_Leggi("PDD_CashBack", "SI"));

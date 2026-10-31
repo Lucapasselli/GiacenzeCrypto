@@ -449,6 +449,8 @@ public final class Principale_Fallimenti {
         /** Costo di carico che la riga scarica, {@code null} per i FIAT o se il motore non l'ha ancora calcolato. */
         public BigDecimal Costo;
         public String Trattamento;
+        /** Vero se la riga produce un risultato (plusvalenza o minusvalenza), falso se porta con sé il costo o non ha effetti. */
+        public boolean Realizza;
     }
 
     /** Il risultato della preparazione di una tranche: le righe da scrivere, gli abbinamenti, l'anteprima. */
@@ -780,6 +782,7 @@ public final class Principale_Fallimenti {
                     Campo18 = "";
                     Campo5 = r.isFiat() ? FallimentiPiattaforme.CAMPO5_RIMBORSO_FIAT : FallimentiPiattaforme.CAMPO5_ACQUISTO_FIAT;
                     A.Trattamento = r.isFiat() ? "FIAT: nessun effetto" : "Acquisto: costo = valore ricevuto";
+                    A.Realizza = false;
                 } else if (Out.signum() == 0) {
                     //Il token riceve valore senza consumare credito (una quantità così piccola che l'arrotondamento la
                     //azzera): come un rimborso oltre il credito, tutto plusvalenza
@@ -788,6 +791,7 @@ public final class Principale_Fallimenti {
                     Campo5 = FallimentiPiattaforme.CAMPO5_RIMBORSO_OLTRE_IL_CREDITO;
                     A.Costo = BigDecimal.ZERO;
                     A.Trattamento = "Rimborso oltre il credito consumato: tutto plusvalenza";
+                    A.Realizza = true;
                 } else if (In.signum() == 0) {
                     //Il token consuma credito senza ricevere nulla di questa moneta: senza entrata la riga è un prelievo,
                     //e col PCO il motore la realizza al suo valore (di solito zero), minusvalenza pari al costo
@@ -797,6 +801,7 @@ public final class Principale_Fallimenti {
                         A.Costo = t.Costo.multiply(Out).divide(t.Qta, 2, RoundingMode.HALF_UP);
                     }
                     A.Trattamento = "Rimborso senza valore: minusvalenza pari al costo";
+                    A.Realizza = true;
                 } else {
                     Entrata.Rete = t.ReteOriginale;
                     boolean Natura = r.InNatura && r.Moneta.equalsIgnoreCase(t.MonetaOriginale);
@@ -806,6 +811,7 @@ public final class Principale_Fallimenti {
                         A.Costo = t.Costo.multiply(Out).divide(t.Qta, 2, RoundingMode.HALF_UP);
                     }
                     A.Trattamento = Natura ? "Giroconto: costo trasferito" : "Rimborso: plusvalenza o minusvalenza";
+                    A.Realizza = !Natura;
                 }
                 Uscita.Qta = Out.negate().toPlainString();
                 A.QtaUscita = Out;
@@ -824,6 +830,12 @@ public final class Principale_Fallimenti {
                 Riga[5] = Campo5;
                 Riga[18] = Campo18;
                 Completa(Riga, Chiave, ValTesto, IDUsati);
+                //Con l'opzione dei rimborsi come permuta il trattamento lo decide la stessa funzione del motore
+                if (FallimentiPiattaforme.Realizza(Campo18) && FallimentiPiattaforme.RimborsoComePermuta()) {
+                    A.Realizza = Funzioni.MovimentoRilevante(Riga);
+                    A.Trattamento = A.Realizza
+                            ? "Scambio ordinario fra cripto: realizzo" : "Scambio ordinario fra cripto: costo trasferito";
+                }
                 T.Righe.add(Riga);
             }
 
@@ -906,6 +918,7 @@ public final class Principale_Fallimenti {
             A.Valore = r.ValoreEUR;
             A.Costo = BigDecimal.ZERO;
             A.Trattamento = "Rimborso oltre il credito: tutto plusvalenza";
+            A.Realizza = true;
             T.Anteprima.add(A);
 
             if (!UscitaRicevuta(T, P, r, Istante, Rete, Nota, ++n, IDUsati)) return T;

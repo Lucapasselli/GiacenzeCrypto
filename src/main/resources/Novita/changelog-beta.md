@@ -5,6 +5,12 @@ programma all'avvio di una beta, ed è la descrizione della beta su GitHub. L'el
 in preparazione è nella sezione "in lavorazione" di docs/documentazione/changelog.md, dove ogni voce di questo file
 compare con lo stesso titolo. Questo file non è una pagina del sito.
 
+## Versione 1.0.65.17
+
+**Nuove implementazioni**
+
+- **Fallimenti delle piattaforme (in prova)**: in fondo alla scheda *Fallimenti piattaforme* c'è ora la casella *Tratta i rimborsi come scambi ordinari fra cripto-attività*, spenta di default. Di default ogni rimborso è un realizzo, con la sua plusvalenza o minusvalenza. Con la casella spuntata il rimborso segue le regole di ogni altro scambio fra cripto-attività: il credito di un BTC rimborsato in ETH non genera plusvalenza e passa il costo di carico all'ETH, quello di una stablecoin E-Money rimborsato in ETH realizza, secondo il tipo della moneta che era depositata alla data del rimborso e le opzioni sugli scambi. Vale anche per i rimborsi già registrati. Il blocco, la restituzione in natura, i rimborsi oltre il credito e la chiusura non cambiano. Negli anni in cui c'è un rimborso la scelta compare fra le opzioni stampate dei quadri RT e W/RW e nell'archivio delle dichiarazioni.
+
 ## Versione 1.0.65.16
 
 **Nuove implementazioni**

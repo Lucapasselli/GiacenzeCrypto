@@ -3531,7 +3531,8 @@ Il programma gestisce questi casi dalla scheda *Fallimenti piattaforme*. Il funz
   valuta**, per esempio *CELSIUS.CREDITO.EUR*, che resta FIAT.
 - **ogni rimborso** è uno scambio dal token credito alle monete ricevute. Lo scambio è un realizzo, quindi
   genera una plusvalenza o una minusvalenza pari alla differenza fra il valore ricevuto e la quota di costo
-  del credito che il rimborso consuma.
+  del credito che il rimborso consuma. Con l'opzione [Rimborsi come scambi ordinari](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/fallimenti-piattaforme.html#rimborsi-come-permuta)
+  lo scambio segue invece le regole di ogni altro scambio fra cripto-attività.
 - **alla chiusura della procedura** il credito non rimborsato esce senza valore e senza minusvalenza.
 - nel **quadro W/RW** e in *Giacenze a data* il token credito compare finché resta in giacenza, con il valore
   scelto nelle opzioni (vedi [Il valore del credito](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/fallimenti-piattaforme.html#valore-del-credito)).
@@ -3879,6 +3880,39 @@ le opzioni stampate in fondo al quadro e nell'[archivio delle dichiarazioni](htt
 Una restituzione in natura continua il periodo di detenzione del credito: con i metodi a media ponderata
 del quadro W/RW il valore iniziale delle monete restituite viene dal valore del credito a inizio anno, quindi
 dipende anche dalla scelta.
+
+## Rimborsi come scambi ordinari fra cripto-attività
+
+Di default ogni rimborso è un realizzo: il credito consumato esce al suo costo di carico e la moneta ricevuta
+entra al valore di mercato, con la plusvalenza o la minusvalenza della differenza. In fondo alla scheda
+*Fallimenti piattaforme* la casella **Tratta i rimborsi come scambi ordinari fra cripto-attività** cambia questo
+trattamento, per tutti i rimborsi già registrati e per quelli futuri. Il rimborso diventa uno scambio come gli
+altri e lo decidono le regole del programma:
+
+- se il credito e la moneta ricevuta hanno le **medesime caratteristiche e funzioni**, per esempio il credito di
+  un BTC rimborsato in ETH, non c'è plusvalenza e il costo di carico del credito consumato passa alla moneta
+  ricevuta. La plusvalenza si realizza quando si vende la moneta ricevuta.
+- se hanno **caratteristiche diverse**, per esempio il credito di una stablecoin E-Money rimborsato in ETH, lo
+  scambio è un realizzo come al solito.
+- restano valide le opzioni sugli scambi in *Opzioni – Plusvalenze*: con *Scambi cripto-cripto sempre rilevanti*
+  ogni rimborso realizza, e prima del 2023 vale la scelta sugli scambi di quegli anni.
+
+Il tipo del credito è quello della **moneta che era depositata**, al giorno del rimborso: il credito di USDC
+è E-Money dalla data in cui lo è USDC, anche se il nome *CELSIUS.CREDITO.USDC* non compare nell'elenco delle
+monete E-Money.
+
+Con la casella spuntata cambia solo il trattamento fiscale del rimborso. Restano uguali:
+
+- **il blocco** alla data della domanda e la **restituzione in natura**, che non generano mai plusvalenze.
+- **la quantità di credito consumata**, che dipende sempre dalla percentuale pagata e dal recupero atteso.
+- **un rimborso oltre il credito**, che è tutto plusvalenza, e i rimborsi in euro o in un'altra valuta.
+- **la chiusura**: il credito non rimborsato esce senza minusvalenza, quindi la parte di costo non passata alle
+  monete ricevute dai rimborsi non viene dedotta in nessun caso.
+
+Nell'anteprima di ogni rimborso la colonna del trattamento dice, moneta per moneta, se è un costo trasferito o un
+realizzo. Quando la casella è spuntata e nell'anno c'è almeno un rimborso, la scelta compare fra le opzioni
+stampate in fondo ai quadri RT e W/RW e nell'archivio delle dichiarazioni. Nel quadro W/RW conta per i metodi a
+media ponderata che chiudono il rigo agli scambi rilevanti: un rimborso senza plusvalenza non lo chiude.
 
 ## Limiti e cose da sapere
 

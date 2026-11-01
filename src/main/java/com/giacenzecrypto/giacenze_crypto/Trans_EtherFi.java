@@ -85,6 +85,21 @@ final class Trans_EtherFi {
     /** {@code Spend(address indexed safe, bytes32 indexed txId, uint8 indexed binSponsor, address[] tokens, uint256[] amounts, uint256[] amountInUsd, uint256 totalUsdAmt, uint8 mode)} */
     static final String TOPIC_SPEND = "0x244f4cc0665ad7ee4709aa59b30d3ea581cecde1b0430a3f23a5dc609d4890fc";
 
+    /** {@code RedeemRequest(uint256 indexed requestId, address indexed user, address indexed tokenOut | ...)} del vault di riscatto Midas */
+    static final String TOPIC_MIDAS_RICHIESTA = "0x691cd372bb63a5126a324513b634040d0ba3747c0a625207d99b6ba302c51a23";
+    /** Approvazione di una richiesta del vault Midas: {@code (uint256 indexed requestId | uint256 rate)}, senza l'utente fra i topic */
+    static final String TOPIC_MIDAS_APPROVATA = "0x03ea09e71742c9c754c9746b3e671ecb27fc372e3d29c31bac0192458ffd9d4b";
+    /** {@code OnChainWithdrawRequested(bytes32 indexed requestId, address indexed user, address indexed assetOut | ...)} della coda di EtherFi Liquid */
+    static final String TOPIC_LIQUID_RICHIESTA = "0x2eb08ebdb4d68b4a37e3b424927f3363e1d799ca7e56e7b2c59cc6c1778d33f5";
+    /** {@code OnChainWithdrawSolved(bytes32 indexed requestId, address indexed user | uint256 timestamp)}: nella stessa transazione la coda paga l'utente */
+    static final String TOPIC_LIQUID_RISOLTA = "0xd94fc49a6578873ff851671d19cacb1809887f7a9128867ee4306dc3ffc93c26";
+    /** {@code OnChainWithdrawCancelled(bytes32 indexed requestId, address indexed user | uint256 timestamp)}: le quote tornano all'utente */
+    static final String TOPIC_LIQUID_ANNULLATA = "0x114ef421aef557f2e4086396789e7fb532b1133ff2982c9d948daa73d0691e36";
+    /** {@code SwapRequested(address indexed safe, bytes32 indexed swapId | srcToken, srcAmount, chainIdDestinazione, dstToken, destinatario, minOut, scadenza)} */
+    static final String TOPIC_SWAP_RICHIESTO = "0x9a3c36691c8052ed10cdbcc04ec5307cf1eb717ff306d47e85cd28e004c90beb";
+    /** {@code SwapExecuted(address indexed safe, bytes32 indexed swapId, address indexed dstToken | chainIdDestinazione, minOut)} */
+    static final String TOPIC_SWAP_ESEGUITO = "0xa3456933bfef53892b56c158e10f31a7a24eff725ff31f00a2b8a7eb47d547ff";
+
     static final String SEL_IS_ETHERFI_SAFE = "b7ca418b";
     static final String SEL_SUPPLIED_OF = "05a5b843";
     static final String SEL_DEBT_OF = "4c4ab169";
@@ -96,6 +111,17 @@ final class Trans_EtherFi {
     static final String CAUSALE_CARTA = "Pagamento con carta ether.fi";
     static final String CAUSALE_INTERESSI = "Interessi ether.fi";
     static final String CAUSALE_SCAMBIO = "Scambio ether.fi";
+    /**
+     * Riscatto in due tempi (Midas, coda di EtherFi Liquid): la richiesta fa uscire le quote, il pagamento arriva da un
+     * altro contratto dopo ore o giorni. Le due causali portano la stessa chiave {@code contratto + numero della
+     * richiesta} ({@link #CHIAVE_RISCATTO}), con cui {@link #AbbinaRiscatti} le fonde in uno scambio.
+     */
+    static final String CAUSALE_RISCATTO_RICHIESTA = "Richiesta di riscatto ";
+    static final String CAUSALE_RISCATTO_PAGATO = "Riscatto pagato ";
+    static final String CAUSALE_RISCATTO_ANNULLATO = "Richiesta di riscatto annullata ";
+    /** Swap verso un'altra catena: la moneta arriva a un altro indirizzo, che il programma può non avere. */
+    static final String CAUSALE_SWAP_FRA_CATENE = "Swap fra catene ether.fi";
+    static final Pattern CHIAVE_RISCATTO = Pattern.compile("contratto (0x[0-9a-f]{40}), n\\. (\\S+)");
 
     private static final Pattern HASH = Pattern.compile("0x[0-9a-fA-F]{64}");
 
@@ -111,9 +137,12 @@ final class Trans_EtherFi {
      * @param bloccoLendGateway creazione del LendGateway attuale: un Safe più vecchio può avere movimenti sui contratti di prima
      * @param moduliScambio indirizzo del modulo → nome, per la causale dello scambio
      * @param simboli indirizzo → simbolo da usare al posto di {@code symbol()} (caratteri che il font non ha)
+     * @param beaconTradingSafe indirizzo del beacon dei TradingSafe su Ethereum (il secondo conto di ether.fi, dove arrivano
+     *        gli swap fra catene), vuoto se non configurato
      */
     record Config(List<String> nodi, long bloccoInizio, String dataProvider, String lendGateway, long bloccoLendGateway,
-            String spoke, String topUpDest, String cashEventEmitter, Map<String, String> moduliScambio, Map<String, String> simboli) {}
+            String spoke, String topUpDest, String cashEventEmitter, Map<String, String> moduliScambio, Map<String, String> simboli,
+            String beaconTradingSafe) {}
 
     /** @return la configurazione (disco, poi copia nel jar), oppure {@code null} se non è disponibile */
     static Config Configurazione() {
@@ -135,7 +164,8 @@ final class Trans_EtherFi {
             Config c = new Config(Collections.unmodifiableList(nodi), r.getLong("bloccoInizio"),
                     r.getString("dataProvider").toLowerCase(), r.getString("lendGateway").toLowerCase(),
                     r.optLong("bloccoLendGateway", 0), r.getString("spoke").toLowerCase(), r.getString("topUpDest").toLowerCase(),
-                    r.getString("cashEventEmitter").toLowerCase(), Collections.unmodifiableMap(moduli), Collections.unmodifiableMap(simboli));
+                    r.getString("cashEventEmitter").toLowerCase(), Collections.unmodifiableMap(moduli), Collections.unmodifiableMap(simboli),
+                    r.optString("beaconTradingSafe", "").trim().toLowerCase());
             return nodi.isEmpty() ? null : c;
         } catch (Exception e) {
             LoggerGC.ScriviErrore("EtherFi: " + nome + ".json non interpretabile : " + e);
@@ -220,6 +250,16 @@ final class Trans_EtherFi {
         if (!gruppo.isBlank() && DatabaseH2.Pers_GruppoWallet_Leggi(nome, false) == null) {
             DatabaseH2.Pers_GruppoWallet_Scrivi(nome, gruppo);
         }
+    }
+
+    /**
+     * @param valoreSlot il contenuto dello slot EIP-1967 del beacon di un contratto (32 byte in esadecimale)
+     * @return {@code true} se è il beacon dei TradingSafe di ether.fi: il wallet si importa dai log
+     */
+    static boolean IsBeaconTradingSafe(String valoreSlot) {
+        Config cfg = Configurazione();
+        if (cfg == null || cfg.beaconTradingSafe().isEmpty() || valoreSlot == null || valoreSlot.length() < 42) return false;
+        return valoreSlot.toLowerCase().endsWith(cfg.beaconTradingSafe().replace("0x", ""));
     }
 
     /** Opzione (personale.mv.db): i Safe già importati almeno una volta da qui, indirizzi minuscoli separati da virgola. */
@@ -338,6 +378,8 @@ final class Trans_EtherFi {
         long ultimo = Long.decode(rpc.chiama("eth_blockNumber", new JsonArray()).getAsString());
         List<JsonObject> log = Log(w, cfg.bloccoInizio(), ultimo, rpc, interrotto, idDocumento, avanzamento);
         if (log == null) return new Esito(List.of(), avvisi, false);
+        log = ConApprovazioniMidas(w, log, ultimo, rpc, interrotto, idDocumento, avanzamento);
+        if (log == null) return new Esito(List.of(), avvisi, false);
         System.out.println("ether.fi " + wallet + ": " + log.size() + " eventi fino al blocco " + ultimo + ".");
         Ricostruzione r = Ricostruisci(w, log, cfg, FonteNodo(rpc, cfg), avvisi);
         if (!log.isEmpty() && Blocco(log.get(0)) < cfg.bloccoLendGateway()) {
@@ -395,6 +437,49 @@ final class Trans_EtherFi {
         return new ArrayList<>(unici.values());
     }
 
+    /**
+     * Aggiunge ai log le approvazioni dei riscatti Midas del Safe. L'evento di approvazione ha solo il numero della richiesta
+     * fra i topic e non nomina l'utente, quindi le ricerche per Safe non lo trovano: si cerca sul contratto della richiesta
+     * (stesso indirizzo dell'evento di richiesta) per quel numero, una ricerca per richiesta.
+     *
+     * @return i log completi in ordine di blocco e indice, {@code null} se l'utente ha interrotto
+     */
+    static List<JsonObject> ConApprovazioniMidas(String w, List<JsonObject> log, long ultimo, OKX_WalletCarta.Rpc rpc,
+            BooleanSupplier interrotto, int idDocumento, Consumer<String> avanzamento) throws Exception {
+        Map<String, JsonObject> unici = new TreeMap<>();
+        for (JsonObject l : log) unici.put(ChiaveLog(l), l);
+        int aggiunti = 0;
+        Set<String> viste = new HashSet<>();
+        for (JsonObject l : log) {
+            JsonArray tp = l.getAsJsonArray("topics");
+            if (tp == null || tp.size() != 4 || !Topic(tp, 0).equals(TOPIC_MIDAS_RICHIESTA) || !Indirizzo(Topic(tp, 2)).equals(w)) continue;
+            String contratto = Testo(l, "address").toLowerCase();
+            if (!viste.add(contratto + Topic(tp, 1))) continue;
+            Stato(avanzamento, "ether.fi: ricerca del pagamento del riscatto " + NumeroRichiesta(Topic(tp, 1)) + "...");
+            JsonArray topics = new JsonArray();
+            topics.add(TOPIC_MIDAS_APPROVATA);
+            topics.add(Topic(tp, 1));
+            List<JsonObject> trovati = new ArrayList<>();
+            Intervallo(rpc, contratto, topics, Blocco(l), ultimo, trovati, interrotto, idDocumento, avanzamento, true);
+            if (interrotto != null && interrotto.getAsBoolean()) return null;
+            for (JsonObject t : trovati) {
+                if (unici.put(ChiaveLog(t), t) == null) aggiunti++;
+            }
+        }
+        return aggiunti == 0 ? log : new ArrayList<>(unici.values());
+    }
+
+    private static String ChiaveLog(JsonObject l) {
+        return String.format("%016x", Blocco(l)) + String.format("%08x", Long.decode(Testo(l, "logIndex")))
+                + Testo(l, "transactionHash").toLowerCase();
+    }
+
+    /** Numero di una richiesta di riscatto: decimale se è un contatore (Midas), esadecimale se è un hash (EtherFi Liquid). */
+    static String NumeroRichiesta(String topic) {
+        BigInteger n = new BigInteger(topic.substring(2), 16);
+        return n.bitLength() <= 64 ? n.toString() : "0x" + n.toString(16);
+    }
+
     /** Il nodo ha rifiutato il tratto perché troppo lungo o con troppi risultati. */
     static final class TroppoGrande extends Exception {
         TroppoGrande(String m) {
@@ -410,8 +495,14 @@ final class Trans_EtherFi {
      */
     private static void Intervallo(OKX_WalletCarta.Rpc rpc, JsonArray topics, long da, long a, List<JsonObject> out,
             BooleanSupplier interrotto, int idDocumento, Consumer<String> avanzamento, boolean aTratti) throws Exception {
+        Intervallo(rpc, null, topics, da, a, out, interrotto, idDocumento, avanzamento, aTratti);
+    }
+
+    private static void Intervallo(OKX_WalletCarta.Rpc rpc, String indirizzo, JsonArray topics, long da, long a, List<JsonObject> out,
+            BooleanSupplier interrotto, int idDocumento, Consumer<String> avanzamento, boolean aTratti) throws Exception {
         if (interrotto != null && interrotto.getAsBoolean()) return;
         JsonObject filtro = new JsonObject();
+        if (indirizzo != null) filtro.addProperty("address", indirizzo);
         filtro.addProperty("fromBlock", "0x" + Long.toHexString(da));
         filtro.addProperty("toBlock", "0x" + Long.toHexString(a));
         filtro.add("topics", topics);
@@ -430,12 +521,12 @@ final class Trans_EtherFi {
                 if (!aTratti || a - da + 1 > TRATTI_MASSIMI * TRATTO_RIPIEGO) throw new TroppoGrande(e.getMessage());
                 for (long i = da; i <= a; i += TRATTO_RIPIEGO) {
                     Stato(avanzamento, "ether.fi: lettura degli eventi, blocco " + i + " di " + a);
-                    Intervallo(rpc, topics, i, Math.min(a, i + TRATTO_RIPIEGO - 1), out, interrotto, idDocumento, avanzamento, true);
+                    Intervallo(rpc, indirizzo, topics, i, Math.min(a, i + TRATTO_RIPIEGO - 1), out, interrotto, idDocumento, avanzamento, true);
                 }
             } else {
                 long m2 = (da + a) >>> 1;
-                Intervallo(rpc, topics, da, m2, out, interrotto, idDocumento, avanzamento, aTratti);
-                Intervallo(rpc, topics, m2 + 1, a, out, interrotto, idDocumento, avanzamento, aTratti);
+                Intervallo(rpc, indirizzo, topics, da, m2, out, interrotto, idDocumento, avanzamento, aTratti);
+                Intervallo(rpc, indirizzo, topics, m2 + 1, a, out, interrotto, idDocumento, avanzamento, aTratti);
             }
             return;
         }
@@ -553,6 +644,12 @@ final class Trans_EtherFi {
         }
 
         Map<BigInteger, Riserva> riserve = new HashMap<>();
+        //Richieste di swap per swapId: la moneta di destinazione e il destinatario stanno solo nella richiesta, che arriva
+        //in una transazione prima dell'esecuzione
+        Map<String, String[]> richiesteSwap = new HashMap<>();
+        //Richieste di riscatto Midas del Safe (contratto + numero): un'approvazione in blocco ne porta anche di altri utenti
+        Set<String> richiesteMidas = new HashSet<>();
+        long catenaLocale = CatenaLocale();
         Map<String, BigInteger> saldi = new LinkedHashMap<>();
         Set<BigInteger> riserveIgnote = new HashSet<>();
         List<Transazione> transazioni = new ArrayList<>();
@@ -567,6 +664,9 @@ final class Trans_EtherFi {
             List<Nft> nft = new ArrayList<>();
             boolean etherfi = false;
             String modulo = null;
+            //Riscatti in due tempi e swap fra catene: dicono come chiamare l'uscita o l'entrata che restano
+            String causaleUscita = null, causaleEntrata = null;
+            String[] swapFraCatene = null;     //destinatario, token di destinazione, minimo, scadenza, catena
             for (JsonObject l : tx) {
                 JsonArray tp = l.getAsJsonArray("topics");
                 if (tp == null || tp.size() == 0) continue;
@@ -602,6 +702,22 @@ final class Trans_EtherFi {
                         if (aa.equals(w) && !da.equals(w)) nft.add(new Nft(a, ids.get(i).toString(), qta.get(i), true, da));
                         else if (da.equals(w) && !aa.equals(w)) nft.add(new Nft(a, ids.get(i).toString(), qta.get(i), false, aa));
                     }
+                } else if (t0.equals(TOPIC_MIDAS_RICHIESTA) && tp.size() == 4 && Indirizzo(Topic(tp, 2)).equals(w)) {
+                    etherfi = true;
+                    richiesteMidas.add(a + "|" + Topic(tp, 1));
+                    causaleUscita = CausaleRiscatto(CAUSALE_RISCATTO_RICHIESTA, "Midas", a, Topic(tp, 1));
+                } else if (t0.equals(TOPIC_MIDAS_APPROVATA) && tp.size() == 2 && richiesteMidas.contains(a + "|" + Topic(tp, 1))) {
+                    etherfi = true;
+                    causaleEntrata = CausaleRiscatto(CAUSALE_RISCATTO_PAGATO, "Midas", a, Topic(tp, 1));
+                } else if (t0.equals(TOPIC_LIQUID_RICHIESTA) && tp.size() == 4 && Indirizzo(Topic(tp, 2)).equals(w)) {
+                    etherfi = true;
+                    causaleUscita = CausaleRiscatto(CAUSALE_RISCATTO_RICHIESTA, "EtherFi Liquid", a, Topic(tp, 1));
+                } else if (t0.equals(TOPIC_LIQUID_RISOLTA) && tp.size() == 3 && Indirizzo(Topic(tp, 2)).equals(w)) {
+                    etherfi = true;
+                    causaleEntrata = CausaleRiscatto(CAUSALE_RISCATTO_PAGATO, "EtherFi Liquid", a, Topic(tp, 1));
+                } else if (t0.equals(TOPIC_LIQUID_ANNULLATA) && tp.size() == 3 && Indirizzo(Topic(tp, 2)).equals(w)) {
+                    etherfi = true;
+                    causaleEntrata = CausaleRiscatto(CAUSALE_RISCATTO_ANNULLATO, "EtherFi Liquid", a, Topic(tp, 1));
                 } else if (a.equals(cfg.lendGateway())) {
                     etherfi = true;
                     if (tp.size() >= 3 && Indirizzo(Topic(tp, 1)).equals(w)) {
@@ -660,6 +776,14 @@ final class Trans_EtherFi {
                 } else if (cfg.moduliScambio().containsKey(a)) {
                     etherfi = true;
                     modulo = cfg.moduliScambio().get(a);
+                    if (t0.equals(TOPIC_SWAP_RICHIESTO) && tp.size() >= 3) {
+                        richiesteSwap.put(Topic(tp, 2), new String[]{IndirizzoDaParola(dati, 4), IndirizzoDaParola(dati, 3),
+                            Trans_XLayer.ParolaDati(dati, 5).toString(), Trans_XLayer.ParolaDati(dati, 6).toString(),
+                            Trans_XLayer.ParolaDati(dati, 2).toString()});
+                    } else if (t0.equals(TOPIC_SWAP_ESEGUITO) && tp.size() >= 3) {
+                        String[] richiesta = richiesteSwap.get(Topic(tp, 2));
+                        if (richiesta != null && !richiesta[4].equals(String.valueOf(catenaLocale))) swapFraCatene = richiesta;
+                    }
                 }
             }
             long blocco = Blocco(tx.get(0));
@@ -702,12 +826,19 @@ final class Trans_EtherFi {
                     avvisi.add("Transazione " + e.getKey() + " con piu' monete, importata come depositi e prelievi separati: da controllare.");
                 }
                 for (String u : uscite) {
-                    movimenti.add(new Movimento(null, "Prelievo", fonte.token(u), netto.get(u).negate(), null, null,
-                            controparte.getOrDefault(u, ""), false, false));
+                    String causale = causaleUscita != null ? causaleUscita : "Prelievo";
+                    String verso = controparte.getOrDefault(u, "");
+                    if (swapFraCatene != null && uscite.size() == 1 && entrate.isEmpty()) {
+                        //La moneta ricevuta sta su un'altra catena: qui esce solo quella ceduta, e il destinatario va in
+                        //causale perche' l'abbinamento ritrovi l'entrata se l'utente ha quel wallet
+                        causale = CausaleSwapFraCatene(swapFraCatene);
+                        verso = swapFraCatene[0];
+                    }
+                    movimenti.add(new Movimento(null, causale, fonte.token(u), netto.get(u).negate(), null, null, verso, false, false));
                 }
                 for (String en : entrate) {
-                    movimenti.add(new Movimento(null, "Deposito", null, null, fonte.token(en), netto.get(en),
-                            controparte.getOrDefault(en, ""), false, false));
+                    movimenti.add(new Movimento(null, causaleEntrata != null ? causaleEntrata : "Deposito", null, null,
+                            fonte.token(en), netto.get(en), controparte.getOrDefault(en, ""), false, false));
                 }
             }
             //5 - NFT: arrivati senza un'operazione ether.fi nella stessa transazione sono SCAM (decisione dell'utente)
@@ -732,6 +863,26 @@ final class Trans_EtherFi {
             quote.put(m.getValue(), r == null ? BigInteger.ZERO : r.quote);
         }
         return new Ricostruzione(transazioni, saldi, riservaDi, quote);
+    }
+
+    /** Causale di una riga di riscatto: tipo, nome del prodotto e chiave {@code contratto + numero} della richiesta. */
+    static String CausaleRiscatto(String tipo, String prodotto, String contratto, String topicRichiesta) {
+        return tipo + prodotto + ", contratto " + contratto.toLowerCase() + ", n. " + NumeroRichiesta(topicRichiesta);
+    }
+
+    static String CausaleSwapFraCatene(String[] r) {
+        return CAUSALE_SWAP_FRA_CATENE + " verso " + NomeChain(r[4]) + ", destinatario " + r[0] + ", token " + r[1]
+                + ", almeno " + r[2] + " unita', scadenza " + r[3];
+    }
+
+    private static String IndirizzoDaParola(String dati, int i) {
+        return Indirizzo(Trans_XLayer.Parola(Trans_XLayer.ParolaDati(dati, i).toString(16)));
+    }
+
+    /** Il chain id di Optimism, quello degli swap che restano sulla stessa catena. */
+    private static long CatenaLocale() {
+        Reti.Rete r = Reti.Get(RETE);
+        return r == null || r.chainidEtherscan() <= 0 ? 10 : r.chainidEtherscan();
     }
 
     /** Nome della rete d'origine di una ricarica, dal chain id dell'evento {@code TopUp}. */
@@ -921,7 +1072,111 @@ final class Trans_EtherFi {
             GUI_ClassificazioneMovimento.CreaMovimentiTrasferimentosuWalletProprio(scelto[0], d[0]);
             abbinate++;
         }
-        return abbinate;
+        return abbinate + AbbinaRiscatti(archivio, nomi) + AbbinaSwapFraCatene(archivio, nomi);
+    }
+
+    private static final Pattern DESTINAZIONE_SWAP = Pattern.compile(
+            "destinatario (0x[0-9a-f]{40}), token (0x[0-9a-f]{40}), almeno (\\d+) unita', scadenza (\\d+)");
+    /** Margine fra l'istante dello swap e quello del deposito, per orologi e arrotondamenti dei due lati. */
+    private static final long MARGINE_SWAP_MS = 5 * 60 * 1000L;
+
+    /**
+     * Collega uno swap che manda la moneta su un'altra catena all'entrata sul wallet di destinazione, se l'utente ha
+     * quel wallet nell'archivio (il TradingSafe su Ethereum). Sull'altra catena non c'è nessun identificativo dello
+     * swap: la chiave è il destinatario, la moneta di destinazione e il tempo, cioè un deposito sul wallet nominato nella
+     * causale, di quella moneta, arrivato fra lo swap e la sua scadenza. Fra più candidati vale il primo arrivato dopo lo
+     * swap, e ogni deposito serve una volta sola. Come i riscatti, diventa uno scambio differito.
+     *
+     * @return quanti swap ha abbinato
+     */
+    static int AbbinaSwapFraCatene(Map<String, String[]> archivio, Set<String> nomi) {
+        List<String[]> swap = new ArrayList<>();
+        List<String[]> depositi = new ArrayList<>();
+        for (String[] v : archivio.values()) {
+            if (v == null || v.length <= 30 || v[7] == null || !v[18].isBlank()) continue;
+            String cat = Categoria(v);
+            if ("PC".equals(cat) && nomi.contains(v[3].trim().toLowerCase()) && v[7].startsWith(CAUSALE_SWAP_FRA_CATENE)) swap.add(v);
+            else if ("DC".equals(cat)) depositi.add(v);
+        }
+        swap.sort((a, b) -> a[0].compareTo(b[0]));
+        depositi.sort((a, b) -> a[0].compareTo(b[0]));
+        Set<String> usati = new HashSet<>();
+        int abbinati = 0;
+        for (String[] s : swap) {
+            Matcher m = DESTINAZIONE_SWAP.matcher(s[7]);
+            if (!m.find()) continue;
+            String destinatario = m.group(1), token = m.group(2);
+            long inizio = FunzioniDate.ConvertiDatainLongMinuto(s[1]) - MARGINE_SWAP_MS;
+            long fine = Long.parseLong(m.group(4)) * 1000L + MARGINE_SWAP_MS;
+            String[] scelto = null;
+            for (String[] d : depositi) {
+                if (usati.contains(d[0]) || !d[18].isBlank() || !d[3].trim().toLowerCase().startsWith(destinatario)) continue;
+                if (d[28] == null || !d[28].trim().equalsIgnoreCase(token) || d[11].equalsIgnoreCase(s[8])) continue;
+                long t = FunzioniDate.ConvertiDatainLongMinuto(d[1]);
+                if (t < inizio || t > fine) continue;
+                scelto = d;
+                break;
+            }
+            if (scelto == null) continue;
+            //I due wallet devono essere nello stesso gruppo, o il trasferimento generato lascerebbe il gruppo di uscita
+            //senza la moneta: se il wallet di destinazione non ne ha uno prende quello del Safe, se ne ha un altro si lascia
+            String gruppoSwap = Gruppo(s[3]), gruppoDeposito = Gruppo(scelto[3]);
+            if (gruppoDeposito == null && gruppoSwap != null) {
+                DatabaseH2.Pers_GruppoWallet_Scrivi(scelto[3].trim(), gruppoSwap);
+            } else if (gruppoDeposito != null && !gruppoDeposito.equals(gruppoSwap)) {
+                LoggerGC.ScriviErrore("EtherFi: swap fra catene non abbinato, " + scelto[3] + " e " + s[3] + " sono in gruppi wallet diversi");
+                continue;
+            }
+            if (GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(s[0], scelto[0], "ether.fi swap")) {
+                usati.add(scelto[0]);
+                abbinati++;
+            }
+        }
+        return abbinati;
+    }
+
+    /**
+     * Fonde in uno scambio differito (come i Dual Investment di Binance) ogni riscatto in due tempi: la richiesta, che ha
+     * fatto uscire le quote (Midas, coda di EtherFi Liquid), e il pagamento, arrivato dopo da un altro contratto. Le due
+     * righe hanno nella causale la stessa chiave {@code contratto + numero della richiesta}: il legame è esatto, e non
+     * dipende dal prezzo né dalle date (fra le due passano ore o giorni, e un pagamento in blocco paga più utenti).
+     * Si abbina solo se le due monete sono diverse e nessuna delle due righe è già classificata, quindi rifatto non cambia
+     * nulla. Una richiesta ancora aperta o annullata resta com'è.
+     *
+     * @return quanti riscatti ha abbinato
+     */
+    static int AbbinaRiscatti(Map<String, String[]> archivio, Set<String> nomi) {
+        Map<String, String[]> richieste = new HashMap<>(), pagamenti = new HashMap<>();
+        for (String[] v : archivio.values()) {
+            if (v == null || v.length <= 30 || v[7] == null || !nomi.contains(v[3].trim().toLowerCase()) || !v[18].isBlank()) continue;
+            Matcher m = CHIAVE_RISCATTO.matcher(v[7]);
+            if (!m.find()) continue;
+            String chiave = v[3].trim().toLowerCase() + "|" + m.group(1) + "|" + m.group(2);
+            String cat = Categoria(v);
+            if ("PC".equals(cat) && v[7].startsWith(CAUSALE_RISCATTO_RICHIESTA) && !v[7].startsWith(CAUSALE_RISCATTO_ANNULLATO)) {
+                richieste.put(chiave, v);
+            } else if ("DC".equals(cat) && v[7].startsWith(CAUSALE_RISCATTO_PAGATO)) {
+                pagamenti.put(chiave, v);
+            }
+        }
+        int abbinati = 0;
+        for (Map.Entry<String, String[]> e : richieste.entrySet()) {
+            String[] r = e.getValue(), p = pagamenti.get(e.getKey());
+            if (p == null || r[8].equalsIgnoreCase(p[11])) continue;
+            String prodotto = r[7].substring(CAUSALE_RISCATTO_RICHIESTA.length(), r[7].indexOf(", contratto"));
+            if (GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(r[0], p[0], prodotto)) abbinati++;
+        }
+        return abbinati;
+    }
+
+    /** Il gruppo wallet salvato per un wallet, {@code null} se non ne ha. */
+    private static String Gruppo(String wallet) {
+        if (DatabaseH2.connectionPersonale == null) return null;
+        try {
+            return DatabaseH2.Pers_GruppoWallet_Leggi(wallet.trim(), false);
+        } catch (RuntimeException e) {
+            return null;
+        }
     }
 
     private static String Categoria(String[] v) {

@@ -58,6 +58,12 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
     public GUI_LiFoTransazione(String IDtr) {
       //  ID=IDtr;
         initComponents();
+        //Nei lotti il numero d'ordine (0) e il costo unitario (8) non si sommano: sommare costi unitari non ha senso.
+        //La Qta (5) solo se i lotti visibili sono dello stesso token (4)
+        for (JTable lotti : new JTable[]{Tabella_Lifo_Entrata, Tabella_Lifo_Uscita}) {
+            lotti.putClientProperty("ColonneSenzaSomma", java.util.Set.of(0, 8));
+            lotti.putClientProperty("QtaPerToken", java.util.Map.of(5, 4));
+        }
         Tabelle.Tabelle_InizializzaHeader(Tabella_Lifo_Entrata);
         Tabelle.Tabelle_InizializzaHeader(Tabella_Lifo_Uscita);
         Tabelle.Tabelle_InizializzaHeader(jTable1);

@@ -5683,8 +5683,9 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
  */
 public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Component ccc, Download progressb) {
         //sistemo le giacenze sulle rete ethereum compatibili
+        //Con i nodi pubblici la moneta della rete e' letta dallo stato del blocco, esatta: niente da sistemare
         if (!Rete.equals("SOL")&&!Rete.equals("BSC")&&!Rete.equals("BASE")&&!Rete.equals("AVAX")&&!Rete.equals("CRO")&&!Rete.equals("BTC")
-                &&!Reti.IMPORT_NATIVI.contains(Rete)){
+                &&!Reti.IMPORT_NATIVI.contains(Rete)&&!NodoPubblicoDefi.PROVIDER.equals(DeFi_ProviderEffettivo(Rete))){
         progressb.setDefaultCloseOperation(0);
         progressb.Titolo("Sistemazione Giacenze moneta di Scambio su Wallet " + Wallet);
         progressb.SetLabel("Sistemazione Giacenze");
@@ -6334,7 +6335,23 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
     public static String DeFi_ProviderEffettivo(String Rete) {
         Map<String, String[]> prefs = DatabaseH2.ProviderDefi_LeggiTutti();
         String[] pref = prefs.get(Rete);
-        return (pref != null && pref[0] != null && !pref[0].isBlank()) ? pref[0] : DeFi_ProviderDefault(Rete);
+        if (pref != null && pref[0] != null && !pref[0].isBlank()) return pref[0];
+        return DeFi_ProviderSenzaPreferenza(Rete,
+                Funzioni.TrasformaNullinBlanc(DatabaseH2.Opzioni_Leggi("ApiKey_Etherscan")).isBlank());
+    }
+
+    /**
+     * Provider di una chain senza preferenza salvata. Il default e' {@link #DeFi_ProviderDefault}, salvo una chain che
+     * ha Etherscan come default e anche i nodi pubblici ({@link NodoPubblicoDefi#ReteSupportata}, oggi ETH): se l'utente
+     * non ha inserito una ApiKey Etherscan si leggono i nodi, cosi' nessuno deve crearsi un account per importare
+     * Ethereum. Chi ha gia' la chiave resta su Etherscan, senza nessun cambiamento.
+     *
+     * @param chiaveEtherscanAssente {@code true} se nelle opzioni non c'e' nessuna ApiKey Etherscan
+     */
+    static String DeFi_ProviderSenzaPreferenza(String Rete, boolean chiaveEtherscanAssente) {
+        String d = DeFi_ProviderDefault(Rete);
+        return "ETHERSCAN".equals(d) && chiaveEtherscanAssente && NodoPubblicoDefi.ReteSupportata(Rete)
+                ? NodoPubblicoDefi.PROVIDER : d;
     }
 
     /**

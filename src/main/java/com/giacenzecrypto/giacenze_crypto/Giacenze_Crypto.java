@@ -162,6 +162,8 @@ public class Giacenze_Crypto {
                 //Principale. Carica src/main/resources/Temi/FlatDarkLaf.properties, che alza il
                 //contrasto rispetto al tema di serie (sfondo #3c3f41 e testo #bbb, grigio su grigio).
                 FlatLaf.registerCustomDefaultsSource("Temi");
+                //Le etichette (anche quelle dei dialoghi e dei renderer) disegnano le emoji, che Noto Sans non ha
+                UIManager.put("LabelUI", EtichettaEmojiUI.class.getName());
                 if (Principale.tema.equalsIgnoreCase("Scuro")) {
                     UIManager.setLookAndFeel(new FlatDarkLaf());
                     Tabelle.verdeScuro = new Color(145, 255, 143);

@@ -2545,7 +2545,7 @@
                                       <EmptySpace min="-2" pref="44" max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_CheckBox_NascondiScam" min="-2" pref="176" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="44" max="-2" attributes="0"/>
-                                      <Component id="GiacenzeaData_CheckBox_MostraCostoNetto" min="-2" max="-2" attributes="0"/>
+                                      <Component id="GiacenzeaData_Bottone_CostiNetti" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                       <Component id="GiacenzeaData_Bottone_Guida" min="-2" max="-2" attributes="0"/>
                                   </Group>
@@ -2615,7 +2615,7 @@
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="GiacenzeaData_CheckBox_MostraQtaZero" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_CheckBox_NascondiScam" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="GiacenzeaData_CheckBox_MostraCostoNetto" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="GiacenzeaData_Bottone_CostiNetti" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_Bottone_Guida" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
@@ -2705,7 +2705,7 @@
                           <Properties>
                             <Property name="autoCreateRowSorter" type="boolean" value="true"/>
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                              <Table columnCount="18" rowCount="0">
+                              <Table columnCount="13" rowCount="0">
                                 <Column editable="false" title="Nome" type="java.lang.Object"/>
                                 <Column editable="false" title="Rete" type="java.lang.Object"/>
                                 <Column editable="false" title="Address Defi del Token" type="java.lang.Object"/>
@@ -2719,11 +2719,6 @@
                                 <Column editable="false" title="Errori" type="java.lang.Object"/>
                                 <Column editable="false" title="InfoPrezzo" type="java.lang.Object"/>
                                 <Column editable="false" title="&lt;html&gt;&lt;center&gt;Qta&lt;br&gt;Blockchain&lt;/html&gt;" type="java.lang.Object"/>
-                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;Costo totale&lt;br&gt;(in Euro)&lt;/html&gt;" type="java.lang.Double"/>
-                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;Vendite&lt;br&gt;(in Euro)&lt;/html&gt;" type="java.lang.Double"/>
-                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;Costo medio netto&lt;br&gt;(tutti i wallet)&lt;/html&gt;" type="java.lang.Double"/>
-                                <Column editable="false" title="&lt;html&gt;&lt;center&gt;Profitti/Perdite totali&lt;br&gt;(tutti i wallet)&lt;/html&gt;" type="java.lang.Double"/>
-                                <Column editable="false" title="Note costo netto" type="java.lang.Object"/>
                               </Table>
                             </Property>
                             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -2793,31 +2788,6 @@
                                   <Editor/>
                                   <Renderer/>
                                 </Column>
-                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
-                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
-                                  <Title/>
-                                  <Editor/>
-                                  <Renderer/>
-                                </Column>
                               </TableColumnModel>
                             </Property>
                             <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
@@ -2829,7 +2799,7 @@
                             <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="GiacenzeaData_TabellaKeyReleased"/>
                           </Events>
                           <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="GiacenzeaData_Tabella.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_Tabella.getColumnModel().getTotalColumnWidth(), 42));&#xd;&#xa;Tabelle.ColoraRigheTabella0GiacenzeaData(GiacenzeaData_Tabella);"/>
+                            <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="GiacenzeaData_Tabella.getTableHeader().setPreferredSize(new Dimension(GiacenzeaData_Tabella.getColumnModel().getTotalColumnWidth(), 58));&#xd;&#xa;Tabelle.ColoraRigheTabella0GiacenzeaData(GiacenzeaData_Tabella);"/>
                           </AuxValues>
                         </Component>
                       </SubComponents>
@@ -3217,12 +3187,16 @@
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_Bottone_GuidaActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JCheckBox" name="GiacenzeaData_CheckBox_MostraCostoNetto">
+                    <Component class="javax.swing.JButton" name="GiacenzeaData_Bottone_CostiNetti">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Mostra costi netti"/>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/Images/24_CostiNetti.png"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Costi netti"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Costo medio netto, spese, vendite e profitti/perdite di ogni token, con tutti i wallet insieme (informativo, non fiscale)"/>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_CheckBox_MostraCostoNettoActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_Bottone_CostiNettiActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JLabel" name="GiacenzeaData_Label_Aggiornare">

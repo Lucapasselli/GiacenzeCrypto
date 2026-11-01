@@ -29,7 +29,7 @@ title: Giacenze a data
 - il suo **valore** in euro al prezzo di quella data,
 - il **costo di carico** di quella quantità, calcolato con il metodo LIFO dello stesso motore che calcola le plusvalenze,
 - la differenza fra i due, il **plus/minus latente**,
-- su richiesta, il **costo medio netto** (vedi [I costi netti](#costi-netti)).
+- su richiesta, i **costi netti** di ogni token in un dialogo a parte (vedi [I costi netti](#costi-netti)).
 
 Serve soprattutto a tre cose:
 
@@ -227,7 +227,7 @@ sbagliato. È il caso tipico in cui si usa [la rettifica della giacenza](#rettif
 Cose da sapere con un wallet selezionato:
 
 - **Valore** e **Plus/Minus Latente** sono quelli della quantità di quel wallet,
-- le colonne dei [costi netti](#costi-netti) restano quelle di **tutti i wallet**,
+- il pulsante dei [costi netti](#costi-netti) si spegne: vale solo per **tutti i wallet** insieme,
 - il **TOTALE in EURO** somma i valori di quel solo wallet.
 
 ## Correggere una giacenza {#rettifica}
@@ -314,15 +314,18 @@ rete.
 
 ## I costi netti {#costi-netti}
 
-Spuntando **Mostra costi netti** compaiono, in fondo alla tabella, cinque colonne nascoste di default: *Costo totale*,
-*Vendite*, *Costo medio netto*, *Profitti/Perdite totali* e *Note costo netto*. Raccontano un'altra storia rispetto al costo
-di carico: quanto denaro hai messo e tolto da ogni token, e a che prezzo dovresti vendere quello che resta per essere in
-pareggio.
+Il pulsante **Costi netti**, sotto la tabella, apre un dialogo con una riga per token: *Costo totale*, *Vendite*,
+*Costo medio netto*, *Profitti/Perdite totali* e *Note*. Raccontano un'altra storia rispetto al costo di carico: quanto
+denaro hai messo e tolto da ogni token, e a che prezzo dovresti vendere quello che resta per essere in pareggio. Il
+risultato si vede **anche per i token che non possiedi più**, con la giacenza a zero.
 
-![La tabella con le colonne dei costi netti](immagini/giacenze-a-data/08.png)
+![Il dialogo dei costi netti](immagini/giacenze-a-data/08.png)
 
-Sono solo informative e non cambiano nessun calcolo fiscale. Come si calcolano, come trattano ogni tipo di movimento e come
-si leggono le note sono spiegati nel manuale dedicato: **[Costo medio netto in Giacenze a data](costo-medio-netto.html)**.
+Il pulsante è attivo solo con il wallet *Tutti*. Il dialogo unisce in una riga i token con lo stesso nome anche se su reti
+o indirizzi diversi, ed è separato dalla tabella proprio perché è un'informazione diversa da quelle fiscali: profitti e
+perdite possono non coincidere con le plusvalenze, perché qui anche gli scambi fra cripto contano come vendita e acquisto.
+Come si calcolano, come trattano ogni tipo di movimento e come si leggono le note sono spiegati nel manuale dedicato:
+**[Costo medio netto in Giacenze a data](costo-medio-netto.html)**.
 
 ## Domande frequenti {#domande}
 

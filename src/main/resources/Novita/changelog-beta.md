@@ -5,6 +5,22 @@ programma all'avvio di una beta, ed è la descrizione della beta su GitHub. L'el
 in preparazione è nella sezione "in lavorazione" di docs/documentazione/changelog.md, dove ogni voce di questo file
 compare con lo stesso titolo. Questo file non è una pagina del sito.
 
+## Versione 1.0.65.18
+
+**Nuove implementazioni**
+
+- **Ethereum senza ApiKey Etherscan (in prova)**: se nelle opzioni non c'è nessuna chiave Etherscan, i wallet su Ethereum si scaricano ora dai nodi pubblici della rete, come già per Base, e non serve più creare un account. Chi ha già la chiave resta su Etherscan. Un token ricevuto senza fare nulla e mai spostato si recupera con la ricerca di token indicati.
+
+- **ether.fi Cash, riscatti in due tempi e swap verso altre catene (in prova)**: il riscatto di quote Midas e il prelievo dalla coda di EtherFi Liquid, che pagano dopo ore o giorni, si uniscono da soli in uno scambio fra le due monete, grazie al numero di richiesta che richiesta e pagamento hanno in comune. Uno swap verso un'altra catena esce come prelievo, e si abbina all'entrata se si inserisce come wallet su Ethereum il TradingSafe di ether.fi.
+
+- **Giacenze a data, costo medio netto**: le cinque colonne dei costi netti non sono più nella tabella. Il pulsante *Costi netti*, attivo solo con il wallet *Tutti*, apre un dialogo con una riga per token, compresi quelli a giacenza zero, dove il risultato è il profitto o la perdita realizzati.
+
+- **Emoji nei nomi dei token**: un token con un'emoji nel nome non compare più come un quadratino nelle tabelle, nelle etichette, nelle liste e nei messaggi.
+
+**Correzione di bug**
+
+- **Somme nelle intestazioni delle colonne**: in *Giacenze a Data* la somma ora compare anche sulla tabella principale. Non si sommano più quantità di token diversi né le quantità residue, la somma di quantità piccole non si arrotonda più a due decimali e la riga della somma non viene più tagliata nelle finestre con l'intestazione bassa.
+
 ## Versione 1.0.65.17
 
 **Nuove implementazioni**

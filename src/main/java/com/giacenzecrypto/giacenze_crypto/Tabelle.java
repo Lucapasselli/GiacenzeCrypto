@@ -76,6 +76,55 @@ public class Tabelle {
             java.awt.Font r = FontApplicazione.PerTesto(f, getText());
             if (r != f) setFont(r);
         }
+
+        /**
+         * Le emoji (e i pittogrammi) che Noto Sans non ha le disegna Noto Emoji, incluso nel jar: il ripiego di sistema su
+         * Linux le dichiara disegnabili ma non le disegna (Noto Color Emoji è a colori, Java non lo legge). Un solo font per
+         * etichetta non basta con un testo come {@code $Gold🍆}, quindi la cella con emoji si disegna a tratti, ciascuno col
+         * suo font ({@link FontApplicazione#PerTestoConEmoji}). Sta qui e non in {@code setValue} perché le sottoclassi
+         * cambiano il testo dopo: conta quello che c'è al momento di disegnare. Le altre celle non cambiano di un pixel.
+         */
+        @Override
+        protected void paintComponent(java.awt.Graphics g) {
+            String testo = getText();
+            java.text.AttributedString tratti = getIcon() == null && testo != null && !testo.startsWith("<html")
+                    ? FontApplicazione.PerTestoConEmoji(getFont(), testo) : null;
+            if (tratti == null) {
+                super.paintComponent(g);
+                return;
+            }
+            java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+            try {
+                if (isOpaque()) {
+                    g2.setColor(getBackground());
+                    g2.fillRect(0, 0, getWidth(), getHeight());
+                }
+                java.awt.Insets in = getInsets();
+                int spazio = getWidth() - in.left - in.right;
+                float larghezza = FontApplicazione.Larghezza(tratti);
+                //Troppo lungo: si accorcia come fa Swing, coi puntini
+                for (int n = testo.length(); larghezza > spazio && n > 1; ) {
+                    n = testo.offsetByCodePoints(n, -1);
+                    String t = testo.substring(0, n) + "...";
+                    tratti = FontApplicazione.PerTestoConEmoji(getFont(), t);
+                    if (tratti == null) {
+                        tratti = new java.text.AttributedString(t);
+                        tratti.addAttribute(java.awt.font.TextAttribute.FONT, getFont());
+                    }
+                    larghezza = FontApplicazione.Larghezza(tratti);
+                }
+                int allineamento = getHorizontalAlignment();
+                float x = in.left;
+                if (allineamento == RIGHT || allineamento == TRAILING) x = in.left + spazio - larghezza;
+                else if (allineamento == CENTER) x = in.left + (spazio - larghezza) / 2;
+                java.awt.FontMetrics fm = getFontMetrics(getFont());
+                float y = in.top + (getHeight() - in.top - in.bottom - fm.getHeight()) / 2f + fm.getAscent();
+                g2.setColor(getForeground());
+                FontApplicazione.Disegna(g2, tratti, x, y);
+            } finally {
+                g2.dispose();
+            }
+        }
     }
 
     //static Color verdeScuro=new Color (23, 114, 69);
@@ -387,7 +436,7 @@ public class Tabelle {
                     c.setBackground(bg);
                     c.setForeground(rosso);
                 }
-                else if (table.convertColumnIndexToModel(col)==10 || table.convertColumnIndexToModel(col)==17) {
+                else if (table.convertColumnIndexToModel(col)==10) {
                     c.setBackground(bg);
                     c.setForeground(rosso);
                 }
@@ -405,18 +454,6 @@ public class Tabelle {
                     //BigDecimal e non Double.toString, che sopra i dieci milioni scrive in notazione scientifica
                     setText(java.math.BigDecimal.valueOf((Double) value).toPlainString());
                     if (!isSelected && !((Double) value).equals(0.0)) {
-                        c.setForeground(((Double) value) > 0 ? verdeScuro : rosso);
-                    }
-                } else if (colModello >= 13 && colModello <= 16 && value instanceof Double) {
-                    //Costo medio netto (15) con otto cifre significative come i valori unitari, gli altri a due decimali.
-                    //BigDecimal e non Double.toString: sopra i dieci milioni scriverebbe la notazione scientifica
-                    if (colModello == 15) {
-                        setText(Principale_GiacenzeaData.FormattaUnitario((Double) value));
-                    } else {
-                        setText(java.math.BigDecimal.valueOf((Double) value).setScale(2, java.math.RoundingMode.HALF_UP).toPlainString());
-                    }
-                    //Profitti/perdite totali (16): verde se positivi, rossi se negativi
-                    if (colModello == 16 && !isSelected && !((Double) value).equals(0.0)) {
                         c.setForeground(((Double) value) > 0 ? verdeScuro : rosso);
                     }
                 } else if (colModello == 12 && !isSelected) {
@@ -1646,43 +1683,12 @@ public static int[] Funzioni_getRigheSelezionate(JTable table) {
         int versioneCorrente = versione.incrementAndGet();
 
         new Thread(() -> {
-            Map<Integer, String> valori = new HashMap<>();
-
-            //Colonne su cui una somma non ha senso (prezzi e costi unitari): la tabella le dichiara
-            //con la proprietà "ColonneSenzaSomma", un insieme di indici di colonna del modello
-            Object senzaSomma = table.getClientProperty("ColonneSenzaSomma");
-            for (int col = 0; col < colCount; col++) {
-                if (senzaSomma instanceof java.util.Set && ((java.util.Set<?>) senzaSomma).contains(col)) {
-                    continue;
-                }
-                //Se nel frattempo è partito un ricalcolo più recente per questa tabella, questo
-                //lavoro è già superato: mi fermo subito invece di completare tutte le colonne.
-                //Il controllo è per colonna e non per cella: su tabelle grandi le celle sono
-                //milioni, le colonne poche decine. Uscendo qui non viene scritto nulla, quindi
-                //un thread superato non lascia stati parziali.
-                if (versione.get() != versioneCorrente) {
-                    return;
-                }
-
-                BigDecimal somma = BigDecimal.ZERO;
-
-                for (int modelRow : visibleRows) {
-                    try {
-                        //NumeroONull scarta le celle non numeriche senza costruire l'eccezione:
-                        //la maggior parte delle colonne è testuale (date, ID, simboli, indirizzi)
-                        //e prima si pagava una NumberFormatException per ognuna di quelle celle
-                        BigDecimal val = Funzioni.NumeroONull(model.getValueAt(modelRow, col));
-                        if (val != null) {
-                            somma = somma.add(val);
-                        }
-                    } catch (IndexOutOfBoundsException ignored) {
-                    }
-                }
-
-                somma = somma.setScale(2, RoundingMode.HALF_UP);
-                String text = somma.compareTo(BigDecimal.ZERO) != 0 ? somma.toPlainString() : "";
-                if (!text.isBlank()) text = Funzioni.formattaBigDecimal(somma, true);
-                valori.put(col, text);
+            Map<Integer, String> valori = CalcolaSomme(model, colCount, visibleRows,
+                    table.getClientProperty("ColonneSenzaSomma"), table.getClientProperty("QtaPerToken"),
+                    () -> versione.get() != versioneCorrente);
+            //Se nel frattempo è partito un ricalcolo più recente per questa tabella, questo lavoro è già superato
+            if (valori == null) {
+                return;
             }
 
             // ✅ Solo il thread più recente per quella tabella aggiorna
@@ -1690,12 +1696,126 @@ public static int[] Funzioni_getRigheSelezionate(JTable table) {
                 AtomicInteger attuale = versioniSomma.get(table);
                 if (attuale != null && attuale.get() == versioneCorrente) {
                         SommaColonne.put(table, valori);
+                    AdattaAltezzaIntestazione(table);
                     table.getTableHeader().repaint();
                 }
             });
         }).start();
     });
 }
+
+    /**
+     * Fa stare nell'intestazione la riga "Somma" sotto il titolo, che il renderer aggiunge solo quando il calcolo asincrono
+     * finisce: l'altezza decisa prima di quel momento non la conteneva e la riga risultava tagliata. La fa <b>solo crescere</b>,
+     * fino a quanto serve alla colonna con somma più alta: le altezze già tarate a mano restano, e una tabella con i titoli su
+     * più righe non va ritarata una per una. Vale anche per l'altezza automatica: Swing la ricava dalla <b>sola prima
+     * colonna</b> (ottimizzazione di {@code BasicTableHeaderUI}), quindi una somma su un'altra colonna non la alzerebbe mai.
+     * Costo: un passaggio del renderer sulle sole colonne con una somma, la stessa cosa che si paga a ogni ridisegno.
+     * Da chiamare sull'EDT dopo aver scritto la somma in {@link #SommaColonne}.
+     */
+    static void AdattaAltezzaIntestazione(JTable table) {
+        JTableHeader header = table.getTableHeader();
+        Map<Integer, String> valori = SommaColonne.get(table);
+        if (header == null || valori == null) {
+            return;
+        }
+        TableCellRenderer renderer = header.getDefaultRenderer();
+        int serve = 0;
+        for (int v = 0; v < table.getColumnCount(); v++) {
+            javax.swing.table.TableColumn colonna = table.getColumnModel().getColumn(v);
+            //le colonne nascoste (larghezza massima zero) non si vedono: la loro somma non deve alzare l'intestazione
+            if (colonna.getMaxWidth() == 0) {
+                continue;
+            }
+            String somma = valori.get(colonna.getModelIndex());
+            if (somma == null || somma.isBlank()) {
+                continue;
+            }
+            Component c = renderer.getTableCellRendererComponent(table, colonna.getHeaderValue(), false, false, -1, v);
+            serve = Math.max(serve, c.getPreferredSize().height);
+        }
+        if (serve == 0) {
+            return;
+        }
+        //Il confronto è con l'altezza che l'intestazione ha davvero a video: con altezza automatica la preferita, ricalcolata
+        //adesso, contiene già la somma mentre il layout è ancora quello di prima. Mai disposta (altezza 0): vale la preferita
+        Dimension attuale = header.getPreferredSize();
+        int disegnata = header.getHeight() > 0 ? header.getHeight() : attuale.height;
+        if (serve > disegnata) {
+            header.setPreferredSize(new Dimension(attuale.width, serve));
+            header.revalidate();
+        }
+    }
+
+    /**
+     * Somma le colonne di una tabella, sulle sole righe indicate (le visibili, nell'indice del modello). Gira sul
+     * thread di {@link #Tabelle_getSommeColonne}; separato da quello perché non tocca nessun componente Swing.
+     * <ul>
+     * <li>{@code senzaSomma}: insieme degli indici di colonna (proprietà "ColonneSenzaSomma") che non hanno una somma
+     * sensata (prezzi, costi unitari, saldi progressivi): non hanno voce nel risultato;</li>
+     * <li>{@code qtaPerToken}: mappa colonna quantità -> colonna della moneta (proprietà "QtaPerToken"). Una quantità
+     * si somma solo se tutte le righe con quantità diversa da zero sono dello stesso token, altrimenti la somma è
+     * vuota: BTC più EUR più USDC non è una quantità.</li>
+     * </ul>
+     * Il risultato non è arrotondato a due decimali: la somma di quantità piccole (0,1099 BTC) comparirebbe come 0,11,
+     * o come vuota se sotto 0,005. Gli importi in euro hanno già due decimali e restano a due.
+     *
+     * @param superato vero quando è partito un ricalcolo più recente: il controllo è per colonna (le celle sono milioni,
+     * le colonne poche decine), e in quel caso non si scrive nulla
+     * @return colonna del modello -> testo della somma (vuoto se zero), oppure {@code null} se il calcolo è superato
+     */
+    static Map<Integer, String> CalcolaSomme(TableModel model, int colCount, int[] righe, Object senzaSomma,
+            Object qtaPerToken, java.util.function.BooleanSupplier superato) {
+        Map<Integer, String> valori = new HashMap<>();
+        java.text.DecimalFormatSymbols simboli = new java.text.DecimalFormatSymbols(java.util.Locale.ITALY);
+        simboli.setGroupingSeparator('.');
+        simboli.setDecimalSeparator(',');
+        //almeno due decimali (importi), fino a otto (quantità)
+        java.text.DecimalFormat formato = new java.text.DecimalFormat("#,##0.00######", simboli);
+        for (int col = 0; col < colCount; col++) {
+            if (senzaSomma instanceof java.util.Set && ((java.util.Set<?>) senzaSomma).contains(col)) {
+                continue;
+            }
+            if (superato.getAsBoolean()) {
+                return null;
+            }
+            int colToken = -1;
+            if (qtaPerToken instanceof Map<?, ?> m && m.get(col) instanceof Integer i) {
+                colToken = i;
+            }
+            String token = null;
+            boolean misto = false;
+            BigDecimal somma = BigDecimal.ZERO;
+
+            for (int modelRow : righe) {
+                try {
+                    //NumeroONull scarta le celle non numeriche senza costruire l'eccezione:
+                    //la maggior parte delle colonne è testuale (date, ID, simboli, indirizzi)
+                    BigDecimal val = Funzioni.NumeroONull(model.getValueAt(modelRow, col));
+                    if (val == null) {
+                        continue;
+                    }
+                    //le righe senza gamba (quantità vuota o zero) non dicono di che token sia la somma
+                    if (colToken >= 0 && val.signum() != 0) {
+                        Object cella = model.getValueAt(modelRow, colToken);
+                        String moneta = cella == null ? "" : cella.toString();
+                        if (token == null) {
+                            token = moneta;
+                        } else if (!token.equals(moneta)) {
+                            misto = true;
+                            break;
+                        }
+                    }
+                    somma = somma.add(val);
+                } catch (IndexOutOfBoundsException ignored) {
+                }
+            }
+
+            BigDecimal arrotondata = somma.setScale(8, RoundingMode.HALF_UP);
+            valori.put(col, misto || arrotondata.signum() == 0 ? "" : formato.format(arrotondata));
+        }
+        return valori;
+    }
   
 
 

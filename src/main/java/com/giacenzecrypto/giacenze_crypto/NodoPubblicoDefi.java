@@ -460,6 +460,13 @@ public final class NodoPubblicoDefi {
     //=== ACCESSO AI NODI
     //=====================================================================================================
 
+    /** Tutti i nodi hanno rifiutato un {@code eth_getLogs} perche' il tratto ha troppi blocchi o troppi risultati. */
+    static final class TroppoGrande extends Exception {
+        TroppoGrande(String m) {
+            super(m);
+        }
+    }
+
     /** Accesso ai nodi, separato perche' i test lo sostituiscono. */
     interface Nodo {
         JsonElement chiama(Uso uso, String metodo, JsonArray parametri) throws Exception;
@@ -504,6 +511,7 @@ public final class NodoPubblicoDefi {
             Exception ultimo = null;
             int inizio = preferito.getOrDefault(uso, 0);
             for (int giro = 0; giro < GIRI; giro++) {
+                boolean tuttiTroppoGrandi = true;
                 for (int k = 0; k < elenco.size(); k++) {
                     int i = (inizio + k) % elenco.size();
                     try {
@@ -514,9 +522,12 @@ public final class NodoPubblicoDefi {
                         throw e;
                     } catch (Exception e) {
                         ultimo = e;
+                        if (!DimensioneRifiutata(e.getMessage())) tuttiTroppoGrandi = false;
                         LoggerGC.logInfo("Nodo pubblico " + elenco.get(i) + " (" + metodi.get(0) + "): " + e.getMessage());
                     }
                 }
+                //Un tratto di log troppo lungo non passa aspettando: lo dice a chi chiama, che lo divide
+                if (uso == Uso.LOG && tuttiTroppoGrandi && ultimo != null) throw new TroppoGrande(ultimo.getMessage());
                 Thread.sleep(2000L * (giro + 1));
             }
             throw new Exception("nessun nodo pubblico ha risposto a " + metodi.get(0) + " ("
@@ -571,6 +582,15 @@ public final class NodoPubblicoDefi {
             }
         }
 
+        /** Il messaggio di un nodo che rifiuta il tratto per i blocchi o i risultati, non per il limite di richieste. */
+        static boolean DimensioneRifiutata(String messaggio) {
+            if (messaggio == null) return false;
+            String m = messaggio.toLowerCase();
+            if (m.contains("429") || m.contains("rate") || m.contains("too many requests")) return false;
+            return m.contains("range") || m.contains("too large") || m.contains("more than") || m.contains("results")
+                    || m.contains("maximum") || m.contains("exceed") || m.contains("http 400") || m.contains("block");
+        }
+
         /** Errore che un altro nodo ripeterebbe uguale (revert): non si riprova. */
         static final class ErroreDefinitivo extends Exception {
             ErroreDefinitivo(String m) {
@@ -614,6 +634,8 @@ public final class NodoPubblicoDefi {
         private long inizio, fine;
         private int ultimaDecina = -1;
         private String fase = "";
+        /** Ultimo blocco letto in cui Multicall3 non esisteva (la chiamata ha risposto 0x), -1 se non e' mai successo. */
+        private long senzaMulticallFinoA = -1;
 
         Scansione(Configurazione conf, Nodo nodo, String wallet, BooleanSupplier interrotto,
                 Consumer<String> avanzamento, int idDocumento) {
@@ -644,6 +666,119 @@ public final class NodoPubblicoDefi {
                     elaborati.size());
         }
 
+        /** Slot EIP-1967 dell'indirizzo del beacon di un proxy. */
+        static final String SLOT_BEACON = "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50";
+        /** Oltre queste richieste di log la lettura a tratti si ferma: nessun nodo accetta tratti ragionevoli. */
+        static final int MASSIMO_RICHIESTE_LOG = 4000;
+
+        /**
+         * Un wallet contratto di cui si sa che i trasferimenti hanno sempre il wallet fra i topic dei log e che muove la
+         * moneta della rete solo di rado (oggi il TradingSafe di ether.fi): se ne leggono i log al posto degli stati.
+         */
+        private boolean WalletContrattoNoto() {
+            try {
+                JsonArray p = new JsonArray();
+                p.add(w);
+                p.add(SLOT_BEACON);
+                p.add("latest");
+                return Trans_EtherFi.IsBeaconTradingSafe(nodo.chiama(Uso.STATO, "eth_getStorageAt", p).getAsString());
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        /**
+         * Importazione di un wallet contratto dai log dei trasferimenti: da {@code bloccoDa} all'ultimo blocco, i
+         * {@code Transfer} e i trasferimenti ERC-1155 da e verso il wallet, a tratti che si dividono finche' i nodi li
+         * accettano. Le righe sono quelle di {@link #RigheLog}. Non vede la moneta della rete (nessun log): se il wallet ne
+         * ha, lo dice in un avviso.
+         */
+        Esito EseguiPerLog(long bloccoDa) {
+            String r = conf.rete();
+            try {
+                long ultimo = Long.decode(nodo.chiama(Uso.STATO, "eth_blockNumber", new JsonArray()).getAsString()) - 3;
+                if (bloccoDa > ultimo) {
+                    log(r + " " + w + ": nessun blocco nuovo dopo il " + (bloccoDa - 1) + ".");
+                    return Fine(true);
+                }
+                long da = Math.max(1, bloccoDa);
+                fase = "Lettura dei log";
+                inizio = da;
+                fine = ultimo;
+                log(r + " " + w + ": wallet contratto riconosciuto, lettura dei log dal blocco " + da + " al " + ultimo + ".");
+                Map<String, JsonObject> unici = new TreeMap<>();
+                String[][] eventi = {{TOPIC_TRANSFER}, {TOPIC_TRANSFER}, {TOPIC_TRANSFER_SINGLE, TOPIC_TRANSFER_BATCH},
+                    {TOPIC_TRANSFER_SINGLE, TOPIC_TRANSFER_BATCH}};
+                int[] posizioni = {1, 2, 2, 3};
+                for (int k = 0; k < eventi.length; k++) {
+                    if (!LogATratti(da, ultimo, eventi[k], posizioni[k], unici)) return Fine(false);
+                }
+                Map<String, List<JsonObject>> perTx = new LinkedHashMap<>();
+                for (JsonObject l : unici.values()) perTx.computeIfAbsent(Testo(l, "transactionHash").toLowerCase(), k -> new ArrayList<>()).add(l);
+                Map<Long, String> tempi = new HashMap<>();
+                for (Map.Entry<String, List<JsonObject>> e : perTx.entrySet()) {
+                    long b = Long.decode(Testo(e.getValue().get(0), "blockNumber"));
+                    String ts = tempi.get(b);
+                    if (ts == null) {
+                        ts = e.getValue().get(0).has("blockTimestamp") && !e.getValue().get(0).get("blockTimestamp").isJsonNull()
+                                ? String.valueOf(Long.decode(Testo(e.getValue().get(0), "blockTimestamp"))) : TempoBlocco(b);
+                        tempi.put(b, ts);
+                    }
+                    elaborati.add(b);
+                    Map<String, BigInteger> netto = new HashMap<>();
+                    for (JsonObject l : e.getValue()) RigheLog(l, e.getKey(), b, ts, netto);
+                }
+                BigInteger eth = SaldoMoneta(ultimo);
+                if (eth.signum() > 0) {
+                    avvisi.add("Il wallet ha " + new java.math.BigDecimal(eth, 18).stripTrailingZeros().toPlainString() + " "
+                            + MonetaRete() + " nativi: i trasferimenti della moneta della rete non si leggono dai log di un wallet "
+                            + "contratto e non sono importati.");
+                }
+                log(r + " " + w + ": lettura finita, " + letture + " richieste di log, " + perTx.size() + " transazioni.");
+                return Fine(true);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                return Fine(false);
+            } catch (Exception ex) {
+                LoggerGC.ScriviErrore(ex);
+                avvisi.add("Nodi pubblici di " + r + ": " + ex.getMessage());
+                return Fine(false);
+            }
+        }
+
+        /** Divide ({@code da}, {@code a}) a meta' finche' i nodi accettano il tratto. @return falso se interrotta */
+        private boolean LogATratti(long da, long a, String[] eventi, int posizione, Map<String, JsonObject> unici) throws Exception {
+            if (Fermo()) return false;
+            if (letture > MASSIMO_RICHIESTE_LOG) {
+                throw new Exception("troppe richieste di log: nessun nodo pubblico accetta tratti abbastanza lunghi");
+            }
+            JsonArray p = FiltroLog("0x" + Long.toHexString(da), "0x" + Long.toHexString(a), eventi, posizione);
+            JsonElement r;
+            try {
+                letture++;
+                r = nodo.chiama(Uso.LOG, "eth_getLogs", p);
+            } catch (TroppoGrande e) {
+                if (a <= da) throw e;
+                long m = (da + a) >>> 1;
+                return LogATratti(da, m, eventi, posizione, unici) && LogATratti(m + 1, a, eventi, posizione, unici);
+            }
+            for (JsonElement el : r.getAsJsonArray()) {
+                JsonObject l = el.getAsJsonObject();
+                if (l.has("removed") && !l.get("removed").isJsonNull() && l.get("removed").getAsBoolean()) continue;
+                unici.put(String.format("%016x", Long.decode(Testo(l, "blockNumber"))) + String.format("%08x", Long.decode(Testo(l, "logIndex")))
+                        + Testo(l, "transactionHash").toLowerCase(), l);
+            }
+            stato(fase + ": " + (fine > inizio ? (int) ((a - inizio) * 100 / (fine - inizio)) : 100) + "%");
+            return true;
+        }
+
+        private String TempoBlocco(long b) throws Exception {
+            JsonArray p = new JsonArray();
+            p.add("0x" + Long.toHexString(b));
+            p.add(false);
+            return String.valueOf(Long.decode(Testo(nodo.chiama(Uso.STATO, "eth_getBlockByNumber", p).getAsJsonObject(), "timestamp")));
+        }
+
         Esito Esegui(long bloccoDa, Set<String> tokenIniziali) {
             String r = conf.rete();
             try {
@@ -652,6 +787,9 @@ public final class NodoPubblicoDefi {
                 par.add(w);
                 par.add("latest");
                 String codice = nodo.chiama(Uso.STATO, "eth_getCode", par).getAsString();
+                if (codice != null && codice.length() > 2 && WalletContrattoNoto()) {
+                    return EseguiPerLog(bloccoDa);
+                }
                 if (codice != null && codice.length() > 2) {
                     //Smart wallet (ERC-4337) o EOA con delega EIP-7702: le sue operazioni non muovono il nonce del
                     //conto, quindi la bisezione non le vedrebbe. Meglio rifiutare che importare una parte.
@@ -806,25 +944,106 @@ public final class NodoPubblicoDefi {
             JsonArray pCall = new JsonArray();
             pCall.add(call);
             pCall.add(hex);
-            List<BigInteger> valori;
+            List<BigInteger> valori = null;
             BigInteger nonce = BigInteger.ZERO;
-            if (base) {
-                JsonArray pNonce = new JsonArray();
-                pNonce.add(w);
-                pNonce.add(hex);
-                List<JsonElement> r = nodo.insieme(Uso.STATO, List.of("eth_getTransactionCount", "eth_call"), List.of(pNonce, pCall));
-                nonce = new BigInteger(r.get(0).getAsString().substring(2), 16);
-                valori = Trans_XLayer.DecodificaAggregate3(r.get(1).getAsString());
-            } else {
-                valori = Trans_XLayer.DecodificaAggregate3(nodo.chiama(Uso.STATO, "eth_call", pCall).getAsString());
+            if (blocco > senzaMulticallFinoA) {
+                if (base) {
+                    JsonArray pNonce = new JsonArray();
+                    pNonce.add(w);
+                    pNonce.add(hex);
+                    List<JsonElement> r = nodo.insieme(Uso.STATO, List.of("eth_getTransactionCount", "eth_call"), List.of(pNonce, pCall));
+                    nonce = new BigInteger(r.get(0).getAsString().substring(2), 16);
+                    valori = Trans_XLayer.DecodificaAggregate3(r.get(1).getAsString());
+                } else {
+                    valori = Trans_XLayer.DecodificaAggregate3(nodo.chiama(Uso.STATO, "eth_call", pCall).getAsString());
+                }
+                //Prima che Multicall3 esistesse (Ethereum: blocco 14.353.601) la chiamata restituisce 0x. Leggerla come
+                //"tutto a zero" farebbe sembrare vuoto il wallet: i trasferimenti in entrata, che non cambiano il nonce,
+                //non verrebbero visti. Da qui in giu' si legge direttamente, ed e' un confine che non si rimette in
+                //discussione a ogni lettura
+                if (valori.isEmpty() && !chiamate.isEmpty()) {
+                    senzaMulticallFinoA = Math.max(senzaMulticallFinoA, blocco);
+                    valori = null;
+                }
             }
-            //Prima che Multicall3 esistesse la chiamata restituisce 0x: tutto a zero, come un wallet vuoto
+            if (valori == null) {
+                BigInteger[] n = new BigInteger[1];
+                valori = LettureDirette(hex, base, token, n);
+                if (base) nonce = n[0];
+            }
             while (valori.size() < chiamate.size()) valori.add(BigInteger.ZERO);
             int i = 0;
             BigInteger moneta = base ? valori.get(i++) : BigInteger.ZERO;
             Map<String, BigInteger> saldi = new HashMap<>();
             for (String t : token) saldi.put(t, valori.get(i++));
             return new Stato(nonce, moneta, saldi);
+        }
+
+        /**
+         * Lo stato di un blocco senza Multicall3: nonce, moneta della rete e saldi dei token con chiamate dirette, in una
+         * richiesta sola. Un token il cui {@code balanceOf} va in revert vale zero, come in {@code aggregate3} con
+         * {@code allowFailure}: se il nodo rifiuta il lotto per un revert, si rifanno le chiamate una a una.
+         *
+         * @param nonce uscita: il nonce, se {@code base}
+         * @return moneta della rete (se {@code base}) e poi i token, nell'ordine di {@code token}
+         */
+        private List<BigInteger> LettureDirette(String hex, boolean base, List<String> token, BigInteger[] nonce) throws Exception {
+            List<String> metodi = new ArrayList<>();
+            List<JsonArray> par = new ArrayList<>();
+            if (base) {
+                JsonArray pNonce = new JsonArray();
+                pNonce.add(w);
+                pNonce.add(hex);
+                metodi.add("eth_getTransactionCount");
+                par.add(pNonce);
+                JsonArray pSaldo = new JsonArray();
+                pSaldo.add(w);
+                pSaldo.add(hex);
+                metodi.add("eth_getBalance");
+                par.add(pSaldo);
+            }
+            for (String t : token) {
+                metodi.add("eth_call");
+                par.add(ChiamataSaldo(t, hex));
+            }
+            List<JsonElement> r;
+            try {
+                r = nodo.insieme(Uso.STATO, metodi, par);
+            } catch (NodiPubblici.ErroreDefinitivo e) {
+                r = new ArrayList<>();
+                for (int i = 0; i < metodi.size(); i++) {
+                    try {
+                        r.add(nodo.chiama(Uso.STATO, metodi.get(i), par.get(i)));
+                    } catch (NodiPubblici.ErroreDefinitivo ex) {
+                        r.add(new com.google.gson.JsonPrimitive("0x"));
+                    }
+                }
+            }
+            List<BigInteger> valori = new ArrayList<>();
+            int i = 0;
+            if (base) {
+                nonce[0] = ValoreDiretto(r.get(i++));
+                valori.add(ValoreDiretto(r.get(i++)));
+            }
+            while (i < r.size()) valori.add(ValoreDiretto(r.get(i++)));
+            return valori;
+        }
+
+        private JsonArray ChiamataSaldo(String token, String hex) {
+            JsonObject call = new JsonObject();
+            call.addProperty("to", token);
+            call.addProperty("data", "0x" + Trans_XLayer.SEL_BALANCE_OF + Trans_XLayer.Parola(w));
+            JsonArray p = new JsonArray();
+            p.add(call);
+            p.add(hex);
+            return p;
+        }
+
+        /** Un numero esadecimale di risposta; {@code 0x} (contratto senza codice a quel blocco) vale zero. */
+        private static BigInteger ValoreDiretto(JsonElement e) {
+            String s = e == null || e.isJsonNull() ? "" : e.getAsString();
+            if (s.length() <= 2) return BigInteger.ZERO;
+            return new BigInteger(s.substring(2, Math.min(s.length(), 66)), 16);
         }
 
         //---------------------------------------------------------------------------------------------------
@@ -988,9 +1207,13 @@ public final class NodoPubblicoDefi {
         }
 
         private JsonArray FiltroLog(String hex, String[] eventi, int posizioneWallet) {
+            return FiltroLog(hex, hex, eventi, posizioneWallet);
+        }
+
+        private JsonArray FiltroLog(String da, String a, String[] eventi, int posizioneWallet) {
             JsonObject f = new JsonObject();
-            f.addProperty("fromBlock", hex);
-            f.addProperty("toBlock", hex);
+            f.addProperty("fromBlock", da);
+            f.addProperty("toBlock", a);
             JsonArray topics = new JsonArray();
             JsonArray ev = new JsonArray();
             for (String e : eventi) ev.add(e);
@@ -1108,6 +1331,13 @@ public final class NodoPubblicoDefi {
                         }
                     }
                 }
+                if (candidati.isEmpty()) {
+                    //Nessun log nomina il wallet (un cashback o un rimborso mandato da un contratto con una chiamata
+                    //semplice): l'unica traccia e' quella dell'intero blocco
+                    BigInteger resta = residuo.subtract(TracciaBlocco(b, ts, txBlocco));
+                    if (resta.signum() != 0) AvvisoResiduo(b, resta);
+                    return;
+                }
             }
             if (candidati.size() == 1) {
                 String hash = candidati.iterator().next();
@@ -1144,10 +1374,51 @@ public final class NodoPubblicoDefi {
                 }
             }
             BigInteger resta = residuo.subtract(tracciato);
-            if (resta.signum() != 0) {
-                avvisi.add("Blocco " + b + ": " + new java.math.BigDecimal(resta, 18).stripTrailingZeros().toPlainString() + " "
-                        + MonetaRete() + " entrati o usciti senza una transazione individuata: non importati.");
+            if (resta.signum() != 0) AvvisoResiduo(b, resta);
+        }
+
+        private void AvvisoResiduo(long b, BigInteger resta) {
+            avvisi.add("Blocco " + b + ": " + new java.math.BigDecimal(resta, 18).stripTrailingZeros().toPlainString() + " "
+                    + MonetaRete() + " entrati o usciti senza una transazione individuata: non importati.");
+        }
+
+        /**
+         * Le chiamate interne del blocco che spostano moneta da o verso il wallet, dalla traccia di tutte le sue
+         * transazioni ({@code debug_traceBlockByNumber}, un nodo solo ce l'ha gratis).
+         *
+         * @return la moneta netta entrata nel wallet, {@code 0} se la traccia non e' disponibile
+         */
+        private BigInteger TracciaBlocco(long b, String ts, Map<String, JsonObject> txBlocco) {
+            BigInteger tracciato = BigInteger.ZERO;
+            try {
+                JsonArray p = new JsonArray();
+                p.add("0x" + Long.toHexString(b));
+                JsonObject opz = new JsonObject();
+                opz.addProperty("tracer", "callTracer");
+                p.add(opz);
+                JsonElement r = nodo.chiama(Uso.TRACCE, "debug_traceBlockByNumber", p);
+                List<String> hashBlocco = new ArrayList<>(txBlocco.keySet());
+                int i = 0;
+                for (JsonElement el : r.getAsJsonArray()) {
+                    JsonObject o = el.getAsJsonObject();
+                    String hash = o.has("txHash") && !o.get("txHash").isJsonNull() ? Testo(o, "txHash").toLowerCase()
+                            : (i < hashBlocco.size() ? hashBlocco.get(i) : "");
+                    i++;
+                    JsonObject frame = o.has("result") && o.get("result").isJsonObject() ? o.getAsJsonObject("result") : o;
+                    List<String[]> chiamate = new ArrayList<>();
+                    ChiamateConValore(frame, true, chiamate);
+                    for (String[] c : chiamate) {
+                        BigInteger v = new BigInteger(c[2]);
+                        if (c[1].equals(w) && !c[0].equals(w)) tracciato = tracciato.add(v);
+                        else if (c[0].equals(w) && !c[1].equals(w)) tracciato = tracciato.subtract(v);
+                        else continue;
+                        txlistinternal.put(RigaInterna(hash, b, ts, c[0], c[1], v));
+                    }
+                }
+            } catch (Exception e) {
+                avvisi.add("Blocco " + b + ": traccia del blocco non disponibile (" + e.getMessage() + ").");
             }
+            return tracciato;
         }
 
         /** Le chiamate interne riuscite che spostano moneta, escluso il livello principale (la transazione stessa). */

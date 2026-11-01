@@ -51,6 +51,18 @@ public class ProviderDefiDefaultTest {
     }
 
     @Test
+    public void ethereumSenzaApiKeyEtherscanVaSuiNodiPubbliciConLaChiaveRestaSuEtherscan() {
+        //Il default resta ETHERSCAN (funzione pura): cambia solo la scelta per chi non ha nessuna preferenza e nessuna chiave
+        assertEquals(NodoPubblicoDefi.PROVIDER, Importazioni.DeFi_ProviderSenzaPreferenza("ETH", true));
+        assertEquals("ETHERSCAN", Importazioni.DeFi_ProviderSenzaPreferenza("ETH", false));
+        //una chain senza nodi pubblici non cambia mai, con o senza chiave
+        assertEquals("ETHERSCAN", Importazioni.DeFi_ProviderSenzaPreferenza("ARB", true));
+        //e quelle che non hanno Etherscan come default restano quelle del default
+        assertEquals(NodoPubblicoDefi.PROVIDER, Importazioni.DeFi_ProviderSenzaPreferenza("BASE", false));
+        assertEquals("BLOCKSCOUT", Importazioni.DeFi_ProviderSenzaPreferenza("OP", true));
+    }
+
+    @Test
     public void leChainNonEvmHannoIlLoroProvider() {
         assertEquals("HELIUS", Importazioni.DeFi_ProviderDefault("SOL"));
         assertEquals("BITCOIN", Importazioni.DeFi_ProviderDefault("BTC"));

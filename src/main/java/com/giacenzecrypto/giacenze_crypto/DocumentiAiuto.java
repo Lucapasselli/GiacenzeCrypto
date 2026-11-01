@@ -46,13 +46,13 @@ public class DocumentiAiuto {
 
     /**
      * Il manuale della scheda Analisi Crypto, Giacenze a Data: la tabella dei token, il dettaglio movimenti, la
-     * rettifica della giacenza, i confronti con blockchain ed exchange e le colonne del costo medio netto (che
-     * hanno anche un manuale proprio, {@link #COSTO_MEDIO_NETTO}).
+     * rettifica della giacenza, i confronti con blockchain ed exchange e il dialogo dei costi netti (che
+     * ha anche un manuale proprio, {@link #COSTO_MEDIO_NETTO}).
      */
     public static final String GIACENZE_A_DATA = "giacenze-a-data.html";
 
     /**
-     * Che cosa sono le colonne del costo medio netto di Giacenze a data (casella <i>Mostra costi netti</i>) e come si
+     * Che cosa è il dialogo dei costi netti di Giacenze a data (pulsante <i>Costi netti</i>) e come si
      * calcolano: speso, incassato, prezzo di pareggio, profitti/perdite totali e il trattamento di ogni movimento.
      */
     public static final String COSTO_MEDIO_NETTO = "costo-medio-netto.html";

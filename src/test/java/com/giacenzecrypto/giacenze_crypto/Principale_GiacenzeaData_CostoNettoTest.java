@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -355,17 +356,128 @@ class Principale_GiacenzeaData_CostoNettoTest {
     // ------------------------------------------------------------------
 
     @Test
-    void giacenzaNullaONegativaLasciaVuoteLeColonneDerivate() {
+    void giacenzaNullaDaIlProfittoRealizzatoSenzaBisognoDelPrezzo() {
         acquisto("2026-01-01 10:00", "XYZ", "100", "100.00");
         vendita("2026-01-02 10:00", "XYZ", "100", "150.00");
-        Principale_GiacenzeaData_CostoNetto.Riga r = riga("XYZ", "2");
+        Principale_GiacenzeaData_CostoNetto.Riga r = riga("XYZ", null);
         assertEquals(100.0, r.Speso, TOLLERANZA);
         assertEquals(150.0, r.Incassato, TOLLERANZA);
-        assertNull(r.CostoMedioNetto);
-        assertNull(r.ProfittoPerdita);
+        assertNull(r.CostoMedioNetto, "nessuna quantita' su cui dividere");
+        assertEquals(50.0, r.ProfittoPerdita, TOLLERANZA);
+        assertEquals(50.0, riga("XYZ", "7").ProfittoPerdita, TOLLERANZA, "il prezzo non c'entra");
+    }
 
-        vendita("2026-01-03 10:00", "XYZ", "10", "20.00");
-        assertNull(riga("XYZ", "2").CostoMedioNetto, "venduto piu' di quanto posseduto");
+    @Test
+    void giacenzaNullaInPerditaDaUnaPerdita() {
+        acquisto("2026-01-01 10:00", "XYZ", "100", "100.00");
+        vendita("2026-01-02 10:00", "XYZ", "100", "30.00");
+        assertEquals(-70.0, riga("XYZ", null).ProfittoPerdita, TOLLERANZA);
+    }
+
+    @Test
+    void giacenzaNullaConUnMovimentoSenzaPrezzoRestaVuota() {
+        acquisto("2026-01-01 10:00", "XYZ", "100", "");
+        vendita("2026-01-02 10:00", "XYZ", "100", "30.00");
+        assertNull(riga("XYZ", null).ProfittoPerdita);
+    }
+
+    @Test
+    void giacenzaNegativaLasciaVuoteLeColonneDerivateEDiceloNellaNota() {
+        acquisto("2026-01-01 10:00", "XYZ", "100", "100.00");
+        vendita("2026-01-02 10:00", "XYZ", "110", "170.00");
+        Principale_GiacenzeaData_CostoNetto.Riga r = riga("XYZ", "2");
+        assertNull(r.CostoMedioNetto, "venduto piu' di quanto posseduto");
+        assertNull(r.ProfittoPerdita);
+        assertTrue(r.Note.contains("giacenza negativa"), r.Note);
+    }
+
+    // ------------------------------------------------------------------
+    // Il dialogo: un token per simbolo, righe di rete e indirizzo unite
+    // ------------------------------------------------------------------
+
+    private static Moneta moneta(String simbolo, String rete, String indirizzo, String qta) {
+        Moneta m = new Moneta();
+        m.Moneta = simbolo;
+        m.Tipo = "Crypto";
+        m.Rete = rete;
+        m.MonetaAddress = indirizzo;
+        m.Qta = qta;
+        return m;
+    }
+
+    private List<Principale_GiacenzeaData_CostoNetto.Voce> voci(List<Moneta> righe, java.util.function.Function<Moneta, BigDecimal> prezzo) {
+        return Principale_GiacenzeaData_CostoNetto.Voci(calcola(),
+                Principale_GiacenzeaData_CostoNetto.ValoriGiacenze(righe, prezzo, null), null);
+    }
+
+    @Test
+    void ilValoreSommaLeRigheDelloStessoSimboloSuReteEIndirizziDiversi() {
+        acquisto("2026-01-01 10:00", "XYZ", "100", "100.00");
+        List<Moneta> righe = List.of(moneta("XYZ", "ETH", "0xaaa", "60"), moneta("XYZ", "BASE", "0xbbb", "40"));
+        List<Principale_GiacenzeaData_CostoNetto.Voce> v = voci(righe,
+                m -> new BigDecimal(m.Rete.equals("ETH") ? "2.00" : "3.00"));
+        assertEquals(1, v.size(), "un token solo");
+        assertEquals(0, new BigDecimal("240").compareTo(v.get(0).Valore));
+        assertEquals(140.0, v.get(0).Colonne.ProfittoPerdita, TOLLERANZA);
+        assertEquals(1.0, v.get(0).Colonne.CostoMedioNetto, TOLLERANZA);
+    }
+
+    @Test
+    void unaRigaSenzaPrezzoRendeVuotoIlProfittoDelTokenMaNonQuelloDegliAltri() {
+        acquisto("2026-01-01 10:00", "XYZ", "100", "100.00");
+        acquisto("2026-01-01 10:00", "ABC", "10", "50.00");
+        List<Moneta> righe = List.of(moneta("XYZ", "ETH", "0xaaa", "60"), moneta("XYZ", "BASE", "0xbbb", "40"),
+                moneta("ABC", "", "", "10"));
+        List<Principale_GiacenzeaData_CostoNetto.Voce> v = voci(righe,
+                m -> m.MonetaAddress.equals("0xbbb") ? null : new BigDecimal("2.00"));
+        assertEquals("ABC", v.get(0).Moneta);
+        assertEquals(20.0 - 50.0, v.get(0).Colonne.ProfittoPerdita, TOLLERANZA);
+        assertEquals("XYZ", v.get(1).Moneta);
+        assertNull(v.get(1).Valore);
+        assertNull(v.get(1).Colonne.ProfittoPerdita);
+        assertEquals(1.0, v.get(1).Colonne.CostoMedioNetto, TOLLERANZA, "il costo medio non ha bisogno del prezzo");
+        assertTrue(v.get(1).Colonne.Note.contains("senza prezzo"), v.get(1).Colonne.Note);
+    }
+
+    @Test
+    void ilTokenVendutoTuttoCompareAncheSeNessunaRigaLoMostra() {
+        acquisto("2026-01-01 10:00", "XYZ", "100", "100.00");
+        vendita("2026-01-02 10:00", "XYZ", "100", "130.00");
+        List<Principale_GiacenzeaData_CostoNetto.Voce> v = voci(List.of(), m -> null);
+        assertEquals(1, v.size());
+        assertEquals(30.0, v.get(0).Colonne.ProfittoPerdita, TOLLERANZA);
+        assertEquals(0, v.get(0).Qta.signum());
+    }
+
+    @Test
+    void ilTokenMossoSoloDaTrasferimentiNonCompare() {
+        riga("2026-01-01 10:00", "TI", "PTW", "TRASFERIMENTO", "XYZ", "Crypto", "-5", "", "", "", "0.00");
+        riga("2026-01-01 10:01", "TI", "DTW", "TRASFERIMENTO", "", "", "", "XYZ", "Crypto", "5", "0.00");
+        assertTrue(voci(List.of(), m -> null).isEmpty());
+    }
+
+    @Test
+    void ilPrezzoDeiTokenDaScartareNonSiCercaMai() {
+        List<Moneta> righe = List.of(moneta("XYZ", "ETH", "0xaaa", "60"), moneta("SPAM**", "ETH", "0xbbb", "5"),
+                moneta("ABC", "", "", "0"));
+        List<Moneta> daValutare = Principale_GiacenzeaData_CostoNetto.RigheDaValutare(righe, simbolo -> simbolo.endsWith("**"));
+        assertEquals(1, daValutare.size(), "niente SCAM e niente giacenza zero");
+        List<String> richiesti = new ArrayList<>();
+        Principale_GiacenzeaData_CostoNetto.ValoriGiacenze(daValutare, m -> {
+            richiesti.add(m.Moneta);
+            return BigDecimal.ONE;
+        }, null);
+        assertEquals(List.of("XYZ"), richiesti);
+    }
+
+    @Test
+    void iTokenDaScartareNonCompaiono() {
+        acquisto("2026-01-01 10:00", "XYZ", "100", "100.00");
+        acquisto("2026-01-01 10:00", "ABC", "10", "50.00");
+        List<Principale_GiacenzeaData_CostoNetto.Voce> v = Principale_GiacenzeaData_CostoNetto.Voci(calcola(),
+                Map.of(), simbolo -> simbolo.equals("ABC"));
+        assertEquals(1, v.size());
+        assertEquals("XYZ", v.get(0).Moneta);
     }
 
     @Test

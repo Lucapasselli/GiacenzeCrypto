@@ -861,7 +861,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
         if (!NodoPubblicoDefi.ReteSupportata(Rete)
                 || !NodoPubblicoDefi.PROVIDER.equals(Importazioni.DeFi_ProviderEffettivo(Rete))) {
             Messaggi.WarningMessage("Ricerca non necessaria",
-                    "La ricerca serve solo per i wallet letti dai nodi pubblici (oggi BASE).<br>"
+                    "La ricerca serve solo per i wallet letti dai nodi pubblici (Base, e Ethereum senza ApiKey Etherscan).<br>"
                     + "Gli altri explorer restituiscono gia' tutti i token ricevuti.", this);
             return;
         }

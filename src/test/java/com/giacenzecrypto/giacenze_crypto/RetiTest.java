@@ -83,8 +83,21 @@ public class RetiTest {
         assertEquals("https://mainnet.base.org", c.nodiStato().get(0));
         assertEquals(List.of("0x4200000000000000000000000000000000000006"), c.tokenAvvolti());
         assertTrue(c.tokenNoti().contains("0x833589fcd6edb6e08f4c7c32d4f71b54bda02913")); //USDC
-        assertFalse(NodoPubblicoDefi.ReteSupportata("ETH"));
+        assertFalse(NodoPubblicoDefi.ReteSupportata("ARB"));
         assertTrue(GiacenzeBlockchain.SenzaStorico("monad"));
+    }
+
+    @Test
+    public void ilNodoPubblicoDiEthereumVieneDalFile() {
+        NodoPubblicoDefi.Configurazione c = NodoPubblicoDefi.ConfigurazioneRete("eth");
+        assertNotNull(c);
+        assertTrue(NodoPubblicoDefi.ReteSupportata("ETH"));
+        assertEquals(List.of("0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"), c.tokenAvvolti());
+        assertTrue(c.tokenNoti().contains("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")); //USDC
+        assertTrue(c.tokenNoti().contains("0x2260fac5e5542a773aa44fbcfedf7c193bc2c599")); //WBTC
+        assertEquals(c.tokenNoti().size(), new java.util.HashSet<>(c.tokenNoti()).size(), "token doppi");
+        //Le tracce di un blocco intero (cashback, rimborsi mandati da un contratto) le da' solo un nodo: deve esserci
+        assertFalse(c.nodiTracce().isEmpty());
     }
 
     @Test

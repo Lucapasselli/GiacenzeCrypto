@@ -10,10 +10,12 @@ import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 /**
- * Costo medio netto per la tabella "Giacenze a data", stile scheda <i>My Portfolio</i> di CoinGecko:
+ * Costo medio netto di "Giacenze a data", mostrato nel dialogo {@link GUI_CostiNetti} (pulsante <i>Costi netti</i>, solo
+ * con tutti i wallet), stile scheda <i>My Portfolio</i> di CoinGecko:
  * <b>(speso - incassato) / quantità posseduta</b>. Non è una media ponderata del costo (quella toglie dal costo la
  * quantità venduta per il costo medio) ma un prezzo di pareggio, che può diventare zero o negativo.
- * Il <b>profitto/perdita totale</b> è {@code quantità × prezzo + incassato - speso}.
+ * Il <b>profitto/perdita totale</b> è {@code quantità × prezzo + incassato - speso}, e con giacenza zero
+ * {@code incassato - speso} senza bisogno di un prezzo.
  * <p>
  * È un calcolo <b>solo informativo</b>: non scrive nessun campo di riga, non alimenta RW/RT e non entra in
  * {@code Calcoli_PlusvalenzeNew.OpzioniRicalcolo.Epoca()}. Non è nemmeno il costo di carico LIFO: ignora le regole
@@ -61,6 +63,8 @@ public final class Principale_GiacenzeaData_CostoNetto {
 
     /** Totali di un token (pool per simbolo e tipo). */
     public static final class Pool {
+        public final String Moneta;
+        public final String Tipo;
         /** Giacenza globale alla data, con segno, come la somma della tabella senza filtri. */
         public BigDecimal Qta = BigDecimal.ZERO;
         /** Somma di quanto è stato speso per acquistare il token, in euro. */
@@ -73,6 +77,11 @@ public final class Principale_GiacenzeaData_CostoNetto {
         public int DepositiNC;
         /** Prelievi non classificati, contati senza incasso. */
         public int PrelieviNC;
+
+        private Pool(String Moneta, String Tipo) {
+            this.Moneta = Moneta;
+            this.Tipo = Tipo;
+        }
     }
 
     /** Il risultato di una passata: un {@link Pool} per ogni simbolo e tipo toccato. */
@@ -80,7 +89,12 @@ public final class Principale_GiacenzeaData_CostoNetto {
         private final Map<String, Pool> Pools = new HashMap<>();
 
         private Pool PoolDi(String Moneta, String Tipo) {
-            return Pools.computeIfAbsent(Chiave(Moneta, Tipo), k -> new Pool());
+            return Pools.computeIfAbsent(Chiave(Moneta, Tipo), k -> new Pool(Moneta, Tipo));
+        }
+
+        /** @return tutti i pool toccati, anche quelli a giacenza zero che nessuna riga della tabella mostra */
+        public Collection<Pool> Pools() {
+            return Pools.values();
         }
 
         /** @return il pool del token, {@code null} se nessun movimento lo tocca */
@@ -96,7 +110,8 @@ public final class Principale_GiacenzeaData_CostoNetto {
 
     /**
      * Le quattro colonne della riga (più la nota) per un token. Ogni voce è {@code null} quando non c'è nulla da
-     * mostrare: token FIAT/NFT, costo non calcolabile, giacenza nulla o negativa, prezzo assente.
+     * mostrare: token FIAT/NFT, costo non calcolabile, giacenza negativa, prezzo assente. Con giacenza nulla il costo
+     * medio resta vuoto ma il profitto/perdita c'è (vedi {@link #PerPool}).
      */
     public static final class Riga {
         public Double Speso;
@@ -105,6 +120,32 @@ public final class Principale_GiacenzeaData_CostoNetto {
         public Double ProfittoPerdita;
         /** Che cosa ha reso il numero incerto o assente, vuoto se nulla. */
         public String Note = "";
+    }
+
+    /** Una riga del dialogo dei costi netti: un token, con le quantità e le colonne di {@link Riga}. */
+    public static final class Voce {
+        public final String Moneta;
+        public final String Tipo;
+        /** Giacenza globale alla data. */
+        public final BigDecimal Qta;
+        /** Valore alla data della giacenza, {@code null} se un prezzo manca. Zero con giacenza zero. */
+        public final BigDecimal Valore;
+        public final Riga Colonne;
+
+        private Voce(String Moneta, String Tipo, BigDecimal Qta, BigDecimal Valore, Riga Colonne) {
+            this.Moneta = Moneta;
+            this.Tipo = Tipo;
+            this.Qta = Qta;
+            this.Valore = Valore;
+            this.Colonne = Colonne;
+        }
+    }
+
+    /** Il valore della giacenza di un token, somma di tutte le sue righe di rete e indirizzo. */
+    public static final class ValoreGiacenza {
+        public BigDecimal Valore = BigDecimal.ZERO;
+        /** {@code true} se almeno una riga con giacenza non ha prezzo: la somma non è un valore. */
+        public boolean SenzaPrezzo;
     }
 
     /** @return {@code true} se la gamba ha un pool: moneta e tipo presenti, e non FIAT né NFT */
@@ -251,41 +292,137 @@ public final class Principale_GiacenzeaData_CostoNetto {
     }
 
     /**
-     * Le colonne di una riga della tabella.
+     * Le colonne di un token, con un prezzo unitario noto.
      *
      * @param Ris la passata {@link #Calcola}
-     * @param Moneta simbolo della riga
-     * @param Tipo tipo della riga
      * @param PrezzoUnitario prezzo unitario alla data, {@code null} se il token non ha prezzo: il profitto/perdita
-     * resta vuoto, nessun prezzo viene cercato qui
+     * resta vuoto con giacenza positiva, nessun prezzo viene cercato qui
      * @return la riga, con voci {@code null} dove non c'è nulla da mostrare
+     * @see #PerPool
      */
     public static Riga PerRiga(Risultato Ris, String Moneta, String Tipo, BigDecimal PrezzoUnitario) {
-        Riga R = new Riga();
-        if (Ris == null || !HaPool(Moneta, Tipo)) {
-            return R;
-        }
-        Pool P = Ris.Pool(Moneta, Tipo);
+        Pool P = Ris == null || !HaPool(Moneta, Tipo) ? null : Ris.Pool(Moneta, Tipo);
         if (P == null) {
-            return R;
+            return new Riga();
         }
+        return PerPool(P, PrezzoUnitario == null ? null : P.Qta.multiply(PrezzoUnitario));
+    }
+
+    /**
+     * Le colonne di un token.
+     * <ul>
+     * <li>Giacenza positiva: costo medio netto sempre, profitto/perdita solo con il valore della giacenza.</li>
+     * <li>Giacenza <b>zero</b>: il profitto/perdita è {@code incassato - speso} e non serve nessun prezzo, perché il
+     * token non si possiede più e il risultato è tutto realizzato.</li>
+     * <li>Giacenza negativa: nessun numero derivato, solo la nota. Un valore su una quantità che non si possiede
+     * sarebbe inventato.</li>
+     * <li>Un movimento senza prezzo toglie in ogni caso costo medio e profitto/perdita.</li>
+     * </ul>
+     *
+     * @param ValoreGiacenza valore alla data della giacenza, {@code null} se non noto (ignorato con giacenza zero)
+     */
+    public static Riga PerPool(Pool P, BigDecimal ValoreGiacenza) {
+        Riga R = new Riga();
         R.Speso = P.Speso.setScale(2, RoundingMode.HALF_UP).doubleValue();
         R.Incassato = P.Incassato.setScale(2, RoundingMode.HALF_UP).doubleValue();
         R.Note = Note(P);
-        if (P.SenzaPrezzo == 0 && P.Qta.signum() > 0) {
-            R.CostoMedioNetto = P.Speso.subtract(P.Incassato)
-                    .divide(P.Qta, VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP).doubleValue();
-            if (PrezzoUnitario != null) {
-                R.ProfittoPerdita = P.Qta.multiply(PrezzoUnitario).add(P.Incassato).subtract(P.Speso)
-                        .setScale(2, RoundingMode.HALF_UP).doubleValue();
+        if (P.SenzaPrezzo == 0) {
+            if (P.Qta.signum() > 0) {
+                R.CostoMedioNetto = P.Speso.subtract(P.Incassato)
+                        .divide(P.Qta, VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP).doubleValue();
+                if (ValoreGiacenza != null) {
+                    R.ProfittoPerdita = ValoreGiacenza.add(P.Incassato).subtract(P.Speso)
+                            .setScale(2, RoundingMode.HALF_UP).doubleValue();
+                }
+            } else if (P.Qta.signum() == 0) {
+                R.ProfittoPerdita = P.Incassato.subtract(P.Speso).setScale(2, RoundingMode.HALF_UP).doubleValue();
             }
         }
         return R;
     }
 
+    /**
+     * Somma per token (simbolo e tipo) il valore delle righe della giacenza, che in tabella sono una per rete e per
+     * indirizzo: il prezzo si cerca per riga, il pool è uno solo.
+     *
+     * @param Monete le righe della giacenza globale, quantità con segno. Quelle che non si vogliono valutare (gli SCAM
+     * nascosti) si tolgono prima con {@link #RigheDaValutare}, perché non si cerchi un prezzo per loro
+     * @param PrezzoUnitario prezzo unitario della riga alla data, {@code null} se manca
+     * @param Interrotto sorgente dello stato di annullamento, {@code null} per non interrompere mai
+     */
+    public static Map<String, ValoreGiacenza> ValoriGiacenze(Collection<Moneta> Monete,
+            java.util.function.Function<Moneta, BigDecimal> PrezzoUnitario, BooleanSupplier Interrotto) {
+        Map<String, ValoreGiacenza> Valori = new HashMap<>();
+        for (Moneta M : RigheDaValutare(Monete, null)) {
+            if (Interrotto != null && Interrotto.getAsBoolean()) {
+                return Valori;
+            }
+            ValoreGiacenza V = Valori.computeIfAbsent(Chiave(M.Moneta, M.Tipo), k -> new ValoreGiacenza());
+            BigDecimal Prezzo = PrezzoUnitario.apply(M);
+            if (Prezzo == null) {
+                V.SenzaPrezzo = true;
+            } else {
+                V.Valore = V.Valore.add(Prezzo.multiply(Numero(M.Qta)));
+            }
+        }
+        return Valori;
+    }
+
+    /**
+     * @param Scarta simboli da non valutare (per esempio gli SCAM), {@code null} per valutarli tutti: non si chiede
+     * nemmeno il predicato per le righe che non hanno bisogno di un prezzo
+     * @return le righe che hanno bisogno di un prezzo: giacenza diversa da zero, token cripto (non FIAT né NFT)
+     */
+    public static List<Moneta> RigheDaValutare(Collection<Moneta> Monete, java.util.function.Predicate<String> Scarta) {
+        List<Moneta> Righe = new ArrayList<>();
+        for (Moneta M : Monete) {
+            BigDecimal Q = Numero(M.Qta);
+            if (Q != null && Q.signum() != 0 && HaPool(M.Moneta, M.Tipo) && (Scarta == null || !Scarta.test(M.Moneta))) {
+                Righe.add(M);
+            }
+        }
+        return Righe;
+    }
+
+    /**
+     * Le righe del dialogo: un {@link Voce} per ogni token con qualcosa da dire, giacenza zero compresa, in ordine di
+     * simbolo. Un token senza speso, incassato né note (mosso solo da trasferimenti) non compare.
+     *
+     * @param Valori il valore delle giacenze, {@link #ValoriGiacenze}
+     * @param Scarta simboli da non elencare (per esempio gli SCAM), {@code null} per elencarli tutti
+     */
+    public static List<Voce> Voci(Risultato Ris, Map<String, ValoreGiacenza> Valori,
+            java.util.function.Predicate<String> Scarta) {
+        List<Voce> Voci = new ArrayList<>();
+        for (Pool P : Ris.Pools()) {
+            if (!HaPool(P.Moneta, P.Tipo) || (Scarta != null && Scarta.test(P.Moneta))) {
+                continue;
+            }
+            ValoreGiacenza V = Valori.get(Chiave(P.Moneta, P.Tipo));
+            BigDecimal Valore = P.Qta.signum() == 0 ? BigDecimal.ZERO
+                    : (V == null || V.SenzaPrezzo ? null : V.Valore);
+            Riga R = PerPool(P, Valore);
+            if (P.Qta.signum() > 0 && Valore == null) {
+                R.Note = R.Note.isEmpty() ? "token senza prezzo alla data" : R.Note + ", token senza prezzo alla data";
+            }
+            if (P.Qta.signum() == 0 && P.Speso.signum() == 0 && P.Incassato.signum() == 0 && R.Note.isEmpty()) {
+                continue;
+            }
+            Voci.add(new Voce(P.Moneta, P.Tipo, P.Qta, Valore, R));
+        }
+        Voci.sort((a, b) -> {
+            int c = a.Moneta.compareToIgnoreCase(b.Moneta);
+            return c != 0 ? c : a.Tipo.compareToIgnoreCase(b.Tipo);
+        });
+        return Voci;
+    }
+
     /** @return il testo che dice che cosa rende incerto il costo del token, vuoto se nulla */
     static String Note(Pool P) {
         List<String> Parti = new ArrayList<>();
+        if (P.Qta.signum() < 0) {
+            Parti.add("giacenza negativa");
+        }
         if (P.SenzaPrezzo > 0) {
             Parti.add(P.SenzaPrezzo + (P.SenzaPrezzo == 1 ? " movimento senza prezzo" : " movimenti senza prezzo"));
         }

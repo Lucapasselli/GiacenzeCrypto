@@ -135,9 +135,144 @@ public final class FontApplicazione {
             if (!f.canDisplay(c) && Character.getType(c) != Character.FORMAT && !Character.isWhitespace(c)) serve = true;
         }
         if (!serve) return f;
+        return Composito(f);
+    }
+
+    private static Font Composito(Font f) {
         String famiglia = f.getFamily(Locale.ROOT);
         return CON_RIPIEGO.computeIfAbsent(famiglia + "|" + f.getStyle() + "|" + f.getSize2D(),
                 k -> javax.swing.text.StyleContext.getDefaultStyleContext().getFont(famiglia, f.getStyle(), f.getSize())
                         .deriveFont(f.getSize2D()));
+    }
+
+    /** Il taglio monocromatico di Noto Emoji incluso nel jar, letto alla prima richiesta ({@code null} se manca). */
+    private static final String RISORSA_EMOJI = "/Fonts/NotoEmoji.ttf";
+    private static Font emojiBase;
+    private static boolean emojiLetto = false;
+
+    private static synchronized Font EmojiBase() {
+        if (!emojiLetto) {
+            emojiLetto = true;
+            try (InputStream is = FontApplicazione.class.getResourceAsStream(RISORSA_EMOJI)) {
+                //Registrato solo alla prima emoji incontrata (non costa nulla all'avvio): i componenti non lo chiedono per
+                //nome, ma l'HTML delle etichette sì (HtmlConEmoji, font-family nello span).
+                if (is != null) {
+                    emojiBase = Font.createFont(Font.TRUETYPE_FONT, is);
+                    GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(emojiBase);
+                }
+            } catch (Exception ex) {
+                System.err.println("Errore nel caricamento del font emoji: " + ex);
+            }
+        }
+        return emojiBase;
+    }
+
+    /** Noto Emoji nel corpo di {@code f}, sempre in stile normale, oppure {@code null} se non è nel jar. */
+    private static Font FontEmoji(Font f) {
+        Font e = EmojiBase();
+        return e == null ? null : e.deriveFont(Font.PLAIN, f.getSize2D());
+    }
+
+    /**
+     * Un testo diviso in tratti, ciascuno col suo font: {@code Noto Sans} per i caratteri che ha, {@code Noto Emoji} per le
+     * emoji e i pittogrammi che Noto Sans non ha, il ripiego di sistema ({@link #PerTesto}) per tutto il resto (lisu, cherokee...).
+     *
+     * @return {@code null} se nel testo non c'è nessuna emoji da disegnare con Noto Emoji: allora basta {@link #PerTesto} col
+     *         normale disegno di Swing, che qui non si tocca
+     */
+    public static java.text.AttributedString PerTestoConEmoji(Font f, String testo) {
+        if (f == null || testo == null || testo.isEmpty()) return null;
+        //Il font della cella può essere già il composito di PerTesto, che dichiara di disegnare le emoji a colori senza
+        //disegnarle: si riparte dal font fisico della stessa famiglia, che i caratteri che non ha li dichiara mancanti.
+        f = new Font(f.getFamily(Locale.ROOT), f.getStyle(), f.getSize()).deriveFont(f.getSize2D());
+        if (f.canDisplayUpTo(testo) == -1) return null;
+        Font emoji = FontEmoji(f);
+        if (emoji == null) return null;
+        Font ripiego = null;
+        java.text.AttributedString as = new java.text.AttributedString(testo);
+        boolean haEmoji = false;
+        int inizio = 0;
+        Font corrente = null;
+        for (int i = 0; i < testo.length(); ) {
+            int c = testo.codePointAt(i);
+            Font fc;
+            if (f.canDisplay(c) || Character.getType(c) == Character.FORMAT || Character.isWhitespace(c)) {
+                fc = f;
+            } else if (emoji.canDisplay(c)) {
+                fc = emoji;
+                haEmoji = true;
+            } else {
+                if (ripiego == null) ripiego = Composito(f);
+                fc = ripiego;
+            }
+            if (corrente != null && fc != corrente) {
+                as.addAttribute(java.awt.font.TextAttribute.FONT, corrente, inizio, i);
+                inizio = i;
+            }
+            corrente = fc;
+            i += Character.charCount(c);
+        }
+        as.addAttribute(java.awt.font.TextAttribute.FONT, corrente, inizio, testo.length());
+        return haEmoji ? as : null;
+    }
+
+    /** Disegna i tratti di {@link #PerTestoConEmoji} con la linea di base in {@code y}, con le stesse rifiniture del testo di Swing. */
+    public static void Disegna(java.awt.Graphics g, java.text.AttributedString tratti, float x, float y) {
+        java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+        try {
+            Object hints = java.awt.Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints");
+            if (hints instanceof Map) g2.addRenderingHints((Map<?, ?>) hints);
+            g2.drawString(tratti.getIterator(), x, y);
+        } finally {
+            g2.dispose();
+        }
+    }
+
+    /** La larghezza con cui {@link #Disegna} scrive i tratti. */
+    public static float Larghezza(java.text.AttributedString tratti) {
+        return new java.awt.font.TextLayout(tratti.getIterator(), new java.awt.font.FontRenderContext(null, true, true)).getAdvance();
+    }
+
+    private static final String SPAN_EMOJI = "<span style=\"font-family:'Noto Emoji';font-weight:normal\">";
+
+    /**
+     * Lo stesso HTML con le emoji (quelle che Noto Sans non ha e Noto Emoji sì) avvolte in uno {@code span} col font emoji,
+     * perché una vista HTML di Swing sceglie il font per famiglia e non ripiega da sé. Peso normale: in grassetto il font
+     * variabile sintetizzato non disegna niente. Il testo fuori dai tag, mai i tag.
+     * Ritorna {@code html} stesso quando non c'è niente da cambiare.
+     */
+    public static String HtmlConEmoji(String html) {
+        if (html == null || html.isEmpty()) return html;
+        Font emoji = EmojiBase();
+        if (emoji == null) return html;
+        Font sans = new Font(FAMIGLIA, Font.PLAIN, 12);
+        StringBuilder sb = null;
+        boolean nelTag = false, aperto = false;
+        for (int i = 0; i < html.length(); ) {
+            int c = html.codePointAt(i);
+            int n = Character.charCount(c);
+            if (c == '<') nelTag = true;
+            boolean emojiQui = !nelTag && !sans.canDisplay(c) && emoji.canDisplay(c) && !Character.isWhitespace(c);
+            //Il selettore di variante e i caratteri invisibili tra due emoji restano nello span, se è aperto
+            boolean invisibile = !nelTag && aperto && (Character.getType(c) == Character.FORMAT || (c >= 0xFE00 && c <= 0xFE0F));
+            if (emojiQui && sb == null) {
+                sb = new StringBuilder(html.length() + 64).append(html, 0, i);
+            }
+            if (sb != null) {
+                if ((emojiQui || invisibile) && !aperto) {
+                    sb.append(SPAN_EMOJI);
+                    aperto = true;
+                } else if (!emojiQui && !invisibile && aperto) {
+                    sb.append("</span>");
+                    aperto = false;
+                }
+                sb.appendCodePoint(c);
+            }
+            if (c == '>') nelTag = false;
+            i += n;
+        }
+        if (sb == null) return html;
+        if (aperto) sb.append("</span>");
+        return sb.toString();
     }
 }

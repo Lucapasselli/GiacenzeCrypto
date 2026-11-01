@@ -61,10 +61,16 @@ class NodoPubblicoDefiTest {
         /** Token il cui saldo cresce di 1 a ogni blocco a partire da un blocco, senza log. */
         final Map<String, Long> ribasanti = new HashMap<>();
         String codice = "0x";
+        /** Primo blocco in cui esiste Multicall3 (su Ethereum il 14.353.601): prima la chiamata risponde 0x */
+        long multicallDa = 0;
         /** Indirizzi che hanno codice (contratti); gli altri hanno {@link #codice} */
         final Set<String> contratti = new HashSet<>();
         boolean guasto = false;
         int chiamate = 0;
+        /** Tratto massimo di blocchi che i "nodi" accettano per eth_getLogs, oltre risponde TroppoGrande */
+        long maxTratto = Long.MAX_VALUE;
+        /** Valore dello slot del beacon dei contratti in {@link #contratti} */
+        String beacon = "0x" + "0".repeat(64);
 
         Catena(long testa) {
             this.testa = testa;
@@ -120,6 +126,7 @@ class NodoPubblicoDefiTest {
             if (guasto) throw new Exception("nodo giu'");
             switch (metodo) {
                 case "eth_getCode": return new JsonPrimitive(contratti.contains(p.get(0).getAsString()) ? "0x6001" : codice);
+                case "eth_getStorageAt": return new JsonPrimitive(contratti.contains(p.get(0).getAsString()) ? beacon : "0x" + "0".repeat(64));
                 case "eth_blockNumber": return new JsonPrimitive("0x" + Long.toHexString(testa + 3));
                 case "eth_getTransactionCount": return Hex(nonce(Blocco(p.get(1))));
                 case "eth_getBalance": return Hex(eth(Blocco(p.get(1))));
@@ -144,6 +151,7 @@ class NodoPubblicoDefiTest {
             String data = c.get("data").getAsString().substring(2);
             if (to.equals(Trans_XLayer.MULTICALL3)) {
                 long b = Blocco(blocco);
+                if (b < multicallDa) return new JsonPrimitive("0x");
                 List<BigInteger> ris = new ArrayList<>();
                 int n = new BigInteger(data.substring(8 + 64, 8 + 128), 16).intValueExact();
                 int contenuto = 8 + 128;
@@ -157,6 +165,7 @@ class NodoPubblicoDefiTest {
                 return new JsonPrimitive(Aggregate3Risultato(ris));
             }
             String sel = data.substring(0, 8);
+            if (sel.equals(Trans_XLayer.SEL_BALANCE_OF)) return Hex(token(to, Blocco(blocco)));
             if (sel.equals(Trans_XLayer.SEL_DECIMALS)) return new JsonPrimitive("0x" + Trans_XLayer.Parola(to.equals(USDC) ? "6" : "c"));
             String nome = to.equals(USDC) ? "USDC" : to.equals(WETH) ? "WETH" : "Claim on: esempio.com";
             return new JsonPrimitive(StringaAbi(nome));
@@ -185,8 +194,23 @@ class NodoPubblicoDefiTest {
             return o;
         }
 
-        JsonArray Logs(JsonObject f) {
-            long b = Blocco(f.get("fromBlock"));
+        JsonArray Logs(JsonObject f) throws Exception {
+            long da = Blocco(f.get("fromBlock")), a = Blocco(f.get("toBlock"));
+            if (a - da + 1 > maxTratto) throw new NodoPubblicoDefi.TroppoGrande("block range too large");
+            JsonArray tutti = new JsonArray();
+            for (long b = da; b <= a; b++) {
+                if (!blocchi.containsKey(b)) continue;
+                for (JsonElement e : LogsDelBlocco(b, f)) {
+                    //i nodi veri mettono blocco e indice in ogni log
+                    JsonObject l = e.getAsJsonObject().deepCopy();
+                    l.addProperty("blockNumber", "0x" + Long.toHexString(b));
+                    tutti.add(l);
+                }
+            }
+            return tutti;
+        }
+
+        JsonArray LogsDelBlocco(long b, JsonObject f) {
             JsonArray topics = f.getAsJsonArray("topics");
             Set<String> eventi = new HashSet<>();
             topics.get(0).getAsJsonArray().forEach(e -> eventi.add(e.getAsString()));
@@ -317,6 +341,67 @@ class NodoPubblicoDefiTest {
         assertEquals("Claim on: esempio.com", air.get(0).getString("tokenSymbol"), "il nome resta com'e', SCAM compresi");
         assertEquals("12", air.get(0).getString("tokenDecimal"));
         assertEquals(0, e.txlistinternal().length());
+    }
+
+    @Test
+    void primaDiMulticall3SiLeggeLoStatoDirettamente() {
+        Catena c = new Catena(100_000);
+        c.multicallDa = 60_000;
+        //ETH in entrata da un conto qualsiasi: non cambia il nonce, lo vede solo il saldo della moneta
+        Tx entrata = c.tx(10_000, "0xentrata", X, W);
+        entrata.value = ETH.divide(BigInteger.TEN);
+        //USDC ricevuti prima di Multicall3: se lo stato fosse letto come zero non si vedrebbero
+        Tx usdc = c.tx(20_000, "0xusdc", X, ROUTER);
+        usdc.logs.add(Log(USDC, NodoPubblicoDefi.TOPIC_TRANSFER, X, W, BigInteger.valueOf(7_000_000), "0xusdc"));
+        c.saldo(USDC, 20_000, BigInteger.valueOf(7_000_000));
+        //un invio dopo Multicall3
+        Tx invio = c.tx(70_000, "0xinvio", W, X);
+        invio.value = ETH;
+
+        NodoPubblicoDefi.Esito e = Scansiona(c, new LinkedHashSet<>(CONF.tokenNoti()));
+
+        assertTrue(e.completo(), String.join("\n", e.avvisi()));
+        assertEquals(3, e.blocchi());
+        List<JSONObject> in = Righe(e.txlist(), "0xentrata");
+        assertEquals(1, in.size(), "l'ETH ricevuto prima di Multicall3 non si deve perdere");
+        assertEquals(ETH.divide(BigInteger.TEN).toString(), in.get(0).getString("value"));
+        assertEquals(1, Righe(e.tokentx(), "0xusdc").size(), "il token ricevuto prima di Multicall3 non si deve perdere");
+        assertEquals(1, Righe(e.txlist(), "0xinvio").size());
+        assertTrue(e.avvisi().isEmpty(), "nessun ETH senza transazione: " + e.avvisi());
+    }
+
+    @Test
+    void unWalletContrattoNotoSiLeggeDaiLogDividendoITrattiRifiutati() {
+        Catena c = new Catena(100_000);
+        c.contratti.add(W);
+        c.beacon = "0x" + "0".repeat(24) + "afa15d150d19d2e126fe7f239d5210d25e5cc499";
+        c.maxTratto = 10_000;
+        //USDC in entrata e in uscita: il wallet non firma nulla, le manda un relayer
+        Tx entrata = c.tx(3_000, "0xentrata", X, USDC);
+        entrata.logs.add(Log(USDC, NodoPubblicoDefi.TOPIC_TRANSFER, X, W, BigInteger.valueOf(9_000_000), "0xentrata"));
+        Tx uscita = c.tx(90_000, "0xuscita", X, USDC);
+        uscita.logs.add(Log(USDC, NodoPubblicoDefi.TOPIC_TRANSFER, W, X, BigInteger.valueOf(4_000_000), "0xuscita"));
+
+        NodoPubblicoDefi.Esito e = Scansiona(c, new LinkedHashSet<>(CONF.tokenNoti()));
+
+        assertTrue(e.completo(), String.join("\n", e.avvisi()));
+        assertEquals(2, e.tokentx().length());
+        assertEquals(1, Righe(e.tokentx(), "0xentrata").size());
+        assertEquals(W, Righe(e.tokentx(), "0xentrata").get(0).getString("to"));
+        assertEquals(W, Righe(e.tokentx(), "0xuscita").get(0).getString("from"));
+        assertEquals("6", Righe(e.tokentx(), "0xentrata").get(0).getString("tokenDecimal"));
+        assertEquals(0, e.txlist().length(), "le operazioni le manda un relayer: nessuna transazione del wallet");
+        assertTrue(e.letture() > 4, "i tratti rifiutati si dividono: " + e.letture());
+        assertTrue(e.avvisi().stream().anyMatch(a -> a.contains("nativi")), "la moneta della rete non si legge dai log: " + e.avvisi());
+    }
+
+    @Test
+    void unWalletConCodiceNonNotoVieneComunqueRifiutato() {
+        Catena c = new Catena(100_000);
+        c.contratti.add(W);
+        NodoPubblicoDefi.Esito e = Scansiona(c, new LinkedHashSet<>(CONF.tokenNoti()));
+        assertFalse(e.completo());
+        assertEquals(0, e.tokentx().length());
     }
 
     @Test

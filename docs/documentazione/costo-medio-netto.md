@@ -7,8 +7,9 @@ title: Costo medio netto in Giacenze a data
 
 - [A cosa serve](#a-cosa-serve)
 - [Dove si trova](#dove-si-trova)
-- [Le colonne](#le-colonne)
+- [Il dialogo e le sue colonne](#le-colonne)
 - [Come si calcola](#come-si-calcola)
+- [Perché non coincide con i dati fiscali](#non-fiscale)
 - [Un esempio completo in cinque passi](#esempio)
 - [Confronto con il costo di carico LIFO](#confronto-lifo)
 - [Quali movimenti contano e come](#movimenti)
@@ -27,52 +28,62 @@ Il **costo medio netto** risponde a un'altra domanda, più semplice e più vicin
 proprio portafoglio: **quanto denaro ho messo in questo token e quanto ne ho tolto, e a che prezzo dovrei vendere
 quello che mi resta per essere in pareggio?**
 
-Le colonne nuove permettono di:
+Il dialogo dei costi netti permette di:
 
 - vedere **quanto hai speso davvero** per acquistare un token (*Costo totale*) e **quanto hai incassato** cedendolo
   (*Vendite*), sommando tutte le piattaforme e tutti i wallet,
 - conoscere il **prezzo di pareggio** (*Costo medio netto*): sopra quel prezzo il token, considerando tutto quello
   che hai già incassato, è in utile, sotto è in perdita,
 - leggere il **risultato complessivo** del token (*Profitti/Perdite totali*), che somma la parte già incassata e il
-  valore di quello che possiedi ancora,
+  valore di quello che possiedi ancora, **anche quando non ne possiedi più** e la giacenza è zero,
 - fare un **confronto** con il metodo LIFO, o con strumenti esterni che mostrano gli stessi numeri, per esempio la
   scheda *My Portfolio* di CoinGecko.
 
-> **Non è un calcolo fiscale.** Le colonne sono solo informative: non cambiano nessun movimento, non entrano nel
-> calcolo delle plusvalenze (quadro RT) né nel quadro W/RW. Il costo di carico LIFO, le plusvalenze e le loro opzioni
-> restano quelli di sempre e non vengono toccati. Il manuale descrive cosa calcola il programma, le valutazioni
-> sulla propria dichiarazione restano dell'utente.
+> **Non è un calcolo fiscale.** Il dialogo è solo informativo: non cambia nessun movimento, non entra nel
+> calcolo delle plusvalenze (quadro RT) né nel quadro W/RW, e per questo sta in una finestra a parte e non nella
+> tabella. Profitti e perdite possono **non coincidere** con quelli fiscali, perché qui anche gli scambi fra cripto
+> contano come vendita e acquisto: vedi [il perché](#non-fiscale). Il manuale descrive cosa calcola il programma, le
+> valutazioni sulla propria dichiarazione restano dell'utente.
 
 ## Dove si trova {#dove-si-trova}
 
 Nella scheda **Analisi Crypto – Giacenze a Data**, sotto la tabella dei token, accanto a *Mostra Giacenze a Zero* e a
-*Nascondi Token Scam*, c'è la casella **Mostra costi netti**. Il manuale dell'intera scheda è **[Giacenze a data](giacenze-a-data.html)**,
+*Nascondi Token Scam*, c'è il pulsante **Costi netti**. Il manuale dell'intera scheda è **[Giacenze a data](giacenze-a-data.html)**,
 raggiungibile anche dal pulsante *Guida...* della scheda stessa.
 
-- Le colonne sono **nascoste di default**: spuntando la casella compaiono, togliendo la spunta spariscono.
-- La scelta viene **ricordata** fra una sessione e l'altra.
-- Le colonne sono calcolate **sempre**, anche quando sono nascoste: mostrarle o nasconderle è immediato e non
-  ricarica la tabella.
-- Il calcolo considera i movimenti **anteriori alla data** scelta in alto a destra, come il resto della tabella.
+- Il pulsante è attivo **solo con il wallet «Tutti»**: il calcolo riguarda tutti i wallet insieme e non avrebbe senso
+  per uno solo. Con un wallet o un gruppo selezionato resta spento.
+- Il dialogo si calcola **al momento**, con la data scelta in alto, e mostra una finestra di avanzamento. Non dipende
+  dalla tabella: non serve premere *Calcola* prima, e le caselle *Mostra Giacenze a Zero* non lo riguardano.
+- Segue la casella *Nascondi Token Scam*: con la casella spuntata i token SCAM non compaiono.
+- Il calcolo considera i movimenti **anteriori alla data** scelta, come il resto della scheda.
 
-## Le colonne {#le-colonne}
+## Il dialogo e le sue colonne {#le-colonne}
 
-Le cinque colonne si trovano in fondo alla tabella, dopo *Qta Blockchain*. Gli esempi di questo manuale usano i dati
-inventati degli screenshot di *Giacenze a data* (tre wallet di fantasia, prezzi di mercato veri al 31/12/2025).
+In cima al dialogo un'intestazione ricorda che le informazioni sono **separate da quelle fiscali** e che i profitti
+e le perdite possono non coincidere con quelli fiscali. Sotto, una riga per token. Gli esempi di questo manuale usano i
+dati inventati degli screenshot di *Giacenze a data* (tre wallet di fantasia, prezzi di mercato veri al 31/12/2025).
 
-![La tabella con le colonne dei costi netti: Costo totale, Vendite, Costo medio netto, Profitti/Perdite totali e Note](immagini/costo-medio-netto/01.png)
+![Il dialogo dei costi netti: una riga per token, con Costo totale, Vendite, Costo medio netto, Profitti/Perdite totali e Note](immagini/costo-medio-netto/01.png)
 
 | Colonna | Che cosa mostra |
 |---|---|
+| **Nome** e **Tipo** | il token e il suo tipo. Una sola riga per nome, anche se il token è su reti o con indirizzi di contratto diversi |
+| **Qta** | la quantità posseduta alla data, con tutti i wallet insieme |
+| **Valore (in Euro)** | la quantità per il prezzo alla data, sommando le righe di rete. Vuoto se manca un prezzo |
 | **Costo totale (in Euro)** | la somma di quanto è stato speso per ottenere il token: acquisti, scambi nei quali il token è stato ricevuto, commissioni in euro collegate all'acquisto |
 | **Vendite (in Euro)** | la somma di quanto è stato incassato cedendo il token: vendite, scambi nei quali il token è stato dato, prelievi classificati come cashout |
-| **Costo medio netto (tutti i wallet)** | (Costo totale − Vendite) diviso la quantità posseduta. È il prezzo di pareggio |
-| **Profitti/Perdite totali (tutti i wallet)** | quantità × prezzo alla data + Vendite − Costo totale. Il risultato complessivo del token, realizzato e latente insieme |
-| **Note costo netto** | cosa rende incerto il numero, in rosso. Vuota se non c'è nulla da segnalare |
+| **Costo medio netto** | (Costo totale − Vendite) diviso la quantità posseduta. È il prezzo di pareggio. Vuoto con quantità zero o negativa |
+| **Profitti/Perdite totali (in Euro)** | valore della giacenza + Vendite − Costo totale. Il risultato complessivo del token, realizzato e latente insieme. Con giacenza zero è Vendite − Costo totale |
+| **Note** | cosa rende incerto il numero, in rosso. Vuota se non c'è nulla da segnalare |
 
-L'intestazione dice «tutti i wallet» perché il calcolo ignora il wallet scelto in alto: vedi [Limiti](#limiti).
-Nell'intestazione non compare la somma delle colonne, perché lo stesso token può comparire su più righe di rete
-con lo stesso valore e la somma lo conterebbe più volte.
+Le colonne si ordinano con un clic sull'intestazione. La casella **Nascondi i token con giacenza zero** toglie dall'elenco i
+token venduti per intero, che per default compaiono, perché il loro risultato è tutto realizzato e interessa quanto quello
+dei token che si possiedono ancora.
+
+Sotto la tabella una riga riassume il numero di token e i totali di *Costo totale*, *Vendite* e *Profitti/Perdite totali*.
+Poiché ogni token ha una riga sola, la somma non conta nulla due volte. I token senza profitto/perdita calcolabile (per
+esempio senza prezzo) non entrano nel totale dei profitti, e la riga lo dice.
 
 ## Come si calcola {#come-si-calcola}
 
@@ -92,6 +103,11 @@ Da questi due conti nascono le colonne:
 - **Costo medio netto** = (speso − incassato) / quantità posseduta
 - **Profitti/Perdite totali** = quantità × prezzo alla data + incassato − speso
 
+Con **giacenza zero** la quantità non c'è più e quindi non c'è nemmeno un prezzo che serva: i profitti/perdite sono
+semplicemente incassato − speso, e il costo medio netto resta vuoto perché non c'è una quantità su cui dividere.
+Esempio: acquisti 100 XYZ pagati 100 € e li vendi tutti per 150 €. Quantità 0, speso 100, incassato 150: profitti/perdite
+**+50,00**, a prescindere da quanto valga XYZ oggi.
+
 Due proprietà utili:
 
 - il costo medio netto è il **prezzo di pareggio**: se il prezzo fosse esattamente quel valore, i profitti/perdite
@@ -100,7 +116,26 @@ Due proprietà utili:
   come si abbina il costo alle vendite.
 
 Il token è identificato dal **simbolo e dal tipo** (per esempio *ETH Crypto*), senza guardare indirizzo di contratto e
-rete: lo stesso simbolo su due reti è un token solo. Così un bridge fra reti non sposta nessun costo.
+rete: lo stesso simbolo su due reti è un token solo, e nel dialogo ha una riga sola. Il suo valore è la somma dei valori
+delle righe di rete, ognuna al proprio prezzo. Così un bridge fra reti non sposta nessun costo. Se anche una sola di
+quelle righe non ha un prezzo, il valore e i profitti/perdite del token restano vuoti, perché la somma sarebbe falsa.
+
+## Perché non coincide con i dati fiscali {#non-fiscale}
+
+Il dialogo conta **sempre** ogni scambio fra due cripto come una vendita di una e un acquisto dell'altra, al valore del
+momento. Il calcolo delle plusvalenze invece segue le regole fiscali e le opzioni scelte: uno scambio fra cripto può non
+essere un'operazione rilevante, e in quel caso non realizza nulla e il costo passa alla moneta ricevuta.
+
+Esempio completo. Acquisti 100 XYZ per 100 €. Poi scambi tutti i 100 XYZ con 20 ABC, e il valore dello scambio è 300 €.
+
+| | Dialogo dei costi netti | Calcolo delle plusvalenze, con gli scambi fra cripto non rilevanti |
+|---|---|---|
+| XYZ | speso 100, incassato 300, quantità 0: profitti/perdite **+200** | nessuna plusvalenza realizzata allo scambio |
+| ABC | speso 300, quantità 20: costo medio netto **15,00** | il costo di carico di ABC resta quello di XYZ, 100 € |
+
+Il +200 del dialogo è un risultato di movimenti di denaro valutati al prezzo del momento, e non coincide con la
+plusvalenza che il programma calcola per i quadri. Per questo il dialogo ricorda nell'intestazione che le informazioni
+sono separate da quelle fiscali.
 
 ## Un esempio completo in cinque passi {#esempio}
 
@@ -227,13 +262,14 @@ movimento che fa entrare un token. In ogni altro caso la commissione non viene a
 Il trasferimento **non sposta denaro**, ma i 0,5 XYZ trattenuti come commissione di rete escono dalla quantità senza
 incasso: quantità 99,5, speso 100, costo medio netto 100 / 99,5 = **1,005**.
 
-**Bridge fra reti.** Compri 100 ETH per 100 € e ne sposti 40 su un'altra rete. Il token è lo stesso, quindi entrambe le
-righe mostrano costo totale 100, quantità 100 e costo medio netto **1,00**.
+**Bridge fra reti.** Compri 100 ETH per 100 € e ne sposti 40 su un'altra rete. Il token è lo stesso, quindi nel dialogo
+resta **una riga sola**, con costo totale 100, quantità 100 e costo medio netto **1,00**: nessun costo si sposta con il bridge.
 
 **Fallimenti di piattaforme.** Il blocco del credito, la restituzione in natura e i rimborsi sono scambi fra cripto e
 si trattano come tali. Esempio: 1 BTC acquistato per 50.000 € viene bloccato in una procedura quando vale 30.000 €. Il
-BTC ha costo totale 50.000, vendite 30.000 e quantità 0, quindi il costo medio netto resta vuoto. Il token credito ha
-costo totale 30.000 e quantità 1: costo medio netto **30.000**.
+BTC ha costo totale 50.000, vendite 30.000 e quantità 0, quindi il costo medio netto resta vuoto e i profitti/perdite
+sono 30.000 − 50.000 = **−20.000**, senza bisogno di un prezzo. Il token credito ha costo totale 30.000 e quantità 1:
+costo medio netto **30.000**.
 
 Cosa non entra mai nel pool: i token **FIAT** (euro, dollari), gli **NFT**, e le monete che non hanno alcun movimento
 anteriore alla data.
@@ -245,12 +281,13 @@ Il programma preferisce **lasciare vuoto un numero** piuttosto che mostrarne uno
 | Situazione | Costo totale e Vendite | Costo medio netto | Profitti/Perdite |
 |---|---|---|---|
 | Tutto regolare | mostrati | mostrato | mostrato |
-| Quantità nulla o negativa (venduto tutto, o più di quanto posseduto) | mostrati | vuoto | vuoto |
-| Il token non ha un prezzo alla data | mostrati | mostrato | vuoto |
+| Quantità zero (venduto tutto) | mostrati | vuoto | **Vendite − Costo totale**, senza bisogno del prezzo |
+| Quantità negativa (venduto più di quanto posseduto) | mostrati | vuoto | vuoto, con la nota *giacenza negativa* |
+| Il token non ha un prezzo alla data (anche su una sola riga di rete) | mostrati | mostrato | vuoto |
 | Un movimento che porta denaro non ha il valore in euro | mostrati (parziali) | vuoto | vuoto |
-| Token FIAT o NFT | vuoti | vuoto | vuoto |
+| Token FIAT o NFT | non compaiono | | |
 
-La colonna **Note costo netto**, in rosso, dice cosa rende il numero incerto. I testi possibili sono:
+La colonna **Note**, in rosso, dice cosa rende il numero incerto. I testi possibili sono:
 
 - *N movimenti senza prezzo*: la riga ha almeno un movimento che porta denaro (acquisto, vendita, scambio, cashout)
   senza valore in euro. Per ritrovare il numero basta assegnare il prezzo al movimento dalla tabella dei movimenti.
@@ -259,8 +296,12 @@ La colonna **Note costo netto**, in rosso, dice cosa rende il numero incerto. I 
 - *N depositi non classificati a zero*: ci sono depositi che il programma ha contato a costo zero perché non sa da dove
   arrivano. Il costo medio netto è da prendere con cautela finché non vengono classificati.
 - *N prelievi non classificati senza incasso*: ci sono prelievi contati come uscite senza incasso.
+- *giacenza negativa*: in archivio ci sono più uscite che entrate per quel token, di solito manca un deposito o un acquisto.
+  Il [manuale di Giacenze a data](giacenze-a-data.html) spiega come trovarlo.
+- *token senza prezzo alla data*: il token ha una giacenza ma il programma non trova un prezzo a quella data, quindi il
+  suo valore e i profitti/perdite restano vuoti.
 
-Le tre segnalazioni possono comparire insieme, separate da virgole.
+Le segnalazioni possono comparire insieme, separate da virgole.
 
 ## Come confrontare i numeri con altri strumenti {#confronto-strumenti}
 
@@ -286,27 +327,28 @@ errore: significa che anche se il token valesse zero resteresti in utile (passi 
 
 **Perché è zero?** Perché le vendite hanno restituito esattamente quanto speso: le unità che restano sono a costo zero.
 
-**Perché la cella è vuota?** Vedi [la tabella](#colonne-vuote) e leggi la colonna *Note costo netto*.
+**Perché la cella è vuota?** Vedi [la tabella](#colonne-vuote) e leggi la colonna *Note*.
 
-**Perché ogni riga dello stesso token ha lo stesso costo medio netto?** Perché il calcolo è per simbolo e tipo, sommando
-tutte le reti.
+**Perché ho una riga sola per un token che è su più reti?** Perché il calcolo è per simbolo e tipo, sommando tutte le
+reti e tutti gli indirizzi di contratto.
 
-**Perché non cambia se scelgo un solo wallet?** Perché il denaro speso e incassato non si può attribuire a un singolo
-wallet: i trasferimenti fra wallet non spostano denaro. Con un wallet selezionato la tabella mostra la quantità di
-quel wallet e il costo medio netto del token su tutti i wallet.
+**Perché il pulsante è spento?** Perché il dialogo vale per tutti i wallet insieme: il denaro speso e incassato non si
+può attribuire a un singolo wallet, dato che i trasferimenti fra wallet non spostano denaro. Scegli *Tutti* nel
+selettore dei wallet.
+
+**Perché il profitto di un token venduto tutto non è zero?** Perché i profitti/perdite sono incassato meno speso, e un
+token venduto per intero può averti reso o fatto perdere denaro. Non sono le plusvalenze fiscali: vedi [il perché](#non-fiscale).
 
 **Perché non coincide con il costo di carico?** Perché sono due conteggi diversi: vedi
 [il confronto](#confronto-lifo). Il costo di carico segue le regole del calcolo delle plusvalenze, il costo medio netto
 no.
 
-**Se classifico un movimento, i numeri cambiano?** Sì, alla prossima apertura della tabella: le colonne si ricalcolano
-a ogni calcolo della tabella.
+**Se classifico un movimento, i numeri cambiano?** Sì, alla prossima apertura del dialogo: si ricalcola a ogni apertura.
 
 ## Limiti e cose da sapere {#limiti}
 
 - **Solo informativo.** Non entra in nessun quadro della dichiarazione e non modifica nessun movimento.
-- **Globale.** Ignora il wallet e il gruppo selezionati. Il profitto/perdita di una riga usa la quantità totale del
-  token e il prezzo della riga, non la quantità del singolo wallet.
+- **Globale.** Si apre solo con il wallet «Tutti» e non ha una versione per un singolo wallet o gruppo.
 - **Per simbolo e tipo.** Due token diversi con lo stesso simbolo (per esempio due contratti con lo stesso nome) vengono
   fusi.
 - **Il valore è quello del movimento.** Prezzi mancanti o sbagliati entrano nel calcolo così come sono.
@@ -314,8 +356,9 @@ a ogni calcolo della tabella.
   possono sembrare uguali: lo `0,00` non viene segnalato.
 - **Movimenti non classificati.** Più ce ne sono, meno il numero è affidabile: la nota lo ricorda.
 - **Commissioni in euro.** Entrano nello speso solo se il programma le ha collegate a un unico acquisto.
-- **Prezzo alla data.** I profitti/perdite usano il prezzo che la tabella mostra per la data scelta. Con la data di oggi
-  il prezzo è quello attuale. Se il token non ha prezzo, la colonna resta vuota.
+- **Prezzo alla data.** I profitti/perdite dei token che si possiedono usano lo stesso prezzo della tabella per la data
+  scelta. Con la data di oggi il prezzo è quello attuale. Se il token non ha prezzo, la colonna resta vuota. Con giacenza
+  zero non serve nessun prezzo.
 - **Nessuna distinzione fra periodi.** Il calcolo parte dal primo movimento dell'archivio, a prescindere dall'anno.
 
 Per le altre funzioni della scheda (dettaglio dei movimenti, grafico, rettifica delle giacenze, confronto con blockchain ed

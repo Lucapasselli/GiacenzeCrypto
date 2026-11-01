@@ -50,9 +50,13 @@ class Trans_EtherFiTest {
     private static final String REGOLAMENTO = "0x666600000000000000000000000000000000000c";
     private static final String NFT = "0x777700000000000000000000000000000000000d";
     private static final String ZERO = Trans_EtherFi.INDIRIZZO_NULLO;
+    private static final String VAULT_MIDAS = "0x888800000000000000000000000000000000000e";
+    private static final String CODA_LIQUID = "0x999900000000000000000000000000000000000f";
+    private static final String WBTC_ETH = "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599";
+    private static final String TRADING_SAFE = "0xaaaa0000000000000000000000000000000000d1";
 
     private static final Trans_EtherFi.Config CFG = new Trans_EtherFi.Config(List.of("finto"), 1, "0x00", LG, 0, SPOKE, TOPUP,
-            EMITTER, Map.of(MIDAS, "Midas", SWAP, "Swap"), Map.of());
+            EMITTER, Map.of(MIDAS, "Midas", SWAP, "Swap"), Map.of(), "");
 
     private int indice;
 
@@ -272,6 +276,141 @@ class Trans_EtherFiTest {
         assertEquals(BigInteger.valueOf(199_961_043), m.get(0).qtaEntrata());
         assertEquals(Trans_EtherFi.CAUSALE_SCAMBIO + " Swap", m.get(0).causale());
         assertEquals(BigInteger.ZERO, r.saldi().get(USDC));
+    }
+
+    /** Il primo movimento della transazione con quell'hash (le transazioni a netto zero non producono righe). */
+    private static Trans_EtherFi.Movimento di(Trans_EtherFi.Ricostruzione r, String hash) {
+        for (Trans_EtherFi.Transazione x : r.transazioni()) if (x.hash().equals(hash)) return x.movimenti().get(0);
+        fail("nessuna riga per " + hash);
+        return null;
+    }
+
+    @Test
+    void ilRiscattoMidasPortaLaStessaChiaveNellaRichiestaENelPagamento() throws Exception {
+        List<JsonObject> logs = new ArrayList<>(ricarica(hash(10), 100, 50_000_000, 50_000_000));
+        //quote Midas (VAULT) nel conto, poi la richiesta di riscatto (numero 7) le manda al vault
+        logs.add(transfer(hash(40), 120, VAULT, ESTERNO, W, 20_000_000));
+        logs.add(transfer(hash(40), 120, VAULT, W, LG, 20_000_000));
+        logs.add(supplied(hash(40), 120, VAULT, 20_000_000));
+        String richiesta = hash(41), pagamento = hash(42);
+        logs.add(withdrawn(richiesta, 200, VAULT, 20_000_000, W));
+        logs.add(transfer(richiesta, 200, VAULT, LG, W, 20_000_000));
+        logs.add(transfer(richiesta, 200, VAULT, W, VAULT_MIDAS, 20_000_000));
+        logs.add(log(richiesta, 200, VAULT_MIDAS, dati(W, 20_000_000, 0), Trans_EtherFi.TOPIC_MIDAS_RICHIESTA, num(7), topic(W), topic(EURC)));
+        //il pagamento arriva da un altro contratto, e l'approvazione nomina solo il numero della richiesta (altre 2 sono di altri utenti)
+        logs.add(transfer(pagamento, 400, EURC, ESTERNO, W, 20_500_000));
+        logs.add(log(pagamento, 400, VAULT_MIDAS, dati(1_025_000_000_000_000_000L), Trans_EtherFi.TOPIC_MIDAS_APPROVATA, num(7)));
+        logs.add(log(pagamento, 400, VAULT_MIDAS, dati(1_025_000_000_000_000_000L), Trans_EtherFi.TOPIC_MIDAS_APPROVATA, num(8)));
+
+        Trans_EtherFi.Ricostruzione r = ricostruisci(logs, new ArrayList<>());
+        Trans_EtherFi.Movimento rich = di(r, richiesta);
+        Trans_EtherFi.Movimento pag = di(r, pagamento);
+
+        String chiave = ", contratto " + VAULT_MIDAS + ", n. 7";
+        assertEquals(Trans_EtherFi.CAUSALE_RISCATTO_RICHIESTA + "Midas" + chiave, rich.causale());
+        assertEquals(VAULT, rich.uscita().indirizzo());
+        assertEquals(BigInteger.valueOf(20_000_000), rich.qtaUscita());
+        assertEquals(Trans_EtherFi.CAUSALE_RISCATTO_PAGATO + "Midas" + chiave, pag.causale());
+        assertEquals(EURC, pag.entrata().indirizzo());
+        assertEquals(BigInteger.valueOf(20_500_000), pag.qtaEntrata());
+        //Il saldo del conto tiene conto della richiesta (le quote non ci sono piu') e del pagamento
+        assertEquals(BigInteger.ZERO, r.saldi().get(VAULT));
+        assertEquals(BigInteger.valueOf(20_500_000), r.saldi().get(EURC));
+    }
+
+    @Test
+    void leApprovazioniMidasSiCercanoSulVaultPerNumeroDiRichiesta() throws Exception {
+        String richiesta = hash(41), pagamento = hash(42);
+        List<JsonObject> logs = new ArrayList<>();
+        logs.add(log(richiesta, 200, VAULT_MIDAS, dati(W, 20_000_000, 0), Trans_EtherFi.TOPIC_MIDAS_RICHIESTA, num(7), topic(W), topic(EURC)));
+        //una richiesta di un altro utente, che non va cercata
+        logs.add(log(hash(43), 201, VAULT_MIDAS, dati(ESTERNO, 1, 0), Trans_EtherFi.TOPIC_MIDAS_RICHIESTA, num(6), topic(ESTERNO), topic(EURC)));
+        List<JsonObject> richieste = new ArrayList<>();
+        OKX_WalletCarta.Rpc rpc = (metodo, parametri) -> {
+            assertEquals("eth_getLogs", metodo);
+            JsonObject filtro = parametri.get(0).getAsJsonObject();
+            richieste.add(filtro);
+            JsonArray r = new JsonArray();
+            if (filtro.get("address").getAsString().equals(VAULT_MIDAS)
+                    && filtro.getAsJsonArray("topics").get(1).getAsString().equals(num(7))) {
+                r.add(log(pagamento, 400, VAULT_MIDAS, dati(1_025_000_000_000_000_000L), Trans_EtherFi.TOPIC_MIDAS_APPROVATA, num(7)));
+            }
+            return r;
+        };
+
+        List<JsonObject> tutti = Trans_EtherFi.ConApprovazioniMidas(W, logs, 1000, rpc, null, 0, null);
+
+        assertEquals(1, richieste.size(), "una ricerca per ogni richiesta del Safe, nessuna per quelle degli altri");
+        assertEquals(num(7), richieste.get(0).getAsJsonArray("topics").get(1).getAsString());
+        assertEquals(3, tutti.size());
+        assertEquals(Trans_EtherFi.TOPIC_MIDAS_APPROVATA, tutti.get(2).getAsJsonArray("topics").get(0).getAsString());
+        //senza richieste del Safe nessuna ricerca
+        richieste.clear();
+        assertEquals(1, Trans_EtherFi.ConApprovazioniMidas(W, logs.subList(1, 2), 1000, rpc, null, 0, null).size());
+        assertTrue(richieste.isEmpty());
+    }
+
+    @Test
+    void laCodaDiLiquidDistingueRichiestaPagamentoEAnnullamento() throws Exception {
+        List<JsonObject> logs = new ArrayList<>(ricarica(hash(10), 100, 50_000_000, 50_000_000));
+        logs.add(transfer(hash(50), 120, VAULT, ESTERNO, W, 30_000_000));
+        logs.add(transfer(hash(50), 120, VAULT, W, LG, 30_000_000));
+        logs.add(supplied(hash(50), 120, VAULT, 30_000_000));
+        //richiesta 1: poi pagata in USDC
+        String r1 = hash(51), p1 = hash(52);
+        logs.add(withdrawn(r1, 200, VAULT, 10_000_000, W));
+        logs.add(transfer(r1, 200, VAULT, LG, W, 10_000_000));
+        logs.add(transfer(r1, 200, VAULT, W, CODA_LIQUID, 10_000_000));
+        logs.add(log(r1, 200, CODA_LIQUID, dati(0, 10_000_000, 12_000_000, 1, 3600, 259200), Trans_EtherFi.TOPIC_LIQUID_RICHIESTA,
+                hash(500), topic(W), topic(USDC)));
+        logs.add(transfer(p1, 300, USDC, CODA_LIQUID, W, 12_000_000));
+        logs.add(log(p1, 300, CODA_LIQUID, dati(1), Trans_EtherFi.TOPIC_LIQUID_RISOLTA, hash(500), topic(W)));
+        //richiesta 2: annullata, le quote tornano
+        String r2 = hash(53), a2 = hash(54);
+        logs.add(withdrawn(r2, 400, VAULT, 5_000_000, W));
+        logs.add(transfer(r2, 400, VAULT, LG, W, 5_000_000));
+        logs.add(transfer(r2, 400, VAULT, W, CODA_LIQUID, 5_000_000));
+        logs.add(log(r2, 400, CODA_LIQUID, dati(0, 5_000_000, 6_000_000, 1, 3600, 259200), Trans_EtherFi.TOPIC_LIQUID_RICHIESTA,
+                hash(501), topic(W), topic(USDC)));
+        logs.add(transfer(a2, 500, VAULT, CODA_LIQUID, W, 5_000_000));
+        logs.add(log(a2, 500, CODA_LIQUID, dati(1), Trans_EtherFi.TOPIC_LIQUID_ANNULLATA, hash(501), topic(W)));
+
+        Trans_EtherFi.Ricostruzione r = ricostruisci(logs, new ArrayList<>());
+        String n500 = Trans_EtherFi.NumeroRichiesta(hash(500));
+        String n501 = Trans_EtherFi.NumeroRichiesta(hash(501));
+        assertEquals(Trans_EtherFi.CAUSALE_RISCATTO_RICHIESTA + "EtherFi Liquid, contratto " + CODA_LIQUID + ", n. " + n500,
+                di(r, r1).causale());
+        assertEquals(Trans_EtherFi.CAUSALE_RISCATTO_PAGATO + "EtherFi Liquid, contratto " + CODA_LIQUID + ", n. " + n500,
+                di(r, p1).causale());
+        assertEquals(USDC, di(r, p1).entrata().indirizzo());
+        assertEquals(Trans_EtherFi.CAUSALE_RISCATTO_RICHIESTA + "EtherFi Liquid, contratto " + CODA_LIQUID + ", n. " + n501,
+                di(r, r2).causale());
+        Trans_EtherFi.Movimento annullata = di(r, a2);
+        assertEquals(Trans_EtherFi.CAUSALE_RISCATTO_ANNULLATO + "EtherFi Liquid, contratto " + CODA_LIQUID + ", n. " + n501, annullata.causale());
+        assertEquals(VAULT, annullata.entrata().indirizzo());
+    }
+
+    @Test
+    void unoSwapVersoUnAltraCatenaEsceComePrelievoConIlDestinatarioInCausale() throws Exception {
+        List<JsonObject> logs = new ArrayList<>(ricarica(hash(10), 100, 300_000_000, 300_000_000));
+        String richiesta = hash(60), esecuzione = hash(61);
+        logs.add(withdrawn(richiesta, 200, USDC, 240_000_000, W));
+        logs.add(transfer(richiesta, 200, USDC, LG, W, 240_000_000));
+        //srcToken, srcAmount, catena di destinazione (1 = Ethereum), dstToken, destinatario, minOut, scadenza
+        logs.add(log(richiesta, 200, SWAP, dati(USDC, 240_000_000, 1, WBTC_ETH, TRADING_SAFE, 295_000, 1_800_000_000L),
+                Trans_EtherFi.TOPIC_SWAP_RICHIESTO, topic(W), hash(78)));
+        logs.add(transfer(esecuzione, 210, USDC, W, ESTERNO, 240_000_000));
+        logs.add(log(esecuzione, 210, SWAP, dati(1, 295_000), Trans_EtherFi.TOPIC_SWAP_ESEGUITO, topic(W), hash(78), topic(WBTC_ETH)));
+
+        Trans_EtherFi.Ricostruzione r = ricostruisci(logs, new ArrayList<>());
+        Trans_EtherFi.Movimento m = di(r, esecuzione);
+        assertNull(m.entrata(), "la moneta ricevuta non arriva su questa catena");
+        assertEquals(USDC, m.uscita().indirizzo());
+        assertEquals(BigInteger.valueOf(240_000_000), m.qtaUscita());
+        assertEquals(TRADING_SAFE, m.controparte());
+        assertEquals(Trans_EtherFi.CAUSALE_SWAP_FRA_CATENE + " verso ETH, destinatario " + TRADING_SAFE + ", token " + WBTC_ETH
+                + ", almeno 295000 unita', scadenza 1800000000", m.causale());
+        assertEquals(BigInteger.valueOf(60_000_000), r.saldi().get(USDC));
     }
 
     @Test
@@ -513,8 +652,9 @@ class Trans_EtherFiTest {
             assertEquals(List.of(), avvisi, w);
             for (Trans_EtherFi.Transazione t : r.transazioni()) {
                 for (Trans_EtherFi.Movimento m : t.movimenti()) {
-                    assertFalse(m.causale().startsWith("Deposito") && !m.nft() || m.causale().startsWith("Prelievo"),
-                            "movimento non riconosciuto in " + t.hash() + ": " + m.causale());
+                    //Ogni uscita e' spiegata (ricarica, scambio, spesa, richiesta di riscatto, swap fra catene). Un deposito
+                    //da un contratto sconosciuto (un bonifico accreditato, una consegna da altra catena) resta possibile
+                    assertFalse(m.causale().startsWith("Prelievo"), "uscita non riconosciuta in " + t.hash() + ": " + m.causale());
                 }
             }
         }

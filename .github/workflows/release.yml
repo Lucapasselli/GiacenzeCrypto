@@ -339,110 +339,11 @@ jobs:
   build-macos:
     needs: [verifica-bozza, verifica-canale]
     # Niente DMG per le beta. Saltare questo job non salta create-release: il suo guard
-    # "!cancelled() && !failure()" tollera un job di needs saltato.
+    # "!cancelled() && !failure()" tollera un job di needs saltato. I passi stanno in macos.yml,
+    # che si puo' lanciare anche da solo per provare i DMG senza pubblicare niente.
     if: ${{ !cancelled() && !failure() && inputs.canale != 'beta' }}
-    strategy:
-      matrix:
-        include:
-          - os: macos-15-intel
-            arch: Intel
-          - os: macos-15
-            arch: AppleSilicon
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Scrivi la chiave del servizio prezzi
-        env:
-          PREZZI_API_KEY: ${{ secrets.PREZZI_API_KEY }}
-        run: echo "$PREZZI_API_KEY" > src/main/resources/ServizioPrezzi_ApiKey.txt
-
-      - name: Setup JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
-          java-version: ${{ env.JAVA_VERSION }}
-          cache: 'maven'
-
-      - name: Setup Python virtualenv and install Pillow
-        run: |
-          python3 -m venv venv
-          source venv/bin/activate
-          pip install pillow
-
-      - name: Convert logo.png to .icns
-        run: |
-          source venv/bin/activate
-          python3 Python/generate_icns.py
-          iconutil -c icns icon.iconset -o logo.icns
-
-      - name: Estrai versione dal pom.xml
-        run: |
-          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
-            echo "Versione non trovata nel pom.xml" >&2
-            exit 1
-          fi
-          echo "VERSIONE=$VERSION" >> $GITHUB_ENV
-
-      - name: Build JAR with Maven
-        run: mvn clean package -DskipTests
-
-      - name: Moduli del runtime, controllati con jdeps (packaging/runtime/moduli.txt)
-        shell: bash
-        run: java packaging/runtime/ModuliRuntime.java "target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar" >> "$GITHUB_ENV"
-
-      - name: Prepare input directory for jpackage
-        run: |
-          mkdir -p build/Immagini
-          cp -r Immagini/* build/Immagini/
-          mkdir -p build/Scripts
-          cp -r Scripts/* build/Scripts/
-          cp logo.png build/
-          cp LICENSE build/
-          cp THIRD-PARTY-LICENSES.md build/
-          cp target/Giacenze_Crypto-${VERSIONE}-jar-with-dependencies.jar build/Giacenze_Crypto.jar
-
-      - name: Build macOS app-image
-        run: |
-          WORKDIR="HOME/Library/Application Support/GiacenzeCrypto/"
-          jpackage \
-            --type app-image \
-            --input build \
-            --add-modules "$MODULI_RUNTIME" \
-            --jlink-options "$OPZIONI_JLINK" \
-            --dest out/appimage \
-            --name ${{ env.PROJECT_NAME }} \
-            --main-jar Giacenze_Crypto.jar \
-            --main-class com.giacenzecrypto.giacenze_crypto.Giacenze_Crypto \
-            --arguments "--workdir \"$WORKDIR\"" \
-            --icon logo.icns \
-            --app-version ${{ env.VERSIONE }} \
-            --vendor Luca
-
-      - name: Firma ad-hoc app-image (necessaria su Intel, dove jpackage non firma di default)
-        run: codesign --force --deep -s - "out/appimage/${{ env.PROJECT_NAME }}.app"
-
-      - name: Build macOS .dmg da app-image firmato
-        run: |
-          jpackage \
-            --type dmg \
-            --app-image "out/appimage/${{ env.PROJECT_NAME }}.app" \
-            --dest out/dmg \
-            --name ${{ env.PROJECT_NAME }} \
-            --app-version ${{ env.VERSIONE }}
-          # jpackage nomina il file solo con nome+versione (Giacenze_Crypto-<versione>.dmg),
-          # quindi i due job della matrice (Intel e AppleSilicon) producono lo stesso identico
-          # nome file. Gli artifact restano distinti, ma in "create-release" i .dmg finiscono
-          # entrambi in release_assets/ e il secondo sovrascrive il primo: nella release ne
-          # comparirebbe uno solo. L'architettura va quindi messa nel nome del file.
-          mv out/dmg/*.dmg "out/dmg/GiacenzeCrypto_${VERSIONE}_DMG_MacOS_${{ matrix.arch }}.dmg"
-
-      - name: Upload .dmg
-        uses: actions/upload-artifact@v4
-        with:
-          name: GiacenzeCrypto_${{ env.VERSIONE }}_DMG_MacOS_${{ matrix.arch }}
-          path: out/dmg/*.dmg
+    uses: ./.github/workflows/macos.yml
+    secrets: inherit
 
   create-release:
     needs: [build-windows, build-linux, build-macos]

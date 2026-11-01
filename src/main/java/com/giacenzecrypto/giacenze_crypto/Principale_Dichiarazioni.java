@@ -434,8 +434,22 @@ public final class Principale_Dichiarazioni {
         return d.length() >= 10 ? d.substring(0, 10) : d;
     }
 
+    /**
+     * Fa disegnare nella colonna {@code colonna} di {@code tabella} il nome del gruppo con l'alias ({@link #NomeGruppo}) al posto
+     * di {@code "Wallet 04"}, <b>senza toccare il modello</b>: le celle sono rilette come chiave di ricerca e il filtro per colonna
+     * lavora sul valore grezzo. Delega al renderer di default della tabella al momento del disegno, cosi' segue il cambio di tema.
+     * @param alias fornisce la mappa gruppo → riga di {@code GRUPPO_ALIAS}, riletta a ogni disegno (non va quindi interrogato il DB)
+     */
+    static void MostraAliasGruppo(javax.swing.JTable tabella, int colonna,
+            java.util.function.Supplier<Map<String, String[]>> alias) {
+        tabella.getColumnModel().getColumn(colonna).setCellRenderer((t, valore, selezionata, fuoco, riga, col) ->
+                t.getDefaultRenderer(Object.class).getTableCellRendererComponent(t,
+                        valore == null ? null : NomeGruppo(valore.toString(), alias.get()),
+                        selezionata, fuoco, riga, col));
+    }
+
     /** {@code "Wallet 04"} → {@code "04 ( Binance )"} se il gruppo ha un alias. */
-    private static String NomeGruppo(String Gruppo, Map<String, String[]> Alias) {
+    static String NomeGruppo(String Gruppo, Map<String, String[]> Alias) {
         String[] a = Gruppo == null ? null : Alias.get(Gruppo);
         if (a == null || a.length < 2 || a[1] == null || a[1].isBlank() || !Gruppo.contains(" ")) {
             return Gruppo == null ? "" : Gruppo;

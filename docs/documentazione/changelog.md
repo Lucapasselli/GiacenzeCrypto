@@ -147,6 +147,16 @@ In caso di problemi si può chiedere supporto sul
 
 - **Normative, ricerca nel testo dei documenti**: con i pacchetti che includono Java (installer e portable per Windows, portable e .deb per Linux, macOS e l'edizione del Microsoft Store) la ricerca non trovava le parole contenute in alcuni PDF e nel registro compariva l'errore "MacRoman". Al Java incluso nei pacchetti mancava il supporto di alcune codifiche dei caratteri, ora presente.
 
+- **Giacenze a data, cambio di wallet, dettaglio o data senza ricalcolo**: dopo aver scelto un wallet diverso nei menu in alto la tabella restava quella calcolata prima, senza nessun avviso, e *Sistema Qta Residua* rispondeva che l'operazione è consentita solo sui singoli wallet anche con un wallet scelto, perché valutava il calcolo mostrato e non la scelta. Ora cambiare il wallet, il dettaglio del wallet o la data accende l'avviso rosso che invita a premere *Calcola*, e *Sistema Qta Residua* si ferma con lo stesso invito finché la tabella non corrisponde ai filtri scelti. Il ricalcolo resta a carico di *Calcola*, perché può richiedere tempo.
+
+- **OKX, importazione CSV con fuso UTC+1 o UTC+2**: OKX scrive gli orari con lo scostamento fisso scelto sul sito, senza ora legale. Il programma invece leggeva un export UTC+1 o UTC+2 come ora italiana, quindi le righe invernali di un export UTC+2 (e quelle estive di uno UTC+1) finivano un'ora dopo l'orario vero, e i trasferimenti fra wallet risultavano sfasati. Ora si usa sempre il fuso scritto nella prima riga del file. I movimenti già importati restano come sono: si correggono eliminandoli e reimportando il file.
+
+- **Quadro RT, alias dei gruppi wallet**: nelle tabelle *Dettaglio per moneta* e *Dettaglio del LiFo sulle rimanenze* il gruppo compariva come "Wallet 101". Ora si legge "101 ( Binance )", con l'alias scelto per il gruppo, come già nel quadro W/RW e nelle stampe. Il filtro per colonna continua a mostrare il nome "Wallet 101".
+
+- **Tabelle, selezione delle righe filtrate**: nel menu del tasto destro c'è la nuova voce *Seleziona tutte le righe visibili*. Dopo aver filtrato una tabella seleziona solo le righe che si vedono, quelle nascoste dai filtri restano escluse, e le altre voci del menu (per esempio *Modifica Note* o *Elimina Movimento*) agiscono su tutta la selezione. È lo stesso effetto di Ctrl+A, ma si trova senza saperlo. La voce è disattivata se la tabella ha una sola riga visibile o non permette la selezione multipla.
+
+- **Quadro W/RW, imposta (IC) negli anni bisestili**: nei righi crypto l'imposta veniva calcolata su 366 giorni, anche se la stampa riporta al massimo 365 (l'Agenzia delle entrate non accetta 366 e calcola sempre su 365). Per un valore finale di 4.242 euro l'imposta usciva 9 invece di 8 (8,48 su 365 giorni, 8,51 su 366). Ora l'imposta del rigo usa al massimo 365 giorni, come i giorni stampati. La colonna dei giorni nella tabella continua a mostrare 366. Il quadro va ricalcolato per vedere il valore corretto.
+
 ## Versione 1.0.65 {#versione-1065}
 
 **Nuove implementazioni**

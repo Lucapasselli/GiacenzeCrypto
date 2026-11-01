@@ -58,14 +58,29 @@ class ImportazioneGenericaOkxFusoTest {
         assertEquals(Instant.parse("2026-07-07T15:44:49Z").toEpochMilli(), c.convertiDataInMillis("2026-07-07 17:44:49"));
     }
 
-    /** UTC+2 e' l'ora legale di Europe/Rome: si tiene Europe/Rome, che in inverno passa da solo a UTC+1. */
+    /**
+     * UTC+2 e UTC+1 sono scostamenti FISSI, anche se sono quelli di Europe/Rome: OKX non applica l'ora legale.
+     * Verificato il 2026-11-01 su due export delle stesse 307 operazioni a cavallo del cambio d'ora del 25/10/2026
+     * (UTC+8 e UTC+2): lo scarto e' di 6 ore sia sulle righe estive sia su quelle invernali.
+     */
     @Test
-    void unoScostamentoDiEuropaRomaTieneEuropaRoma() throws Exception {
+    void unoScostamentoDiEuropaRomaVieneUsatoFisso() throws Exception {
         ConfigurazioneImport c = leggiFunding("UID:123,Account Type:Main,Time Zone:UTC+2");
-        assertEquals("Europe/Rome", c.fuso);
-        assertEquals(Instant.parse("2026-01-07T16:44:49Z").toEpochMilli(), c.convertiDataInMillis("2026-01-07 17:44:49"));
-        assertTrue(c.FusoCompatibile("UTC+01:00"));
-        assertFalse(c.FusoCompatibile("UTC"));
+        assertEquals("UTC+02:00", c.fuso);
+        assertEquals(Instant.parse("2026-01-07T15:44:49Z").toEpochMilli(), c.convertiDataInMillis("2026-01-07 17:44:49"));
+        assertEquals(Instant.parse("2026-07-07T15:44:49Z").toEpochMilli(), c.convertiDataInMillis("2026-07-07 17:44:49"));
+        c = leggiFunding("UID:123,Account Type:Main,Time Zone:UTC+1");
+        assertEquals(Instant.parse("2026-07-07T16:44:49Z").toEpochMilli(), c.convertiDataInMillis("2026-07-07 17:44:49"));
+    }
+
+    /** Lo stesso istante scritto da OKX in UTC+8 e in UTC+2 (righe vere dei due export, 25/10/2026) deve coincidere. */
+    @Test
+    void dueExportDelloStessoIstanteInFusiDiversiCoincidono() throws Exception {
+        ConfigurazioneImport utc2 = leggiFunding("UID:123,Account Type:Main,Time Zone:UTC+2");
+        ConfigurazioneImport utc8 = leggiFunding("UID:123,Account Type:Main,Time Zone:UTC+8");
+        //prima e dopo la fine dell'ora legale (25/10/2026, 03:00 locale = 01:00Z)
+        assertEquals(utc8.convertiDataInMillis("2026-10-25 08:30:00"), utc2.convertiDataInMillis("2026-10-25 02:30:00"));
+        assertEquals(utc8.convertiDataInMillis("2026-10-26 08:30:00"), utc2.convertiDataInMillis("2026-10-26 02:30:00"));
     }
 
     @Test

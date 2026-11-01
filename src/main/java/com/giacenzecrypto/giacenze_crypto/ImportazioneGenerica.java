@@ -335,9 +335,10 @@ public class ImportazioneGenerica {
                 }
                 if (numRiga <= cfg.righeIntestazione) {
                     //Il fuso scritto nel file vince su quello della configurazione e su quello scelto
-                    //all'import, salvo che sia uno degli scostamenti di quel fuso (vedi FusoCompatibile)
+                    //all'import, sempre: e' uno scostamento fisso (OKX non applica l'ora legale, verificato
+                    //su due export UTC+2 e UTC+8 delle stesse operazioni a cavallo del 25/10/2026)
                     String fusoFile = estraiFusoDaRigaIntestazione(riga, cfg.fusoDaIntestazione);
-                    if (fusoFile != null && !cfg.FusoCompatibile(fusoFile)) {
+                    if (fusoFile != null) {
                         cfg.fuso = fusoFile;
                     }
                     if (numRiga == cfg.rigaIntestazione && cfg.autoDetectColonne) {
@@ -3028,29 +3029,6 @@ public class ImportazioneGenerica {
             return cfg;
         }
         
-    /**
-     * Vero se lo scostamento fisso {@code fusoUtc} (nella forma di {@code estraiFusoDaRigaIntestazione}) e' uno
-     * di quelli che {@link #fuso} assume durante l'anno: per {@code Europe/Rome} sia {@code UTC+01:00} sia
-     * {@code UTC+02:00}. In quel caso si tiene {@link #fuso}, che sa dell'ora legale: un export che dichiara
-     * lo scostamento del giorno in cui e' stato fatto puo' contenere righe dell'altra stagione, e lo
-     * scostamento fisso le sposterebbe di un'ora. Non verificato su un export OKX con righe invernali.
-     */
-    boolean FusoCompatibile(String fusoUtc) {
-        try {
-            ZoneOffset dichiarato = fusoUtc.equalsIgnoreCase("UTC") ? ZoneOffset.UTC : ZoneOffset.of(fusoUtc.substring(3));
-            var regole = risolviFuso().getRules();
-            int anno = LocalDateTime.now().getYear();
-            for (int mese = 1; mese <= 12; mese++) {
-                if (regole.getOffset(LocalDateTime.of(anno, mese, 15, 12, 0)).equals(dichiarato)) {
-                    return true;
-                }
-            }
-            return false;
-        } catch (Exception ex) {
-            return false;
-        }
-    }
-
     /** Una regola che scrive la colonna della data sposterebbe l'istante del movimento: si rifiuta (anche dopo l'autodetect). */
     void ControllaRegoleRiga() {
         for (RegolaRiga r : regoleRiga) {

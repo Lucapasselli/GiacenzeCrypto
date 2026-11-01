@@ -457,6 +457,7 @@ private static final long serialVersionUID = 3L;
         Tabelle.Tabelle_InizializzaHeader(RT_Tabella_DettaglioMonete);
         Tabelle.Tabelle_InizializzaHeader(RT_Tabella_LiFo);
         Tabelle.Tabelle_InizializzaHeader(RT_Tabella_TipologiaMovimenti);
+        RT_MostraAliasGruppi();
         //Scheda "Dettagli x Tipologia" del quadro RT: header in stile programma sulla pivot e grafico
         //agganciato al contenitore disegnato dal GUI Builder (codice dopo initComponents, non rigenerato).
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(RT_Tabella_Tipologie);
@@ -607,6 +608,10 @@ private static final long serialVersionUID = 3L;
         this.RW_Label_Definitiva.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         this.RT_Label_Definitiva.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         this.GiacenzeaData_Label_Aggiornare.setVisible(false);
+        //Il dettaglio wallet non ha un listener nel .form: anche cambiarlo lascia la tabella com'era
+        GiacenzeaData_Wallet2_ComboBox.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) GiacenzeaData_SegnalaFiltriVariati();
+        });
         //Optioni_Export_Wallets_Combobox=GiacenzeaData_Wallet_ComboBox;
     
         
@@ -726,6 +731,7 @@ private static final long serialVersionUID = 3L;
         MenuItem_CopiaID = new javax.swing.JMenuItem();
         MenuItem_Copia = new javax.swing.JMenuItem();
         MenuItem_Incolla = new javax.swing.JMenuItem();
+        MenuItem_SelezionaVisibili = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         MenuItem_LiFoTransazione = new javax.swing.JMenuItem();
         MenuItem_DettagliMovimento = new javax.swing.JMenuItem();
@@ -1185,6 +1191,15 @@ private static final long serialVersionUID = 3L;
             }
         });
         PopupMenu.add(MenuItem_Incolla);
+
+        MenuItem_SelezionaVisibili.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_SelezionaTutto.png"))); // NOI18N
+        MenuItem_SelezionaVisibili.setText("Seleziona tutte le righe visibili");
+        MenuItem_SelezionaVisibili.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_SelezionaVisibiliActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_SelezionaVisibili);
         PopupMenu.add(jSeparator4);
 
         MenuItem_LiFoTransazione.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Stack.png"))); // NOI18N
@@ -10707,6 +10722,7 @@ GiacenzeaData_CompilaTabellaToken(true);
         // TODO add your handling code here:
          if(evt.getStateChange() == ItemEvent.SELECTED) {
              GiacenzeaData_AggiornaPulsanteCostiNetti();
+             GiacenzeaData_SegnalaFiltriVariati();
          }
          if(evt.getStateChange() == ItemEvent.SELECTED && GiacenzeaData_Wallet_ComboBox.isShowing()) {
              
@@ -10786,6 +10802,14 @@ GiacenzeaData_CompilaTabellaToken(true);
     private void GiacenzeaData_Bottone_RettificaQtaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_RettificaQtaMouseReleased
         // TODO add your handling code here:
         //  boolean completato;
+        //La rettifica decide in base al wallet con cui la tabella e' stata calcolata: se i selettori dicono altro
+        //il messaggio "solo sui singoli Wallet" sarebbe sbagliato (il wallet e' stato scelto ma non calcolato)
+        if (GiacenzeaData_FiltriVariati()) {
+            Messaggi.WarningMessage("Premere Calcola",
+                    "La tabella mostra un calcolo fatto con altri filtri (wallet, dettaglio wallet o data).",
+                    "Premere CALCOLA prima di sistemare la quantità residua.", this);
+            return;
+        }
         if(Principale_GiacenzeaData.GiacenzeaData_Funzione_SistemaQta(GiacenzeaData_TabellaDettaglioMovimenti,Giacenzeadata_Walleta_Label.getText().trim(),this))
         GiacenzeaData_CompilaTabellaToken(true);
     }//GEN-LAST:event_GiacenzeaData_Bottone_RettificaQtaMouseReleased
@@ -12987,6 +13011,7 @@ if (result.isAction("delete-all")) {
 
     private void GiacenzeaData_Data_DataChooserPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_GiacenzeaData_Data_DataChooserPropertyChange
         // TODO add your handling code here:
+        GiacenzeaData_SegnalaFiltriVariati();
             if (GiacenzeaData_Data_DataChooser.getDate()!=null){
                 try {
                     SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
@@ -14138,6 +14163,7 @@ if (result.isAction("delete-all")) {
         RT_Bottone_ModificaGiacenza.setEnabled(false);
         this.RT_Label_Avviso.setVisible(false);
         APlus=null;
+        RT_AliasGruppi = DatabaseH2.Pers_GruppoAlias_LeggiTabella();
         DefaultTableModel ModelloTabellaRT = (DefaultTableModel) RT_Tabella_Principale.getModel();
         Tabelle.Funzioni_PulisciTabella(ModelloTabellaRT);
         Tabelle.ColoraTabellaRTPrincipale(RT_Tabella_Principale);
@@ -14219,9 +14245,24 @@ if (result.isAction("delete-all")) {
         
     }//GEN-LAST:event_RT_Bottone_CalcolaActionPerformed
 
+    //Alias dei gruppi wallet per le due tabelle del quadro RT che hanno il gruppo ("Wallet 101"): il valore nel modello
+    //resta quello grezzo, perche' le celle sono rilette come chiave (LiFo, Giacenze a data) e il filtro per colonna lavora
+    //sul modello. Si cambia solo cio' che e' disegnato, delegando al renderer di default della tabella (che cambia col tema).
+    private Map<String, String[]> RT_AliasGruppi = new HashMap<>();
+
+    private void RT_MostraAliasGruppi() {
+        RT_ImpostaRendererGruppo(RT_Tabella_DettaglioMonete, 0);
+        RT_ImpostaRendererGruppo(RT_Tabella_LiFo, 2);
+    }
+
+    private void RT_ImpostaRendererGruppo(JTable tabella, int colonna) {
+        Principale_Dichiarazioni.MostraAliasGruppo(tabella, colonna, () -> RT_AliasGruppi);
+    }
+
     private void RT_CompilaTabellaDettagli(){
        // Map<String, String[]> Mappa_Gruppo_Alias =DatabaseH2.Pers_GruppoAlias_LeggiTabella();
        //System.out.println("eh");
+        RT_AliasGruppi = DatabaseH2.Pers_GruppoAlias_LeggiTabella();
         RT_Bottone_ModificaPrezzo.setEnabled(false);
         RT_Bottone_ModificaGiacenza.setEnabled(false);
         DefaultTableModel ModelloTabella3 = (DefaultTableModel) RT_Tabella_LiFo.getModel();
@@ -15177,6 +15218,15 @@ if (result != null && !result.isAction("cancel")) {
         // TODO add your handling code here:
         Funzioni.simulaCtrlV();
     }//GEN-LAST:event_MenuItem_IncollaActionPerformed
+
+    private void MenuItem_SelezionaVisibiliActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_SelezionaVisibiliActionPerformed
+        //Le righe nascoste dai filtri non sono nella vista della tabella: selectAll() prende solo quelle che si vedono,
+        //come "seleziona le righe filtrate" di LibreOffice. Poi le voci del menu agiscono su tutta la selezione.
+        if (PopUp_Tabella != null) {
+            PopUp_Tabella.requestFocusInWindow();
+            PopUp_Tabella.selectAll();
+        }
+    }//GEN-LAST:event_MenuItem_SelezionaVisibiliActionPerformed
 
     private void MenuItem_DettagliMovimentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_DettagliMovimentoActionPerformed
         // TODO add your handling code here:
@@ -18560,6 +18610,46 @@ try {
     private volatile int GiacenzeaData_GenerazioneBlockchain = 0;
 
     /**
+     * Wallet, dettaglio wallet e data con cui la tabella di "Giacenze a data" e' stata calcolata l'ultima volta
+     * ({@link Principale_GiacenzeaData#ChiaveFiltri}), {@code null} prima del primo calcolo. Cambiare un selettore non
+     * ricalcola: la tabella resta quella di prima, e questo serve a dirlo (etichetta rossa) e a non operare su di essa.
+     */
+    private volatile String GiacenzeaData_FiltriCalcolati = null;
+
+    private String GiacenzeaData_DataSceltaComeTesto() {
+        java.util.Date d = GiacenzeaData_Data_DataChooser.getDate();
+        return d == null ? "" : new SimpleDateFormat("yyyy-MM-dd").format(d);
+    }
+
+    /** I filtri scelti adesso nei selettori in alto, nella stessa forma di {@link #GiacenzeaData_FiltriCalcolati}. */
+    private String GiacenzeaData_FiltriAttuali() {
+        Object Wallet = GiacenzeaData_Wallet_ComboBox.getSelectedItem();
+        Object SottoWallet = GiacenzeaData_Wallet2_ComboBox.getSelectedItem();
+        return Principale_GiacenzeaData.ChiaveFiltri(Wallet == null ? "" : Wallet.toString(),
+                SottoWallet == null ? "" : SottoWallet.toString(), GiacenzeaData_DataSceltaComeTesto());
+    }
+
+    /** @return true se la tabella e' stata calcolata e i selettori in alto ora indicano altri filtri */
+    private boolean GiacenzeaData_FiltriVariati() {
+        String Calcolati = GiacenzeaData_FiltriCalcolati;
+        return Calcolati != null && !Calcolati.equals(GiacenzeaData_FiltriAttuali());
+    }
+
+    /**
+     * Accende l'etichetta rossa "premere CALCOLA" se i selettori non corrispondono piu' al calcolo mostrato. Il confronto
+     * e' rimandato a fine evento: svuotando e riempiendo le combo (aggiornamento dei wallet, cambio del wallet che
+     * ricostruisce i dettagli) passano valori intermedi che non sono una scelta dell'utente. Non ricalcola e non spegne
+     * l'etichetta: la spegne solo "Calcola".
+     */
+    private void GiacenzeaData_SegnalaFiltriVariati() {
+        SwingUtilities.invokeLater(() -> {
+            if (GiacenzeaData_Tabella.getRowCount() > 0 && GiacenzeaData_FiltriVariati()) {
+                GiacenzeaData_Label_Aggiornare.setVisible(true);
+            }
+        });
+    }
+
+    /**
      * Il pulsante dei costi netti serve solo con tutti i wallet: il calcolo non e' filtrato (un trasferimento fra wallet
      * propri non porta con se' nessun costo) e il dialogo non ha un wallet da mostrare.
      */
@@ -18841,6 +18931,7 @@ try {
                 //FASE 2 THREAD : CREO LA NUOVA MAPPA DI APPOGGIO PER L'ANALISI DEI TOKEN
                 String Wallet = GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString().trim();
                 String SottoWallet = GiacenzeaData_Wallet2_ComboBox.getSelectedItem().toString().trim();
+                final String FiltriDelCalcolo = GiacenzeaData_FiltriAttuali();
                 //La somma e' in Principale_GiacenzeaData.SommaQuantitaAData, la stessa che usano i test
                 Map<String, Moneta> QtaCrypto = Principale_GiacenzeaData.SommaQuantitaAData(MappaCryptoWallet.values(),
                         DataRiferimento, Wallet, SottoWallet);
@@ -19009,6 +19100,7 @@ try {
                 }
                 Giacenzeadata_Walleta_Label.setText(Wallet);
                 Giacenzeadata_Walletb_Label.setText(SottoWallet);
+                GiacenzeaData_FiltriCalcolati = FiltriDelCalcolo;
                 if (WalletBlockchain != null && !progress.FineThread()) {
                     GiacenzeaData_LeggiGiacenzeBlockchain(WalletBlockchain, DataAdOggi ? 0 : DataRiferimento,
                             RichiesteBlockchain, GenerazioneBlockchain);
@@ -20975,6 +21067,7 @@ try {
     private javax.swing.JMenuItem MenuItem_EliminaMovimento;
     private javax.swing.JMenuItem MenuItem_EsportaTabella;
     private javax.swing.JMenuItem MenuItem_Incolla;
+    private javax.swing.JMenuItem MenuItem_SelezionaVisibili;
     private javax.swing.JMenuItem MenuItem_LiFoTransazione;
     private javax.swing.JMenuItem MenuItem_ModificaMovimento;
     private javax.swing.JMenuItem MenuItem_ModificaNote;

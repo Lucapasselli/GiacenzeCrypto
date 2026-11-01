@@ -115,7 +115,10 @@ public class Principale_QuadroRW {
                     }
                 }
                 //IC (365 fisso, decisione dell'utente anche per i righi di periodo)
-                RW1[5] = new BigDecimal(RW1[2]).divide(new BigDecimal("365"), VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP).multiply(new BigDecimal(RW1[3])).multiply(new BigDecimal("0.002")).setScale(2, RoundingMode.HALF_UP).toPlainString();
+                //I giorni non superano mai 365 (anno bisestile compreso): l'Agenzia delle entrate non accetta 366 e
+                //calcola l'imposta su 365, quindi anche l'IC stampata deve usare al massimo 365 giorni
+                BigDecimal GiorniIC = new BigDecimal(RW1[3]).min(new BigDecimal("365"));
+                RW1[5] = new BigDecimal(RW1[2]).divide(new BigDecimal("365"), VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP).multiply(GiorniIC).multiply(new BigDecimal("0.002")).setScale(2, RoundingMode.HALF_UP).toPlainString();
             }
         }
 

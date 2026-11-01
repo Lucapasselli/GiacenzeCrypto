@@ -82,7 +82,7 @@ class Principale_QuadroRWTest {
         num("2000", r[2]);
         assertEquals("366.00", r[3]);
         assertEquals("NO", r[7]);
-        assertEquals("4.01", r[5], "2000 / 365 × 366 × 2‰");
+        assertEquals("4.00", r[5], "2000 / 365 × 365 × 2‰: l'IC non usa mai 366 giorni, anche se la tabella li mostra");
     }
 
     @Test

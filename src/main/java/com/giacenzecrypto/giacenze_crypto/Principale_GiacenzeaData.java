@@ -1342,6 +1342,26 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
     }
 
     /**
+     * Chiave dei filtri con cui la tabella "Giacenze a data" è stata calcolata (wallet, dettaglio wallet, data)
+     * oppure scelti adesso nei selettori in alto. Se le due non coincidono la tabella mostra un calcolo fatto
+     * con altri filtri: va segnalato e non si deve operare su di essa (vedi la rettifica della quantità
+     * residua, che decide in base al wallet con cui la tabella è stata calcolata, non a quello scelto ora).
+     * @param Wallet wallet scelto o calcolato ("Tutti", un wallet o "Gruppo : ...")
+     * @param SottoWallet dettaglio del wallet
+     * @param Data data come testo {@code yyyy-MM-dd}, vuota se non scelta
+     * @return la chiave, indifferente a maiuscole e spazi ai bordi
+     */
+    public static String ChiaveFiltri(String Wallet, String SottoWallet, String Data) {
+        //Separatore di controllo: un carattere che non puo' comparire in un nome di wallet
+        return norm(Wallet) + "\u001f" + norm(SottoWallet) + "\u001f" + norm(Data);
+    }
+
+    private static String norm(String s) {
+        return s == null ? "" : s.trim().toLowerCase(java.util.Locale.ROOT);
+    }
+
+
+    /**
      * Compone la chiave con cui una moneta è identificata nella tabella "Giacenze a data", con la stessa
      * regola del ciclo che riempie la tabella: se la rete manca, manca anche l'address (i due vanno a
      * braccetto e tenerne uno solo spezzerebbe in due righe la stessa giacenza).

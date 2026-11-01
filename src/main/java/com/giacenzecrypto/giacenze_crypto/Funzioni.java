@@ -421,6 +421,8 @@ public class Funzioni {
 
     /** Testi delle voci del menu contestuale per le commissioni collegate (vedi {@link Principale_CommissioniCollegate}) */
     public static final String POPUP_VOCE_COLLEGA_COMMISSIONI = "Collega commissioni ai movimenti";
+    /** Voce del menu contestuale che seleziona tutte le righe che la tabella mostra, cioe' quelle che passano i filtri. */
+    public static final String POPUP_VOCE_SELEZIONA_VISIBILI = "Seleziona tutte le righe visibili";
     public static final String POPUP_VOCE_SCOLLEGA_COMMISSIONI = "Scollega commissioni";
 
     /**
@@ -441,6 +443,15 @@ public class Funzioni {
             "Apri documento di origine",
             "Modifica Prezzo",
             "Dettagli Movimento");
+
+    /**
+     * Vero se "Seleziona tutte le righe visibili" ha senso sulla tabella: serve la selezione multipla e almeno due righe nella
+     * <b>vista</b> (le righe nascoste dai filtri non contano, {@code JTable.selectAll()} non le prende).
+     */
+    public static boolean PuoSelezionareTutteLeRighe(JTable tabella) {
+        return tabella.getSelectionModel().getSelectionMode() != javax.swing.ListSelectionModel.SINGLE_SELECTION
+                && tabella.getRowCount() > 1;
+    }
 
     /**
      * Gestisce l'apertura del menu contestuale (tasto destro) su una tabella o campo di testo, abilitando o
@@ -574,6 +585,8 @@ public class Funzioni {
                 if (row == -1) return;
                 PopUp_disabilitaMenuDatesto(pop,"Incolla");
                 PopUp_abilitaMenuDaTesto(pop,"Esporta Tabella in Excel");
+                if (PuoSelezionareTutteLeRighe(table)) PopUp_abilitaMenuDaTesto(pop,POPUP_VOCE_SELEZIONA_VISIBILI);
+                else PopUp_disabilitaMenuDatesto(pop,POPUP_VOCE_SELEZIONA_VISIBILI);
                 Principale.PopUp_Tabella=table;
                 pop.show(c, Coordinata.x, Coordinata.y);
             }            
@@ -581,6 +594,7 @@ public class Funzioni {
             {
                 PopUp_abilitaMenuDaTesto(pop,"Incolla");
                 PopUp_disabilitaMenuDatesto(pop,"Esporta Tabella in Excel");
+                PopUp_disabilitaMenuDatesto(pop,POPUP_VOCE_SELEZIONA_VISIBILI);
                 pop.show(c, Coordinata.x, Coordinata.y);
                 Principale.PopUp_Tabella=null;
             }

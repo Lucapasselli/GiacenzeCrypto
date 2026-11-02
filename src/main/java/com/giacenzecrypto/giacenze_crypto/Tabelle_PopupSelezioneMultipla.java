@@ -18,9 +18,11 @@ public class Tabelle_PopupSelezioneMultipla {
     private final JPanel mainPanel;
     private final JTextField filterField;
     private final JPanel checkBoxPanel;
+    private static final String PROP_VALORE = "valoreFiltro";
     private final List<JCheckBox> checkBoxes = new ArrayList<>();
     private final JButton applyButton;
     private final JButton cancelButton;
+    private final JButton selectFilteredButton;
     
     private Runnable applyAction = () -> {};
     private Runnable cancelAction = () -> {};
@@ -76,9 +78,21 @@ public Set<String> selectedValues = new HashSet<>();
         selectButtonsPanel.add(selectAllButton);
         selectButtonsPanel.add(deselectAllButton);
 
+        // Attivo solo durante una ricerca: seleziona le voci in lista e deseleziona le altre
+        selectFilteredButton = new JButton("<html><b>Seleziona filtrati</b> - solo le voci in lista -</html>");
+        selectFilteredButton.setEnabled(false);
+        selectFilteredButton.setMargin(new Insets(2, 5, 2, 5));
+        JPanel selectFilteredPanel = new JPanel(new BorderLayout());
+        selectFilteredPanel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+        selectFilteredPanel.add(selectFilteredButton, BorderLayout.CENTER);
+
+        JPanel selectContainer = new JPanel(new BorderLayout(0, 2));
+        selectContainer.add(selectButtonsPanel, BorderLayout.NORTH);
+        selectContainer.add(selectFilteredPanel, BorderLayout.SOUTH);
+
         JPanel topContainer = new JPanel(new BorderLayout(2, 2));
         topContainer.add(topPanel, BorderLayout.NORTH);
-        topContainer.add(selectButtonsPanel, BorderLayout.SOUTH);
+        topContainer.add(selectContainer, BorderLayout.SOUTH);
 
         mainPanel.add(topContainer, BorderLayout.NORTH);
 
@@ -127,6 +141,12 @@ public Set<String> selectedValues = new HashSet<>();
             }
         });
 
+        selectFilteredButton.addActionListener(e -> {
+            for (JCheckBox cb : checkBoxes) {
+                cb.setSelected(cb.isVisible());
+            }
+        });
+
         applyButton.addActionListener(e -> applyAction.run());
         cancelButton.addActionListener(e -> {
             cancelAction.run();
@@ -158,6 +178,17 @@ public Set<String> selectedValues = new HashSet<>();
  * @param valori lista di coppie {@code [testo opzione, "1" se selezionata altrimenti "0"]}
  */
 public void updateOptions(List<String[]> valori) {
+    updateOptions(valori, null);
+}
+
+/**
+ * Come {@link #updateOptions(List)}, ma ogni opzione mostra un'etichetta diversa dal valore (l'alias di un
+ * gruppo wallet al posto di "Wallet 101"). Il filtro e la selezione restano sul <b>valore</b>: l'etichetta e'
+ * solo disegnata, e la ricerca nel popup trova sia l'etichetta sia il valore.
+ * @param valori lista di coppie {@code [valore, "1" se selezionata altrimenti "0"]}
+ * @param etichetta valore → testo mostrato; {@code null} per mostrare il valore
+ */
+public void updateOptions(List<String[]> valori, java.util.function.Function<String, String> etichetta) {
     checkBoxes.clear();
     checkBoxPanel.removeAll();
 
@@ -185,13 +216,14 @@ public void updateOptions(List<String[]> valori) {
     combined.addAll(unselected);
 
     for (String[] entry : combined) {
-        JCheckBox cb = new JCheckBox(entry[0], "1".equals(entry[1]));
+        String testo = etichetta == null ? entry[0] : etichetta.apply(entry[0]);
+        JCheckBox cb = new JCheckBox(testo, "1".equals(entry[1]));
+        cb.putClientProperty(PROP_VALORE, entry[0]);
         checkBoxes.add(cb);
         checkBoxPanel.add(cb);
     }
 
-    checkBoxPanel.revalidate();
-    checkBoxPanel.repaint();
+    filter(); // un eventuale testo di ricerca rimasto (chiusura con ESC) deve valere anche sulle nuove voci
 
     SwingUtilities.invokeLater(() -> enableDragSelection(checkBoxPanel));
 }
@@ -240,12 +272,20 @@ public void AzzeraTestoRicerca(){
     private void filter() {
         String text = filterField.getText().toLowerCase();
         for (JCheckBox cb : checkBoxes) {
-            cb.setVisible(cb.getText().toLowerCase().contains(text));
+            cb.setVisible(cb.getText().toLowerCase().contains(text)
+                    || valoreDi(cb).toLowerCase().contains(text));
         }
+        selectFilteredButton.setEnabled(!text.isEmpty());
         checkBoxPanel.revalidate();
         checkBoxPanel.repaint();
     }
     
+    /** Il valore della cella che la casella rappresenta (diverso dal testo mostrato se c'e' un'etichetta). */
+    private static String valoreDi(JCheckBox cb) {
+        Object v = cb.getClientProperty(PROP_VALORE);
+        return v == null ? cb.getText() : v.toString();
+    }
+
     /** @return {@code true} se il popup è attualmente visibile */
     public boolean isVisible() {
     return window.isVisible();
@@ -259,7 +299,7 @@ public void AzzeraTestoRicerca(){
         List<String> selected = new ArrayList<>();
         for (JCheckBox cb : checkBoxes) {
             if (cb.isSelected()) {
-                selected.add(cb.getText());
+                selected.add(valoreDi(cb));
             }
         }
         return selected;

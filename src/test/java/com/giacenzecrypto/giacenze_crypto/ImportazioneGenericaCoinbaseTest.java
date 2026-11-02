@@ -538,4 +538,64 @@ class ImportazioneGenericaCoinbaseTest {
         assertEquals(2, movs.size(), "scambio EUR -> BTC + COMMISSIONI, non un deposito BTC a se'");
         assertEquals("EUR", movs.get(0)[8]);
     }
+
+    // ---- Debit: addebito di Coinbase su un token, senza contropartita --------------------------------
+
+    @Test
+    void debit_configReale_diventaPrelievoCryptoSenzaClassificazione() throws Exception {
+        ConfigurazioneImport reale = ConfigurazioneImport.carica("config/import/Coinbase CSV.json");
+        assertNotNull(reale);
+        // token tolto dal saldo da Coinbase (dati inventati): quantita' gia' negativa, Recipient "Coinbase"
+        String[] nu = {"000000000000000000000301", "2026-01-15 10:00:00 UTC", "Debit", "ZZDEMO", "-10", "EUR",
+            "€0.5", "-€5.00", "-€5.00", "€0.00", "Coinbase debit of 10 ZZDEMO", "", "Coinbase"};
+        List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(nu, null, reale);
+
+        assertNotNull(movs, "la causale Debit non e' piu' sconosciuta");
+        assertEquals(1, movs.size());
+        String[] m = movs.get(0);
+        assertEquals("ZZDEMO", m[8], "moneta ceduta");
+        assertEquals("-10", m[10], "uscita, quantita' invariata");
+        assertTrue(m[0].endsWith("_PC"), "prelievo crypto");
+        assertEquals("Coinbase debit of 10 ZZDEMO", m[21]);
+    }
+
+    // ---- riga di testa in piu' di quelle dichiarate ---------------------------------------------------
+
+    @Test
+    void rigaDiTestaInPiu_nonEUnaRigaSconosciuta(@org.junit.jupiter.api.io.TempDir java.nio.file.Path dir) throws Exception {
+        ConfigurazioneImport reale = ConfigurazioneImport.carica("config/import/Coinbase CSV.json");
+        String intestazione = "ID,Timestamp,Transaction Type,Asset,Quantity Transacted,Price Currency,Price at Transaction,"
+                + "Subtotal,Total (inclusive of fees and/or spread),Fees and/or Spread,Notes,Sender Address,Recipient Address";
+        // dati inventati: l'intestazione e' la quarta riga (una in piu' della config), quindi finisce fra i dati
+        java.nio.file.Path f = dir.resolve("coinbase.csv");
+        java.nio.file.Files.writeString(f, "Transactions\nUser,Nome Cognome,00000000\nNote del file\n" + intestazione + "\n"
+                + "000000000000000000000301,2026-01-15 10:00:00 UTC,Debit,ZZDEMO,-10,EUR,€0.5,-€5.00,-€5.00,€0.00,"
+                + "Coinbase debit of 10 ZZDEMO,,Coinbase\n"
+                + "000000000000000000000302,2026-01-15 10:00:01 UTC,Debit,ZZTWO,-4,EUR,€0.25,-€1.00,-€1.00,€0.00,"
+                + "Coinbase debit of 4 ZZTWO,,Coinbase\n"
+                + "xx,2026-13-45 99:99:99 UTC,Debit,ZZTWO,-1,EUR,€0,€0,€0,€0.00,,,\n"
+                + "yy,N/A,Debit,ZZTWO,-1,EUR,€0,€0,€0,€0.00,,,\n");
+        Importazioni.movimentiSconosciuti = "";
+        List<String[]> righe = ImportazioneGenerica.leggiCSV(f.toString(), reale);
+
+        assertEquals(2, righe.size(), "le due righe vere");
+        assertTrue(Importazioni.movimentiSconosciuti.contains("yy,N/A"), "dati con la data assente restano segnalati");
+        assertFalse(Importazioni.movimentiSconosciuti.contains("Timestamp"), "l'intestazione non e' un movimento perso");
+        assertTrue(Importazioni.movimentiSconosciuti.contains("DATA NON PARSABILE"),
+                "una data scritta male (con delle cifre) resta segnalata");
+    }
+
+    @Test
+    void rigaDiTesta_soloTestoSenzaCifreNeNumeri() {
+        String[] intestazione = {"ID", "Timestamp", "Transaction Type", "Asset", "Quantity Transacted", "Notes"};
+        assertTrue(ImportazioneGenerica.RigaDiTesta(intestazione, 1));
+        assertTrue(ImportazioneGenerica.RigaDiTesta(new String[]{"Date(UTC)", "Coin"}, 0));
+        // una data scritta male ha delle cifre
+        assertFalse(ImportazioneGenerica.RigaDiTesta(new String[]{"x", "2026-13-45", "Debit"}, 1));
+        // dati con la data assente: hanno i loro importi, restano segnalati
+        assertFalse(ImportazioneGenerica.RigaDiTesta(new String[]{"x", "N/A", "Debit", "ZZDEMO", "-10", "-€5.00"}, 1));
+        assertFalse(ImportazioneGenerica.RigaDiTesta(new String[]{"x", "-", "Debit", "ZZDEMO", "2.5E-9"}, 1));
+        assertFalse(ImportazioneGenerica.RigaDiTesta(new String[]{"x", "", "Debit"}, 1));
+        assertFalse(ImportazioneGenerica.RigaDiTesta(new String[]{"x"}, 1), "colonna della data assente");
+    }
 }

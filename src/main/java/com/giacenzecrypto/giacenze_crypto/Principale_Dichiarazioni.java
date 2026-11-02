@@ -234,6 +234,8 @@ public final class Principale_Dichiarazioni {
      * @param RigaRiepilogo il rigo dell'anno
      * @param IntestazioneMonete intestazioni del dettaglio per gruppo wallet e moneta
      * @param Monete righe del dettaglio ({@code Calcoli_RT.AnalisiPlus.RitornaTabellaAnno})
+     * @param Gruppi plusvalenze per gruppo wallet ({@code Calcoli_RT.AnalisiPlus.RitornaTabellaGruppiAnno}),
+     *        colonne {@link Calcoli_RT.AnalisiPlus#COLONNE_GRUPPI}
      * @param Tipologie plusvalenze per tipologia e mese
      * @param Movimenti movimenti fiscalmente rilevanti dell'anno
      *        ({@link Principale_RT_Tipologie#MovimentiRilevanti}), colonne
@@ -241,8 +243,9 @@ public final class Principale_Dichiarazioni {
      * @throws IOException se la scrittura fallisce
      */
     public static void RT_CreaExcel(File f, String Anno, String[] IntestazioneRiepilogo, Object[] RigaRiepilogo,
-            String[] IntestazioneMonete, List<Object[]> Monete, Principale_RT_Tipologie.DatiTipologie Tipologie,
-            List<Object[]> Movimenti) throws IOException {
+            String[] IntestazioneMonete, List<Object[]> Monete, List<Object[]> Gruppi,
+            Principale_RT_Tipologie.DatiTipologie Tipologie, List<Object[]> Movimenti) throws IOException {
+        Map<String, String[]> alias = DatabaseH2.Pers_GruppoAlias_LeggiTabella();
         try (FileOutputStream fos = new FileOutputStream(f)) {
             Workbook wb = new Workbook(fos, "excel1", "1.0");
 
@@ -253,10 +256,18 @@ public final class Principale_Dichiarazioni {
             ws.finish();
 
             ws = wb.newWorksheet("Monete " + Anno);
-            ScriviRiga(ws, 0, IntestazioneMonete);
+            ScriviRiga(ws, 0, ConColonnaAlias(IntestazioneMonete, null, alias));
             int r = 1;
             for (Object[] riga : Monete) {
-                ScriviRiga(ws, r++, riga);
+                ScriviRiga(ws, r++, ConColonnaAlias(riga, riga[0], alias));
+            }
+            ws.finish();
+
+            ws = wb.newWorksheet("Gruppi wallet " + Anno);
+            ScriviRiga(ws, 0, ConColonnaAlias(Calcoli_RT.AnalisiPlus.COLONNE_GRUPPI, null, alias));
+            r = 1;
+            for (Object[] riga : Gruppi) {
+                ScriviRiga(ws, r++, ConColonnaAlias(riga, riga[0], alias));
             }
             ws.finish();
 
@@ -446,6 +457,26 @@ public final class Principale_Dichiarazioni {
                 t.getDefaultRenderer(Object.class).getTableCellRendererComponent(t,
                         valore == null ? null : NomeGruppo(valore.toString(), alias.get()),
                         selezionata, fuoco, riga, col));
+    }
+
+    /**
+     * La riga con, subito dopo la prima colonna (il gruppo wallet), una colonna con l'alias del gruppo.
+     *
+     * @param Valori la riga, o le intestazioni
+     * @param Gruppo il gruppo della riga ({@code "Wallet 04"}); {@code null} per le intestazioni
+     * @param Alias gruppo → alias ({@code DatabaseH2.Pers_GruppoAlias_LeggiTabella})
+     */
+    static Object[] ConColonnaAlias(Object[] Valori, Object Gruppo, Map<String, String[]> Alias) {
+        Object[] r = new Object[Valori.length + 1];
+        r[0] = Valori[0];
+        if (Gruppo == null) {
+            r[1] = "Alias gruppo wallet";
+        } else {
+            String[] a = Alias.get(Gruppo.toString());
+            r[1] = a != null && a.length > 1 && a[1] != null ? a[1] : "";
+        }
+        System.arraycopy(Valori, 1, r, 2, Valori.length - 1);
+        return r;
     }
 
     /** {@code "Wallet 04"} → {@code "04 ( Binance )"} se il gruppo ha un alias. */

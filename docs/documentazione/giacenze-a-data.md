@@ -17,6 +17,7 @@ title: Giacenze a data
 - [Correggere una giacenza](#rettifica)
 - [Rinominare un token e segnalare i token SCAM](#nome-scam)
 - [Confronto con blockchain ed exchange](#confronto)
+- [Evidenziare i microsaldi](#microsaldi)
 - [I costi netti](#costi-netti)
 - [Domande frequenti](#domande)
 - [Limiti e cose da sapere](#limiti)
@@ -311,6 +312,16 @@ giacenza finale quella letta dalla fonte esterna.
 Il pulsante **Movimenti Defi** apre nel browser, sull'explorer della rete, i movimenti del wallet selezionato per il token
 della riga. Funziona solo con un singolo wallet DeFi e per token con indirizzo di contratto, non per la moneta nativa della
 rete.
+
+## Evidenziare i microsaldi {#microsaldi}
+
+Una commissione persa in un prelievo, o una vendita che lascia un residuo, può lasciare nell'archivio una quantità minima che sull'exchange non esiste. Pesa quasi zero sul totale, quindi non si nota, e salta fuori solo quando il token perde il prezzo. La spunta **Evidenzia microsaldi** li mostra in giallo, nella *Qta* della tabella dei token e nella *Qta Residua* del dettaglio (nel dettaglio la riga gialla è quella da cui il residuo nasce).
+
+- Attivando la spunta il programma chiede due soglie: il **valore massimo in euro** e la **quantità massima**. Un saldo positivo è un microsaldo se rispetta una delle due, e una soglia lasciata vuota non viene usata. La soglia in euro non si applica ai token senza prezzo, che hanno già il loro avviso, la quantità sì. Per cambiare le soglie si toglie e si rimette la spunta.
+- Un saldo che le colonne di confronto (*Qta Blockchain*, *Qta OKX*, *Qta Binance*) confermano **non viene colorato**: se l'exchange ha davvero quel residuo, non c'è niente da controllare. Resta giallo se la fonte esterna dice zero o un'altra quantità, o se non si riesce a leggere.
+- FIAT e NFT non vengono mai evidenziati, e un saldo negativo resta rosso.
+
+È solo un'evidenziazione. Un microsaldo può essere polvere vera, quindi non compare tra gli errori e non cambia nessun calcolo. La spunta e le soglie restano salvate tra una sessione e l'altra.
 
 ## I costi netti {#costi-netti}
 

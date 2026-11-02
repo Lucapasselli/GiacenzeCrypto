@@ -462,6 +462,22 @@ public class Tabelle {
                             table.getModel().getValueAt(table.convertRowIndexToModel(row), 4), value);
                     if (Uguale != null) c.setForeground(Uguale ? verdeScuro : rosso);
                 }
+                setToolTipText(null);
+                //Microsaldo : giallo sulla Quantita', salvo che le API ne confermino la giacenza (colonna 12)
+                if (colModello == 4 && !isSelected
+                        && table.getClientProperty(PROP_MICROSALDI) instanceof Principale_GiacenzeaData_Microsaldi.Soglie soglie) {
+                    int riga = table.convertRowIndexToModel(row);
+                    javax.swing.table.TableModel m = table.getModel();
+                    Object valoreEuro = m.getValueAt(riga, 5);
+                    //Prezzo noto solo se c'e' il valore unitario (colonna 7): senza prezzo il valore in euro e' zero e non e' un valore
+                    boolean prezzoNoto = m.getValueAt(riga, 7) instanceof Double && valoreEuro instanceof Double;
+                    if (!Principale_GiacenzeaData_Microsaldi.TipoEscluso(String.valueOf(m.getValueAt(riga, 3)))
+                            && !Boolean.TRUE.equals(GiacenzeBlockchain.Coincide(m.getValueAt(riga, 4), m.getValueAt(riga, 12)))
+                            && soglie.IsMicro(String.valueOf(m.getValueAt(riga, 4)),
+                                    prezzoNoto ? java.math.BigDecimal.valueOf((Double) valoreEuro) : null)) {
+                        EvidenziaMicrosaldo(c, soglie);
+                    }
+                }
                 return c;
             }
         };
@@ -498,6 +514,30 @@ public class Tabelle {
          * giacenze dell'exchange ({@link GiacenzeExchange}), assente per la blockchain. Cambia solo il suggerimento.
          */
         public static final String PROP_FONTE_CONFRONTO = "FonteConfronto";
+
+        /**
+         * Proprieta' delle due tabelle di "Giacenze a data" (principale e dettaglio): le
+         * {@link Principale_GiacenzeaData_Microsaldi.Soglie} con cui evidenziare in giallo i microsaldi,
+         * assente se l'evidenziazione e' spenta (o, sul dettaglio, se il token e' FIAT o NFT).
+         */
+        public static final String PROP_MICROSALDI = "MicrosaldiSoglie";
+
+        static final Color gialloMicrosaldo = new Color(255, 225, 70);
+        static final Color gialloMicrosaldoScuro = new Color(150, 120, 0);
+
+        /**
+         * Evidenzia un microsaldo: sfondo giallo e un tooltip che dice perche' (le soglie in uso) e cosa controllare.
+         * Non va chiamata per un saldo che le API di exchange o blockchain confermano.
+         */
+        static void EvidenziaMicrosaldo(Component c, Principale_GiacenzeaData_Microsaldi.Soglie soglie) {
+            boolean scuro = Principale.tema.equalsIgnoreCase("Scuro");
+            c.setBackground(scuro ? gialloMicrosaldoScuro : gialloMicrosaldo);
+            c.setForeground(scuro ? Color.WHITE : Color.BLACK);
+            if (c instanceof JComponent jc) {
+                jc.setToolTipText("<html>Microsaldo (" + soglie.Descrizione() + ").<br>"
+                        + "Controlla che esista davvero sull'exchange o sul wallet.</html>");
+            }
+        }
 
         /**
          * @param valore il testo di un importo, o {@code null}
@@ -585,6 +625,21 @@ public class Tabelle {
                     label.setBackground(bg);
                     label.setForeground(fore2);
                     label.setText(value.toString());
+                    //Microsaldo : giallo, salvo che l'API (colonna 18, Qta Blockchain/OKX) confermi la giacenza di questa riga
+                    if (table.getClientProperty(PROP_MICROSALDI) instanceof Principale_GiacenzeaData_Microsaldi.Soglie soglie) {
+                        boolean Confermato = false;
+                        if (table.getClientProperty(PROP_CONFRONTO_BLOCKCHAIN) instanceof java.util.Map<?, ?> Confronto) {
+                            Confermato = Boolean.TRUE.equals(GiacenzeBlockchain.Coincide(
+                                    Confronto.get(String.valueOf(table.getModel().getValueAt(modelRow, 8))),
+                                    table.getModel().getValueAt(modelRow, 18)));
+                        }
+                        //Il valore c'e' solo se il prezzo e' gia' arrivato (colonna 15, completata in background)
+                        java.math.BigDecimal valoreResiduo = Principale_GiacenzeaData_Microsaldi.Numero(
+                                String.valueOf(table.getModel().getValueAt(modelRow, 15)));
+                        if (!Confermato && soglie.IsMicro(value.toString(), valoreResiduo)) {
+                            EvidenziaMicrosaldo(label, soglie);
+                        }
+                    }
                     if (table.getModel().getValueAt(modelRow, 10)!=null)GiacWallet=table.getModel().getValueAt(modelRow, 10).toString();
                     if (table.getModel().getValueAt(modelRow, 11)!=null)GiacGruppo=table.getModel().getValueAt(modelRow, 11).toString();
                     if (table.getModel().getValueAt(modelRow, 12)!=null)GiacTotale=table.getModel().getValueAt(modelRow, 12).toString();
@@ -595,6 +650,11 @@ public class Tabelle {
                                 + "Rimanenze Gruppo = "+GiacGruppo+"<br>"
                                 + "Rimanenze Totali = "+GiacTotale                               
                                 + "</html>";
+                        //Il tooltip del microsaldo (soglie in uso) non va perso: le rimanenze si aggiungono sotto
+                        String tooltipMicrosaldo = label.getToolTipText();
+                        if (tooltipMicrosaldo != null) {
+                            text = tooltipMicrosaldo.replace("</html>", "<br><br>") + text.substring("<html>".length());
+                        }
                         label.setToolTipText(text);
                     }
                     return label;
@@ -2143,7 +2203,7 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
                         int modelCol = table.convertColumnIndexToModel(col);
                         Map<String, String[]> mappa = Tabelle_getValoriUnivociColonnaConVisibilita(table, col);
                         List<String[]> valori = new ArrayList<>(mappa.values());
-                        popup.updateOptions(valori);
+                        popup.updateOptions(valori, EtichettaFiltroColonna(table, modelCol));
 
                         popup.setApplyAction(() -> {
                             List<String> selected = popup.getSelectedOptions();
@@ -2194,6 +2254,33 @@ public static void Tabelle_FiltroColonne(JTable table, JTextField filtro, Tabell
    
      
      
+    private static final String PROP_ETICHETTE_FILTRO = "EtichetteFiltroColonna";
+
+    /**
+     * Fa mostrare al popup del filtro di una colonna un testo diverso dal valore della cella (l'alias di un
+     * gruppo wallet al posto di "Wallet 101"). Il filtro continua a lavorare sul valore, che e' quello nel model.
+     *
+     * @param table la tabella
+     * @param modelCol indice di <b>model</b> della colonna
+     * @param etichetta valore della cella → testo mostrato nel popup
+     */
+    @SuppressWarnings("unchecked")
+    public static void Tabelle_ImpostaEtichettaFiltro(JTable table, int modelCol,
+            java.util.function.Function<String, String> etichetta) {
+        Object m = table.getClientProperty(PROP_ETICHETTE_FILTRO);
+        if (m == null) {
+            m = new HashMap<Integer, java.util.function.Function<String, String>>();
+            table.putClientProperty(PROP_ETICHETTE_FILTRO, m);
+        }
+        ((Map<Integer, java.util.function.Function<String, String>>) m).put(modelCol, etichetta);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static java.util.function.Function<String, String> EtichettaFiltroColonna(JTable table, int modelCol) {
+        Object m = table.getClientProperty(PROP_ETICHETTE_FILTRO);
+        return m == null ? null : ((Map<Integer, java.util.function.Function<String, String>>) m).get(modelCol);
+    }
+
     /**
      * Il filtro per colonna "il valore della cella è uno di questi": quello che il popup dell'header
      * costruisce con la selezione multipla, e che {@link #Tabelle_ImpostaFiltroColonna} costruisce da un

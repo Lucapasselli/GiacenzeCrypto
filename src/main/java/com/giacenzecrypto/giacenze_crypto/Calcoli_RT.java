@@ -819,7 +819,7 @@ public class Calcoli_RT {
                     rigaTabella[4]=Double.valueOf(plus.CostoVendite);
                     rigaTabella[5]=Double.valueOf(plus.PlusRealizzata);
                     rigaTabella[6]=Double.valueOf(plus.PlusLatente);
-                    if (plus.Mon.Qta.contains("-"))Errori=Errori+"Giacenza Negativa<br>";
+                    if (Funzioni.isNegativo(plus.Mon.Qta))Errori=Errori+"Giacenza Negativa<br>";
                     rigaTabella[7]=new BigDecimal(plus.Mon.Qta).stripTrailingZeros().toPlainString();
                     rigaTabella[8]=new BigDecimal(plus.Mon.Prezzo); 
                     if (plus.Mon.Prezzo.equals("0"))Errori=Errori+"Token senza prezzo";
@@ -839,6 +839,57 @@ public class Calcoli_RT {
       return Tabella;
   }
   
+  /** Intestazioni delle righe di {@link #RitornaTabellaGruppiAnno}. */
+  public static final String[] COLONNE_GRUPPI = {"Wallet", "<html>Valore Movimenti<br>Rilevanti</html>",
+      "<html>Costo Carico<br>Movimenti Rilevanti</html>", "Plusvalenze Realizzate", "Plusvalenze Latenti",
+      "Valore Rimanenze", "Errori"};
+
+  /**
+   * Somma per gruppo wallet le righe di {@link #RitornaTabellaAnno}: stesse monete (niente SCAM, solo quelle
+   * movimentate nell'anno o con giacenza), quindi i totali tornano con la tabella per token.
+   * Il valore delle rimanenze e' giacenza per prezzo di ogni moneta.
+   *
+   * @param Anno anno di cui costruire la tabella
+   * @return una riga per gruppo ({@code Object[7]}, colonne {@link #COLONNE_GRUPPI}), nell'ordine dei gruppi
+   */
+  public List<Object[]> RitornaTabellaGruppiAnno(String Anno){
+      Map<String, Map<String, PlusXMoneta>> MappaGrWallet_MappaMoneta_PlusXMoneta=MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno);
+      List<Object[]> Tabella=new ArrayList<>();
+      for(String Wallet : MappaGrWallet_MappaMoneta_PlusXMoneta.keySet()){
+          BigDecimal vendite=BigDecimal.ZERO;
+          BigDecimal costi=BigDecimal.ZERO;
+          BigDecimal realizzata=BigDecimal.ZERO;
+          BigDecimal latente=BigDecimal.ZERO;
+          BigDecimal rimanenze=BigDecimal.ZERO;
+          int negativi=0;
+          int senzaPrezzo=0;
+          boolean presente=false;
+          Map<String, PlusXMoneta> MappaMoneta_PlusXMoneta=MappaGrWallet_MappaMoneta_PlusXMoneta.get(Wallet);
+          for(String Moneta : MappaMoneta_PlusXMoneta.keySet()){
+              if (Funzioni.isSCAM(Moneta)) continue;
+              PlusXMoneta plus=MappaMoneta_PlusXMoneta.get(Moneta);
+              BigDecimal qta=new BigDecimal(plus.Mon.Qta);
+              if (!plus.movimentatoAnno&&qta.compareTo(BigDecimal.ZERO)==0) continue;
+              presente=true;
+              vendite=vendite.add(new BigDecimal(plus.ValVendita));
+              costi=costi.add(new BigDecimal(plus.CostoVendite));
+              realizzata=realizzata.add(new BigDecimal(plus.PlusRealizzata));
+              latente=latente.add(new BigDecimal(plus.PlusLatente));
+              rimanenze=rimanenze.add(qta.multiply(new BigDecimal(plus.Mon.Prezzo)));
+              if (Funzioni.isNegativo(plus.Mon.Qta)) negativi++;
+              if (plus.Mon.Prezzo.equals("0")) senzaPrezzo++;
+          }
+          if (!presente) continue;
+          String Errori="<html>";
+          if (negativi>0) Errori=Errori+negativi+" token con giacenza negativa<br>";
+          if (senzaPrezzo>0) Errori=Errori+senzaPrezzo+" token senza prezzo";
+          Errori=Errori+"</html>";
+          Tabella.add(new Object[]{Wallet, vendite.doubleValue(), costi.doubleValue(), realizzata.doubleValue(),
+              latente.doubleValue(), rimanenze.setScale(2, RoundingMode.HALF_UP).doubleValue(), Errori});
+      }
+      return Tabella;
+  }
+
   /**
    * Costruisce le righe di dettaglio LIFO per la coppia gruppo wallet/moneta indicata nell'anno
    * {@code Anno}: simula l'estrazione dell'intera giacenza residua dallo stack LIFO RT (senza

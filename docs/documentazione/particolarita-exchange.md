@@ -469,6 +469,8 @@ ricompense. Per scaricarlo:
 - **Staking**: gli spostamenti verso e dallo staking di Coinbase non producono movimenti, salvo il
   passaggio di ETH in staking a ETH2, che è uno scambio fra le due monete (poi riconvertite in ETH
   dalla *Retail Eth2 Deprecation* del gennaio 2025).
+- **Addebiti di Coinbase** (*Debit*): token che Coinbase toglie dal saldo senza dare nulla in cambio
+  (di solito rimanenze di poco valore). Diventano prelievi di cripto da classificare a mano.
 - **Ticker rinominati**: ZETACHAIN diventa ZETA e CGLD diventa CELO, così la stessa moneta non si
   spezza in due.
 - **Trasferimenti verso e da Coinbase Pro**: quelli in euro vengono abbinati da soli a fine importazione

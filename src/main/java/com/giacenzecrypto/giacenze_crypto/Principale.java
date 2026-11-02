@@ -455,6 +455,7 @@ private static final long serialVersionUID = 3L;
         RW_Tabella_Dettagli.putClientProperty("ColonneSenzaSomma", java.util.Set.of(0));
         RW_Tabella_Dettagli.putClientProperty("QtaPerToken", java.util.Map.of(3, 2, 8, 7));
         Tabelle.Tabelle_InizializzaHeader(RT_Tabella_DettaglioMonete);
+        Tabelle.Tabelle_InizializzaHeader(RT_Tabella_Gruppi);
         Tabelle.Tabelle_InizializzaHeader(RT_Tabella_LiFo);
         Tabelle.Tabelle_InizializzaHeader(RT_Tabella_TipologiaMovimenti);
         RT_MostraAliasGruppi();
@@ -861,6 +862,7 @@ private static final long serialVersionUID = 3L;
         GiacenzeaData_Wallet2_ComboBox = new javax.swing.JComboBox<>();
         Giacenzeadata_Walletb_Label = new javax.swing.JLabel();
         GiacenzeaData_CheckBox_NascondiScam = new javax.swing.JCheckBox();
+        GiacenzeaData_CheckBox_Microsaldi = new javax.swing.JCheckBox();
         GiacenzeaData_Bottone_CostiNetti = new javax.swing.JButton();
         GiacenzeaData_Bottone_Guida = new javax.swing.JButton();
         GiacenzeaData_Label_Aggiornare = new javax.swing.JLabel();
@@ -969,6 +971,9 @@ private static final long serialVersionUID = 3L;
         RT_Bottone_Calcola = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         RT_PannelloToken = new javax.swing.JPanel();
+        RT_PannelloGruppi = new javax.swing.JPanel();
+        jScrollPaneGruppi = new javax.swing.JScrollPane();
+        RT_Tabella_Gruppi = new javax.swing.JTable();
         jScrollPane12 = new javax.swing.JScrollPane();
         RT_Tabella_DettaglioMonete = new javax.swing.JTable();
         jScrollPane13 = new javax.swing.JScrollPane();
@@ -2974,6 +2979,14 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        GiacenzeaData_CheckBox_Microsaldi.setText("Evidenzia microsaldi");
+        GiacenzeaData_CheckBox_Microsaldi.setToolTipText("Evidenzia in giallo i saldi positivi minimi (probabili residui, per esempio una fee persa) che l'exchange o la blockchain non confermano. Per cambiare le soglie togli e rimetti la spunta.");
+        GiacenzeaData_CheckBox_Microsaldi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GiacenzeaData_CheckBox_MicrosaldiActionPerformed(evt);
+            }
+        });
+
         GiacenzeaData_Bottone_Guida.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Libro.png"))); // NOI18N
         GiacenzeaData_Bottone_Guida.setText("Guida...");
         GiacenzeaData_Bottone_Guida.setToolTipText("Apre il manuale di Giacenze a data: tabella, dettaglio movimenti, rettifiche e costi netti");
@@ -3060,6 +3073,8 @@ private static final long serialVersionUID = 3L;
                         .addGap(44, 44, 44)
                         .addComponent(GiacenzeaData_CheckBox_NascondiScam, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(44, 44, 44)
+                        .addComponent(GiacenzeaData_CheckBox_Microsaldi)
+                        .addGap(44, 44, 44)
                         .addComponent(GiacenzeaData_Bottone_CostiNetti)
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(GiacenzeaData_Bottone_Guida))
@@ -3115,6 +3130,7 @@ private static final long serialVersionUID = 3L;
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(GiacenzeaData_CheckBox_MostraQtaZero)
                     .addComponent(GiacenzeaData_CheckBox_NascondiScam)
+                    .addComponent(GiacenzeaData_CheckBox_Microsaldi)
                     .addComponent(GiacenzeaData_Bottone_CostiNetti)
                     .addComponent(GiacenzeaData_Bottone_Guida))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -4524,6 +4540,38 @@ private static final long serialVersionUID = 3L;
         );
 
         jTabbedPane1.addTab("Dettagli x Token", RT_PannelloToken);
+
+        RT_PannelloGruppi.setLayout(new java.awt.BorderLayout());
+
+        RT_Tabella_Gruppi.setAutoCreateRowSorter(true);
+        RT_Tabella_Gruppi.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Wallet", "<html>Valore Movimenti<br>Rilevanti</html>", "<html>Costo Carico<br>Movimenti Rilevanti</html>", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Valore Rimanenze", "Errori"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class, java.lang.Object.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPaneGruppi.setViewportView(RT_Tabella_Gruppi);
+
+        RT_PannelloGruppi.add(jScrollPaneGruppi, java.awt.BorderLayout.CENTER);
+
+        jTabbedPane1.addTab("Dettagli x Gruppo Wallet", RT_PannelloGruppi);
 
         RT_Tabella_Tipologie.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -7058,6 +7106,10 @@ private void SettaIcone(){
             RT_CheckBox_EscludiAnnoCorrente.setSelected(true);
         }
 
+        //Microsaldi in giallo su Giacenze a data: spenta salvo esplicito "SI" (soglie in Principale_GiacenzeaData_Microsaldi)
+        GiacenzeaData_CheckBox_Microsaldi.setSelected(Principale_GiacenzeaData_Microsaldi.Attivo());
+        GiacenzeaData_AggiornaMicrosaldi();
+
         //Ricalcolo incrementale: attivo salvo esplicito "NO", come lo legge Calcoli_PlusvalenzeNew
         Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale.setSelected(
                 !DatabaseH2.Pers_Opzioni_Leggi(Calcoli_PlusvalenzeNew.OPZIONE_INCREMENTALE, "SI").equalsIgnoreCase("NO"));
@@ -9055,6 +9107,7 @@ private void SettaIcone(){
             }
             //coloro la tabella
             Tabelle.ColoraRigheTabella1GiacenzeaData(GiacenzeaData_TabellaDettaglioMovimenti);
+            GiacenzeaData_AggiornaMicrosaldi();
             GiacenzeaData_ImpostaGrafico(VariazioniGrafico, new String[]{mon,
                 GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 3).toString(), Address, Rete},
                     DataRiferimento, GenerazioneDettaglio);
@@ -12593,6 +12646,44 @@ if (result.isAction("delete-all")) {
             GiacenzeaData_CompilaTabellaToken(true);
     }//GEN-LAST:event_GiacenzeaData_CheckBox_NascondiScamActionPerformed
 
+    private void GiacenzeaData_CheckBox_MicrosaldiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_CheckBox_MicrosaldiActionPerformed
+        if (GiacenzeaData_CheckBox_Microsaldi.isSelected()) {
+            //All'attivazione si chiedono le soglie (quelle salvate sono già nei campi): annullare lascia tutto spento
+            Principale_GiacenzeaData_Microsaldi.Soglie Scelte = Principale_GiacenzeaData_Microsaldi.ChiediSoglie(
+                    this, Principale_GiacenzeaData_Microsaldi.Leggi());
+            if (Scelte == null) {
+                GiacenzeaData_CheckBox_Microsaldi.setSelected(false);
+                return;
+            }
+            Principale_GiacenzeaData_Microsaldi.Scrivi(Scelte);
+        }
+        Principale_GiacenzeaData_Microsaldi.ImpostaAttivo(GiacenzeaData_CheckBox_Microsaldi.isSelected());
+        GiacenzeaData_AggiornaMicrosaldi();
+    }//GEN-LAST:event_GiacenzeaData_CheckBox_MicrosaldiActionPerformed
+
+    /**
+     * Passa alle due tabelle di "Giacenze a data" le soglie dei microsaldi (o niente, se la spunta è spenta) e le
+     * ridisegna: il giallo si decide al disegno, nessun ricalcolo. Sul dettaglio le soglie non valgono per un
+     * token FIAT o NFT. Va richiamata a ogni cambio di riga selezionata sulla tabella principale.
+     */
+    private void GiacenzeaData_AggiornaMicrosaldi() {
+        Principale_GiacenzeaData_Microsaldi.Soglie Soglie = GiacenzeaData_CheckBox_Microsaldi.isSelected()
+                ? Principale_GiacenzeaData_Microsaldi.Leggi() : null;
+        Principale_GiacenzeaData_Microsaldi.Soglie SoglieDettaglio = Soglie;
+        int Selezionata = GiacenzeaData_Tabella.getSelectedRow();
+        if (Soglie != null && Selezionata >= 0) {
+            Object Tipo = GiacenzeaData_Tabella.getModel().getValueAt(
+                    GiacenzeaData_Tabella.convertRowIndexToModel(Selezionata), 3);
+            if (Principale_GiacenzeaData_Microsaldi.TipoEscluso(Tipo == null ? null : Tipo.toString())) {
+                SoglieDettaglio = null;
+            }
+        }
+        GiacenzeaData_Tabella.putClientProperty(Tabelle.PROP_MICROSALDI, Soglie);
+        GiacenzeaData_TabellaDettaglioMovimenti.putClientProperty(Tabelle.PROP_MICROSALDI, SoglieDettaglio);
+        GiacenzeaData_Tabella.repaint();
+        GiacenzeaData_TabellaDettaglioMovimenti.repaint();
+    }
+
     private void GiacenzeaData_Bottone_GuidaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_GuidaActionPerformed
         DocumentiAiuto.Apri(DocumentiAiuto.GIACENZE_A_DATA);
     }//GEN-LAST:event_GiacenzeaData_Bottone_GuidaActionPerformed
@@ -14170,6 +14261,8 @@ if (result.isAction("delete-all")) {
         DefaultTableModel ModelloTabella = (DefaultTableModel) RT_Tabella_DettaglioMonete.getModel();
         Tabelle.Funzioni_PulisciTabella(ModelloTabella);
         Tabelle.ColoraTabellaRTDettaglio(RT_Tabella_DettaglioMonete);
+        Tabelle.Funzioni_PulisciTabella((DefaultTableModel) RT_Tabella_Gruppi.getModel());
+        Tabelle.ColoraTabellaRTDettaglio(RT_Tabella_Gruppi);
         DefaultTableModel ModelloTabella3 = (DefaultTableModel) RT_Tabella_LiFo.getModel();
         Tabelle.Funzioni_PulisciTabella(ModelloTabella3);
         Tabelle.ColoraTabellaSemplice(RT_Tabella_LiFo);
@@ -14252,11 +14345,14 @@ if (result.isAction("delete-all")) {
 
     private void RT_MostraAliasGruppi() {
         RT_ImpostaRendererGruppo(RT_Tabella_DettaglioMonete, 0);
+        RT_ImpostaRendererGruppo(RT_Tabella_Gruppi, 0);
         RT_ImpostaRendererGruppo(RT_Tabella_LiFo, 2);
     }
 
     private void RT_ImpostaRendererGruppo(JTable tabella, int colonna) {
         Principale_Dichiarazioni.MostraAliasGruppo(tabella, colonna, () -> RT_AliasGruppi);
+        //Anche nel popup del filtro della colonna si vede l'alias, ma il filtro resta sul valore del model ("Wallet 101")
+        Tabelle.Tabelle_ImpostaEtichettaFiltro(tabella, colonna, v -> Principale_Dichiarazioni.NomeGruppo(v, RT_AliasGruppi));
     }
 
     private void RT_CompilaTabellaDettagli(){
@@ -14281,11 +14377,18 @@ if (result.isAction("delete-all")) {
            while (it.hasNext()){
                ModelloTabella.addRow(it.next());
            }
+           DefaultTableModel ModelloGruppi = (DefaultTableModel) RT_Tabella_Gruppi.getModel();
+           Tabelle.Funzioni_PulisciTabella(ModelloGruppi);
+           for (Object[] riga : APlus.RitornaTabellaGruppiAnno(Anno)) {
+               ModelloGruppi.addRow(riga);
+           }
            /*for (String[] riga : tab.iterato)
           */
            } 
         Tabelle.ColoraTabellaRTDettaglio(RT_Tabella_DettaglioMonete);
         Tabelle.Tabelle_FiltroColonne(RT_Tabella_DettaglioMonete,null,popup);
+        Tabelle.ColoraTabellaRTDettaglio(RT_Tabella_Gruppi);
+        Tabelle.Tabelle_FiltroColonne(RT_Tabella_Gruppi,null,popup);
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
     
@@ -17462,6 +17565,7 @@ if (result != null && !result.isAction("cancel")) {
             intestazioneMonete[c] = mm.getColumnName(c);
         }
         java.util.List<Object[]> monete = APlus.RitornaTabellaAnno(AnnoS);
+        java.util.List<Object[]> gruppi = APlus.RitornaTabellaGruppiAnno(AnnoS);
 
         String fileT = "Quadro_T_" + AnnoS + ".pdf";
         String fileRT = "Quadro_RT_" + AnnoS + ".pdf";
@@ -17473,7 +17577,7 @@ if (result != null && !result.isAction("cancel")) {
             RT_ScriviPdf(new File(cartella, fileRT).getPath(), Anno, Vendite, Costi, errFinale, false);
             try {
                 Principale_Dichiarazioni.RT_CreaExcel(new File(cartella, fileExcel), AnnoS, intestazione, riga,
-                        intestazioneMonete, monete, tipologie, Principale_RT_Tipologie.MovimentiRilevanti(AnnoS));
+                        intestazioneMonete, monete, gruppi, tipologie, Principale_RT_Tipologie.MovimentiRilevanti(AnnoS));
             } catch (IOException | RuntimeException ex) {
                 throw new IOException("errore nell'Excel di dettaglio: " + ex, ex);
             }
@@ -21035,6 +21139,7 @@ try {
     private javax.swing.JButton GiacenzeaData_Bottone_Scam;
     private javax.swing.JCheckBox GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative;
     private javax.swing.JButton GiacenzeaData_Bottone_CostiNetti;
+    private javax.swing.JCheckBox GiacenzeaData_CheckBox_Microsaldi;
     private javax.swing.JCheckBox GiacenzeaData_CheckBox_MostraQtaZero;
     private javax.swing.JCheckBox GiacenzeaData_CheckBox_NascondiScam;
     private com.toedter.calendar.JDateChooser GiacenzeaData_Data_DataChooser;
@@ -21201,10 +21306,12 @@ try {
     private javax.swing.JCheckBox RT_CheckBox_EscludiAnnoCorrente;
     private javax.swing.JLabel RT_Label_Avviso;
     private javax.swing.JLabel RT_Label_Definitiva;
+    private javax.swing.JPanel RT_PannelloGruppi;
     private javax.swing.JPanel RT_PannelloTipologie;
     private javax.swing.JPanel RT_PannelloToken;
     private javax.swing.JPanel RT_Pannello_GraficoTipologia;
     private javax.swing.JTable RT_Tabella_DettaglioMonete;
+    private javax.swing.JTable RT_Tabella_Gruppi;
     private javax.swing.JTable RT_Tabella_LiFo;
     private javax.swing.JTable RT_Tabella_Principale;
     private javax.swing.JTable RT_Tabella_TipologiaMovimenti;
@@ -21341,6 +21448,7 @@ try {
     private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JScrollPane jScrollPane9;
     private javax.swing.JScrollPane jScrollPaneTipologiaMov;
+    private javax.swing.JScrollPane jScrollPaneGruppi;
     private javax.swing.JScrollPane jScrollPaneTipologie;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator10;

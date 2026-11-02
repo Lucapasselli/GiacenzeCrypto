@@ -2556,6 +2556,8 @@
                                       <EmptySpace min="-2" pref="44" max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_CheckBox_NascondiScam" min="-2" pref="176" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="44" max="-2" attributes="0"/>
+                                      <Component id="GiacenzeaData_CheckBox_Microsaldi" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="44" max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_Bottone_CostiNetti" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                       <Component id="GiacenzeaData_Bottone_Guida" min="-2" max="-2" attributes="0"/>
@@ -2626,6 +2628,7 @@
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="GiacenzeaData_CheckBox_MostraQtaZero" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_CheckBox_NascondiScam" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="GiacenzeaData_CheckBox_Microsaldi" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_Bottone_CostiNetti" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_Bottone_Guida" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
@@ -3184,6 +3187,15 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_CheckBox_NascondiScamActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="GiacenzeaData_CheckBox_Microsaldi">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Evidenzia microsaldi"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Evidenzia in giallo i saldi positivi minimi (probabili residui, per esempio una fee persa) che l'exchange o la blockchain non confermano. Per cambiare le soglie togli e rimetti la spunta."/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_CheckBox_MicrosaldiActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JButton" name="GiacenzeaData_Bottone_Guida">
@@ -5590,6 +5602,52 @@
                                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RT_Bottone_ModificaGiacenzaActionPerformed"/>
                               </Events>
                             </Component>
+                          </SubComponents>
+                        </Container>
+                        <Container class="javax.swing.JPanel" name="RT_PannelloGruppi">
+                          <Constraints>
+                            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                              <JTabbedPaneConstraints tabName="Dettagli x Gruppo Wallet">
+                                <Property name="tabTitle" type="java.lang.String" value="Dettagli x Gruppo Wallet"/>
+                              </JTabbedPaneConstraints>
+                            </Constraint>
+                          </Constraints>
+
+                          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
+                          <SubComponents>
+                            <Container class="javax.swing.JScrollPane" name="jScrollPaneGruppi">
+                              <AuxValues>
+                                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+                              </AuxValues>
+                              <Constraints>
+                                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
+                                  <BorderConstraints direction="Center"/>
+                                </Constraint>
+                              </Constraints>
+
+                              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+                              <SubComponents>
+                                <Component class="javax.swing.JTable" name="RT_Tabella_Gruppi">
+                                  <Properties>
+                                    <Property name="autoCreateRowSorter" type="boolean" value="true"/>
+                                    <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
+                                      <Table columnCount="7" rowCount="0">
+                                        <Column editable="false" title="Wallet" type="java.lang.Object"/>
+                                        <Column editable="false" title="&lt;html&gt;Valore Movimenti&lt;br&gt;Rilevanti&lt;/html&gt;" type="java.lang.Double"/>
+                                        <Column editable="false" title="&lt;html&gt;Costo Carico&lt;br&gt;Movimenti Rilevanti&lt;/html&gt;" type="java.lang.Double"/>
+                                        <Column editable="false" title="Plusvalenze Realizzate" type="java.lang.Double"/>
+                                        <Column editable="false" title="Plusvalenze Latenti" type="java.lang.Double"/>
+                                        <Column editable="false" title="Valore Rimanenze" type="java.lang.Double"/>
+                                        <Column editable="false" title="Errori" type="java.lang.Object"/>
+                                      </Table>
+                                    </Property>
+                                    <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
+                                      <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
+                                    </Property>
+                                  </Properties>
+                                </Component>
+                              </SubComponents>
+                            </Container>
                           </SubComponents>
                         </Container>
                         <Container class="javax.swing.JPanel" name="RT_PannelloTipologie">

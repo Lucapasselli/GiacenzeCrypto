@@ -355,6 +355,7 @@ public class ImportazioneGenerica {
 
         // FASE 2 – splitto e valido
         cfg.ControllaRegoleRiga(); //l'autodetect puo' aver spostato la colonna della data
+        boolean primaDataLetta = false;
         for (String r : righeRaw) {
             String[] campi = splitCsvRispettoVirgolette(r, sep);
             if (campi.length <= cfg.colonnaData) {
@@ -369,9 +370,16 @@ public class ImportazioneGenerica {
             }
             long dataLong = cfg.convertiDataInMillis(dataStr);
             if (dataLong <= 0) {
+                //Una riga di testa in piu' di quelle dichiarate (la vera intestazione, una riga di titolo): e'
+                //prima del primo dato e al posto della data ha un testo senza nemmeno una cifra. Non e' un
+                //movimento perso, quindi non va fra le sconosciute.
+                if (!primaDataLetta && RigaDiTesta(campi, cfg.colonnaData)) {
+                    continue;
+                }
                 scarta("DATA NON PARSABILE", r);
                 continue;
             }
+            primaDataLetta = true;
             //Trasformazioni della riga, in quest'ordine: coppia, colonne calcolate (possono usare le colonne della
             //coppia), regole di riga (possono leggere le colonne calcolate). Senza le chiavi la riga resta com'e'.
             if (cfg.colonnaCoppia >= 0) {
@@ -1933,6 +1941,29 @@ public class ImportazioneGenerica {
      */
     private static String nvl(String s, String def) {
         return (s == null || s.isBlank()) ? def : s;
+    }
+
+    /**
+     * Una riga di testa e' riconoscibile dalla colonna della data e dal resto della riga: al posto della data c'e'
+     * un testo ("Timestamp", "Date(UTC)") senza nessuna cifra, e nessun'altra colonna e' un numero. Una data
+     * scritta male ne ha sempre, e una riga di dati con la data assente ("N/A", "-") ha i suoi importi: restano
+     * fra le righe sconosciute.
+     *
+     * @param campi la riga gia' divisa in colonne
+     * @param colonnaData indice della colonna della data
+     */
+    static boolean RigaDiTesta(String[] campi, int colonnaData) {
+        String dataStr = safe(campi, colonnaData);
+        if (dataStr == null || dataStr.isBlank() || dataStr.chars().anyMatch(Character::isDigit)) {
+            return false;
+        }
+        for (int i = 0; i < campi.length; i++) {
+            if (i != colonnaData && campi[i] != null
+                    && campi[i].replaceAll("[€$£¥\\s]", "").matches("[-+]?\\d+([.,]\\d+)*([eE][-+]?\\d+)?")) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

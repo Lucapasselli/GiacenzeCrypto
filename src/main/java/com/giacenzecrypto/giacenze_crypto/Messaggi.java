@@ -399,10 +399,12 @@ public class Messaggi {
       * @param NumErroriGiacenzeNegative numero di terne exchange/sotto-wallet/token con saldo negativo
       * @param NumErroriMovimentiCollegati numero di movimenti collegati dalla classificazione in modo incoerente
       *        ({@link MovimentiCollegati}): scambi differiti sovrascritti, contratti Dual da aggiornare, altri
+      * @param NumNoPrezzoFuoriPeriodo quanti di NumErroriMovNoPrezzo stanno fuori dal periodo selezionato
+      * @param NumLifoFuoriPeriodo quanti di NumErroriStackLiFoMancante stanno fuori dal periodo selezionato
       * @param win finestra parent del dialog
       * @return il risultato del dialog, da cui leggere l'azione scelta dall'utente tramite {@code isAction}
       */
-     public static AppDialog.DialogResult Personalizzati_Multi_ScegliErrori(int NumErroriMovSconosciuti,int NumErroriMovNoPrezzo,int NumErroriStackLiFoMancante,int NumErroriGiacenzeNegative,int NumErroriMovimentiCollegati,Window win) {
+     public static AppDialog.DialogResult Personalizzati_Multi_ScegliErrori(int NumErroriMovSconosciuti,int NumErroriMovNoPrezzo,int NumErroriStackLiFoMancante,int NumErroriGiacenzeNegative,int NumErroriMovimentiCollegati,int NumNoPrezzoFuoriPeriodo,int NumLifoFuoriPeriodo,Window win) {
          String testo = "Scegli quale tipologia di errore correggere.";
          AppDialog.DialogResult result = AppDialog.builder(win)
                  .windowTitle("Correzione errori")
@@ -411,7 +413,7 @@ public class Messaggi {
                  .theme()
                  .type(AppDialog.DialogType.INFO)
                  .message(testo)
-                 .details("")
+                 .details(TestoFuoriPeriodo(NumNoPrezzoFuoriPeriodo, NumLifoFuoriPeriodo))
                  .action(AppDialog.DialogAction.builder("cancel", "Annulla")
                          .role(AppDialog.ActionRole.SECONDARY)
                          .build())
@@ -433,6 +435,60 @@ public class Messaggi {
                  .showDialog();
          
          return result;
+     }
+
+     /**
+      * Chiede se mostrare anche i movimenti in errore che stanno fuori dal periodo selezionato.
+      *
+      * @param Elenco che cosa c'e' fuori periodo, come lo scrive {@link #ElencoFuoriPeriodo} (non vuoto)
+      * @param w finestra parent del dialog
+      * @return {@code true} se l'utente vuole vederli, {@code false} per restare sul periodo (anche chiudendo il dialogo)
+      */
+     public static boolean ChiediMostraFuoriPeriodo(String Elenco, Window w) {
+         AppDialog.DialogResult result = AppDialog.builder(w)
+                 .windowTitle("Fuori dal periodo selezionato")
+                 .bodyTitle("Movimenti fuori periodo")
+                 .showTitleInBody(true)
+                 .theme()
+                 .type(AppDialog.DialogType.INFO)
+                 .message("Fuori dal periodo selezionato ci sono " + Elenco + ".")
+                 .details("Vuoi vedere anche quelli? Le date in alto, che sono anche il periodo dei calcoli, verranno allargate "
+                         + "fino a comprenderli. Il pulsante \"Azzera Filtri\" le riporta com'erano.")
+                 .action(AppDialog.DialogAction.builder("periodo", "Solo il periodo selezionato")
+                         .role(AppDialog.ActionRole.SECONDARY)
+                         .build())
+                 .action(AppDialog.DialogAction.builder("tutto", "Mostra anche fuori periodo")
+                         .role(AppDialog.ActionRole.PRIMARY)
+                         .build())
+                 .showDialog();
+         return result != null && result.isAction("tutto");
+     }
+
+     /**
+      * Nota del dialogo degli errori sui movimenti che il pulsante conta ma la tabella non mostra, perche' il
+      * filtro rispetta Data Inizio/Fine. Vuota se non ce ne sono.
+      *
+      * @param NoPrezzo transazioni senza prezzo fuori dal periodo
+      * @param Lifo movimenti con parte del LIFO mancante fuori dal periodo
+      * @return il testo, o la stringa vuota
+      */
+     static String TestoFuoriPeriodo(int NoPrezzo, int Lifo) {
+         String elenco = ElencoFuoriPeriodo(NoPrezzo, Lifo);
+         if (elenco.isEmpty()) return "";
+         return "Fuori dal periodo selezionato: " + elenco + ". Il pulsante li conta ma la tabella non li mostra, "
+                 + "scegliendo la voce relativa si può decidere di vederli.";
+     }
+
+     /**
+      * @param NoPrezzo transazioni senza prezzo fuori dal periodo
+      * @param Lifo movimenti con parte del LIFO mancante fuori dal periodo
+      * @return per esempio "6 transazioni senza prezzo e 2 movimenti con parte del LIFO mancante", vuoto se sono entrambi zero
+      */
+     static String ElencoFuoriPeriodo(int NoPrezzo, int Lifo) {
+         java.util.List<String> parti = new java.util.ArrayList<>();
+         if (NoPrezzo > 0) parti.add(NoPrezzo + (NoPrezzo == 1 ? " transazione senza prezzo" : " transazioni senza prezzo"));
+         if (Lifo > 0) parti.add(Lifo + (Lifo == 1 ? " movimento con parte del LIFO mancante" : " movimenti con parte del LIFO mancante"));
+         return String.join(" e ", parti);
      }
      
           /**

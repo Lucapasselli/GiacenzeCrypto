@@ -336,6 +336,31 @@ public class Principale_FiltriMovimenti {
     }
 
     /**
+     * Il periodo che comprende quello attuale e la data di ogni movimento, per mostrare anche i movimenti
+     * fuori dalle date in alto. Non restringe mai il periodo di partenza.
+     *
+     * <p>Si legge solo la parte {@code yyyy-MM-dd} di {@code [1]}, come fa il confronto del filtro (che ignora
+     * l'ora). Un movimento con la data illeggibile non entra nel calcolo: nessun intervallo lo comprenderebbe.
+     *
+     * @param Movimenti i movimenti, nel formato a {@code Importazioni.ColonneTabella} campi
+     * @param Inizio data di inizio attuale, {@code yyyy-MM-dd}
+     * @param Fine data di fine attuale, {@code yyyy-MM-dd}
+     * @return {@code {inizio, fine}}, entrambi {@code yyyy-MM-dd}
+     */
+    public static String[] PeriodoCheComprendeTutto(java.util.Collection<String[]> Movimenti, String Inizio, String Fine) {
+        String inizio = Inizio;
+        String fine = Fine;
+        for (String[] v : Movimenti) {
+            if (v == null || v.length < 2 || v[1] == null || v[1].length() < 10) continue;
+            String giorno = v[1].substring(0, 10);
+            if (!giorno.matches("\\d{4}-\\d{2}-\\d{2}")) continue;
+            if (giorno.compareTo(inizio) < 0) inizio = giorno;
+            if (giorno.compareTo(fine) > 0) fine = giorno;
+        }
+        return new String[]{inizio, fine};
+    }
+
+    /**
      * Estrae il nome del gruppo dalla voce della combo dei wallet, che nella forma
      * {@code "Wallet : Gruppo (12)"} indica un gruppo e non un singolo wallet.
      *

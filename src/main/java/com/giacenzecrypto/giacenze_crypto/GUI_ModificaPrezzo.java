@@ -795,6 +795,19 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Scrive su un movimento il prezzo scelto dalla tabella. Oltre a {@code [15]} e {@code [40]} marca
+     * {@code [32]="SI"}: l'utente ha confermato il valore nel dialogo, quindi anche uno zero è un prezzo
+     * dichiarato e non un prezzo mancante. Senza, un movimento con {@code [32]="NO"} resterebbe fra gli
+     * errori "senza prezzo" (con un valore diverso da zero lo ripara {@code Prezzi.isMovimentoPrezzato},
+     * con {@code 0.00} no). Stessa regola di {@code Funzioni.GUIModificaPrezzo(Component, String)}.
+     */
+    static void ApplicaPrezzoScelto(String[] Movimento, String Prezzo, String Riferimento) {
+        Movimento[15] = Prezzo;
+        Movimento[32] = "SI";
+        Movimento[40] = Riferimento;
+    }
+
     private void Bottone_OKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_OKActionPerformed
         // TODO add your handling code here:
           if (Tabella_Prezzi.getSelectedRow() >= 0) {
@@ -842,8 +855,7 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
             int risposta=JOptionPane.showOptionDialog(this,domanda, "Cambio Prezzo", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Si", "No"}, "Si");
             if (risposta==0){
                     if (ID!=null){
-                        Principale.MappaCryptoWallet.get(ID)[40]=Token+"|"+TimeStampa+"|"+PrezzoU+"|"+Fonte;
-                        Principale.MappaCryptoWallet.get(ID)[15]=Prezzo;
+                        ApplicaPrezzoScelto(Principale.MappaCryptoWallet.get(ID), Prezzo, Token+"|"+TimeStampa+"|"+PrezzoU+"|"+Fonte);
                         Principale.TabellaCryptodaAggiornare=true;
                     }
                     

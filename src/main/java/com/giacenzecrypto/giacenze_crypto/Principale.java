@@ -251,6 +251,14 @@ private static final long serialVersionUID = 3L;
     public int NumErroriMovNoPrezzo=0;
     public int NumErroriStackLiFoMancante=0;
     /**
+     * Quanti dei due contatori qui sopra ({@link #NumErroriMovNoPrezzo}, {@link #NumErroriStackLiFoMancante})
+     * stanno fuori da Data Inizio/Fine. Il contatore del pulsante Errori conta sempre tutta la mappa, mentre
+     * il filtro "senza prezzo" / "LiFo mancante" rispetta il periodo: senza questi due numeri il dialogo
+     * annuncia errori che la tabella poi non mostra. Sono un di cui, non si sommano al pulsante.
+     */
+    public int NumErroriMovNoPrezzoFuoriPeriodo=0;
+    public int NumErroriStackLiFoMancanteFuoriPeriodo=0;
+    /**
      * Quante terne {@code exchange;sotto-wallet;token} hanno toccato un saldo negativo, cioè il numero
      * di righe della scheda <i>Verifica Saldi Negativi</i>.
      *
@@ -14670,7 +14678,8 @@ if (result.isAction("delete-all")) {
     }
     private void Funzioni_CorrezioneErroriPrincipali(){
 
-AppDialog.DialogResult result = Messaggi.Personalizzati_Multi_ScegliErrori(NumErroriMovSconosciuti, NumErroriMovNoPrezzo, NumErroriStackLiFoMancante, NumErroriGiacenzeNegative, NumErroriMovimentiCollegati, this);
+AppDialog.DialogResult result = Messaggi.Personalizzati_Multi_ScegliErrori(NumErroriMovSconosciuti, NumErroriMovNoPrezzo, NumErroriStackLiFoMancante, NumErroriGiacenzeNegative, NumErroriMovimentiCollegati,
+        NumErroriMovNoPrezzoFuoriPeriodo, NumErroriStackLiFoMancanteFuoriPeriodo, this);
 
 if (result != null && !result.isAction("cancel")) {
 
@@ -14686,8 +14695,12 @@ if (result != null && !result.isAction("cancel")) {
                                 
                             }
                             else if (result.isAction("PrezzoMancante")) {
+                                //Il contatore degli errori conta anche fuori dalle date in alto, il filtro no: si chiede se allargarle
+                                boolean periodoAllargato = FiltriMovimenti_ChiediFuoriPeriodo(NumErroriMovNoPrezzoFuoriPeriodo, false);
                                 String t="Verranno ora mostrati tutti i prodotti senza prezzo dei token non SCAM del periodo selezionato.<br><br>"
-                                        + "<b>ATTENZIONE! Per vedere tutt i movimenti senza prezzo agire sulle date di inizio e fine posizionati in alto a destra</b><br><br>"
+                                        + (periodoAllargato
+                                            ? "<b>Le date in alto a destra sono state allargate per comprendere anche i movimenti fuori periodo</b><br><br>"
+                                            : "<b>ATTENZIONE! Per vedere tutti i movimenti senza prezzo agire sulle date di inizio e fine posizionati in alto a destra</b><br><br>")
                                         + "Per tornare alla visualizzazione precedente togliere la biffatura dall'opzione \"<b>Vedi solo movimenti non valorizzati</b>\"<br>";
                                 Messaggi.InfoMessage("Movimenti senza prezzo", t, this);
                                 //Accende il criterio "solo movimenti senza prezzo" da programma: il
@@ -14708,6 +14721,7 @@ if (result != null && !result.isAction("cancel")) {
                                 //qui resta solo la navigazione verso la scheda scelta
                                 Principale_LifoMancante.Scelta scelta = Principale_LifoMancante.Gestisci(this, NumErroriMovSconosciuti);
                                 if (scelta == Principale_LifoMancante.Scelta.MOSTRA_MOVIMENTI) {
+                                    FiltriMovimenti_ChiediFuoriPeriodo(NumErroriStackLiFoMancanteFuoriPeriodo, true);
                                     //Stesso schema di 'PrezzoMancante': tutto il periodo e il solo criterio "LiFo mancante"
                                     FiltriCorrenti = new Principale_FiltriMovimenti.FiltriMovimenti(
                                             FiltriCorrenti.Wallet(), FiltriCorrenti.Token(), FiltriCorrenti.Documento(),
@@ -20062,6 +20076,30 @@ try {
     }
 
     /**
+     * Se ci sono movimenti in errore fuori dalle date in alto, chiede se vederli e, in caso di sì, allarga le
+     * due date fino a comprenderli. Il periodo di prima si salva come per la combo "Periodo" del dialogo
+     * filtri, quindi "Azzera Filtri" lo restituisce.
+     *
+     * @param numero quanti ne contano i contatori fuori periodo (0 = non si chiede niente)
+     * @param lifo {@code true} per il LIFO mancante, {@code false} per i movimenti senza prezzo
+     * @return {@code true} se le date sono state allargate
+     */
+    private boolean FiltriMovimenti_ChiediFuoriPeriodo(int numero, boolean lifo) {
+        if (numero <= 0) return false;
+        String elenco = lifo ? Messaggi.ElencoFuoriPeriodo(0, numero) : Messaggi.ElencoFuoriPeriodo(numero, 0);
+        if (!Messaggi.ChiediMostraFuoriPeriodo(elenco, this)) return false;
+        String[] periodo = Principale_FiltriMovimenti.PeriodoCheComprendeTutto(
+                MappaCryptoWallet.values(), CDC_DataIniziale, CDC_DataFinale);
+        if (periodo[0].equals(CDC_DataIniziale) && periodo[1].equals(CDC_DataFinale)) return false;
+        if (FiltriMovimenti_DataIniziale_Precedente == null) {
+            FiltriMovimenti_DataIniziale_Precedente = CDC_DataIniziale;
+            FiltriMovimenti_DataFinale_Precedente = CDC_DataFinale;
+        }
+        CDC_ImpostaPeriodo(periodo[0], periodo[1]);
+        return true;
+    }
+
+    /**
      * Porta le due date in alto a un valore preciso, aggiornando GUI, file e tabelle come fa l'utente
      * muovendo i {@code JDateChooser} — ma <b>senza</b> passare dai loro {@code PropertyChangeListener}
      * ({@code CDC_DataChooser_InizialePropertyChange}/{@code FinalePropertyChange}), che confrontano
@@ -20376,6 +20414,8 @@ try {
         NumErroriMovSconosciuti=0;
         NumErroriMovNoPrezzo=0;
         NumErroriStackLiFoMancante=0;
+        NumErroriMovNoPrezzoFuoriPeriodo=0;
+        NumErroriStackLiFoMancanteFuoriPeriodo=0;
 
         //Se la scheda dei movimenti non è a video non ha senso costruirne le righe: nessuno le
         //vedrebbe, e verrebbero comunque buttate al prossimo ricalcolo. Il caso tipico è l'utente
@@ -20566,6 +20606,12 @@ try {
      
             //Nuovo metodo per il caricamento della tabella
             long dataMovLong = Funzioni_Date_ConvertiDatainLong(v[1]);
+
+            //Stesso confronto di FiltriMovimenti.Passa(): sono gli errori che il filtro non mostrerebbe
+            if (dataMovLong < dataInizio || dataMovLong > dataFine) {
+                if (!haPrezzo) NumErroriMovNoPrezzoFuoriPeriodo++;
+                if (lifomancante) NumErroriStackLiFoMancanteFuoriPeriodo++;
+            }
 
             String gruppoWallet = DatabaseH2.Pers_GruppoWallet_Leggi(v[3],true);
             String valorePlusvalenza = v[19];

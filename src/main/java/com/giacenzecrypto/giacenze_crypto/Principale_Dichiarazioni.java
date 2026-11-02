@@ -283,10 +283,12 @@ public final class Principale_Dichiarazioni {
             ws.finish();
 
             ws = wb.newWorksheet("Movimenti rilevanti " + Anno);
-            ScriviRiga(ws, 0, Principale_RT_Tipologie.COLONNE_MOVIMENTI);
+            //Dopo "Wallet" (colonna 3, il nome dell'exchange/wallet del movimento) il gruppo wallet e il suo alias
+            ScriviRiga(ws, 0, ConColonneGruppoWallet(Principale_RT_Tipologie.COLONNE_MOVIMENTI, 3, null, alias));
             r = 1;
             for (Object[] riga : Movimenti) {
-                ScriviRiga(ws, r++, riga);
+                String gruppo = DatabaseH2.Pers_GruppoWallet_Leggi(String.valueOf(riga[3]), true);
+                ScriviRiga(ws, r++, ConColonneGruppoWallet(riga, 3, gruppo, alias));
             }
             ws.finish();
 
@@ -476,6 +478,29 @@ public final class Principale_Dichiarazioni {
             r[1] = a != null && a.length > 1 && a[1] != null ? a[1] : "";
         }
         System.arraycopy(Valori, 1, r, 2, Valori.length - 1);
+        return r;
+    }
+
+    /**
+     * La riga con, subito dopo la colonna {@code Dopo}, il gruppo wallet e il suo alias (due colonne in piu').
+     *
+     * @param Valori la riga, o le intestazioni
+     * @param Dopo indice della colonna dopo cui inserire le due nuove
+     * @param Gruppo il gruppo della riga ({@code "Wallet 04"}); {@code null} per le intestazioni
+     * @param Alias gruppo → alias ({@code DatabaseH2.Pers_GruppoAlias_LeggiTabella})
+     */
+    static Object[] ConColonneGruppoWallet(Object[] Valori, int Dopo, String Gruppo, Map<String, String[]> Alias) {
+        Object[] r = new Object[Valori.length + 2];
+        System.arraycopy(Valori, 0, r, 0, Dopo + 1);
+        if (Gruppo == null) {
+            r[Dopo + 1] = "Gruppo wallet";
+            r[Dopo + 2] = "Alias gruppo wallet";
+        } else {
+            String[] a = Alias.get(Gruppo);
+            r[Dopo + 1] = Gruppo;
+            r[Dopo + 2] = a != null && a.length > 1 && a[1] != null ? a[1] : "";
+        }
+        System.arraycopy(Valori, Dopo + 1, r, Dopo + 3, Valori.length - Dopo - 1);
         return r;
     }
 

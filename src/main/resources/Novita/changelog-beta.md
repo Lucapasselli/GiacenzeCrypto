@@ -5,6 +5,26 @@ programma all'avvio di una beta, ed è la descrizione della beta su GitHub. L'el
 in preparazione è nella sezione "in lavorazione" di docs/documentazione/changelog.md, dove ogni voce di questo file
 compare con lo stesso titolo. Questo file non è una pagina del sito.
 
+## Versione 1.0.66.01
+
+**Nuove implementazioni**
+
+- **Microsaldi in giallo in Giacenze a data**: la nuova spunta *Evidenzia microsaldi* colora in giallo le quantità minime, di solito residui e non giacenze vere. Chiede le soglie in euro e in quantità, non colora i saldi confermati dalle API e non cambia nessun calcolo.
+
+- **RT e Analisi P&L, dettagli per gruppo wallet**: nuova scheda *Dettagli x Gruppo Wallet* con vendite, costi, plusvalenze e rimanenze di ogni gruppo. Con il LiFo globale i totali dell'anno non cambiano: il realizzato va al gruppo del wallet del movimento, rimanenze e latente sono ripartite in proporzione alla quantità del gruppo. Nell'Excel T/RT c'è il foglio *Gruppi wallet* e l'alias del gruppo, e *Movimenti rilevanti* mostra gruppo e alias.
+
+- **Filtri di colonna, pulsante Seleziona filtrati**: dopo una ricerca nel popup di filtro spunta tutte e sole le voci che compaiono nell'elenco.
+
+**Correzione di bug**
+
+- **Importazione da Coinbase, addebiti (Debit)**: le righe "Debit" non vengono più scartate come causale sconosciuta, diventano prelievi di cripto da classificare a mano.
+
+- **Importazione da CSV generico, riga di testa in più**: una riga di testa in più senza cifre non compare più fra le scartate come «DATA NON PARSABILE».
+
+- **Movimenti senza prezzo e LiFo mancante, errori fuori periodo**: un prezzo scelto dalla tabella dei prezzi, anche zero, ora toglie il movimento dall'errore. Il dialogo *Errori* dice quanti movimenti stanno fuori dal periodo e propone di allargare le date per vederli.
+
+- **Dettagli x Tipologia, ordinamento delle colonne numeriche**: nell'elenco dei movimenti quantità, corrispettivo, costo di carico e plusvalenza si ordinano ora per valore e non come testo.
+
 ## Versione 1.0.65.18
 
 **Nuove implementazioni**

@@ -14487,6 +14487,8 @@ if (result.isAction("delete-all")) {
         Principale_RT_Tipologie.PopolaMovimenti(modello, RT_DatiTipologie.anno, tipologia);
         Tabelle.ColoraTabellaSemplice(RT_Tabella_TipologiaMovimenti);
         Tabelle.Tabelle_FiltroColonne(RT_Tabella_TipologiaMovimenti, null, popup);
+        //Quantita', corrispettivo, costo di carico e plusvalenza: il model le dichiara Object, senza questo si ordinano come testo
+        Tabelle.Tabelle_OrdinamentoNumerico(RT_Tabella_TipologiaMovimenti, 5, 7, 8, 9, 10);
         Tabelle.updateRowHeights(RT_Tabella_TipologiaMovimenti);
         if (RT_GraficoTipologia != null) {
             RT_GraficoTipologia.impostaDati(tipologia, RT_DatiTipologie.serie(tipologia), RT_DatiTipologie.totaleMensile);

@@ -1566,6 +1566,35 @@ public static JTable ColoraTabellaPlusvalenzeMensili(final JTable table, int pri
     return table;
 }
 
+/**
+ * Fa ordinare per valore numerico le colonne indicate, anche se il model le dichiara {@code Object} (quindi di
+ * default ordinate come testo, "10" prima di "9"): i valori sono {@code BigDecimal}, oppure stringhe come le
+ * quantita'. I valori non numerici o vuoti vanno in coda all'ordinamento crescente. Va chiamato dopo che la tabella ha
+ * il suo {@code TableRowSorter}; senza, non fa nulla.
+ */
+public static void Tabelle_OrdinamentoNumerico(JTable table, int... colonneModel) {
+    if (!(table.getRowSorter() instanceof TableRowSorter)) return;
+    TableRowSorter<?> sorter = (TableRowSorter<?>) table.getRowSorter();
+    java.util.Comparator<Object> numerico = (a, b) -> {
+        BigDecimal x = ComeNumero(a);
+        BigDecimal y = ComeNumero(b);
+        if (x == null || y == null) {
+            return x == y ? 0 : (x == null ? 1 : -1);
+        }
+        return x.compareTo(y);
+    };
+    for (int c : colonneModel) {
+        sorter.setComparator(c, numerico);
+    }
+}
+
+private static BigDecimal ComeNumero(Object o) {
+    if (o instanceof BigDecimal) return (BigDecimal) o;
+    if (o instanceof Number) return new BigDecimal(o.toString());
+    if (o == null || !Funzioni_isNumericLocale(o.toString())) return null;
+    return new BigDecimal(o.toString().trim());
+}
+
 /** @return {@code true} se {@code s} è un numero interpretabile da {@link BigDecimal}. */
 private static boolean Funzioni_isNumericLocale(String s) {
     if (s == null || s.isBlank()) return false;

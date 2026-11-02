@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  *
@@ -63,6 +64,9 @@ public class Calcoli_RT {
         if(PlusXW!=null && PlusXW.equalsIgnoreCase("SI")){
             PlusXWallet=true;
         }
+        //Con il LiFo globale i gruppi wallet non hanno una pila propria: la tabella per gruppo si ricava
+        //da quanto accumulato qui sotto (realizzato per movimento, quantità per gruppo), senza toccare il calcolo
+        ritorno.GlobaleDivisoPerGruppo=!PlusXWallet;
         
         //Opzione della scheda "RT & Analisi P&L": se attiva, l'anno in corso non viene calcolato.
         //I suoi movimenti non vengono nemmeno letti, così l'ultimo anno chiuso resta il precedente
@@ -135,6 +139,7 @@ public class Calcoli_RT {
               //  Map<String, Map<String, Map<String, ArrayDeque>>> MappaAnno_MappaGrWallet_CryptoStack = new TreeMap<>();
 
               //la funzione ritorna false solo se ho premuto il pulsante interrompi nella progress bar
+                ritorno.FotografaQtaGruppi(Anno);
                 if(!ChiudiAnno(PlusvalenzeXAnno,Anno,MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,progress,v[1].split("-")[0]))return null;               
             }
             
@@ -146,6 +151,7 @@ public class Calcoli_RT {
 
             
             String GruppoWallet=DatabaseH2.Pers_GruppoWallet_Leggi(v[3],true);
+            String GruppoReale=GruppoWallet;
                 if(!PlusXWallet)GruppoWallet="Globale";
 
             //A - INIZIALIZZA MAPPE PER ANNO
@@ -216,6 +222,7 @@ public class Calcoli_RT {
             for (int i = 0; i < 2; i++) {
                 //Se l moneata ha un tipo e quel tipo è divers da fiat vado avanti
                 if (!Monete[i].Tipo.isBlank() && !Monete[i].Tipo.equalsIgnoreCase("FIAT")) {
+                    if(!PlusXWallet)ritorno.AggiungiQtaGruppo(GruppoReale,Monete[i].Moneta,Monete[i].Qta);
                     //PARTE 1
                     //Faccio la somma delle qta e le scrivo nella mappa
                     //Questa parte va fatta senza filtri perchè per le quantità conto tutte le uscite e le entrate      
@@ -297,6 +304,14 @@ public class Calcoli_RT {
                     m.Prezzo = "0.00";
                     PlusXm.CompilaCampiDaMoneta(m);
                     MappaMoneta_PlusXMoneta.put(Monete[Entrata].Moneta, PlusXm);
+                }
+                if(!PlusXWallet){
+                    //Stessa moneta su cui il blocco qui sotto scrive vendite, costi e plusvalenza
+                    String MonetaRealizzo=Monete[Uscita].Moneta.isBlank()?Monete[Entrata].Moneta:Monete[Uscita].Moneta;
+                    ritorno.AccumulaRealizzatoGruppo(Anno,GruppoReale,MonetaRealizzo,
+                            v[15].isEmpty()?BigDecimal.ZERO:new BigDecimal(v[15]),
+                            v[16].isEmpty()?BigDecimal.ZERO:new BigDecimal(v[16]),
+                            Funzioni_isNumeric(v[19], false)?new BigDecimal(v[19]):BigDecimal.ZERO);
                 }
                 //Per prima cosa verifico se l'anno è vuoto e in quel caso lo valorizzo
                 BigDecimal PlusAnno[];
@@ -433,6 +448,7 @@ public class Calcoli_RT {
           //Con l'anno corrente escluso si passa l'anno corrente stesso: dentro ChiudiAnno il riempimento
           //dei buchi scatta solo se la distanza è maggiore di 1, quindi la riga esclusa non viene ricreata
           String year = String.valueOf(Year.now().getValue()+(EscludiAnnoCorrente?0:1));
+          ritorno.FotografaQtaGruppi(Anno);
           //System.out.println(year);
           if(!ChiudiAnno(PlusvalenzeXAnno,Anno,MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta,progress,year))return null;
       // return PlusvalenzeXAnno;
@@ -760,6 +776,40 @@ public class Calcoli_RT {
   
   
   public String ListaIDcoinvolti="";
+
+  /**
+   * {@code true} se il LiFo è globale (opzione {@code PlusXWallet} spenta): la mappa completa ha allora il solo
+   * gruppo {@code "Globale"} e {@link #RitornaTabellaGruppiAnno} ripartisce i risultati per gruppo wallet con i
+   * dati qui sotto. Informativo: la pila e i totali dell'anno restano quelli globali.
+   */
+  boolean GlobaleDivisoPerGruppo=false;
+  //Anno → gruppo wallet → {valore movimenti rilevanti, costo di carico, plusvalenza realizzata}
+  private final Map<String, Map<String, BigDecimal[]>> RealizzatoXGruppo=new TreeMap<>();
+  //Quantità cumulata gruppo wallet → moneta (somma di tutti i movimenti fin qui, trasferimenti compresi)
+  private final Map<String, Map<String, BigDecimal>> QtaGruppiCorrente=new TreeMap<>();
+  //Fotografia di QtaGruppiCorrente a fine di ogni anno con movimenti: anno → gruppo → moneta → quantità
+  private final TreeMap<String, Map<String, Map<String, BigDecimal>>> QtaGruppiXAnno=new TreeMap<>();
+
+  void AggiungiQtaGruppo(String Gruppo, String Moneta, String Qta){
+      QtaGruppiCorrente.computeIfAbsent(Gruppo, k -> new TreeMap<>()).merge(Moneta, new BigDecimal(Qta), BigDecimal::add);
+  }
+
+  void FotografaQtaGruppi(String Anno){
+      if (Anno==null||!GlobaleDivisoPerGruppo) return;
+      Map<String, Map<String, BigDecimal>> copia=new TreeMap<>();
+      for (Map.Entry<String, Map<String, BigDecimal>> e : QtaGruppiCorrente.entrySet()){
+          copia.put(e.getKey(), new TreeMap<>(e.getValue()));
+      }
+      QtaGruppiXAnno.put(Anno, copia);
+  }
+
+  void AccumulaRealizzatoGruppo(String Anno, String Gruppo, String Moneta, BigDecimal Vendite, BigDecimal Costi, BigDecimal Plus){
+      if (Funzioni.isSCAM(Moneta)) return;//Come nella tabella per token, i token SCAM non compaiono
+      BigDecimal[] r=RealizzatoXGruppo.computeIfAbsent(Anno, k -> new TreeMap<>()).computeIfAbsent(Gruppo, k -> new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO});
+      r[0]=r[0].add(Vendite);
+      r[1]=r[1].add(Costi);
+      r[2]=r[2].add(Plus);
+  }
   
   /**
    * Imposta la mappa dei totali RT per anno.
@@ -853,6 +903,7 @@ public class Calcoli_RT {
    * @return una riga per gruppo ({@code Object[7]}, colonne {@link #COLONNE_GRUPPI}), nell'ordine dei gruppi
    */
   public List<Object[]> RitornaTabellaGruppiAnno(String Anno){
+      if (GlobaleDivisoPerGruppo) return TabellaGruppiDaLiFoGlobale(Anno);
       Map<String, Map<String, PlusXMoneta>> MappaGrWallet_MappaMoneta_PlusXMoneta=MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno);
       List<Object[]> Tabella=new ArrayList<>();
       for(String Wallet : MappaGrWallet_MappaMoneta_PlusXMoneta.keySet()){
@@ -875,7 +926,8 @@ public class Calcoli_RT {
               costi=costi.add(new BigDecimal(plus.CostoVendite));
               realizzata=realizzata.add(new BigDecimal(plus.PlusRealizzata));
               latente=latente.add(new BigDecimal(plus.PlusLatente));
-              rimanenze=rimanenze.add(qta.multiply(new BigDecimal(plus.Mon.Prezzo)));
+              //Mon.Prezzo e' il valore dell'intera giacenza (DammiPrezzoTransazione), non il prezzo unitario
+              rimanenze=rimanenze.add(new BigDecimal(plus.Mon.Prezzo));
               if (Funzioni.isNegativo(plus.Mon.Qta)) negativi++;
               if (plus.Mon.Prezzo.equals("0")) senzaPrezzo++;
           }
@@ -886,6 +938,68 @@ public class Calcoli_RT {
           Errori=Errori+"</html>";
           Tabella.add(new Object[]{Wallet, vendite.doubleValue(), costi.doubleValue(), realizzata.doubleValue(),
               latente.doubleValue(), rimanenze.setScale(2, RoundingMode.HALF_UP).doubleValue(), Errori});
+      }
+      return Tabella;
+  }
+
+  /**
+   * La tabella per gruppo wallet quando il LiFo è globale. I totali tornano con la tabella per token:
+   * <ul>
+   *   <li>valore movimenti, costo di carico e plusvalenza realizzata sono quelli dei movimenti rilevanti di
+   *       ogni gruppo (il gruppo del wallet del movimento), a prescindere da quale lotto della pila globale
+   *       sia stato consumato;</li>
+   *   <li>rimanenze e plusvalenza latente di ogni token sono ripartite in proporzione alla quantità che ogni
+   *       gruppo detiene a fine anno (somma dei suoi movimenti), cioè al costo medio della pila globale:
+   *       un valore informativo, non un costo di carico proprio del gruppo.</li>
+   * </ul>
+   */
+  private List<Object[]> TabellaGruppiDaLiFoGlobale(String Anno){
+      Map<String, Map<String, PlusXMoneta>> mappaAnno=MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno);
+      Map<String, PlusXMoneta> globale=mappaAnno==null?null:mappaAnno.get("Globale");
+      Map<String, BigDecimal[]> realizzati=RealizzatoXGruppo.getOrDefault(Anno, Map.of());
+      Map.Entry<String, Map<String, Map<String, BigDecimal>>> foto=QtaGruppiXAnno.floorEntry(Anno);
+      Map<String, Map<String, BigDecimal>> qtaGruppi=foto==null?Map.of():foto.getValue();
+
+      //Per ogni token la somma delle quantità positive dei gruppi: il denominatore della ripartizione
+      Map<String, BigDecimal> sommaPositive=new TreeMap<>();
+      for (Map<String, BigDecimal> m : qtaGruppi.values()){
+          for (Map.Entry<String, BigDecimal> e : m.entrySet()){
+              if (e.getValue().signum()>0) sommaPositive.merge(e.getKey(), e.getValue(), BigDecimal::add);
+          }
+      }
+      java.util.Set<String> gruppi=new TreeSet<>(realizzati.keySet());
+      for (Map.Entry<String, Map<String, BigDecimal>> g : qtaGruppi.entrySet()){
+          for (Map.Entry<String, BigDecimal> e : g.getValue().entrySet()){
+              if (e.getValue().signum()!=0&&!Funzioni.isSCAM(e.getKey())) gruppi.add(g.getKey());
+          }
+      }
+      List<Object[]> Tabella=new ArrayList<>();
+      for (String Gruppo : gruppi){
+          BigDecimal[] r=realizzati.getOrDefault(Gruppo, new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO});
+          BigDecimal latente=BigDecimal.ZERO;
+          BigDecimal rimanenze=BigDecimal.ZERO;
+          int negativi=0;
+          int senzaPrezzo=0;
+          Map<String, BigDecimal> mieQta=qtaGruppi.getOrDefault(Gruppo, Map.of());
+          for (Map.Entry<String, BigDecimal> e : mieQta.entrySet()){
+              PlusXMoneta plus=globale==null?null:globale.get(e.getKey());
+              if (plus==null||Funzioni.isSCAM(e.getKey())) continue;
+              BigDecimal qtaGruppo=e.getValue();
+              if (qtaGruppo.signum()<0&&Funzioni.isNegativo(plus.Mon.Qta)) negativi++;
+              BigDecimal denominatore=sommaPositive.get(e.getKey());
+              if (qtaGruppo.signum()<=0||denominatore==null||new BigDecimal(plus.Mon.Qta).signum()<=0) continue;
+              BigDecimal quota=qtaGruppo.divide(denominatore, java.math.MathContext.DECIMAL128);
+              BigDecimal valore=new BigDecimal(plus.Mon.Prezzo);
+              if (valore.signum()==0) senzaPrezzo++;
+              rimanenze=rimanenze.add(valore.multiply(quota));
+              latente=latente.add(new BigDecimal(plus.PlusLatente).multiply(quota));
+          }
+          String Errori="<html>";
+          if (negativi>0) Errori=Errori+negativi+" token con giacenza negativa<br>";
+          if (senzaPrezzo>0) Errori=Errori+senzaPrezzo+" token senza prezzo";
+          Errori=Errori+"</html>";
+          Tabella.add(new Object[]{Gruppo, r[0].doubleValue(), r[1].doubleValue(), r[2].doubleValue(),
+              latente.setScale(2, RoundingMode.HALF_UP).doubleValue(), rimanenze.setScale(2, RoundingMode.HALF_UP).doubleValue(), Errori});
       }
       return Tabella;
   }

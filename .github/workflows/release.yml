@@ -457,9 +457,12 @@ jobs:
   # da solo (workflow_dispatch di aur.yml) senza ricostruire e ripubblicare gli asset.
   aggiorna-aur:
     needs: create-release
+    # Il guard "!cancelled() && ..." e' indispensabile (come in create-release): senza una funzione di stato
+    # GitHub aggiunge "success()", che non passa se un job saltato (verifica-bozza, nella release normale)
+    # compare ovunque nella catena dei needs, e il job non partirebbe mai.
     # In bozza la release non e' scaricabile pubblicamente: aur.yml fallirebbe al download
     # dell'asset, quindi il job va saltato invece che lasciato fallire.
-    if: ${{ inputs.pubblica_su_aur && !inputs.bozza && inputs.canale != 'beta' }}
+    if: ${{ !cancelled() && needs.create-release.result == 'success' && inputs.pubblica_su_aur && !inputs.bozza && inputs.canale != 'beta' }}
     uses: ./.github/workflows/aur.yml
     with:
       # Ripubblicare la stessa versione produce un asset con checksum diverso (il JAR non e'
@@ -473,7 +476,7 @@ jobs:
     needs: create-release
     # Stesso motivo di aggiorna-aur: in bozza il download dell'asset dalla release fallirebbe
     # comunque (e' voluto in flatpak.yml), meglio saltare il job che lasciarlo fallire.
-    if: ${{ inputs.pubblica_flatpak && !inputs.bozza && inputs.canale != 'beta' }}
+    if: ${{ !cancelled() && needs.create-release.result == 'success' && inputs.pubblica_flatpak && !inputs.bozza && inputs.canale != 'beta' }}
     uses: ./.github/workflows/flatpak.yml
     secrets: inherit
 
@@ -484,7 +487,7 @@ jobs:
     needs: create-release
     # In bozza l'asset non e' scaricabile pubblicamente: la validazione di winget-pkgs
     # fallirebbe con Error-Installer-Availability, quindi il job va saltato.
-    if: ${{ inputs.pubblica_winget && !inputs.bozza && inputs.canale != 'beta' }}
+    if: ${{ !cancelled() && needs.create-release.result == 'success' && inputs.pubblica_winget && !inputs.bozza && inputs.canale != 'beta' }}
     uses: ./.github/workflows/winget.yml
     secrets: inherit
 

@@ -520,6 +520,8 @@ final class Trans_XLayer {
                     nomeWallet, "Wallet", t.timestamp() * 1000, prezzoFisso, null, i + 1, n, null, null, "A", t.hash(), m.tipo(), null);
             if (rt == null) continue;
             rt[7] = m.causale();
+            //Il pagamento con la carta e' un cashout con il suo nome: campo 18 resta PCO, il calcolo non cambia
+            if ("CASHOUT O SIMILARE".equals(m.tipo()) && m.causale() != null && m.causale().startsWith(CAUSALE_CARTA)) MovimentiCrypto.MarcaSpesaConCarta(rt);
             rt[23] = String.valueOf(t.blocco());
             if (rt.length > 30) rt[30] = m.controparte() == null ? "" : m.controparte();
             Importazioni.RiempiVuotiArray(rt);

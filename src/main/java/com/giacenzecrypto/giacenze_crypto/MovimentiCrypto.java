@@ -55,6 +55,18 @@ public class MovimentiCrypto {
     */
     
 
+    //Pagamento con carta saldato in cripto: un cashout (la famiglia PCO fa realizzare plusvalenza) con un nome suo.
+    //Non e' nella mappa qui sotto di proposito: non e' un tipo che una configurazione CSV possa scrivere (TIPI_INTERNI, schema),
+    //lo assegnano gli importatori della carta (ether.fi, OKX X Layer) e la classificazione manuale dei prelievi.
+    static final String CAMPO5_SPESA_CON_CARTA = "SPESA CON CARTA";
+    static final String CAMPO18_SPESA_CON_CARTA = "PCO - SPESA CON CARTA";
+
+    /** Marca un prelievo gia' costruito (di solito un {@code CASHOUT O SIMILARE}) come spesa con carta: cambia solo campo 5 e 18, il calcolo e' quello del cashout. */
+    static void MarcaSpesaConCarta(String[] rt) {
+        rt[5] = CAMPO5_SPESA_CON_CARTA;
+        rt[18] = CAMPO18_SPESA_CON_CARTA;
+    }
+
     //Questa mappa contiene gli abbinamenti che servono per assegnare correttamente tipo e nome della transazioni
 static final Map<String, String[]> TipologieMovimento = Collections.unmodifiableMap(creaMappaTipologie());
 

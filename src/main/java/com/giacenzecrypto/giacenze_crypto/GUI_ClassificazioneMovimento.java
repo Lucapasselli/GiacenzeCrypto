@@ -7,6 +7,8 @@ package com.giacenzecrypto.giacenze_crypto;
 import static com.giacenzecrypto.giacenze_crypto.Principale.MappaCryptoWallet;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.table.DefaultTableModel;
@@ -57,6 +59,10 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
     static final String CB_DC_ARENDITA="TRASFERIMENTO DA VAULT/PIATTAFORMA A RENDITA";
     static final String CB_DC_PRESTITO="PRESTITO - RICEZIONE FONDI";
     static final String CB_DC_COLLATERALE="PRESTITO - SBLOCCO COLLATERALE (Chiusura del prestito)";
+    static final String CB_DC_ANNULLOSPESA="ANNULLO SPESA CARTA (rimborso di un pagamento con carta, se si vuole si può selezionare il pagamento nella tabella sotto)";
+    /** Descrizione ({@code [5]}) e dettaglio ({@code [18]}) di un deposito classificato come annullo di una spesa con carta. */
+    static final String CAMPO5_ANNULLO_SPESA_CARTA="ANNULLO SPESA CARTA";
+    static final String CAMPO18_ANNULLO_SPESA_CARTA="DAC - Annullo spesa carta";
     //ComboBox completo per singolo movimento
     static String[] CB_DC_SINGOLO = new String[]{
         CB_NESSUNASELEZIONE,
@@ -67,8 +73,12 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         CB_DC_SCAMBIODIFF,
         CB_DC_ARENDITA,
         CB_DC_PRESTITO,
-        CB_DC_COLLATERALE
+        CB_DC_COLLATERALE,
+        //In fondo: gli indici delle voci sopra sono scritti a mano nei costruttori
+        CB_DC_ANNULLOSPESA
     };
+    /** Posizione della voce «Annullo spesa carta» nella combo di un deposito singolo. */
+    static final int NTIPO_ANNULLO_SPESA_CARTA = 9;
     //ComboBox completo per movimento multiplo
     static String[] CB_DC_MULTIPLO = new String[]{
         CB_NESSUNASELEZIONE,
@@ -84,6 +94,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
     static final String CB_PC_DARENDITA="TRASFERIMENTO A VAULT/PIATTAFORMA A RENDITA";
     static final String CB_PC_LIQUIDAZIONEPRESTITO="PRESTITO - LIQUIDAZIONE FORZATA";
     static final String CB_PC_COLLATERALE="PRESTITO - MESSA A COLLATERALE";
+    static final String CB_PC_SPESACARTA="SPESA CON CARTA (pagamento con carta saldato in cripto, si sceglie il valore in euro della spesa)";
     //ComboBox completo per singolo movimento
     static String[] CB_PC_SINGOLO = new String[]{
         CB_NESSUNASELEZIONE,
@@ -93,8 +104,12 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         CB_PC_SCAMBIODIFF,
         CB_PC_DARENDITA,
         CB_PC_LIQUIDAZIONEPRESTITO,
-        CB_PC_COLLATERALE
+        CB_PC_COLLATERALE,
+        //In fondo: gli indici delle voci sopra sono scritti a mano nei costruttori
+        CB_PC_SPESACARTA
     };
+    /** Posizione della voce «Spesa con carta» nella combo di un prelievo singolo. */
+    static final int NTIPO_SPESA_CON_CARTA = 8;
     //ComboBox completo per movimento multiplo
     static String[] CB_PC_MULTIPLO = new String[]{
         CB_NESSUNASELEZIONE,
@@ -185,6 +200,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         } else if (tipomov.equalsIgnoreCase("PCO")) {
             ntipo = 1;
             if (riga[6].contains("Liquidazione"))ntipo=6;
+            if (riga[6].toUpperCase().contains("SPESA CON CARTA"))ntipo=NTIPO_SPESA_CON_CARTA;
             TransferNO();
         } else if (tipomov.equalsIgnoreCase("PTW")) {
             ntipo = 3;
@@ -207,7 +223,8 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         } else if (tipomov.equalsIgnoreCase("DAC")||tipomov.equalsIgnoreCase("DDO")) {
             ntipo = 4;
             if (riga[6].contains("Prestito"))ntipo=7;
-            TransferNO();
+            if (riga[6].contains("Annullo spesa carta"))ntipo=NTIPO_ANNULLO_SPESA_CARTA;
+            if (ntipo==NTIPO_ANNULLO_SPESA_CARTA) TransferSI(); else TransferNO();
         }
         else {
             TransferNO();
@@ -287,6 +304,9 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
                 TransferNO();
             } else if (tipomov.equalsIgnoreCase("PCO")) {
                 ntipo = 1;
+                if (riga[6].toUpperCase().contains("SPESA CON CARTA")) {
+                    ntipo = NTIPO_SPESA_CON_CARTA;
+                }
                 if (riga[6].contains("Liquidazione")) {
                     ntipo = 6;
                 }
@@ -323,7 +343,8 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
                 TransferNO();
             } else if (tipomov.equalsIgnoreCase("DAC")||tipomov.equalsIgnoreCase("DDO")) {
                 ntipo = 4;
-                TransferNO();
+                if (riga[6].contains("Annullo spesa carta"))ntipo=NTIPO_ANNULLO_SPESA_CARTA;
+                if (ntipo==NTIPO_ANNULLO_SPESA_CARTA) TransferSI(); else TransferNO();
             }
             else {
                 TransferNO();
@@ -772,6 +793,13 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
                     this.dispose();
                     return;
                 }
+                case CB_DC_ANNULLOSPESA -> {
+                    //Singolo : il pagamento si sceglie nella tabella. Se non si conferma la finestra resta aperta
+                    ModificaEffettuata=Crea_AnnulloSpesaCarta(IDsTrans,Note);
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    if (ModificaEffettuata) this.dispose();
+                    return;
+                }
                 case CB_DC_ARENDITA -> {
                     descrizione = "TRASFERIMENTO DA PIATTAFORMA";
                     dettaglio = "DTW - Trasferimento da Vault/Piattaforma a Rendita";
@@ -818,6 +846,13 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
                     ModificaEffettuata=Crea_Trasferimenti(IDsTrans,descrizione,Note);
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     this.dispose();
+                    return;
+                }
+                case CB_PC_SPESACARTA -> {
+                    //Singolo : il valore in euro si sceglie nella finestra. Se non si conferma la finestra resta aperta
+                    ModificaEffettuata=Crea_SpesaConCarta(IDsTrans,Note);
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    if (ModificaEffettuata) this.dispose();
                     return;
                 }
                 case CB_PC_DARENDITA -> {
@@ -1404,6 +1439,136 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         return ritorno;
     }
     
+    /**
+     * Classifica un deposito come annullo di una spesa con carta : il pagamento resta com'è (cashout, realizza al suo
+     * valore) e il token riaccreditato entra come un acquisto ({@code DAC}), a costo di carico pari al valore del
+     * pagamento, quindi senza plusvalenza. Il pagamento si sceglie nella tabella; senza pagamento il costo proposto è
+     * il valore del deposito (prezzo di mercato). Il costo si può correggere prima di confermare.
+     * <p>Con un pagamento scelto i due movimenti si citano a vicenda in {@code [20]} (solo informativo : il motore
+     * legge {@code [20]} soltanto per i trasferimenti). Annullare la classificazione del rimborso scioglie il legame
+     * senza toccare il pagamento ({@link #RiportaTransazioniASituazioneIniziale(String[], String)}).
+     * @return {@code true} se il movimento è stato classificato
+     */
+    private boolean Crea_AnnulloSpesaCarta(Set<String> IDsTr, String Note) {
+        if (IDsTr.size() != 1) return false;
+        String id = IDsTr.iterator().next();
+        String[] rimborso = MappaCryptoWallet.get(id);
+        String[] pagamento = null;
+        int riga = Tabella_MovimentiAbbinati.getSelectedRow();
+        if (riga >= 0) {
+            String IDPagamento = Tabella_MovimentiAbbinati.getValueAt(riga, 0).toString();
+            pagamento = MappaCryptoWallet.get(IDPagamento);
+            if (pagamento == null || !PagamentoAbbinabileAnnullo(rimborso, pagamento, Long.MAX_VALUE / 4)) {
+                Messaggi.WarningMessage("Attenzione richiesta!",
+                        "Il movimento selezionato dalla tabella è già abbinato ad un altro movimento o non è più un pagamento valido!<br>"
+                        + "Scegliere altro movimento oppure disabbinare dal movimento precedentemente associato e ripetere la procedura.", this);
+                return false;
+            }
+        }
+        String proposto = ValoreProposto_AnnulloSpesaCarta(rimborso, pagamento);
+        String NuovoPrezzo = ChiediValoreEuro("Costo di carico del rimborso", pagamento != null
+                ? "Indica il costo di carico in Euro del token riaccreditato (proposto il valore del pagamento):"
+                : "Nessun pagamento selezionato. Indica il costo di carico in Euro del token riaccreditato (proposto il valore al momento del rimborso):",
+                proposto);
+        if (NuovoPrezzo == null) return false;
+        Set<String> IDSetSingolo = new HashSet<>();
+        IDSetSingolo.add(id);
+        ClassificaMovimenti(IDSetSingolo, CAMPO5_ANNULLO_SPESA_CARTA, CAMPO18_ANNULLO_SPESA_CARTA, Note, NuovoPrezzo, false);
+        //ClassificaMovimenti azzera [20] : il legame si scrive dopo, in tutti e due i versi
+        if (pagamento != null) {
+            AbbinaAnnulloSpesaCarta(MappaCryptoWallet.get(id), pagamento);
+        }
+        return true;
+    }
+
+    /**
+     * Classifica un prelievo come spesa con carta : un cashout ({@code PCO}, quindi con plusvalenza o minusvalenza) con il
+     * nome suo. Si sceglie il valore in euro della spesa, proposto quello calcolato per la transazione, e il valore
+     * scelto sostituisce quello della transazione (l'originale resta in {@code [35]}, come per l'acquisto manuale).
+     * @return {@code true} se il movimento è stato classificato
+     */
+    private boolean Crea_SpesaConCarta(Set<String> IDsTr, String Note) {
+        if (IDsTr.size() != 1) return false;
+        String id = IDsTr.iterator().next();
+        String[] attuale = MappaCryptoWallet.get(id);
+        String NuovoPrezzo = ChiediValoreEuro("Valore della spesa con carta",
+                "Indica il valore in Euro della spesa con carta (proposto il valore calcolato della transazione):",
+                ValoreOriginale(attuale));
+        if (NuovoPrezzo == null) return false;
+        Set<String> IDSetSingolo = new HashSet<>();
+        IDSetSingolo.add(id);
+        ClassificaMovimenti(IDSetSingolo, MovimentiCrypto.CAMPO5_SPESA_CON_CARTA, MovimentiCrypto.CAMPO18_SPESA_CON_CARTA, Note, NuovoPrezzo, false);
+        return true;
+    }
+
+    /**
+     * Il valore in euro che il programma ha calcolato per un movimento : se è già stato classificato con un valore
+     * scelto dall'utente, quello originale che la classificazione ha messo da parte in {@code [35]}.
+     * @return il valore, a due decimali e senza segno
+     */
+    static String ValoreOriginale(String[] v) {
+        String Proprio = v[35] != null && !v[35].isBlank() ? v[35] : v[15];
+        try {
+            return new BigDecimal(Proprio.trim()).abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+        } catch (NumberFormatException | NullPointerException e) {
+            //Un movimento senza valore: si propone zero e lo si scrive a mano
+            return "0.00";
+        }
+    }
+
+    /**
+     * Un importo in euro scritto dall'utente (virgola o punto decimale), a due decimali.
+     * @return l'importo, o {@code null} se il testo è vuoto, non è un numero o è negativo
+     */
+    static String NormalizzaValoreEuro(String testo) {
+        if (testo == null || testo.isBlank()) return null;
+        try {
+            BigDecimal b = new BigDecimal(testo.replace(",", ".").trim());
+            if (b.signum() < 0) return null;
+            return b.setScale(2, RoundingMode.HALF_UP).toPlainString();
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Chiede un importo in euro con una casella di testo (virgola o punto decimale).
+     * @return l'importo normalizzato a due decimali, o {@code null} se si annulla o il testo non è un numero
+     */
+    private String ChiediValoreEuro(String titolo, String messaggio, String proposto) {
+        AppDialog.DialogResult inputResult = AppDialog.builder(this)
+                .windowTitle("Valore del movimento")
+                .bodyTitle(titolo)
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .message(messaggio)
+                .inputField(proposto, proposto)
+                .inputColumns(18)
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("confirm", "Conferma")
+                        .role(AppDialog.ActionRole.PRIMARY)
+                        .build())
+                .showDialog();
+        if (inputResult == null || inputResult.getActionId() == null || "cancel".equals(inputResult.getActionId())) return null;
+        String m = inputResult.getInputValue();
+        if (m == null || m.isBlank()) return null;
+        String Valore = NormalizzaValoreEuro(m);
+        if (Valore == null) {
+            Messaggi.WarningMessage("Numero non valido", "Attenzione, " + m.trim() + " non è un importo valido!<br>"
+                    + "Serve un numero uguale o maggiore di zero.", this);
+        }
+        return Valore;
+    }
+
+    /** Scrive il legame simmetrico {@code [20]} fra il rimborso e il pagamento che annulla. */
+    static void AbbinaAnnulloSpesaCarta(String[] rimborso, String[] pagamento) {
+        rimborso[20] = pagamento[0];
+        pagamento[20] = rimborso[0];
+    }
+
     /**
      * Applica la classificazione scelta dall'utente (descrizione, dettaglio, note, eventuale nuovo
      * prezzo) a tutti i movimenti indicati e ai loro movimenti associati (ripuliti prima tramite
@@ -2568,7 +2733,8 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
           if (sceltaS.equals(CB_DC_TRASFERIMENTO)||sceltaS.equals(CB_DC_SCAMBIODIFF)||
                   sceltaS.equals(CB_PC_TRASFERIMENTO)||sceltaS.equals(CB_PC_SCAMBIODIFF)||
-                  sceltaS.equals(CB_DF_TRASFERIMENTO)||sceltaS.equals(CB_PF_TRASFERIMENTO))
+                  sceltaS.equals(CB_DF_TRASFERIMENTO)||sceltaS.equals(CB_PF_TRASFERIMENTO)||
+                  sceltaS.equals(CB_DC_ANNULLOSPESA))
           {
             TransferSI();
           }
@@ -2694,12 +2860,26 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
             }
         }
 
-        
+        //Un annullo di spesa con carta lega il rimborso al pagamento, che però è un cashout a sé : si riconosce prima
+        //del ripristino, perché il rimborso può essere già stato azzerato quando si arriva al pagamento
+        boolean ConAnnulloSpesaCarta = false;
+        for (String ID : IDPartiConvolte) {
+            String attuale[] = MappaCryptoWallet.get(ID);
+            if (attuale != null && attuale[18] != null && attuale[18].trim().startsWith(CAMPO18_ANNULLO_SPESA_CARTA)) ConAnnulloSpesaCarta = true;
+        }
+
         //Faccio il ripristino vero e proprio
         for (String ID : IDPartiConvolte) {
 
             String attuale[] = MappaCryptoWallet.get(ID);
             if (attuale != null) {
+
+                //Il pagamento di un annullo di spesa con carta non si tocca : perde solo il legame col rimborso.
+                //Se è il pagamento stesso il movimento che si sta ripristinando, il ripristino è completo come per ogni altro
+                if (ConAnnulloSpesaCarta && !ID.equalsIgnoreCase(IDOri) && ID.split("_")[4].equalsIgnoreCase("PC")) {
+                    attuale[20] = "";
+                    continue;
+                }
                 
                 //Adesso restano i movimenti che non sono stati generati automaticamente
                 if (ID.split("_")[4].equalsIgnoreCase("DC")) {
@@ -3044,9 +3224,89 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
                     }
                 }}
             
+        }else if (ComboBox_TipoMovimento.getSelectedItem()!=null&&ComboBox_TipoMovimento.getSelectedItem().toString().equals(CB_DC_ANNULLOSPESA)) {
+            //ANNULLO SPESA CARTA : i pagamenti che il rimborso può annullare, dal più recente
+            List<String[]> Candidati = new ArrayList<>();
+            for (String[] v : MappaCryptoWallet.values()) {
+                if (PagamentoAbbinabileAnnullo(attuale, v, Giorni)) Candidati.add(v);
+            }
+            Collections.reverse(Candidati);
+            for (String[] v : Candidati) {
+                String riga[] = new String[9];
+                riga[0] = v[0];
+                riga[1] = v[1];
+                riga[2] = v[3];
+                riga[3] = v[5];
+                riga[4] = v[8].trim();
+                riga[5] = new BigDecimal(v[10]).stripTrailingZeros().toPlainString();
+                riga[6] = v[18];
+                riga[7] = v[15];
+                riga[8] = AliasGruppoWallet(v[3], MappaAlias);
+                ModelloTabellaDepositiPrelievi.addRow(riga);
+            }
         }
     }
-    
+
+    /**
+     * Un movimento che l'annullo di una spesa con carta può annullare : un prelievo classificato come cashout
+     * ({@code PCO}), non generato, non già abbinato, fatto prima del rimborso e al massimo {@code giorniMs} prima.
+     * Moneta e wallet sono liberi : il rimborso può arrivare in un altro token e su un altro wallet.
+     * @param rimborso il deposito che si sta classificando
+     * @param candidato il movimento da valutare
+     * @param giorniMs finestra massima fra pagamento e rimborso, in millisecondi
+     */
+    static boolean PagamentoAbbinabileAnnullo(String[] rimborso, String[] candidato, long giorniMs) {
+        if (candidato == null || candidato[0] == null || candidato[0].split("_").length < 5) return false;
+        if (!candidato[0].split("_")[4].trim().equalsIgnoreCase("PC")) return false;
+        if (candidato[22] == null || candidato[22].equalsIgnoreCase("AU")) return false;
+        if (candidato[18] == null || !candidato[18].contains("PCO")) return false;
+        //Già abbinato ad altro : lo stesso rimborso che si riclassifica non conta
+        if (candidato[20] != null && !candidato[20].isBlank() && !CitaID(candidato[20], rimborso[0])) return false;
+        long DataRimborso = FunzioniDate.ConvertiDatainLongMinuto(rimborso[1]);
+        long DataPagamento = FunzioniDate.ConvertiDatainLongMinuto(candidato[1]);
+        return DataPagamento <= DataRimborso && DataPagamento >= DataRimborso - giorniMs;
+    }
+
+    /** Vero se l'elenco di ID separati da virgola ({@code [20]}) contiene {@code ID}, senza badare alle maiuscole. */
+    private static boolean CitaID(String elenco, String ID) {
+        for (String c : elenco.split(",")) if (c.trim().equalsIgnoreCase(ID)) return true;
+        return false;
+    }
+
+    /**
+     * Costo di carico proposto per il token riaccreditato da un annullo di spesa con carta : il valore in euro del
+     * pagamento (non il suo prezzo unitario, perché il rimborso può essere in un altro token). Se il rimborso è dello
+     * stesso token ma di quantità minore, il valore si riduce in proporzione. Senza pagamento abbinato, il valore del
+     * deposito stesso (il prezzo di mercato al momento del rimborso).
+     * @param rimborso il deposito
+     * @param pagamento il prelievo abbinato, o {@code null}
+     * @return il valore in euro, a due decimali
+     */
+    static String ValoreProposto_AnnulloSpesaCarta(String[] rimborso, String[] pagamento) {
+        //Un deposito già classificato come acquisto ha in [15] il valore scelto, e quello originale in [35]
+        BigDecimal Valore = new BigDecimal(ValoreOriginale(rimborso));
+        if (pagamento != null) {
+            Valore = NumeroAssoluto(pagamento[15]);
+            BigDecimal QtaPagata = NumeroAssoluto(pagamento[10]);
+            BigDecimal QtaRimborsata = NumeroAssoluto(rimborso[13]);
+            String MonetaPagata = pagamento[8] == null ? "" : pagamento[8].trim();
+            String MonetaRimborsata = rimborso[11] == null ? "" : rimborso[11].trim();
+            if (MonetaPagata.equals(MonetaRimborsata) && QtaPagata.signum() > 0
+                    && QtaRimborsata.compareTo(QtaPagata) < 0) {
+                Valore = Valore.multiply(QtaRimborsata).divide(QtaPagata, VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP);
+            }
+        }
+        return Valore.setScale(2, RoundingMode.HALF_UP).toPlainString();
+    }
+
+    /** Il valore assoluto di un numero scritto in un campo del movimento, zero se il campo è vuoto o non è un numero. */
+    private static BigDecimal NumeroAssoluto(String testo) {
+        try {
+            return new BigDecimal(testo.trim()).abs();
+        } catch (NumberFormatException | NullPointerException e) {
+            return BigDecimal.ZERO;
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_Annulla;

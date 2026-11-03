@@ -430,6 +430,11 @@ class Trans_EtherFiTest {
         assertEquals(REGOLAMENTO, m.get(0).controparte());
         assertTrue(m.get(0).causale().contains("USD 39.176904"), m.get(0).causale());
         assertEquals(BigInteger.valueOf(15_865_035), r.saldi().get(USDC));
+        //La riga della tabella e' una spesa con carta: nome suo, ma campo 18 resta della famiglia PCO (stesso calcolo del cashout)
+        String[] riga = Trans_EtherFi.Righe(W, r.transazioni().get(1), "1.00").get(0);
+        assertEquals("SPESA CON CARTA", riga[5]);
+        assertEquals("PCO - SPESA CON CARTA", riga[18]);
+        assertTrue(riga[7].startsWith(Trans_EtherFi.CAUSALE_CARTA), riga[7]);
     }
 
     @Test

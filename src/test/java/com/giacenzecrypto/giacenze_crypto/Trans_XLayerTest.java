@@ -379,8 +379,8 @@ class Trans_XLayerTest {
         assertEquals("aXlrUSDG", reward[11]);
         assertEquals("0.034676", reward[13]);
         assertTrue(cashout[0].endsWith("_PC"), cashout[0]);
-        assertEquals("CASHOUT O SIMILARE", cashout[5]);
-        assertTrue(cashout[18].startsWith("PCO"), cashout[18]);
+        assertEquals("SPESA CON CARTA", cashout[5]);
+        assertEquals("PCO - SPESA CON CARTA", cashout[18]);
         assertEquals("-4.819278", cashout[10]);
         assertEquals(W + " (XLAYER)", cashout[3]);
         assertEquals("72762807", cashout[23]);

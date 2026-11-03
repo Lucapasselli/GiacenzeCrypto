@@ -19518,8 +19518,13 @@ try {
                     String Wallets[] = GUI_DettaglioTransazione.WalletDelTrasferimento(Transazione);
                     String WalletPrelievo = Wallets[0];
                     String WalletDeposito = Wallets[1];
+                    //Un movimento collegato che non è un trasferimento (annullo di una spesa con carta) non ha wallet di partenza e arrivo
+                    if (WalletPrelievo.isBlank() && WalletDeposito.isBlank()) {
+                        Val = new String[]{"Causale Movimento ", "<html><b>" + Valore + "</b> (" + Transazione[6] + ")</html>"};
+                    } else {
                     Val = new String[]{"Causale Movimento ", "<html><b>" + Valore + "</b> (" + Transazione[6] + ")<br>"
                             +"Trasferimento da <b>"+ WalletPrelievo+"</b> a <b>"+WalletDeposito+"</html>"};
+                    }
                 }
                 RigaDettaglioFiltrabile(ModelloTabellaCrypto, Val, rigaselezionata, 5);
             }

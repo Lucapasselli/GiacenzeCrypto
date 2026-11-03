@@ -2501,6 +2501,40 @@ che il programma possa calcolare anche le eventuali differenze. Anche in questo 
 supportate, il programma analizza il numero di contratto e verifica se sono presenti altri trasferimenti
 analoghi.
 
+### Opzione 9 – ANNULLO SPESA CARTA
+
+Serve per il rimborso di un pagamento fatto con la carta, per esempio un acquisto annullato dal
+commerciante il cui importo torna sul conto della carta. Si usa sul **deposito** del rimborso.
+
+Il pagamento resta classificato come cashout: continua a realizzare la sua plusvalenza o minusvalenza al
+valore che aveva. Il rimborso entra invece come un acquisto: il token riaccreditato viene caricato a un
+**costo di carico pari al valore del pagamento**, quindi senza generare plusvalenza al momento del
+rimborso. Funziona anche quando il rimborso arriva in un token diverso da quello pagato.
+
+Come si procede:
+
+1. Selezionare il deposito del rimborso e scegliere **ANNULLO SPESA CARTA**.
+2. Nella tabella sotto compaiono i possibili pagamenti, dal più recente: sono i cashout non ancora
+   abbinati, fatti prima del rimborso ed entro il numero di giorni scelto in basso. Scegliere il
+   pagamento che il rimborso annulla. La scelta è facoltativa.
+3. Confermare. Il programma propone il costo di carico e lo si può correggere prima di confermare:
+   - con un pagamento scelto, il valore in euro del pagamento. Se il rimborso è dello stesso token ma di
+     quantità minore, il valore si riduce in proporzione alla quantità rimborsata;
+   - senza pagamento, il valore del deposito al momento del rimborso (il prezzo di mercato).
+
+Esempio completo. Un pagamento con carta ha speso 0,8685 weEUR, valore 0,87 €. Il commerciante lo annulla
+e sul conto arriva 1 USDC, che al momento del rimborso vale 0,86 €.
+
+- Il pagamento di 0,8685 weEUR resta un cashout e realizza la sua plusvalenza calcolata sul valore di
+  0,87 €, come prima.
+- Classificando il deposito come **ANNULLO SPESA CARTA** e scegliendo quel pagamento, il costo proposto è
+  0,87 €. Il deposito entra nel LiFo con 1 USDC a costo di carico 0,87 € e non genera plusvalenza.
+- Se poi si vende 1 USDC a 0,86 €, la vendita realizza una minusvalenza di 0,01 €.
+
+Il pagamento e il rimborso si citano a vicenda nei movimenti collegati, ma solo come riferimento: il
+legame non cambia nessun calcolo. Annullando la classificazione del rimborso il pagamento resta com'è,
+cashout compreso, e perde solo il riferimento al rimborso.
+
 ## Classificazione dei movimenti di PRELIEVO
 
 Selezionando un movimento di prelievo le opzioni sono quelle visualizzate di seguito:
@@ -2559,6 +2593,34 @@ alla stregua di un cashout, quindi viene calcolata l'eventuale plusvalenza o min
 Permette di specificare che il token è stato messo a collaterale per l'apertura di un prestito.
 L'operazione è fiscalmente neutra e non viene calcolata alcuna plusvalenza: si tratta di un semplice
 blocco dei fondi.
+
+### Opzione 8 – SPESA CON CARTA
+
+Serve per un pagamento fatto con la carta e saldato con una cripto, per esempio la carta di ether.fi o
+quella di OKX. Dal punto di vista del calcolo è un cashout: cedere la cripto per pagare realizza una
+plusvalenza o una minusvalenza, come nell'**Opzione 1**. Cambia il nome del movimento, che si riconosce
+subito, e la possibilità di scegliere il valore in euro della spesa.
+
+I pagamenti con carta importati da ether.fi e da OKX X Layer arrivano già con questo nome. Quelli
+importati prima restano «CASHOUT O SIMILARE» finché non li si riclassifica a mano con questa voce.
+
+Come si procede:
+
+1. Selezionare il prelievo e scegliere **SPESA CON CARTA**.
+2. Il programma chiede il valore in euro della spesa e propone quello calcolato per la transazione. Lo si
+   può correggere, con la virgola o con il punto, per esempio con l'importo addebitato dalla carta.
+3. Confermando, il valore scelto prende il posto di quello calcolato e la plusvalenza si calcola su quello.
+
+Esempio completo. Un pagamento con carta ha speso 0,8685 weEUR e il programma lo ha valutato 0,87 €.
+L'addebito sull'estratto della carta è di 0,85 €.
+
+- Si classifica il prelievo come **SPESA CON CARTA** e nella finestra si scrive 0,85. Il programma
+  proponeva 0,87.
+- Il costo di carico dei 0,8685 weEUR, preso dal LiFo, è 0,8685 €. La plusvalenza è 0,85 − 0,8685, cioè
+  una minusvalenza di 0,0185 €.
+- Annullando la classificazione il movimento torna al suo valore calcolato, 0,87 €.
+
+Se la spesa viene poi rimborsata, il rimborso si classifica con l'[Opzione 9 dei depositi](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/classificazioni-movimenti.html#opzione-9--annullo-spesa-carta).
 
 ================================================================================
 Fonte: https://lucapasselli.github.io/GiacenzeCrypto/documentazione/export-import-csv.html

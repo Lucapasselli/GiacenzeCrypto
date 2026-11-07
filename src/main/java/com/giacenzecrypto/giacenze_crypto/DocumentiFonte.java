@@ -562,13 +562,13 @@ public class DocumentiFonte {
         return BufferCancellazioni.contains(Id);
     }
 
-    /** @return {@code true} se almeno un movimento della mappa punta ancora a quel documento */
+    /** @return {@code true} se almeno un movimento della mappa punta ancora a quel documento, come origine o supporto */
     private static boolean DocumentoVivo(Map<String, String[]> Movimenti, int Id) {
         if (Movimenti == null) {
             return false;
         }
         for (String[] v : Movimenti.values()) {
-            if (v != null && v.length > 41 && IdDaCampo41(v[41]) == Id) {
+            if (v != null && v.length > 41 && Collegato(v[41], Id)) {
                 return true;
             }
         }
@@ -728,10 +728,11 @@ public class DocumentiFonte {
         int n = 0;
         for (String[] v : Mappa.values()) {
             if (v == null || v.length <= 41 || v[22] == null || !v[22].equalsIgnoreCase("AU")) continue;
-            if (!Funzioni.noData(v[41]) || v[20] == null || v[20].isBlank()) continue;
+            if (IdDaCampo41(v[41]) > 0 || v[20] == null || v[20].isBlank()) continue;
             String Documento = DocumentoDaOriginali(v, Mappa);
             if (Documento != null) {
-                v[41] = Documento;
+                //I supporti che il generato ha gia' restano: si completa solo l'origine
+                v[41] = ConOrigine(v[41], Documento);
                 n++;
             }
         }
@@ -743,7 +744,7 @@ public class DocumentiFonte {
      * gruppo {@code [20]}: quello dell'originale con lo stesso istante nell'ID, che è il movimento da cui il generato
      * nasce (la stessa regola con cui Trasla Orario riconosce i movimenti nati da un altro). Se nessun originale ha lo
      * stesso istante, quello comune a tutti gli originali; se sono diversi, nessuno.
-     * @return il valore del campo 41, o {@code null}
+     * @return l'id dell'origine, o {@code null}
      */
     static String DocumentoDaOriginali(String[] v, java.util.Map<String, String[]> Mappa) {
         String Istante = v[0].split("_")[0];
@@ -751,20 +752,24 @@ public class DocumentiFonte {
         String StessoIstante = null;
         for (String ID : v[20].split(",")) {
             String[] m = ID.isBlank() ? null : Mappa.get(ID.trim());
-            if (m == null || m.length <= 41 || "AU".equalsIgnoreCase(m[22]) || Funzioni.noData(m[41])) continue;
-            Documenti.add(m[41]);
-            if (StessoIstante == null && m[0].split("_")[0].equals(Istante)) StessoIstante = m[41];
+            //Solo l'origine: due originali dello stesso file con supporti diversi hanno lo stesso documento
+            String origine = m == null || m.length <= 41 ? "" : SoloOrigine(m[41]);
+            if (m == null || "AU".equalsIgnoreCase(m[22]) || origine.isEmpty()) continue;
+            Documenti.add(origine);
+            if (StessoIstante == null && m[0].split("_")[0].equals(Istante)) StessoIstante = origine;
         }
         if (StessoIstante != null) return StessoIstante;
         return Documenti.size() == 1 ? Documenti.iterator().next() : null;
     }
 
     /**
-     * Estrae l'id del documento dal campo {@code [41]} di un movimento.
+     * Estrae l'id del documento di <b>origine</b> dal campo {@code [41]} di un movimento.
      *
-     * <p>Tollera un eventuale sotto-campo dopo {@code |} (il sotto-delimitatore convenzionale, già usato da
-     * {@code [40]}): oggi la granularità è il solo file, ma un futuro {@code "12|487"} — documento 12, riga
-     * 487 — continuerebbe a essere letto correttamente da qui.
+     * <p>Il campo è {@code origine|supporto,supporto}: prima della barra il documento da cui il movimento nasce,
+     * dopo i documenti <b>di supporto</b>, che lo spiegano o lo classificano senza averlo creato (il file Dual
+     * Investment, i file Subscription e Redemption dell'Auto-Invest, in futuro un estratto di bonifici). Le
+     * versioni dalla 1.0.60 leggono già solo la parte prima della barra, quindi vedono l'origine e ignorano il
+     * resto. {@code "|12"} è un movimento senza origine con un documento di supporto.
      *
      * @param Campo41 il contenuto del campo, anche {@code null}
      * @return l'id del documento, {@code 0} se assente o non numerico
@@ -784,6 +789,137 @@ public class DocumentiFonte {
         } catch (NumberFormatException e) {
             return 0;
         }
+    }
+
+    /**
+     * I documenti di supporto del campo {@code [41]}, la parte dopo la barra (vedi {@link #IdDaCampo41}).
+     * @return gli id nell'ordine in cui sono scritti, senza ripetizioni, vuoto se non ce ne sono
+     */
+    public static List<Integer> Supporti(String Campo41) {
+        List<Integer> ids = new ArrayList<>();
+        if (Funzioni.noData(Campo41)) return ids;
+        int barra = Campo41.indexOf('|');
+        if (barra < 0) return ids;
+        for (String s : Campo41.substring(barra + 1).split(",")) {
+            int id = IdDaCampo41(s);
+            if (id > 0 && !ids.contains(id)) ids.add(id);
+        }
+        return ids;
+    }
+
+    /** @return la sola origine del campo {@code [41]}, vuota se non c'è: è quello che eredita un movimento generato */
+    public static String SoloOrigine(String Campo41) {
+        int id = IdDaCampo41(Campo41);
+        return id > 0 ? String.valueOf(id) : "";
+    }
+
+    /** @return {@code true} se il documento è l'origine o un supporto del movimento */
+    public static boolean Collegato(String Campo41, int Id) {
+        return Id > 0 && (IdDaCampo41(Campo41) == Id || Supporti(Campo41).contains(Id));
+    }
+
+    /** Il campo {@code [41]} scritto da origine e supporti: senza supporti è il solo id, come prima. */
+    static String Campo41(int Origine, List<Integer> Supporti) {
+        String o = Origine > 0 ? String.valueOf(Origine) : "";
+        if (Supporti.isEmpty()) return o;
+        StringBuilder s = new StringBuilder(o).append('|');
+        for (int i = 0; i < Supporti.size(); i++) s.append(i > 0 ? "," : "").append(Supporti.get(i));
+        return s.toString();
+    }
+
+    /** @return il campo con l'origine data (prima vuota), i supporti invariati */
+    public static String ConOrigine(String Campo41, String Origine) {
+        return Campo41(IdDaCampo41(Origine), Supporti(Campo41));
+    }
+
+    /**
+     * Aggiunge un documento di supporto al movimento. Non fa nulla se è già la sua origine o già fra i supporti, quindi
+     * ripassare lo stesso file non duplica niente.
+     * @return {@code true} se il campo è cambiato
+     */
+    public static boolean AggiungiSupporto(String[] v, int Id) {
+        if (v == null || v.length <= 41 || Id <= 0 || Collegato(v[41], Id)) return false;
+        List<Integer> supporti = Supporti(v[41]);
+        supporti.add(Id);
+        v[41] = Campo41(IdDaCampo41(v[41]), supporti);
+        return true;
+    }
+
+    /**
+     * Collega un documento di supporto a un movimento e a tutto il suo gruppo {@code [20]}, generati compresi: è quello
+     * che rende esatto l'annullamento della classificazione ({@link #SupportiDeiGenerati}).
+     * @return quanti movimenti hanno ricevuto il collegamento
+     */
+    public static int CollegaAlGruppo(String[] v, int Id) {
+        if (v == null || Id <= 0) return 0;
+        int n = AggiungiSupporto(v, Id) ? 1 : 0;
+        if (v.length > 20 && !Funzioni.noData(v[20])) {
+            for (String ID : v[20].split(",")) {
+                String[] m = ID.isBlank() ? null : Principale.MappaCryptoWallet.get(ID.trim());
+                if (m != null && m != v && AggiungiSupporto(m, Id)) n++;
+            }
+        }
+        return n;
+    }
+
+    /** Toglie i documenti di supporto indicati, l'origine resta. @return {@code true} se il campo è cambiato */
+    public static boolean TogliSupporti(String[] v, java.util.Collection<Integer> Ids) {
+        if (v == null || v.length <= 41 || Ids.isEmpty()) return false;
+        List<Integer> supporti = Supporti(v[41]);
+        if (!supporti.removeAll(Ids)) return false;
+        v[41] = Campo41(IdDaCampo41(v[41]), supporti);
+        return true;
+    }
+
+    /**
+     * I documenti di supporto di una classificazione, letti dai suoi movimenti generati ({@code AU}). Un generato
+     * eredita solo l'origine ({@link #SoloOrigine}) e riceve i supporti dalla classificazione che lo crea, quindi i suoi
+     * supporti sono esattamente quelli che l'annullamento deve togliere dagli originali. Un supporto messo a mano su un
+     * originale (un bonifico) non è sui generati e resta.
+     */
+    public static java.util.Set<Integer> SupportiDeiGenerati(java.util.Collection<String[]> Generati) {
+        java.util.Set<Integer> ids = new java.util.HashSet<>();
+        for (String[] g : Generati) {
+            if (g != null && g.length > 41) ids.addAll(Supporti(g[41]));
+        }
+        return ids;
+    }
+
+    /**
+     * Toglie un documento da tutti i movimenti di cui è supporto: è l'eliminazione di un documento di supporto, che non
+     * cancella movimenti. Provvisoria come le altre modifiche alla mappa, finché l'utente non salva.
+     * @return quanti movimenti hanno perso il collegamento
+     */
+    public static int Scollega(int Id) {
+        int n = 0;
+        for (String[] v : Principale.MappaCryptoWallet.values()) {
+            if (TogliSupporti(v, List.of(Id))) n++;
+        }
+        return n;
+    }
+
+    /**
+     * Il campo {@code [41]} di un movimento nato dall'unione di altri: l'origine del primo che ne ha una, i supporti di
+     * tutti. Un documento collegato a uno dei movimenti uniti resta collegato al risultato.
+     * @param Movimenti i movimenti uniti, nell'ordine in cui conta la loro origine
+     */
+    public static String Unione(List<String[]> Movimenti) {
+        int origine = 0;
+        List<Integer> supporti = new ArrayList<>();
+        for (String[] m : Movimenti) {
+            if (m == null || m.length <= 41) continue;
+            if (origine <= 0) origine = IdDaCampo41(m[41]);
+            for (int s : Supporti(m[41])) if (!supporti.contains(s)) supporti.add(s);
+        }
+        supporti.remove(Integer.valueOf(origine));
+        return Campo41(origine, supporti);
+    }
+
+    /** @return le descrizioni dei documenti di supporto, una per documento, nel formato di {@link #Descrizione} */
+    public static List<String> DescrizioniSupporti(String Campo41) {
+        List<String> d = new ArrayList<>();
+        for (int Id : Supporti(Campo41)) d.add(Descrizione(String.valueOf(Id)));
+        return d;
     }
 
     /**
@@ -831,8 +967,10 @@ public class DocumentiFonte {
      */
     public static final class Riepilogo {
 
-        /** Movimenti attualmente in mappa che puntano a questo documento */
+        /** Movimenti attualmente in mappa che nascono da questo documento (origine) */
         public int Movimenti = 0;
+        /** Movimenti attualmente in mappa di cui questo documento è un supporto */
+        public int Collegati = 0;
         /** Wallet/exchange su cui quei movimenti si trovano (campo {@code [3]}) */
         public final java.util.TreeSet<String> Wallet = new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         /** Data del movimento più vecchio, nel formato {@code yyyyMMddHHmmss} del prefisso degli ID */
@@ -872,7 +1010,8 @@ public class DocumentiFonte {
      * ordine su cui si basa tutto il motore di calcolo. Convertirle costerebbe un parsing per movimento e,
      * sulle date non valide, una riga di log per ognuna.
      *
-     * @return id documento → riepilogo, senza voci per i documenti a cui non punta nessun movimento
+     * @return id documento → riepilogo (origine e collegati contati a parte), senza voci per i documenti a cui non
+     *         punta nessun movimento
      */
     public static Map<Integer, Riepilogo> Riepiloghi() {
         Map<Integer, Riepilogo> mappa = new HashMap<>();
@@ -881,25 +1020,34 @@ public class DocumentiFonte {
                 continue;
             }
             int Id = IdDaCampo41(v[41]);
-            if (Id <= 0) {
-                continue;
+            if (Id > 0) {
+                Riepilogo r = mappa.computeIfAbsent(Id, k -> new Riepilogo());
+                r.Movimenti++;
+                AggiungiAlRiepilogo(r, v);
             }
-            Riepilogo r = mappa.computeIfAbsent(Id, k -> new Riepilogo());
-            r.Movimenti++;
-            if (!Funzioni.noData(v[3])) {
-                r.Wallet.add(v[3].trim());
-            }
-            String data = v[0] == null ? "" : v[0].split("_")[0];
-            if (!data.isBlank()) {
-                if (r.PrimaData.isEmpty() || data.compareTo(r.PrimaData) < 0) {
-                    r.PrimaData = data;
-                }
-                if (r.UltimaData.isEmpty() || data.compareTo(r.UltimaData) > 0) {
-                    r.UltimaData = data;
-                }
+            //Wallet e periodo valgono anche per i collegati: per un documento di supporto sono gli unici che ci sono
+            for (int S : Supporti(v[41])) {
+                Riepilogo r = mappa.computeIfAbsent(S, k -> new Riepilogo());
+                r.Collegati++;
+                AggiungiAlRiepilogo(r, v);
             }
         }
         return mappa;
+    }
+
+    private static void AggiungiAlRiepilogo(Riepilogo r, String[] v) {
+        if (!Funzioni.noData(v[3])) {
+            r.Wallet.add(v[3].trim());
+        }
+        String data = v[0] == null ? "" : v[0].split("_")[0];
+        if (!data.isBlank()) {
+            if (r.PrimaData.isEmpty() || data.compareTo(r.PrimaData) < 0) {
+                r.PrimaData = data;
+            }
+            if (r.UltimaData.isEmpty() || data.compareTo(r.UltimaData) > 0) {
+                r.UltimaData = data;
+            }
+        }
     }
 
     /**

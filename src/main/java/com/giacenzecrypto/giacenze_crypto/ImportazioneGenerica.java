@@ -181,8 +181,7 @@ public class ImportazioneGenerica {
         "righeIntestazione=" + cfg.righeIntestazione + "\n";
     return true; // torna true per mostrare il resoconto
 }*/
-      /*      Importazioni.movimentiSconosciuti +=
-    "=== RIGHE LETTE: " + righe.size() + " ===\n";*/
+      /*      Importazioni.AccodaSconosciuti("=== RIGHE LETTE: " + righe.size() + " ===\n");*/
         } catch (Exception ex) {
             LoggerGC.ScriviErrore(ex);
             return false;
@@ -320,6 +319,12 @@ public class ImportazioneGenerica {
         String sep = cfg.separatore;
         String encoding = cfg.encoding != null ? cfg.encoding : "UTF-8";
 
+        //Colonne della riga di intestazione, -1 se il file non ne ha una: una riga di dati che ne ha di piu' e' stata
+        //spezzata da un separatore dentro un valore senza virgolette (12,5 in un CSV separato da virgole)
+        int colonneIntestazione = -1;
+        //Le stesse contando anche quelle vuote in coda: il campo in piu' di 12,5 puo' cadere in una colonna vuota
+        int campiIntestazione = -1;
+
         // FASE 1 – estraggo le righe con dati
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fileCSV), encoding))) {
             String riga;
@@ -344,6 +349,11 @@ public class ImportazioneGenerica {
                     if (numRiga == cfg.rigaIntestazione && cfg.autoDetectColonne) {
                         cfg.risolviColonneDaIntestazione(splitCsvRispettoVirgolette(riga, sep));
                     }
+                    if (numRiga == cfg.rigaIntestazione) {
+                        String[] intestazione = splitCsvRispettoVirgolette(riga, sep);
+                        colonneIntestazione = colonnePiene(intestazione);
+                        campiIntestazione = intestazione.length;
+                    }
                     continue;
                 }
                 if (riga.replace("\"", "").matches("[-,]+")) {
@@ -355,6 +365,11 @@ public class ImportazioneGenerica {
 
         // FASE 2 – splitto e valido
         cfg.ControllaRegoleRiga(); //l'autodetect puo' aver spostato la colonna della data
+        //Il confronto vale solo se quella riga e' davvero l'intestazione, cioe' copre le colonne che si leggono: una
+        //riga di titolo al suo posto ("Report dal...") farebbe scartare tutto
+        if (colonneIntestazione <= Math.max(cfg.colonnaData, Math.max(cfg.colonnaMoneta, cfg.colonnaQuantita))) {
+            colonneIntestazione = -1;
+        }
         boolean primaDataLetta = false;
         for (String r : righeRaw) {
             String[] campi = splitCsvRispettoVirgolette(r, sep);
@@ -380,6 +395,20 @@ public class ImportazioneGenerica {
                 continue;
             }
             primaDataLetta = true;
+            //Dopo la data: una riga di testa o di preambolo resta "DATA NON PARSABILE" o saltata, come prima
+            if (colonneIntestazione > 0 && colonnePiene(campi) > colonneIntestazione) {
+                scarta("PIU' COLONNE DELL'INTESTAZIONE (" + colonnePiene(campi) + " invece di " + colonneIntestazione
+                        + "): un separatore dentro un valore senza virgolette, per esempio la virgola decimale", r);
+                continue;
+            }
+            //Una colonna numerica intera seguita da sole cifre (12,5 spezzato in 12 e 5) con piu' campi dell'intestazione:
+            //il 5 e' finito in una colonna vuota in coda (Remark), quindi le colonne piene sono quelle dell'intestazione.
+            //A pari campi (riga scritta a mano senza il separatore finale) non si riconosce: negli export veri una
+            //commissione 0 seguita da un'altra colonna 0 ha la stessa forma (Bitget, KuCoin, verificato il 2026-11-06)
+            if (colonneIntestazione > 0 && campi.length > campiIntestazione && numeroSpezzato(campi, cfg)) {
+                scarta("NUMERO SPEZZATO DAL SEPARATORE: una virgola decimale senza virgolette", r);
+                continue;
+            }
             //Trasformazioni della riga, in quest'ordine: coppia, colonne calcolate (possono usare le colonne della
             //coppia), regole di riga (possono leggere le colonne calcolate). Senza le chiavi la riga resta com'e'.
             if (cfg.colonnaCoppia >= 0) {
@@ -405,6 +434,13 @@ public class ImportazioneGenerica {
             }
             if (scartata) {
                 scarta("REGOLA DI RIGA", r);
+                continue;
+            }
+            //Un numero che non si legge veniva saltato in silenzio piu' avanti (la quantita') o preso cosi' com'era
+            //(il controvalore): la riga deve finire fra gli scarti, dove l'utente la vede
+            String illeggibile = numeroIlleggibile(campi, cfg);
+            if (illeggibile != null) {
+                scarta("NUMERO NON LEGGIBILE: " + illeggibile, r);
                 continue;
             }
             risultato.add(campi);
@@ -1818,6 +1854,58 @@ public class ImportazioneGenerica {
         return s;
     }
 
+    /** Quanti campi ha la riga senza contare quelli vuoti in coda: alcuni export chiudono le righe di dati con un separatore. */
+    static int colonnePiene(String[] campi) {
+        int n = campi.length;
+        while (n > 0 && (campi[n - 1] == null || campi[n - 1].isBlank())) n--;
+        return n;
+    }
+
+    /**
+     * Il primo valore delle colonne numeriche della riga (quantita', commissione, controvalore, prezzo) che contiene
+     * cifre ma non si legge come numero, per esempio {@code 1.234,56} con il punto delle migliaia. Un valore senza
+     * cifre ({@code --}, {@code N/A}) e' un segnaposto per "nessun valore", come una cella vuota, e non conta.
+     * @return il valore come scritto nel file, {@code null} se sono tutti leggibili
+     */
+    static String numeroIlleggibile(String[] riga, ConfigurazioneImport cfg) {
+        //{colonna moneta, colonna quantita'}
+        int[][] coppie = {
+            {cfg.colonnaMoneta, cfg.colonnaQuantita},
+            {cfg.colonnaMonetaUscita, cfg.colonnaQuantitaUscita},
+            {cfg.colonnaMonetaFee, cfg.colonnaQuantitaFee}};
+        for (int[] c : coppie) {
+            int colonna = c[1];
+            if (colonna < 0) continue;
+            String grezzo = safe(riga, colonna);
+            //Valore composto ("407.57 AME"): conta solo la parte prima del separatore, come in leggiCoppiaMonetaQuantita
+            if (!cfg.separatoreValoreMoneta.isEmpty() && c[0] == colonna) {
+                int idx = grezzo.indexOf(cfg.separatoreValoreMoneta);
+                if (idx >= 0) grezzo = grezzo.substring(0, idx);
+            }
+            if (illeggibile(grezzo)) return grezzo.trim();
+        }
+        for (int colonna : new int[]{cfg.colonnaValoreEuro, cfg.colonnaPrezzo}) {
+            if (colonna >= 0 && illeggibile(safe(riga, colonna))) return safe(riga, colonna).trim();
+        }
+        return null;
+    }
+
+    /** Una colonna numerica della riga e' un intero e il campo dopo ha solo cifre: la forma di 12,5 diviso dal separatore. */
+    static boolean numeroSpezzato(String[] campi, ConfigurazioneImport cfg) {
+        for (int k : new int[]{cfg.colonnaQuantita, cfg.colonnaQuantitaUscita, cfg.colonnaQuantitaFee,
+            cfg.colonnaValoreEuro, cfg.colonnaPrezzo}) {
+            if (k >= 0 && k + 1 < campi.length && campi[k].trim().matches("[-+]?\\d+")
+                    && campi[k + 1].trim().matches("\\d+")) return true;
+        }
+        return false;
+    }
+
+    private static boolean illeggibile(String grezzo) {
+        if (grezzo == null || !grezzo.chars().anyMatch(Character::isDigit)) return false;
+        String n = normalizzaNumero(grezzo);
+        return !n.isBlank() && !Funzioni.isNumeric(n, false);
+    }
+
     /** Scambia in-place due colonne di una riga CSV gia' splittata (no-op se un indice e' &lt; 0 o fuori range). */
     private static void scambiaColonne(String[] riga, int a, int b) {
         if (a < 0 || b < 0 || a >= riga.length || b >= riga.length) {
@@ -1979,7 +2067,7 @@ public class ImportazioneGenerica {
      * testuale
      */
     private static void scarta(String motivo, String riga) {
-        Importazioni.movimentiSconosciuti += motivo + " | " + riga + "\n";
+        Importazioni.AccodaSconosciuti(motivo + " | " + riga + "\n");
         //Solo "sconosciute": TrasazioniScartate nel resoconto vuol dire "gia' esistenti", e
         //contarla anche li' faceva risultare doppione una riga illeggibile. In un import completo
         //non si vedeva perche' ScriviListaSuMappaCrypto sovrascrive TrasazioniScartate; dopo un

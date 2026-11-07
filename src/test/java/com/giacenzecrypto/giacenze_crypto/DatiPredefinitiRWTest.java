@@ -33,10 +33,10 @@ class DatiPredefinitiRWTest {
     }
 
     @Test
-    void carica_dalJar_haI17ExchangeENoteBinance() {
+    void carica_dalJar_haI18ExchangeENoteBinance() {
         DatiPredefinitiRW p = DatiPredefinitiRW.Carica();
         assertNotNull(p, "RW_Predefiniti.json deve essere leggibile (copia nel jar)");
-        assertEquals(17, p.exchange().size());
+        assertEquals(18, p.exchange().size());
         assertNotNull(p.exchangePerId("BINANCE"), "lookup case-insensitive");
         assertEquals("Wallet 101", p.exchangePerId("binance").gruppo);
         // hash stabile fra due letture

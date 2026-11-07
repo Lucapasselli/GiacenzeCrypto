@@ -366,10 +366,24 @@ public class PrezziDefiLlama {
     static int PreScaricaCoppie(Collection<Coppia> candidate, String origine, Download progress) {
         if (candidate == null || candidate.isEmpty()) return 0;
         long inizio = System.currentTimeMillis();
-        Set<Coppia> uniche = new LinkedHashSet<>(candidate);
+        List<Coppia> daChiedere = DaChiedere(candidate);
+        if (daChiedere.isEmpty()) return 0;
+        int salvate = ScaricaCoppie(daChiedere, progress);
+        System.out.println("Pre-scarico prezzi DefiLlama (" + origine + "): " + daChiedere.size() + " coppie token-istante senza prezzo locale, "
+                + salvate + " quotazioni salvate, " + (System.currentTimeMillis() - inizio) + " ms");
+        return salvate;
+    }
+
+    /**
+     * La parte senza rete di {@link #PreScaricaCoppie}: le coppie che la valorizzazione cercherebbe in rete (niente
+     * prezzo locale, niente KO, niente alias, non già chieste nella sessione). Vuota se l'utente interrompe.
+     */
+    static List<Coppia> DaChiedere(Collection<Coppia> candidate) {
         List<Coppia> daChiedere = new ArrayList<>();
+        if (candidate == null) return daChiedere;
+        Set<Coppia> uniche = new LinkedHashSet<>(candidate);
         for (Coppia c : uniche) {
-            if (Interruzione.Richiesta()) return 0;
+            if (Interruzione.Richiesta()) return new ArrayList<>();
             if (c.address() == null || c.rete() == null || c.rete().isBlank()) continue;
             if (!Funzioni_WalletDeFi.isValidAddress(c.address(), c.rete())) continue;
             if (NomeRete(c.rete()) == null) continue;
@@ -379,11 +393,7 @@ public class PrezziDefiLlama {
             if (Prezzi.PrezzoIrrecuperabileDaDB_Leggi("", c.istante(), c.rete(), c.address())) continue;
             daChiedere.add(c);
         }
-        if (daChiedere.isEmpty()) return 0;
-        int salvate = ScaricaCoppie(daChiedere, progress);
-        System.out.println("Pre-scarico prezzi DefiLlama (" + origine + "): " + daChiedere.size() + " coppie token-istante senza prezzo locale, "
-                + salvate + " quotazioni salvate, " + (System.currentTimeMillis() - inizio) + " ms");
-        return salvate;
+        return daChiedere;
     }
 
     /**

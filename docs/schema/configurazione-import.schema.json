@@ -83,7 +83,7 @@
       "type": "integer",
       "minimum": 1,
       "default": 1,
-      "description": "Riga (contando da 1) con i nomi delle colonne, usata solo con autoDetectColonne. #rigaintestazione"
+      "description": "Riga (contando da 1) con i nomi delle colonne: con autoDetectColonne le colonne si cercano li', e le righe di dati con piu' colonne di questa vengono scartate. #rigaintestazione"
     },
     "autoDetectColonne": {
       "type": "boolean",

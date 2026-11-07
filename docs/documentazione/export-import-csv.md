@@ -232,5 +232,13 @@ Per importare i dati nel programma procedere come segue.
 > movimenti che ne derivano: l'elenco si trova in *Analisi Crypto – Gestione Documentale* (oppure in
 > *Opzioni – Export – Documenti di origine*), da cui i file possono essere riaperti, esportati o
 > eliminati quando non sono più collegati ad alcun movimento.
+>
+> La tabella ha due colonne di movimenti. *Movimenti* conta quelli che nascono dal file. *Collegati*
+> conta quelli che il file non ha creato ma spiega o classifica, come il dettaglio Dual Investment o i
+> file Subscription e Redemption dell'Auto-Invest, che completano movimenti del file delle transazioni.
+> Eliminando un file da cui nascono dei movimenti, il programma propone di eliminare anche quelli.
+> Eliminando un file solo collegato, i movimenti restano e perdono soltanto il collegamento. Nel
+> dettaglio di un movimento il file da cui nasce compare come *Documento di origine*, gli altri come
+> *Documento collegato*.
 
 [Torna all'indice della documentazione](./)

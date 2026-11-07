@@ -535,6 +535,32 @@ class DocumentiFonteTest {
         Principale.MappaCryptoWallet.put(ID, v);
     }
 
+    /**
+     * Un documento di supporto (2026-11-06): nella sua colonna "Collegati", non fra i movimenti importati. Costruisce il
+     * pannello vero, così un array di {@code initComponents} più corto delle colonne (l'app non partirebbe) si vede qui.
+     */
+    @Test
+    void pannello_documentoDiSupporto_contatoFraICollegati() throws Exception {
+        org.junit.jupiter.api.Assumptions.assumeFalse(java.awt.GraphicsEnvironment.isHeadless(), "headless");
+        DocumentiFonte.Registrazione R = DocumentiFonte.Registra(
+                fileConContenuto("dual.csv", "contratti\n"), DocumentiFonte.TIPO_CSV, "Binance Dual Investment");
+        movimentoInMappa("20210105120000_A_001_1_DC", "Binance", "3|" + R.Id);
+        movimentoInMappa("20210106120000_A_002_1_PC", "Binance", "3|" + R.Id);
+
+        Object[] riga = Principale_DocumentiFonte.RigheDiRiepilogo().get(0);
+        assertEquals(R.Id, riga[0]);
+        assertEquals(0, riga[Principale_DocumentiFonte.COLONNA_MOVIMENTI]);
+        assertEquals(2, riga[Principale_DocumentiFonte.COLONNA_COLLEGATI]);
+        assertEquals("2021-01-05 / 2021-01-06", riga[10]);
+        assertTrue(Principale_DocumentiFonte.NonEliminabili(List.of(R.Id)).isEmpty(),
+                "i soli collegamenti non impediscono l'eliminazione in una selezione multipla");
+
+        javax.swing.SwingUtilities.invokeAndWait(() -> {
+            GUI_DocumentiFonte_Pannello p = new GUI_DocumentiFonte_Pannello();
+            p.Ricarica();
+        });
+    }
+
     @Test
     void riepiloghi_conta_movimenti_wallet_e_periodo() {
         movimentoInMappa("20210105120000_A_001_1_DC", "Binance", "12");
@@ -583,8 +609,9 @@ class DocumentiFonteTest {
         assertEquals("storico.csv", riga[1]);
         assertEquals(1, riga[Principale_DocumentiFonte.COLONNA_MOVIMENTI],
                 "il pannello deve mostrare i movimenti che ci sono adesso");
-        assertEquals("Binance", riga[8]);
-        assertEquals("2021-01-05 / 2021-01-05", riga[9]);
+        assertEquals(0, riga[Principale_DocumentiFonte.COLONNA_COLLEGATI]);
+        assertEquals("Binance", riga[9]);
+        assertEquals("2021-01-05 / 2021-01-05", riga[10]);
     }
 
     @Test
@@ -595,8 +622,9 @@ class DocumentiFonteTest {
 
         Object[] riga = Principale_DocumentiFonte.RigheDiRiepilogo().get(0);
         assertEquals(0, riga[Principale_DocumentiFonte.COLONNA_MOVIMENTI]);
-        assertEquals("", riga[8]);
-        assertEquals("", riga[9], "senza movimenti non c'è nessun periodo da mostrare");
+        assertEquals(0, riga[Principale_DocumentiFonte.COLONNA_COLLEGATI]);
+        assertEquals("", riga[9]);
+        assertEquals("", riga[10], "senza movimenti non c'è nessun periodo da mostrare");
     }
 
     @Test

@@ -57,6 +57,12 @@ public class DocumentiAiuto {
      */
     public static final String COSTO_MEDIO_NETTO = "costo-medio-netto.html";
 
+    /**
+     * Il manuale del tab Dichiarazioni, ISEE: i rapporti del Quadro FC2 della DSU, i dati scritti a mano, la media
+     * giornaliera dei rapporti 99 e i prezzi mancanti.
+     */
+    public static final String ISEE = "isee.html";
+
     /** Elenco delle novità di ogni versione: pagina sola, non ha una copia in PDF */
     public static final String NOVITA_VERSIONI = "changelog.html";
 
@@ -64,7 +70,7 @@ public class DocumentiAiuto {
     static final String[] TUTTI = {
         OPZIONI_CALCOLO_RW, DISCLAIMER, AVVERTENZE_PROBLEMI_NOTI, CALCOLO_PLUSVALENZE_OPZIONI,
         CLASSIFICAZIONI_MOVIMENTI, EXPORT_IMPORT_CSV, CREAZIONE_JSON_IMPORTAZIONI, PARTICOLARITA_EXCHANGE,
-        FALLIMENTI_PIATTAFORME, GIACENZE_A_DATA, COSTO_MEDIO_NETTO, NOVITA_VERSIONI
+        FALLIMENTI_PIATTAFORME, GIACENZE_A_DATA, COSTO_MEDIO_NETTO, ISEE, NOVITA_VERSIONI
     };
 
     private DocumentiAiuto() {

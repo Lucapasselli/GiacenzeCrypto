@@ -352,7 +352,7 @@ public class WalletBtcMultiIndirizzo {
     private static String ScriviRiga(String[] st, int IdDocumento) {
         Principale.Funzione_AggiornaMappaWallets(st);
         st[0] = MovimentiCrypto.getIDUnivoco(Principale.MappaCryptoWallet, st[0]);
-        if (IdDocumento > 0 && st.length > 41 && Funzioni.noData(st[41])) st[41] = String.valueOf(IdDocumento);
+        if (IdDocumento > 0 && st.length > 41 && DocumentiFonte.IdDaCampo41(st[41]) <= 0) st[41] = DocumentiFonte.ConOrigine(st[41], String.valueOf(IdDocumento));
         Importazioni.InserisciMovimentosuMappaCryptoWallet(st[0], st);
         return st[0];
     }

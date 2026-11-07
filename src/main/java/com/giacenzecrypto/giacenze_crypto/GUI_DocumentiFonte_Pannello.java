@@ -110,14 +110,14 @@ public class GUI_DocumentiFonte_Pannello extends javax.swing.JPanel {
 
             },
             new String [] {
-                "Id", "Documento", "Tipo", "Origine", "Importato il", "Dimensione", "Su disco", "Movimenti", "Wallet / Exchange", "Periodo dei movimenti"
+                "Id", "Documento", "Tipo", "Origine", "Importato il", "Dimensione", "Su disco", "Movimenti", "Collegati", "Wallet / Exchange", "Periodo dei movimenti"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Integer.class, java.lang.String.class, java.lang.String.class
+                java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Integer.class, java.lang.Integer.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -234,7 +234,7 @@ public class GUI_DocumentiFonte_Pannello extends javax.swing.JPanel {
         }
         Modificato = true;
         Ricarica();
-        if (esito.Movimenti() == 0) {
+        if (!esito.MovimentiCambiati()) {
             return;
         }
         //Il ricalcolo va fatto PRIMA del messaggio, non dopo : il WINDOW_GAINED_FOCUS lasciato dalla
@@ -246,9 +246,12 @@ public class GUI_DocumentiFonte_Pannello extends javax.swing.JPanel {
         } else {
             Principale.TabellaCryptodaAggiornare = true;
         }
-        Messaggi.SuccessMessage("Documento eliminato",
-                esito.Movimenti() + (esito.Movimenti() == 1 ? " movimento eliminato" : " movimenti eliminati")
-                + " insieme al documento",
+        String titolo = esito.Movimenti() > 0
+                ? esito.Movimenti() + (esito.Movimenti() == 1 ? " movimento eliminato" : " movimenti eliminati")
+                + " insieme al documento"
+                : esito.Collegamenti() + (esito.Collegamenti() == 1 ? " movimento ha perso" : " movimenti hanno perso")
+                + " il collegamento al documento";
+        Messaggi.SuccessMessage("Documento eliminato", titolo,
                 "Premi Salva nella sezione 'Transazioni Crypto' per rendere permanente la cancellazione; "
                 + "fino ad allora puoi tornare indietro con Annulla, che ripristina anche il documento.",
                 Proprietario());
@@ -355,7 +358,7 @@ public class GUI_DocumentiFonte_Pannello extends javax.swing.JPanel {
         return ids;
     }
 
-    /** @return {@code true} se ogni documento selezionato non ha più movimenti agganciati */
+    /** @return {@code true} se da nessun documento selezionato nasce ancora un movimento (i collegati non contano) */
     private boolean TuttiSenzaMovimenti() {
         for (int riga : Tabella.getSelectedRows()) {
             if ((Integer) Modello().getValueAt(Tabella.convertRowIndexToModel(riga), COL_MOVIMENTI) > 0) {
@@ -376,9 +379,10 @@ public class GUI_DocumentiFonte_Pannello extends javax.swing.JPanel {
         boolean inerti = TuttiSenzaMovimenti();
         Bottone_Elimina.setEnabled(selezionati == 1 || (selezionati > 1 && inerti));
         Bottone_Elimina.setToolTipText(selezionati > 1 && !inerti
-                ? "Su una selezione multipla si eliminano solo i documenti senza movimenti agganciati: "
+                ? "Su una selezione multipla si eliminano solo i documenti da cui non nasce nessun movimento: "
                         + "per eliminare un documento insieme ai suoi movimenti selezionalo da solo"
-                : "Elimina il documento; se ha ancora dei movimenti agganciati propone di eliminare anche quelli");
+                : "Elimina il documento: se ne nascono dei movimenti propone di eliminare anche quelli, "
+                        + "i movimenti solo collegati perdono il collegamento");
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

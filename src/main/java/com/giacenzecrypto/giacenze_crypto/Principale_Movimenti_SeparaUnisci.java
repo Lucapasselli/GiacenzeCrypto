@@ -721,6 +721,8 @@ public class Principale_Movimenti_SeparaUnisci {
         for (int Campo : CampiDaRiportare) {
             if (Funzioni.noData(Scambio[Campo])) Scambio[Campo] = Deposito[Campo];
         }
+        //Documenti: l'origine del prelievo (o del deposito), i documenti collegati di tutti e due
+        Scambio[41] = DocumentiFonte.Unione(List.of(Prelievo, Deposito));
 
         //Prezzo e info prezzo vengono riportati verbatim dalla gamba scelta, senza l'arrotondamento e
         //senza la fonte "Personalizzato" che creaMovimento applicherebbe
@@ -1099,7 +1101,7 @@ public class Principale_Movimenti_SeparaUnisci {
                     + "all'istante dell'ultimo dei movimenti selezionati, quindi dopo di essi: il calcolo "
                     + "LIFO li elaborerà in un ordine diverso da quello attuale.<br>");
         }
-        if (DistintiNonVuoti(Gruppo, 41).size() > 1) {
+        if (Gruppo.stream().map(M -> DocumentiFonte.SoloOrigine(M[41])).filter(o -> !o.isEmpty()).distinct().count() > 1) {
             Dettagli.append("<br>I movimenti provengono da documenti di origine diversi: il movimento "
                     + "unito resterà collegato a uno solo di essi, gli altri perderanno il collegamento.<br>");
         }
@@ -1263,6 +1265,11 @@ public class Principale_Movimenti_SeparaUnisci {
                 }
             }
         }
+        //Documenti: l'origine come sopra, i documenti collegati di tutti i movimenti uniti
+        List<String[]> PerDocumenti = new ArrayList<>();
+        PerDocumenti.add(MovimentoBase);
+        PerDocumenti.addAll(Gruppo);
+        Nuovo[41] = DocumentiFonte.Unione(PerDocumenti);
 
         boolean TuttiValorizzati = Gruppo.stream().allMatch(Principale_Movimenti_SeparaUnisci::Valorizzato);
         if (TuttiValorizzati) {

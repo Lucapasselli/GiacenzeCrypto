@@ -29,6 +29,9 @@ public class Principale_DocumentiFonte {
      */
     public static final int COLONNA_MOVIMENTI = 7;
 
+    /** Indice della colonna con i movimenti di cui il documento è un supporto: eliminandolo perdono solo il collegamento. */
+    public static final int COLONNA_COLLEGATI = 8;
+
     /**
      * Apre il documento da cui il movimento è stato importato.
      *
@@ -112,7 +115,7 @@ public class Principale_DocumentiFonte {
      *
      * @return una riga per documento, nell'ordine del registro (dal più recente), con le colonne
      *         id, nome, tipo, origine, data di importazione, dimensione, occupazione su disco,
-     *         movimenti, wallet, periodo
+     *         movimenti importati, movimenti collegati, wallet, periodo
      */
     public static List<Object[]> RigheDiRiepilogo() {
         Map<Integer, DocumentiFonte.Riepilogo> riepiloghi = DocumentiFonte.Riepiloghi();
@@ -131,6 +134,7 @@ public class Principale_DocumentiFonte {
                 DimensioneLeggibile(DocumentiFonte.DimensioneOriginale(d.Id)),
                 DimensioneLeggibile(DocumentiFonte.Dimensione(d.Id)),
                 r.Movimenti,
+                r.Collegati,
                 r.WalletInRiga(),
                 r.Periodo()
             });
@@ -147,7 +151,7 @@ public class Principale_DocumentiFonte {
         int senzaMovimenti = 0;
         for (Object[] r : Righe) {
             dimensione += DocumentiFonte.Dimensione((Integer) r[0]);
-            if ((Integer) r[COLONNA_MOVIMENTI] == 0) {
+            if ((Integer) r[COLONNA_MOVIMENTI] == 0 && (Integer) r[COLONNA_COLLEGATI] == 0) {
                 senzaMovimenti++;
             }
         }
@@ -233,7 +237,7 @@ public class Principale_DocumentiFonte {
 
     /**
      * Esito di {@link #EliminaDocumenti(List, Window)} : quanti documenti e quanti movimenti sono stati
-     * eliminati davvero.
+     * eliminati davvero, e quanti movimenti hanno perso il collegamento a un documento di supporto.
      *
      * <p>Un {@code boolean} non basta più da quando l'eliminazione può portarsi via anche i movimenti :
      * il pannello deve poter distinguere "è cambiato il registro" (basta rileggere la tabella) da "è
@@ -241,15 +245,21 @@ public class Principale_DocumentiFonte {
      *
      * @param Documenti documenti eliminati
      * @param Movimenti movimenti eliminati insieme a loro
+     * @param Collegamenti movimenti rimasti, che hanno perso il collegamento a un documento di supporto eliminato
      */
-    public record EsitoEliminazione(int Documenti, int Movimenti) {
+    public record EsitoEliminazione(int Documenti, int Movimenti, int Collegamenti) {
 
         /** Esito di un'operazione annullata o rifiutata */
-        public static final EsitoEliminazione NIENTE = new EsitoEliminazione(0, 0);
+        public static final EsitoEliminazione NIENTE = new EsitoEliminazione(0, 0, 0);
 
         /** @return {@code true} se il registro dei documenti è cambiato */
         public boolean Modificato() {
             return Documenti > 0;
+        }
+
+        /** @return {@code true} se è cambiata la mappa dei movimenti, quindi servono ricalcolo e Salva */
+        public boolean MovimentiCambiati() {
+            return Movimenti > 0 || Collegamenti > 0;
         }
     }
 
@@ -267,6 +277,10 @@ public class Principale_DocumentiFonte {
      *       documenti e qualche migliaio di movimenti non lo legge nessuno, e qui sbagliare non è
      *       rimediabile.</li>
      * </ul>
+     * Un documento di <b>supporto</b> (Dual Investment, Subscription, in futuro un estratto di bonifici) non porta via
+     * nessun movimento: chi ne era collegato perde solo il collegamento (scelta dell'utente, 2026-11-06). Togliere il
+     * collegamento cambia la mappa, quindi la cancellazione del documento resta provvisoria fino a Salva, come nella
+     * cascata.
      *
      * @param Ids documenti da eliminare
      * @param owner finestra rispetto a cui centrare le conferme
@@ -295,9 +309,21 @@ public class Principale_DocumentiFonte {
         //Un documento senza movimenti puo' essere quello di uno scaricamento che ha solo scartato dei record
         //sconosciuti: e' l'unico posto in cui quei record esistono ancora (vedi ScartiImport)
         boolean conScarti = false;
+        Map<Integer, DocumentiFonte.Riepilogo> riepiloghi = DocumentiFonte.Riepiloghi();
+        int collegati = 0;
         for (int Id : Ids) {
             if (ScartiImport.HaScarti(Id)) conScarti = true;
+            DocumentiFonte.Riepilogo r = riepiloghi.get(Id);
+            if (r != null) collegati += r.Collegati;
         }
+        String testoMovimenti = collegati == 0
+                ? "Nessun movimento vi fa più riferimento, ma l'operazione non è reversibile : "
+                + "il file originale non è più recuperabile dall'applicazione."
+                : "Nessun movimento nasce da " + (Ids.size() == 1 ? "questo documento" : "questi documenti") + ", ma "
+                + collegati + (collegati == 1 ? " movimento ne è collegato e perderà" : " movimenti ne sono collegati e perderanno")
+                + " il collegamento, restando per il resto come sono. Fino a <b>Salva</b> nella sezione "
+                + "\"Transazioni Crypto\" si torna indietro con il suo <b>Annulla</b>, che ripristina anche "
+                + (Ids.size() == 1 ? "il documento." : "i documenti.");
         AppDialog.DialogResult result = AppDialog.builder(owner)
                 .windowTitle("Conferma eliminazione")
                 .bodyTitle("Eliminazione dei documenti di origine")
@@ -308,8 +334,7 @@ public class Principale_DocumentiFonte {
                 .details("Stai per eliminare " + Ids.size()
                         + (Ids.size() == 1 ? " documento" : " documenti")
                         + ", copia del file e riga di registro.<br><br>"
-                        + "Nessun movimento vi fa più riferimento, ma l'operazione non è reversibile : "
-                        + "il file originale non è più recuperabile dall'applicazione."
+                        + testoMovimenti
                         + (conScarti ? "<br><br><b>Attenzione</b> : contiene movimenti che all'importazione erano "
                                 + "sconosciuti e sono stati scartati. Finché il documento resta, il programma può "
                                 + "recuperarli quando saprà riconoscerli, eliminandolo non più." : ""))
@@ -324,10 +349,15 @@ public class Principale_DocumentiFonte {
         if (result == null || !result.isAction("elimina")) {
             return EsitoEliminazione.NIENTE;
         }
+        int scollegati = 0;
         for (int Id : Ids) {
-            DocumentiFonte.Annulla(Id);
+            int n = DocumentiFonte.Scollega(Id);
+            //Con dei collegamenti tolti la mappa e' cambiata: la cancellazione aspetta Salva, come nella cascata
+            if (n > 0) DocumentiFonte.AccodaCancellazione(Id);
+            else DocumentiFonte.Annulla(Id);
+            scollegati += n;
         }
-        return new EsitoEliminazione(Ids.size(), 0);
+        return new EsitoEliminazione(Ids.size(), 0, scollegati);
     }
 
     /**
@@ -380,7 +410,10 @@ public class Principale_DocumentiFonte {
                         + "<br><br>Eliminando il documento verranno eliminati <b>anche quei movimenti</b>, "
                         + "insieme agli eventuali movimenti generati automaticamente a partire da loro "
                         + "(commissioni, reward, classificazioni). I movimenti di altri documenti collegati "
-                        + "a questi verranno riportati alla situazione precedente alla classificazione.")
+                        + "a questi verranno riportati alla situazione precedente alla classificazione."
+                        + (r.Collegati > 0 ? "<br><br>Il documento è anche collegato ad altri " + r.Collegati
+                                + (r.Collegati == 1 ? " movimento, che resta e perde" : " movimenti, che restano e perdono")
+                                + " solo il collegamento." : ""))
                 .action(AppDialog.DialogAction.builder("cancel", "Annulla")
                         .role(AppDialog.ActionRole.SECONDARY)
                         .build())
@@ -421,13 +454,15 @@ public class Principale_DocumentiFonte {
         }
 
         int eliminati = EliminaMovimentiDelDocumento(Id);
+        //Se il documento era anche supporto di altri movimenti, quelli restano e perdono solo il collegamento
+        int scollegati = DocumentiFonte.Scollega(Id);
         //La cancellazione del documento è provvisoria quanto quella dei movimenti appena tolti dalla mappa:
         //niente scrittura qui. Sparisce subito da Elenco() (quindi dal pannello), ma la riga di registro e il
         //file restano finché l'utente non preme Salva in 'Transazioni Crypto' — DocumentiFonte.SalvaBuffer(),
         //chiamata da dentro Scrivi_Movimenti_Crypto esattamente come MovimentiStorico.SalvaBuffer, la rende
         //allora definitiva. Un Annulla nel frattempo la scarta insieme al resto (vedi ScartaBuffer()).
         DocumentiFonte.AccodaCancellazione(Id);
-        return new EsitoEliminazione(1, eliminati);
+        return new EsitoEliminazione(1, eliminati, scollegati);
     }
 
     /**
@@ -484,7 +519,8 @@ public class Principale_DocumentiFonte {
     }
 
     /**
-     * Quali fra i documenti indicati non si possono eliminare, e perché.
+     * Quali fra i documenti indicati non si possono eliminare in una selezione multipla, perché ne nascono ancora dei
+     * movimenti. I movimenti collegati come supporto non contano: perdono solo il collegamento.
      *
      * <p>È il controllo <b>autorevole</b>: il pannello disabilita già il pulsante leggendo la propria
      * colonna, ma quello è solo un aiuto all'utente e si basa su una tabella che potrebbe essere stata

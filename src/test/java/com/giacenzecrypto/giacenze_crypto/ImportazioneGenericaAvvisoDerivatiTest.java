@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * <ul>
  *   <li>il match è sulla causale <b>grezza</b> del CSV ({@link ImportazioneGenerica.ConfigurazioneImport#getCausaleCSV}),
  *       non su quella mappata — stesso trattamento di {@code causaliDifferite};</li>
- *   <li>{@link Importazioni#CausaliDerivatiSegnalate} è indipendente da {@link Importazioni#movimentiSconosciuti}:
+ *   <li>{@link Importazioni#CausaliDerivatiSegnalate} è indipendente da {@link Importazioni#Sconosciuti()}:
  *       qui i movimenti sono importati correttamente, non sono errori di riconoscimento;</li>
  *   <li>{@link Importazioni#AzzeraContatori()} lo svuota, come ogni altro contatore di sessione.</li>
  * </ul>

@@ -19,7 +19,6 @@ import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_M
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_MOD_INIZIALE;
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_FONTE_FISCALE;
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_IDENT_FISCALE;
-import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_IDENT_ISEE;
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_NOTE_FISCALI;
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_ORIGINE;
 import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.COL_PROGRESSIVO;
@@ -33,7 +32,7 @@ import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.TIPO_
 /**
  * Periodi di detenzione di un gruppo wallet per il quadro W/RW ({@code GRUPPO_PERIODO_RW}) : righi
  * CRYPTO / FIAT con date e modalità di calcolo, più — sui soli righi FIAT — i dati fiscali
- * dell'intermediario (Stato estero, identificativo, alias ISEE, note, fonte). Colonna <b>Origine</b>
+ * dell'intermediario (Stato estero, identificativo, note, fonte). Colonna <b>Origine</b>
  * (Predefinito / Modificato / Manuale).
  *
  * <p>I valori iniziale/finale a mano e le loro note <b>non si mostrano più</b> (2026-09-09) : restano
@@ -50,11 +49,12 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
 
     /**
      * Indici delle colonne <b>della tabella</b>. Non coincidono più con i {@code COL_*} del modello
-     * dati : la vista ne nasconde quattro (valori e note a mano) e ne aggiunge cinque (i dati fiscali).
+     * dati : la vista ne nasconde quattro (valori e note a mano) e l'identificativo ISEE (dal 2026-11-05
+     * i dati del rapporto stanno nel tab ISEE), e ne aggiunge i dati fiscali del rigo FIAT.
      */
     private static final int V_TIPO = 0, V_PROG = 1, V_DATA_INIZIO = 2, V_DATA_FINE = 3,
-            V_MOD_INIZIALE = 4, V_MOD_FINALE = 5, V_STATO = 6, V_IDENT = 7, V_ISEE = 8,
-            V_NOTE = 9, V_FONTE = 10, V_CONTO_CORRENTE = 11, V_BOLLO = 12, V_ORIGINE = 13;
+            V_MOD_INIZIALE = 4, V_MOD_FINALE = 5, V_STATO = 6, V_IDENT = 7,
+            V_NOTE = 8, V_FONTE = 9, V_CONTO_CORRENTE = 10, V_BOLLO = 11, V_ORIGINE = 12;
 
     private final String gruppo;
     private final List<String[]> righe = new ArrayList<>();
@@ -75,7 +75,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
 
         Tabella.setShowGrid(false); // niente righe fra celle : come le altre tabelle dell'app (default FlatLaf)
         Tabella.setPreferredScrollableViewportSize(new java.awt.Dimension(900, 260));
-        int[] larghezze = {60, 45, 90, 90, 190, 190, 150, 130, 130, 260, 200, 110, 90, 110};
+        int[] larghezze = {60, 45, 90, 90, 190, 190, 150, 130, 260, 200, 110, 90, 110};
         for (int i = 0; i < larghezze.length && i < Tabella.getColumnModel().getColumnCount(); i++) {
             Tabella.getColumnModel().getColumn(i).setPreferredWidth(larghezze[i]);
         }
@@ -91,7 +91,6 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
                 "Come stimare la giacenza alla fine del periodo",
                 "Solo righi FIAT : Stato estero dell'intermediario in questo periodo (tabella \"Elenco Paesi\" del modello Redditi)",
                 "Solo righi FIAT : identificativo fiscale / P.IVA dell'intermediario in questo periodo",
-                "Solo righi FIAT : identificativo per il modulo FC.1 della DSU/ISEE, sempre da inserire a mano",
                 "Solo righi FIAT : nota sull'entità legale dell'intermediario",
                 "Solo righi FIAT : da dove viene il dato fiscale",
                 "Solo righi FIAT : SI se l'intermediario estero è una banca e il conto valuta è un vero conto corrente estero (codice bene 1, IVAFE in misura fissa 34,20 € sul valore medio di giacenza)",
@@ -159,7 +158,6 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
                 Principale_GruppiWalletRW.etichettaModalita(v(r, COL_MOD_FINALE), MODALITA_FINALE),
                 fiat ? (stato.isEmpty() ? "" : StatiEsteri.etichetta(stato)) : "n/d",
                 fiat ? v(r, COL_IDENT_FISCALE) : "n/d",
-                fiat ? v(r, COL_IDENT_ISEE) : "n/d",
                 fiat ? v(r, COL_NOTE_FISCALI) : "n/d",
                 fiat ? v(r, COL_FONTE_FISCALE) : "n/d",
                 fiat ? (v(r, COL_E_CONTO_CORRENTE).isEmpty() ? Principale_GruppiWalletRW.CONTO_CORRENTE_NO : v(r, COL_E_CONTO_CORRENTE)) : "n/d",
@@ -215,7 +213,7 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
         Label_Titolo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         Label_Titolo.setText("Periodi di detenzione");
 
-        Label_Info.setText("<html><div style='width:840px'><b>A cosa serve.</b> Mostra come il gruppo ha detenuto crypto e valuta estera nel tempo, ai fini del Quadro&nbsp;W/RW. <br>\nGenera un rigo per periodo, separato per CRYPTO e FIAT : serve quando un conto viene chiuso e poi riaperto, o quando cambia il regime del bollo.<br><br>\n<b>Colonne : </b>\n<ul style='margin:3px 10 3px 10'>\n<li><b>Data inizio</b> vuota = dal primo movimento del gruppo&nbsp;&nbsp;&#8226;&nbsp;&nbsp;<b>Data fine</b> vuota = periodo ancora aperto</li>\n<li><b>Calcolo iniziale</b> / <b>finale</b> = come stimare la giacenza al bordo del periodo</li>\n<li><b>Bollo exchange</b> (solo righi CRYPTO) = in quel periodo l'intermediario ha già assolto l'imposta di bollo</li>\n<li><b>Origine</b> = &quot;Predefinito&quot; (dal programma) / &quot;Modificato&quot; / &quot;Manuale&quot;</li>\n</ul>\n<br><b>Pulsanti :</b>\n<ul style='margin:3px 10 3px 10'>\n<li><b>Aggiungi</b> e <b>Modifica</b> aprono un dialogo per inserire o modificare i dati.</li>\n<li><b>Ripristina riga</b> e <b>Ripristina tutto</b> riportano ai valori predefiniti.</li>\n<li>Non c'\u00e8 un pulsante <i>Salva</i> : <b>ogni operazione viene salvata subito</b>.</li>\n<br><center><font color='#8A8A8A'>Le colonne sono molte e larghe: scorri la tabella in orizzontale.</font></div></html>\n</ul>");
+        Label_Info.setText("<html><div style='width:840px'><b>A cosa serve.</b> Mostra come il gruppo ha detenuto crypto e valuta estera nel tempo, ai fini del Quadro&nbsp;W/RW e dell'ISEE. <br>\nGenera un rigo per periodo, separato per CRYPTO e FIAT : serve quando un conto viene chiuso e poi riaperto, o quando cambia il regime del bollo.<br><br>\n<b>Colonne : </b>\n<ul style='margin:3px 10 3px 10'>\n<li><b>Data inizio</b> vuota = dal primo movimento del gruppo&nbsp;&nbsp;&#8226;&nbsp;&nbsp;<b>Data fine</b> vuota = periodo ancora aperto</li>\n<li><b>Calcolo iniziale</b> / <b>finale</b> = come stimare la giacenza al bordo del periodo</li>\n<li><b>Bollo exchange</b> (solo righi CRYPTO) = in quel periodo l'intermediario ha già assolto l'imposta di bollo</li>\n<li><b>Dati fiscali</b> (solo righi FIAT : Stato estero, identificativo fiscale) = l'intermediario del gruppo in quel periodo. Valgono per la liquidità del Quadro&nbsp;W/RW. Il tab ISEE ne ricava il codice operatore dei rapporti del gruppo, cripto comprese: lì si scrivono l'identificativo del rapporto e le eventuali correzioni.</li>\n<li><b>Origine</b> = &quot;Predefinito&quot; (dal programma) / &quot;Modificato&quot; / &quot;Manuale&quot;</li>\n</ul>\n<br><b>Pulsanti :</b>\n<ul style='margin:3px 10 3px 10'>\n<li><b>Aggiungi</b> e <b>Modifica</b> aprono un dialogo per inserire o modificare i dati.</li>\n<li><b>Ripristina riga</b> e <b>Ripristina tutto</b> riportano ai valori predefiniti.</li>\n<li>Non c'\u00e8 un pulsante <i>Salva</i> : <b>ogni operazione viene salvata subito</b>.</li>\n<br><center><font color='#8A8A8A'>Le colonne sono molte e larghe: scorri la tabella in orizzontale.</font></div></html>\n</ul>");
 
         Label_Avvisi.setText(" ");
 
@@ -224,11 +222,11 @@ public class GUI_PeriodiDetenzioneRW extends javax.swing.JDialog {
 
             },
             new String [] {
-                "Tipo", "Progr.", "Data inizio", "Data fine", "Calcolo iniziale", "Calcolo finale", "Stato estero", "Identificativo fiscale", "Identificativo ISEE", "Note", "Fonte", "Conto corrente", "Bollo exchange", "Origine"
+                "Tipo", "Progr.", "Data inizio", "Data fine", "Calcolo iniziale", "Calcolo finale", "Stato estero", "Identificativo fiscale", "Note", "Fonte", "Conto corrente", "Bollo exchange", "Origine"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {

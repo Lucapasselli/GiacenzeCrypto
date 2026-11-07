@@ -713,8 +713,9 @@ Ogni riga è un periodo, di tipo **CRYPTO** (le cripto-attività) oppure **FIAT*
   chiuso il 30/06 e il successivo senza date.
 - **Calcolo iniziale** e **Calcolo finale**: come valutare la giacenza al bordo del periodo (vedi più sotto).
 - **Bollo exchange** (solo CRYPTO): in quel periodo l’intermediario ha già assolto l’imposta di bollo.
-- **Stato estero**, **È conto corrente estero**, **Identificativo fiscale**, **Identificativo ISEE**,
-  **Note** e **Fonte** (solo FIAT): i dati dell’intermediario per la parte liquidità.
+- **Stato estero**, **È conto corrente estero**, **Identificativo fiscale**, **Note** e **Fonte** (solo FIAT):
+  i dati dell’intermediario per la parte liquidità. Il tab *ISEE* ne ricava anche il codice operatore dei
+  rapporti del gruppo, cripto comprese.
 
 Due periodi dello stesso tipo non possono sovrapporsi: il programma lo segnala come errore e non salva. Un
 **buco** fra due periodi è invece ammesso (un conto chiuso e riaperto) e viene solo segnalato. Ogni
@@ -820,8 +821,9 @@ correnti, dove conta la giacenza media).
   italiano: per quel periodo non viene prodotto nessun rigo, perché il quadro RW riguarda solo le attività
   estere. Per molti exchange i dati sono già compilati, ma vanno comunque verificati.
 - **È conto corrente estero**: da impostare a *SI* solo per un vero conto corrente bancario.
-- **Identificativo fiscale** e **Identificativo ISEE**: gli estremi dell’intermediario, riportati nella stampa
-  e utili per la DSU.
+- **Identificativo fiscale**: il codice dell’intermediario, riportato nella stampa. Il tab *ISEE* lo usa per
+  il codice dell’operatore nella DSU. L’identificativo del rapporto (IBAN o numero di conto) si scrive nel tab
+  *ISEE*, non qui.
 
 **Codice bene e imposta.**
 
@@ -993,7 +995,8 @@ il programma controlla che non siano stati modificati o cancellati. Un doppio cl
 
 **Documenti di origine.** Prima di generare i file il programma chiede se includere nella dichiarazione anche
 le copie dei documenti da cui nascono i movimenti: i file CSV importati e le risposte JSON/NDJSON scaricate
-dagli exchange e dalle blockchain, così come sono stati ricevuti. È spuntata la casella dei documenti con
+dagli exchange e dalle blockchain, così come sono stati ricevuti, insieme ai documenti collegati ai movimenti
+(per esempio il dettaglio Dual Investment). È spuntata la casella dei documenti con
 movimenti nell'anno della dichiarazione, mentre quella di tutti gli anni fino a quello della dichiarazione
 aggiunge anche i documenti con movimenti solo negli anni precedenti, da cui nascono costo di carico e giacenze
 iniziali. I documenti con movimenti solo negli anni successivi non vengono inclusi. Le copie stanno nella

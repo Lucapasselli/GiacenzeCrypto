@@ -350,6 +350,87 @@ public final class Calcoli_RW_Fiat {
         return !gambeDelGruppo(gruppo).isEmpty();
     }
 
+    /**
+     * La liquidità di tutti i gruppi per l'ISEE ({@link Calcoli_ISEE}), con <b>una sola</b> passata sull'archivio
+     * (ogni chiamata a {@link #saldiFiatPerValuta} ne fa una). Stesse gambe del quadro W/RW, Fiat Wallet di
+     * Crypto.com compreso. Non tocca {@code Mappa_RW_ListeXGruppoWallet_Fiat}.
+     */
+    public static Liquidita liquidita(ControvaloreEUR cambio) {
+        return new Liquidita(indicizzaGambeFiat(), cambio);
+    }
+
+    /** Saldo e giacenza media in EUR della liquidità di un gruppo, letti da un indice costruito una volta. */
+    public static final class Liquidita {
+        private final IndiceFiat indice;
+        private final ControvaloreEUR cambio;
+
+        private Liquidita(IndiceFiat indice, ControvaloreEUR cambio) {
+            this.indice = indice;
+            this.cambio = cambio;
+        }
+
+        /** {@code true} se il gruppo ha gambe FIAT in qualunque data. */
+        public boolean presente(String gruppo) {
+            return !indice.gambe.getOrDefault(gruppo, List.of()).isEmpty();
+        }
+
+        /** I gruppi con gambe FIAT. */
+        public java.util.Set<String> gruppi() {
+            return indice.gambe.keySet();
+        }
+
+        /** Giorno della prima gamba FIAT del gruppo, {@code null} se non ne ha. */
+        public LocalDate primo(String gruppo) {
+            String min = null;
+            for (GambaFiat g : indice.gambe.getOrDefault(gruppo, List.of())) {
+                if (min == null || g.giorno.compareTo(min) < 0) {
+                    min = g.giorno;
+                }
+            }
+            return min == null ? null : parseData(min);
+        }
+
+        /** Giorno dell'ultima gamba FIAT del gruppo non posteriore a {@code limite}, {@code null} se non ne ha. */
+        public LocalDate ultimoFinoA(String gruppo, LocalDate limite) {
+            String lim = limite.toString();
+            String max = null;
+            for (GambaFiat g : indice.gambe.getOrDefault(gruppo, List.of())) {
+                if (g.giorno.compareTo(lim) <= 0 && (max == null || g.giorno.compareTo(max) > 0)) {
+                    max = g.giorno;
+                }
+            }
+            return max == null ? null : parseData(max);
+        }
+
+        /**
+         * Saldo in EUR a fine giornata, tutte le valute convertite alla data {@code dataCambio}. Può essere
+         * negativo (movimento mancante): lo decide il chiamante. Una valuta non convertibile vale zero e lascia un avviso.
+         */
+        public BigDecimal saldoEUR(String gruppo, LocalDate giorno, LocalDate dataCambio, List<String> avvisi) {
+            BigDecimal tot = BigDecimal.ZERO;
+            Map<String, BigDecimal> saldi = saldiDaGambe(indice.gambe.getOrDefault(gruppo, List.of()), giorno.toString(), true);
+            for (Map.Entry<String, BigDecimal> e : saldi.entrySet()) {
+                tot = tot.add(tassoEUR(e.getKey(), dataCambio.toString(), cambio, avvisi).multiply(e.getValue()));
+            }
+            return tot;
+        }
+
+        /**
+         * Giacenza media annua delle istruzioni DSU: somma dei saldi di fine giornata dei giorni da {@code da} ad
+         * {@code a} inclusi, divisa sempre per {@value #GIORNI_GIACENZA_MEDIA_ANNUA}. Saldo negativo = zero, cambio
+         * lineare alla data {@code dataCambio} (fine anno, o chiusura del rapporto). Stessa routine del conto
+         * corrente del quadro W/RW ({@link #giacenzeGiornaliere}), ma sui soli giorni del rapporto.
+         */
+        public BigDecimal mediaAnnua(String gruppo, LocalDate da, LocalDate a, LocalDate dataCambio, List<String> avvisi) {
+            List<LocalDate> giorni = new ArrayList<>();
+            for (LocalDate g = da; !g.isAfter(a); g = g.plusDays(1)) {
+                giorni.add(g);
+            }
+            return giacenzeGiornaliere(indice.gambe.getOrDefault(gruppo, List.of()), giorni,
+                    GIORNI_GIACENZA_MEDIA_ANNUA, dataCambio.toString(), cambio, avvisi)[0];
+        }
+    }
+
     // =======================================================================
     // F2 : intervalli di detenzione FIAT (tagli dai soli periodi FIAT di GRUPPO_PERIODO_RW)
     // =======================================================================

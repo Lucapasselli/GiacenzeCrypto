@@ -1002,6 +1002,7 @@ private static final long serialVersionUID = 3L;
         RT_Bottone_Excel = new javax.swing.JButton();
         RT_Bottone_CorreggiErrori = new javax.swing.JButton();
         RT_CheckBox_EscludiAnnoCorrente = new javax.swing.JCheckBox();
+        ISEE = new javax.swing.JPanel();
         ArchivioDichiarazioni = new javax.swing.JPanel();
         Normativa = new javax.swing.JPanel();
         Opzioni = new javax.swing.JPanel();
@@ -4786,6 +4787,25 @@ private static final long serialVersionUID = 3L;
         );
 
         Dichiarazioni_TabbedPane.addTab("RT & Analisi P&L", RT);
+
+        ISEE.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                ISEEComponentShown(evt);
+            }
+        });
+
+        javax.swing.GroupLayout ISEELayout = new javax.swing.GroupLayout(ISEE);
+        ISEE.setLayout(ISEELayout);
+        ISEELayout.setHorizontalGroup(
+            ISEELayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 1465, Short.MAX_VALUE)
+        );
+        ISEELayout.setVerticalGroup(
+            ISEELayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 856, Short.MAX_VALUE)
+        );
+
+        Dichiarazioni_TabbedPane.addTab("ISEE", ISEE);
 
         ArchivioDichiarazioni.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
@@ -9226,7 +9246,7 @@ private void SettaIcone(){
         Opzioni_GruppoWallet_InfoTabellaPeriodi = Opzioni_GruppoWallet_NuovaTabellaInfo(
                 new String[]{"Tipo", "Progr.", "Data inizio", "Data fine",
                     "Calcolo iniziale", "Calcolo finale", "Stato estero", "Ident. fiscale",
-                    "Ident. ISEE", "Bollo", "Origine"});
+                    "Bollo", "Origine"});
 
         javax.swing.JPanel affiancate = new javax.swing.JPanel(new java.awt.GridLayout(1, 2, 12, 0));
         affiancate.add(Opzioni_GruppoWallet_RiquadroInfo("Exchange / wallet del gruppo", Opzioni_GruppoWallet_InfoTabellaWallet, 170));
@@ -9981,7 +10001,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 MT[26] = "0x5c7f8a570d578ed84e63fdfa7b1ee72deae1ae23";
                 MT[29] = Movimento[29];
                 //Documento di origine: il prelievo di WCRO è ricavato dal deposito di CRO
-                MT[41] = Movimento[41];
+                MT[41] = DocumentiFonte.SoloOrigine(Movimento[41]);
                 Importazioni.RiempiVuotiArray(MT);
                 MappaCryptoWallet.put(IDNuovoMov, MT);
                 if (GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(IDNuovoMov,IDnc)) {
@@ -10121,15 +10141,33 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     }//GEN-LAST:event_Analisi_CryptoComponentShown
 
     private void DichiarazioniComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_DichiarazioniComponentShown
-        //Stesso motivo di Analisi_CryptoComponentShown: componentShown del tab interno (qui "Normative",
-        //l'unico dei tre con un pannello creato pigramente) non scatta tornando su "Dichiarazioni" se
-        //era già quello selezionato.
+        //Stesso motivo di Analisi_CryptoComponentShown: componentShown del tab interno (qui quelli con un
+        //pannello creato pigramente) non scatta tornando su "Dichiarazioni" se era già quello selezionato.
         if (Dichiarazioni_TabbedPane.getSelectedComponent() == Normativa) {
             NormativaComponentShown(evt);
         } else if (Dichiarazioni_TabbedPane.getSelectedComponent() == ArchivioDichiarazioni) {
             ArchivioDichiarazioniComponentShown(evt);
+        } else if (Dichiarazioni_TabbedPane.getSelectedComponent() == ISEE) {
+            ISEEComponentShown(evt);
         }
     }//GEN-LAST:event_DichiarazioniComponentShown
+
+    /**
+     * Il pannello del tab "ISEE", creato alla prima apertura: all'avvio {@code MappaCryptoWallet} non è ancora
+     * caricata e gli anni della tendina partono dal primo movimento. Il calcolo lo avvia il suo pulsante (scarica
+     * prezzi), quindi tornando sul tab non si rifà nulla.
+     */
+    private GUI_ISEE_Pannello ISEE_Pannello = null;
+
+    private void ISEEComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_ISEEComponentShown
+        if (ISEE_Pannello == null) {
+            ISEE_Pannello = new GUI_ISEE_Pannello();
+            ISEE.setLayout(new java.awt.BorderLayout());
+            ISEE.add(ISEE_Pannello, java.awt.BorderLayout.CENTER);
+            ISEE.revalidate();
+            ISEE.repaint();
+        }
+    }//GEN-LAST:event_ISEEComponentShown
 
     /**
      * Il pannello del tab "Archivio dichiarazioni", creato alla prima apertura come quello del backup: il
@@ -15130,6 +15168,7 @@ if (result != null && !result.isAction("cancel")) {
         if (rete.equalsIgnoreCase(Trans_Algorand.RETE)) return new String[]{Trans_Algorand.PROVIDER};
         if (rete.equalsIgnoreCase(Trans_XRPL.RETE)) return new String[]{Trans_XRPL.PROVIDER};
         if (rete.equalsIgnoreCase(Trans_Tron.RETE)) return new String[]{Trans_Tron.PROVIDER};
+        if (rete.equalsIgnoreCase(Trans_MiniPay.RETE)) return new String[]{Trans_MiniPay.PROVIDER};
         //BSC è l'unica chain senza nessun explorer Etherscan-compatibile gratuito: NodeReal (richiede
         //una ApiKey NodeReal gratuita) è proposto per primo perché è l'alternativa gratuita ed è anche
         //il default effettivo (DeFi_ProviderDefault), incondizionato dal 15/09/2026 — Moralis non ha
@@ -19725,12 +19764,21 @@ try {
             RigaDettaglioFiltrabile(ModelloTabellaCrypto, Val, rigaselezionata, 42);
         }
 
-        //Documento di origine (campo 41, fuori dal model): si filtra con il criterio "Documento" della finestra Filtri
-        Valore=Transazione[41].trim();
+        //Documento di origine e documenti collegati (campo 41, fuori dal model): si filtra con il criterio "Documento"
+        //della finestra Filtri, che prende i movimenti nati dal documento e quelli che ne sono collegati
+        Valore=DocumentiFonte.SoloOrigine(Transazione[41]);
         if (!Valore.isBlank()){
             String NomeDoc=FiltriMovimenti_NomeDocumento(Valore);
             Object Riga[]={"Documento di origine ",NomeDoc.isBlank()?"n. "+Valore:NomeDoc+" (n. "+Valore+")",
                 new Principale_FiltriMovimenti.FiltroRiga(Principale_FiltriMovimenti.COLONNA_DOCUMENTO, Valore,
+                    "Mostra solo i movimenti di questo documento")};
+            RigaDettaglio(ModelloTabellaCrypto, Riga);
+        }
+        for (int IdSupporto : DocumentiFonte.Supporti(Transazione[41])){
+            String Id=String.valueOf(IdSupporto);
+            String NomeDoc=FiltriMovimenti_NomeDocumento(Id);
+            Object Riga[]={"Documento collegato ",NomeDoc.isBlank()?"n. "+Id:NomeDoc+" (n. "+Id+")",
+                new Principale_FiltriMovimenti.FiltroRiga(Principale_FiltriMovimenti.COLONNA_DOCUMENTO, Id,
                     "Mostra solo i movimenti di questo documento")};
             RigaDettaglio(ModelloTabellaCrypto, Riga);
         }
@@ -21080,6 +21128,7 @@ try {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTabbedPane AnalisiCrypto;
     private javax.swing.JPanel ArchivioDichiarazioni;
+    private javax.swing.JPanel ISEE;
     private javax.swing.JPanel Analisi_Crypto;
     private javax.swing.JButton Bottone_Errori;
     private javax.swing.JButton Bottone_Titolo;

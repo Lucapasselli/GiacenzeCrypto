@@ -169,7 +169,8 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
             List<DocumentiFonte.Documento> elenco = DocumentiFonte.Elenco();
             for (DocumentiFonte.Documento d : elenco) {
                 DocumentiFonte.Riepilogo r = conteggi.get(d.Id);
-                int n = (r == null) ? 0 : r.Movimenti;
+                //Il filtro per documento prende anche i movimenti collegati: si contano tutti e due
+                int n = (r == null) ? 0 : r.Movimenti + r.Collegati;
                 m.addElement(d.Id + " — " + d.NomeOriginale + "  (" + n + " movimenti)");
                 DocumentiPerVoce.add(String.valueOf(d.Id));
             }

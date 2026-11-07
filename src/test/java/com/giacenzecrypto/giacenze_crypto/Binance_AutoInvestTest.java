@@ -339,6 +339,60 @@ class Binance_AutoInvestTest {
         saldiSottoWallet().forEach((m, s) -> assertTrue(s.signum() >= 0, "saldo " + m));
     }
 
+    /**
+     * Gli scambi di un ribilanciamento non derivano da nessun movimento importato: il loro documento di origine è il
+     * file Rebalancing. Uno creato prima che il file venisse registrato lo riceve al passaggio successivo, gli acquisti
+     * restano sul documento del CSV principale.
+     */
+    @Test
+    void ribilanciamento_documentoDiOrigineDalFileRebalancing() throws Exception {
+        String[] uscita = movimento("2023-06-13 03:08:49", "Auto-Invest Transaction", "EUR", "FIAT", "-150", "150.00");
+        String[] righeSottoscrizioni = {
+            "2023-06-13 03:00:00,BTC,50.00000000 EUR,--,0.001 BTC,Spot Wallet,Success",
+            "2023-06-13 03:00:00,ETH,100.00000000 EUR,--,0.05 ETH,Spot Wallet,Success"};
+        String[] righeRibilanciamenti = {
+            "2023-06-30 10:00:15,Indice,ETH,0.0125,0.01 USDT",
+            "2023-06-30 10:00:15,Indice,BTC,0.0005,0.01 USDT"};
+
+        //Con il file registrato: lo scambio nasce con il suo id
+        File sott = sottoscrizioni(righeSottoscrizioni);
+        File rib = ribilanciamenti(righeRibilanciamenti);
+        Binance_AutoInvest.Esito e = Binance_AutoInvest.Abbina(PREZZATORE, Map.of(sott, 11, rib, 12), sott, rib);
+        assertEquals(1, e.ribilanciamentiCreati, e.dettagli.toString());
+        String[] scambio = MappaCryptoWallet.values().stream()
+                .filter(v -> Binance_AutoInvest.ORIGINE_RIBILANCIAMENTO.equals(v[7])).findFirst().orElseThrow();
+        assertEquals("12", scambio[41]);
+        String[] acquisto = MappaCryptoWallet.values().stream()
+                .filter(v -> Binance_AutoInvest.ORIGINE_SOTTOSCRIZIONE.equals(v[7])).findFirst().orElseThrow();
+        assertEquals("7|11", acquisto[41], "un acquisto nasce dal CSV principale (7), il file Subscription e' un supporto");
+        assertEquals("7|11", uscita[41], "anche l'uscita importata riceve il file Subscription come supporto");
+        assertEquals(0, e.documentiCompletati);
+        assertTrue(e.collegati > 0);
+
+        //Creato senza documento (versioni precedenti): il passaggio successivo con il file registrato lo completa
+        scambio[41] = "";
+        Binance_AutoInvest.Esito e2 = Binance_AutoInvest.Abbina(PREZZATORE,
+                Map.of(rib, 12), sottoscrizioni(righeSottoscrizioni), rib);
+        assertEquals(0, e2.Creati());
+        assertEquals(1, e2.documentiCompletati);
+        assertEquals("12", scambio[41]);
+        assertTrue(e2.avvisi.stream().anyMatch(a -> a.contains("File Rebalancing collegato")), e2.avvisi.toString());
+
+        //Un documento già presente non si tocca
+        Binance_AutoInvest.Esito e3 = Binance_AutoInvest.Abbina(PREZZATORE,
+                Map.of(rib, 99), sottoscrizioni(righeSottoscrizioni), rib);
+        assertEquals(0, e3.documentiCompletati);
+        assertEquals("12", scambio[41]);
+
+        //Ripassare il file Subscription non duplica il collegamento, annullare l'esecuzione lo toglie
+        Binance_AutoInvest.Esito e4 = Binance_AutoInvest.Abbina(PREZZATORE, Map.of(sott, 11), sott);
+        assertEquals(0, e4.collegati);
+        assertEquals("7|11", uscita[41]);
+        Funzioni.RimuoviMovimenti(List.of(acquisto[0]));
+        assertTrue(Funzioni.noData(uscita[18]), "esecuzione annullata");
+        assertEquals("7", uscita[41], "annullata l'esecuzione, il file Subscription non e' piu' collegato");
+    }
+
     @Test
     void scambioDifferitoAutomatico_giustoResta_sbagliatoSiRifa() throws Exception {
         //Giusto: 0,1 USDT -> FUN della stessa esecuzione

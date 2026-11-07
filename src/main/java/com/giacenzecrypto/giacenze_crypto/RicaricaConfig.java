@@ -50,6 +50,7 @@ final class RicaricaConfig {
             "varie/" + EmoneyToken.NOME,
             "varie/" + ParametriAbbinamento.NOME,
             "varie/" + Trans_EtherFi.NOME,
+            "varie/" + Trans_MiniPay.NOME,
             "varie/" + TokenTruffa.NOME,
             "importmappe/" + MappeCausali.BINANCE_OLD,
             "importmappe/" + MappeCausali.BINANCE_FINANCIAL_REPORT,

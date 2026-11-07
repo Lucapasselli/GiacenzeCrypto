@@ -611,7 +611,7 @@ final class Trans_XLayer {
                     for (String[] st : righe) {
                         Principale.Funzione_AggiornaMappaWallets(st);
                         st[0] = MovimentiCrypto.getIDUnivoco(Principale.MappaCryptoWallet, st[0]);
-                        if (idDocumento > 0 && Funzioni.noData(st[41])) st[41] = String.valueOf(idDocumento);
+                        if (idDocumento > 0 && DocumentiFonte.IdDaCampo41(st[41]) <= 0) st[41] = DocumentiFonte.ConOrigine(st[41], String.valueOf(idDocumento));
                         Importazioni.InserisciMovimentosuMappaCryptoWallet(st[0], st);
                         aggiunti++;
                     }

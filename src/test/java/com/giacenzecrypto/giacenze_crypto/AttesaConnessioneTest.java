@@ -97,7 +97,7 @@ class AttesaConnessioneTest {
     @Test
     void conLaResaScriviListaSuMappaCryptoNonScriveNulla() {
         int primaInMappa = Principale.MappaCryptoWallet.size();
-        String avvisiPrima = Importazioni.movimentiSconosciuti;
+        String avvisiPrima = Importazioni.Sconosciuti();
 
         AttesaConnessione.Apri(null);
         forzaResa();
@@ -106,10 +106,10 @@ class AttesaConnessioneTest {
 
         assertArrayEquals(new int[]{0, 0}, esito, "nessun movimento aggiunto e nessuno scartato");
         assertEquals(primaInMappa, Principale.MappaCryptoWallet.size(), "la mappa non deve essere toccata");
-        assertTrue(Importazioni.movimentiSconosciuti.startsWith(Importazioni.AVVISO_IMPORT_ABBANDONATO),
+        assertTrue(Importazioni.Sconosciuti().startsWith(Importazioni.AVVISO_IMPORT_ABBANDONATO),
                 "l'avviso deve finire nel riquadro errori del resoconto, o l'utente vede solo \"0 importati\"");
 
-        Importazioni.movimentiSconosciuti = avvisiPrima;
+        Importazioni.ImpostaSconosciuti(avvisiPrima);
     }
 
     /** Senza resa la scrittura resta quella di sempre: la guardia non deve cambiare il caso normale. */

@@ -267,10 +267,6 @@ class Principale_GruppiWalletRWTest {
 
         String[] r2 = rigaF("1", "", "", "0921", "");               // stato di 4 caratteri
         assertFalse(Principale_GruppiWalletRW.validaPeriodi(lista(r2)).isEmpty());
-
-        String[] r3 = rigaF("1", "", "", "092", "");
-        r3[Principale_GruppiWalletRW.COL_IDENT_ISEE] = "0123456789ABCDEF";
-        assertFalse(Principale_GruppiWalletRW.validaPeriodi(lista(r3)).isEmpty());
     }
 
     @Test
@@ -775,13 +771,13 @@ class Principale_GruppiWalletRWTest {
                 rigaF("1", "2025-01-01", "", "092", "LU36476644")));
         List<String[]> v = Principale_GruppiWalletRW.periodiPerVista("Wallet 102");
         assertEquals(2, v.size());
-        assertEquals(11, v.get(0).length);
+        assertEquals(10, v.get(0).length);
         assertEquals(Principale_GruppiWalletRW.TIPO_CRYPTO, v.get(0)[0]);
         assertEquals("n/d", v.get(0)[6], "sul rigo CRYPTO lo Stato estero è n/d");
-        assertEquals("SI", v.get(0)[9]);
+        assertEquals("SI", v.get(0)[8]);
         assertTrue(v.get(1)[6].contains("092"));
         assertEquals("LU36476644", v.get(1)[7]);
-        assertEquals("n/d", v.get(1)[9], "sul rigo FIAT il bollo è n/d");
+        assertEquals("n/d", v.get(1)[8], "sul rigo FIAT il bollo è n/d");
     }
 
     private static String nz(String s) {

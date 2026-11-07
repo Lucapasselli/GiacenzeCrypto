@@ -118,7 +118,7 @@ class EsempiManualeConfigImportTest {
             for (List<String[]> gruppo : ImportazioneGenerica.raggruppaRighe(righe, cfg)) {
                 movimenti.addAll(ImportazioneGenerica.consolidaGruppo(gruppo, cfg, new ArrayList<>()));
             }
-            assertEquals("", Importazioni.movimentiSconosciuti, "esempio " + n + ": righe scartate");
+            assertEquals("", Importazioni.Sconosciuti(), "esempio " + n + ": righe scartate");
             assertEquals(ATTESE.get(n), movimenti.stream().map(EsempiManualeConfigImportTest::categoria).sorted().toList(),
                     "esempio " + n);
         }

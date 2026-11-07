@@ -3563,17 +3563,30 @@ static int PreScaricaPrezziSimboli(java.util.Collection<SimboloIstante> coppie, 
  * i prezzi personalizzati dal controllo di ciò che è già coperto (con una fonte non vuota non vengono letti).
  */
 static int PreScaricaPrezziSimboli(java.util.Collection<SimboloIstante> coppie, Download progress, String origine, String fonte) {
+    return ScaricaRichiestePerSimboli(RichiesteDaScaricarePerSimboli(coppie, progress, origine, fonte), progress, origine);
+}
+
+/**
+ * La parte senza rete di {@link #PreScaricaPrezziSimboli(java.util.Collection, Download, String, String)}: le
+ * richieste (moneta, ora) che servono davvero, tolte quelle già coperte in locale. Separata perché il tab ISEE
+ * mostra quante sono (e quanto ci vorrà) prima di scaricarle.
+ */
+static List<RichiestaPrezzo> RichiesteDaScaricarePerSimboli(java.util.Collection<SimboloIstante> coppie, Download progress, String origine, String fonte) {
     List<RichiestaPrezzo> richieste = RaccogliRichiestePerSimboli(coppie, ExchangeRiconosciuto(fonte));
-    if (richieste.isEmpty()) return 0;
+    if (richieste.isEmpty()) return richieste;
     //Le importazioni DeFi prezzano una moneta sola con includiVecchi=true: prima di scaricare CambioXXXEUR
     //legge i personalizzati e il vecchio archivio orario, che FiltraRichiesteGiaCoperte non guarda. Senza
     //questo, sul wallet Cronos di prova (2021-2022) si chiedevano 218 coppie invece delle ~90 che servivano.
     int prima = richieste.size();
     richieste.removeIf(Prezzi::CopertaDaPrezzoLocale);
     if (richieste.size() < prima) System.out.println("Pre-scarico prezzi (" + origine + "): " + (prima - richieste.size()) + " coppie gia' nei prezzi personalizzati o nel vecchio archivio orario");
-    if (richieste.isEmpty()) return 0;
-    richieste = FiltraRichiesteGiaCoperte(richieste, progress);
-    if (richieste.isEmpty()) return 0;
+    if (richieste.isEmpty()) return richieste;
+    return FiltraRichiesteGiaCoperte(richieste, progress);
+}
+
+/** Lo scaricamento di {@link #PreScaricaPrezziSimboli(java.util.Collection, Download, String, String)}, sulle richieste già filtrate. */
+static int ScaricaRichiestePerSimboli(List<RichiestaPrezzo> richieste, Download progress, String origine) {
+    if (richieste == null || richieste.isEmpty()) return 0;
     System.out.println("Pre-scarico prezzi (" + origine + "): " + richieste.size() + " coppie (moneta, ora) da chiedere");
     if (progress != null) {
         progress.SetLabel("Pre-scarico prezzi: " + richieste.size() + " quotazioni da recuperare...");

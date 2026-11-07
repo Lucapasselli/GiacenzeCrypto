@@ -1695,7 +1695,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     MovimentoCommissione[29] = "";                    // in origine [29] restava vuoto
                     MovimentoCommissione[32] = MovimentoPrelievo[32]; // [32] copiato dal prelievo
                     MovimentoCommissione[40] = "";
-                    MovimentoCommissione[41] = MovimentoPrelievo[41]; // documento di origine: descrive la stessa riga del prelievo
+                    MovimentoCommissione[41] = DocumentiFonte.SoloOrigine(MovimentoPrelievo[41]); // documento di origine: descrive la stessa riga del prelievo
                     Derivati.Marca(MovimentoCommissione, Derivati.Tipo(MovimentoPrelievo)); // tipo di derivato, stessa provenienza
                     //Se Qta prelievo maggiore di Qta Depositata
                     MappaCryptoWallet.put(IDCommissione, MovimentoCommissione);
@@ -1749,7 +1749,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     MovimentoReward[29] = "";                    // in origine [29] restava vuoto
                     MovimentoReward[32] = MovimentoPrelievo[32]; // [32] copiato dal prelievo
                     MovimentoReward[40] = "";
-                    MovimentoReward[41] = MovimentoDeposito[41]; // documento di origine: il reward nasce dal deposito
+                    MovimentoReward[41] = DocumentiFonte.SoloOrigine(MovimentoDeposito[41]); // documento di origine: il reward nasce dal deposito
                     Derivati.Marca(MovimentoReward, Derivati.Tipo(MovimentoDeposito)); // tipo di derivato, stessa provenienza
 
                     MappaCryptoWallet.put(IDReward, MovimentoReward);
@@ -2111,7 +2111,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             MT[29]=Movimento[29];
         }
         //Documento di origine: la gamba speculare nasce dal movimento, come i generati dello scambio differito
-        MT[41]=Movimento[41];
+        MT[41]=DocumentiFonte.SoloOrigine(Movimento[41]);
         MappaCryptoWallet.put(IDNuovoMov, MT);
         //fase 2: modifico il movimento originale aggiungendogli qualcosina
         Movimento[5]=Descrizione;
@@ -2440,12 +2440,12 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         if (Movimento.length>29){
             MT2[29]=Movimento[29];
         }
-        MT2[41]=Movimento[41];
+        MT2[41]=DocumentiFonte.SoloOrigine(Movimento[41]);
         MappaCryptoWallet.put(IDMovCorrettivo, MT2);
         }
         MT[20]=ID+","+IDMovCorrettivo;
         //Documento di origine: gamba speculare e reward correttiva nascono dal movimento
-        MT[41]=Movimento[41];
+        MT[41]=DocumentiFonte.SoloOrigine(Movimento[41]);
         MappaCryptoWallet.put(IDNuovoMov, MT);
         //fase 2: modifico il movimento originale aggiungendogli qualcosina
         Movimento[5]=Descrizione;
@@ -2652,9 +2652,9 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             //quello che è successo fra il prelievo e il deposito, quindi risalgono agli stessi file. Va scritto
             //qui perché sono costruiti da zero e non passano dal punto di strozzatura dell'import, che è già
             //stato attraversato dai due movimenti di partenza
-            MT1[41]=MovimentoPrelievo[41];
-            MS[41]=Funzioni.noData(MovimentoPrelievo[41])?MovimentoDeposito[41]:MovimentoPrelievo[41];
-            MT2[41]=MovimentoDeposito[41];
+            MT1[41]=DocumentiFonte.SoloOrigine(MovimentoPrelievo[41]);
+            MS[41]=DocumentiFonte.SoloOrigine(DocumentiFonte.IdDaCampo41(MovimentoPrelievo[41])>0?MovimentoPrelievo[41]:MovimentoDeposito[41]);
+            MT2[41]=DocumentiFonte.SoloOrigine(MovimentoDeposito[41]);
             //Tipo di derivato (campo 44, Derivati): stessa provenienza del documento di origine
             Derivati.Marca(MT1,Derivati.Tipo(MovimentoPrelievo));
             Derivati.Marca(MS,Derivati.isDerivato(MovimentoPrelievo)?Derivati.Tipo(MovimentoPrelievo):Derivati.Tipo(MovimentoDeposito));
@@ -2853,12 +2853,19 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
         BigDecimal PrezzoCommissione=Generati[1];
         BigDecimal QtaReward=Generati[2];
         BigDecimal PrezzoReward=Generati[3];
+        //I documenti di supporto che la classificazione aveva collegato (Dual Investment, Subscription...) stanno anche
+        //sui suoi generati, che ereditano solo l'origine: sono quelli da togliere agli originali. Righe e non ID,
+        //perche' lo scambio differito rinomina gli originali durante il ripristino
+        List<String[]> GeneratiRimossi=new ArrayList<>();
+        List<String[]> Rimasti=new ArrayList<>();
         for (String ID:IDPartiConvolte){
             String attuale[]=MappaCryptoWallet.get(ID);
             if (attuale!=null&&attuale[22].equalsIgnoreCase("AU")){
+                GeneratiRimossi.add(attuale);
                 MappaCryptoWallet.remove(ID);
-            }
+            }else if (attuale!=null) Rimasti.add(attuale);
         }
+        Set<Integer> SupportiClassificazione=DocumentiFonte.SupportiDeiGenerati(GeneratiRimossi);
 
         //Un annullo di spesa con carta lega il rimborso al pagamento, che però è un cashout a sé : si riconosce prima
         //del ripristino, perché il rimborso può essere già stato azzerato quando si arriva al pagamento
@@ -2953,6 +2960,7 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
                 }
             }
         }
+        for (String[] r : Rimasti) DocumentiFonte.TogliSupporti(r, SupportiClassificazione);
         //IDRitorno è uguale all'id originale se non sono state fatte modifiche all'id altrimenti è il nuovo id del movimento
         //può essere diverso solo nel caso di scambi differiti
         //IDsRitorno.add(IDRitorno);

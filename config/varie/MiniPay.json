@@ -1,0 +1,27 @@
+{
+  "descrizione": "Wallet MiniPay su Celo e conto della carta MiniPay (Trans_MiniPay): nodi da cui leggere i log e contratti della carta. MiniPay e' un wallet normale (EOA) che paga le commissioni in stablecoin (transazioni CIP-64, tipo 0x7b): la commissione si legge dal prelievo e dalla restituzione del token verso e dall'indirizzo di sistema 0x...ce106a5 all'inizio e alla fine della transazione, che non sono movimenti. La carta e' una Safe senza proprietari con i moduli Zodiac Roles e Delay (l'infrastruttura di Gnosis Pay): le spese le manda l'operatore della carta al contratto di regolamento, il wallet MiniPay e' abilitato sul modulo Delay e cosi' si riconosce la sua Safe. Tenderly risponde a eth_getLogs su tutta la catena, sempre con un toBlock numerico. Le ricompense giornaliere MiniPay Boost arrivano dai mittenti di 'boost' e diventano REWARD. Un indirizzo nuovo della carta o del Boost si aggiunge qui, senza una nuova versione del programma.",
+  "rete": "CELO",
+  "nodi": [
+    "https://celo.gateway.tenderly.co",
+    "https://forno.celo.org",
+    "https://celo.drpc.org"
+  ],
+  "bloccoInizio": 0,
+  "masterCopyDelay": "0x22d903fd45f441f51bcad198d14eba8a75ea1ef0",
+  "masterCopyRoles": "0x732b9e9f259fba6f65a1a012dc89c20872ffbd2f",
+  "regolamentoCarta": [
+    "0xc07cd8c24fb384d5e2b60a3ef39751f5d4cb69e1"
+  ],
+  "accreditiCarta": [
+    "0xdc9b73c300815694e06534ddbf6ad9b0b57c3e15"
+  ],
+  "ricaricheDaimo": [
+    "0xc9b29db51142b00e697385092b80efc57402a2b6"
+  ],
+  "boost": [
+    "0x5cdf62f29478c4b215a3ba21059a2b3cb7d44b62"
+  ],
+  "simboli": {
+    "0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e": "USDT"
+  }
+}

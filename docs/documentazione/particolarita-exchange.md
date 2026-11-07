@@ -120,10 +120,19 @@ con i saldi attuali dell'account e mostra le monete che non coincidono. Le API d
 restituiscono:
 
 - le operazioni dei **bot di trading**, di **margin** e dei **futures**,
-- i pagamenti **Binance Pay** più vecchi di 18 mesi.
+- gli **scambi spot più vecchi di circa due anni** (i Convert e gli acquisti in euro invece arrivano
+  tutti),
+- i pagamenti **Binance Pay** più vecchi di 18 mesi. Quelli più recenti arrivano: i "Tax Payment" come
+  cashout, tutti gli altri (invii e incassi fra utenti, pagamenti a negozi, rimborsi, crypto box) come
+  depositi e prelievi di cripto da classificare, come fa l'importazione dal file delle transazioni.
 
-Chi ha usato i bot deve quindi importare Binance dal file delle transazioni. Come per il Financial
-Report, per uno stesso periodo si usa una sola fonte.
+Chi ha usato i bot deve quindi importare Binance dal file delle transazioni. Lo stesso vale per gli
+scambi spot di più di due anni fa: se il primo scaricamento parte da prima, a fine scaricamento il
+programma lo segnala con la data da cui mancano. Il controllo delle giacenze da solo non basta, perché
+un token comprato e rivenduto per intero non lascia nessuna differenza. Come per il Financial
+Report, per uno stesso periodo si usa una sola fonte. Lo scaricamento dalle API riparte sempre
+dall'ultimo movimento Binance presente in archivio, qualunque sia la sua origine: chi parte da zero
+importa prima il file delle transazioni fino a una data recente, poi le API proseguono da lì.
 
 > **NB** — Binance non permette di chiedere tutti gli scambi in una volta: le API li restituiscono solo
 > coppia per coppia. Il programma cerca le coppie più probabili per il periodo, ma qualcuna può
@@ -203,6 +212,11 @@ Altre cose da sapere:
   viene abbinato e resta da classificare a mano,
 - annullando un movimento di un contratto abbinato, acquisto e liquidazione tornano come erano stati
   importati, e ripassando il file l'abbinamento si rifà,
+- il file di dettaglio viene conservato fra i documenti di origine e collegato a tutti i movimenti dei
+  contratti che spiega, anche quelli abbinati con un passaggio precedente. I movimenti continuano a
+  nascere dal file delle transazioni: nella gestione dei documenti il file Dual Investment li conta
+  fra i *Collegati*, e nel dettaglio di un movimento compare come *Documento collegato*. Annullando
+  l'abbinamento di un contratto, il collegamento viene tolto,
 - il Dual Investment è un **derivato**: il programma lo segnala con un avviso a fine importazione e
   nelle stampe dei quadri, perché lo calcola come se fosse una cripto-attività, cosa che non è
   corretta.
@@ -269,6 +283,14 @@ mercato, e il resoconto avvisa che quantità di pochi centesimi possono avere il
 Gli scambi che il programma aveva già abbinato da solo durante l'import del file delle transazioni
 restano come sono se coincidono con il file di dettaglio. Quelli che univano movimenti di esecuzioni
 diverse vengono rifatti, e il resoconto li elenca con la data.
+
+**Documenti di origine.** I file di dettaglio scelti vengono conservati fra i documenti di origine, come
+il file delle transazioni. Gli scambi dei ribilanciamenti, che nel file delle transazioni non compaiono,
+nascono dal file Rebalancing, che è il loro documento di origine. Acquisti e riscatti nascono invece dai
+movimenti del file delle transazioni: i file Subscription e Redemption vengono collegati a loro come
+documenti di supporto, e nella gestione dei documenti li contano fra i *Collegati*. Ripassando i file,
+anche le esecuzioni, i riscatti e i ribilanciamenti ricostruiti dalle versioni precedenti vengono
+collegati, senza doppioni. Annullando una ricostruzione, il collegamento viene tolto.
 
 ### Ordine consigliato {#binance-ordine}
 

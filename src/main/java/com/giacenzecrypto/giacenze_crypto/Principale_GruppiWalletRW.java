@@ -20,7 +20,7 @@ import java.util.Set;
 /**
  * Logica operativa dei <b>periodi di detenzione</b> di un gruppo wallet per il quadro W/RW : righi
  * CRYPTO / FIAT con date, modalità di calcolo del valore agli estremi e — sui soli righi FIAT — i
- * dati fiscali dell'intermediario (Stato estero, identificativo, note, fonte, alias ISEE).
+ * dati fiscali dell'intermediario (Stato estero, identificativo, note, fonte).
  *
  * <p>Companion di {@code Principale} nello stile di {@link Principale_GiacenzeaData}:
  * metodi {@code public static}, nessun campo Swing, nessun riferimento a {@code Principale}.
@@ -81,7 +81,8 @@ public class Principale_GruppiWalletRW {
 
     /**
      * Lunghezza massima dell'identificativo di un operatore finanziario estero nel modulo FC.1 della
-     * DSU/ISEE ({@code E} + 15). Vale sia per l'identificativo fiscale sia per l'alias ISEE.
+     * DSU/ISEE ({@code E} + 15). Vale per l'identificativo fiscale. L'identificativo del <b>rapporto</b> ISEE
+     * (IBAN o numero di conto) sta nel tab ISEE ({@link RapportiISEE}) e le istruzioni non gli danno un limite.
      */
     public static final int MAX_IDENT_ISEE = 15;
 
@@ -368,8 +369,8 @@ public class Principale_GruppiWalletRW {
      *   <li>date, se valorizzate, in formato {@code yyyy-MM-dd} valido</li>
      *   <li>data inizio <= data fine quando entrambe presenti</li>
      *   <li>modalità di calcolo ∈ valori ammessi (o vuota = solo residuo)</li>
-     *   <li>codice Stato estero al massimo 3 caratteri ; identificativo fiscale e alias ISEE al
-     *       massimo {@value #MAX_IDENT_ISEE} caratteri (limite del modulo FC.1 della DSU)</li>
+     *   <li>codice Stato estero al massimo 3 caratteri ; identificativo fiscale al massimo
+     *       {@value #MAX_IDENT_ISEE} caratteri (limite del modulo FC.1 della DSU)</li>
      *   <li>le finestre <b>effettive</b> (vedi {@link #finestreEffettive}) dello <b>stesso tipo</b> non
      *       si sovrappongono. Un periodo la cui finestra resta aperta da entrambi i lati è un fallback
      *       e non è in conflitto con gli altri ; averne più d'uno per tipo è solo un avviso.</li>
@@ -453,10 +454,6 @@ public class Principale_GruppiWalletRW {
                 }
                 if (campo(r, COL_IDENT_FISCALE).length() > MAX_IDENT_ISEE) {
                     errori.add(et + "l'identificativo fiscale è al massimo di " + MAX_IDENT_ISEE
-                            + " caratteri (limite del modulo FC.1 della DSU/ISEE).");
-                }
-                if (campo(r, COL_IDENT_ISEE).length() > MAX_IDENT_ISEE) {
-                    errori.add(et + "l'identificativo ISEE è al massimo di " + MAX_IDENT_ISEE
                             + " caratteri (limite del modulo FC.1 della DSU/ISEE).");
                 }
             }
@@ -1123,7 +1120,7 @@ public class Principale_GruppiWalletRW {
 
     /**
      * Righe chiave/valore per la tabella "Dati fiscali del gruppo" : alias, Stato estero e
-     * identificativo fiscale <i>correnti</i> (dal periodo FIAT valido oggi), alias ISEE, stato del bollo.
+     * identificativo fiscale <i>correnti</i> (dal periodo FIAT valido oggi), stato del bollo.
      */
     public static List<String[]> datiFiscaliGruppo(String gruppo) {
         List<String[]> out = new ArrayList<>();
@@ -1142,7 +1139,6 @@ public class Principale_GruppiWalletRW {
             out.add(new String[] {"Stato estero (corrente)",
                 stato.isEmpty() ? "—" : StatiEsteri.etichetta(stato)});
             out.add(new String[] {"Identificativo fiscale (corrente)", nzVuoto(campo(p, COL_IDENT_FISCALE))});
-            out.add(new String[] {"Identificativo ISEE (corrente)", nzVuoto(campo(p, COL_IDENT_ISEE))});
             out.add(new String[] {"Fonte", nzVuoto(campo(p, COL_FONTE_FISCALE))});
         }
 
@@ -1184,7 +1180,7 @@ public class Principale_GruppiWalletRW {
     /**
      * Righe per la tabella "Periodi di detenzione" (sottoinsieme leggibile delle colonne di
      * {@link #caricaPeriodi}) : {@code [tipo, progr, dataInizio, dataFine, calcoloIniziale,
-     * calcoloFinale, statoEstero, identFiscale, identISEE, bollo, origine]}. I valori iniziale/finale a
+     * calcoloFinale, statoEstero, identFiscale, bollo, origine]}. I valori iniziale/finale a
      * mano non ci sono più : restano nel DB ma non si mostrano (vedi {@link #COL_VAL_INIZIALE}).
      */
     public static List<String[]> periodiPerVista(String gruppo) {
@@ -1199,7 +1195,6 @@ public class Principale_GruppiWalletRW {
                 etichettaModalita(r[COL_MOD_FINALE], MODALITA_FINALE),
                 fiat ? (stato.isEmpty() ? "" : StatiEsteri.etichetta(stato)) : "n/d",
                 fiat ? campo(r, COL_IDENT_FISCALE) : "n/d",
-                fiat ? campo(r, COL_IDENT_ISEE) : "n/d",
                 fiat ? "n/d" : (r.length > COL_BOLLO ? sv(r[COL_BOLLO]) : ""),
                 descrizioneOrigineRiga(r.length > COL_ORIGINE ? r[COL_ORIGINE] : null,
                         r.length > COL_CHIAVE_DEFAULT ? r[COL_CHIAVE_DEFAULT] : null)

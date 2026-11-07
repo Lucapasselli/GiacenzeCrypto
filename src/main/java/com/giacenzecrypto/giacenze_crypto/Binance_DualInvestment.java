@@ -85,6 +85,8 @@ public class Binance_DualInvestment {
         public int migrati = 0;
         /** Contratti a moneta diversa il cui scambio differito era stato sovrascritto da un altro (bug C17) e ricostruito. */
         public int riparati = 0;
+        /** Movimenti a cui questo passaggio ha collegato il file di dettaglio come documento di supporto. */
+        public int collegati = 0;
         /** Una riga per ogni contratto non abbinato (ambiguo o non trovato), per la diagnosi. */
         public List<String> dettagli = new ArrayList<>();
         /** Una riga per ogni scambio ricostruito, con la data: aggiunge una permuta in quell'anno. */
@@ -102,6 +104,16 @@ public class Binance_DualInvestment {
      * @throws IOException se il file non è leggibile
      */
     public static Esito Abbina(File fileDettaglio) throws IOException {
+        return Abbina(fileDettaglio, 0);
+    }
+
+    /**
+     * Come {@link #Abbina(File)}, e collega il file di dettaglio come documento di <b>supporto</b>
+     * ({@link DocumentiFonte#CollegaAlGruppo}) a ogni contratto abbinato, adesso o da un passaggio precedente: Purchase,
+     * Settlement e i movimenti generati. I movimenti restano nati dal CSV principale, la loro origine non cambia.
+     * @param documento id del file di dettaglio fra i documenti di origine, {@code 0} per non collegarlo
+     */
+    public static Esito Abbina(File fileDettaglio, int documento) throws IOException {
         Esito esito = new Esito();
         //A differenza di ImportazioneGenerica.consolidaGruppo, che segnala solo le causali
         //effettivamente incontrate riga per riga, qui l'avviso fiscale sui derivati deve comparire
@@ -222,6 +234,7 @@ public class Binance_DualInvestment {
                     }
                 }
                 if (MarcaContratto(campi[2], RigaPurchase, RigaSettlement)) Cambiato = true;
+                esito.collegati += Collega(documento, RigaPurchase, RigaSettlement);
                 if (Cambiato) esito.aggiornati++;
                 else esito.giaAPosto++;
                 continue;
@@ -252,12 +265,19 @@ public class Binance_DualInvestment {
                 }
             }
             MarcaContratto(campi[2], RigaPurchase, RigaSettlement);
+            esito.collegati += Collega(documento, RigaPurchase, RigaSettlement);
             esito.abbinati++;
         }
         return esito;
     }
 
     static final String WALLET_DUAL_SAVINGS = "Dual Savings";
+
+    /** Collega il file di dettaglio a Purchase, Settlement e ai movimenti dei loro gruppi. @return quanti nuovi collegamenti */
+    private static int Collega(int documento, String[] Purchase, String[] Settlement) {
+        if (documento <= 0) return 0;
+        return DocumentiFonte.CollegaAlGruppo(Purchase, documento) + DocumentiFonte.CollegaAlGruppo(Settlement, documento);
+    }
 
     /**
      * Scrive la chiave di operazione del contratto ({@link GruppoOperazione}, campo 45) su Purchase e Settlement, e
@@ -389,7 +409,7 @@ public class Binance_DualInvestment {
         //Tipo di derivato (campo 44): le gambe generate appartengono alla stessa operazione Dual
         Derivati.Marca(MTPurchase, Derivati.Tipo(MovPurchase));
         //Documento di origine: ogni generato prende quello del movimento da cui nasce
-        MTPurchase[41] = MovPurchase[41];
+        MTPurchase[41] = DocumentiFonte.SoloOrigine(MovPurchase[41]);
 
         // ── Reward sul sotto-wallet, per la differenza esatta ──
         String[] MTReward = null;
@@ -425,7 +445,7 @@ public class Binance_DualInvestment {
                 MTReward[29] = MovSettlement[29];
             }
             Derivati.Marca(MTReward, Derivati.Tipo(MovSettlement));
-            MTReward[41] = MovSettlement[41];
+            MTReward[41] = DocumentiFonte.SoloOrigine(MovSettlement[41]);
         }
 
         // ── Settlement -> gamba speculare in uscita dal sotto-wallet per l'intero liquidato ──
@@ -460,7 +480,7 @@ public class Binance_DualInvestment {
             MTSettlement[29] = MovSettlement[29];
         }
         Derivati.Marca(MTSettlement, Derivati.Tipo(MovSettlement));
-        MTSettlement[41] = MovSettlement[41];
+        MTSettlement[41] = DocumentiFonte.SoloOrigine(MovSettlement[41]);
 
         MovPurchase[5] = "TRASFERIMENTO A DUAL INVESTMENT";
         MovPurchase[18] = CAMPO18_PURCHASE_STESSA_MONETA;

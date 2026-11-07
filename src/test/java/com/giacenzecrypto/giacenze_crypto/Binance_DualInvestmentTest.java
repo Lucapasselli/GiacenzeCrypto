@@ -204,6 +204,41 @@ class Binance_DualInvestmentTest {
         assertEquals(0, new BigDecimal("2").compareTo(new BigDecimal(reward[13])));
     }
 
+    /**
+     * Il file di dettaglio si collega come documento di supporto a tutto il contratto (Purchase, Settlement, generati),
+     * l'origine resta il CSV principale. Ripassarlo non duplica, annullare il contratto toglie il collegamento.
+     */
+    @Test
+    void fileDiDettaglio_collegatoComeSupportoAlContratto() throws Exception {
+        String purchase[] = movimento("20220512062450_Binance_001_001_PC", "Dual Savings Purchase",
+                "USDT", "100.00000000", "2022-05-12 06:24:50");
+        String settlement[] = movimento("20220524083341_Binance_002_001_DC", "Dual Savings Settlement",
+                "USDT", "102.00000000", "2022-05-24 08:33:41");
+        purchase[41] = "7";
+        settlement[41] = "7";
+        MappaCryptoWallet.put(purchase[0], purchase);
+        MappaCryptoWallet.put(settlement[0], settlement);
+        String file = scriviDettaglio(
+                "USDT/USDT,Buy Low,1232611,2022-05-12 08:24:50,Settled,100.00000000 USDT,28500,"
+                + "2022-05-24 10:33:41,29351.32,146.28%,102.00000000 USDT,Settled");
+
+        Binance_DualInvestment.Esito esito = Binance_DualInvestment.Abbina(new java.io.File(file), 33);
+        assertEquals(1, esito.abbinati, esito.dettagli.toString());
+        for (String[] v : MappaCryptoWallet.values()) {
+            assertEquals("7|33", v[41], "ogni movimento del contratto: origine 7, supporto 33 (" + v[0] + ")");
+        }
+        assertEquals(MappaCryptoWallet.size(), esito.collegati);
+
+        Binance_DualInvestment.Esito di_nuovo = Binance_DualInvestment.Abbina(new java.io.File(file), 33);
+        assertEquals(1, di_nuovo.giaAPosto);
+        assertEquals(0, di_nuovo.collegati, "il file ripassato non si collega due volte");
+
+        Funzioni.RimuoviMovimenti(java.util.List.of(MappaCryptoWallet.values().stream()
+                .filter(v -> "AU".equals(v[22])).findFirst().orElseThrow()[0]));
+        assertEquals("7", purchase[41], "annullato il contratto, il file non e' piu' collegato");
+        assertEquals("7", settlement[41]);
+    }
+
     @Test
     void unicoCandidatoPerLato_stessaMoneta_liquidatoUgualeAlSottoscritto_nessunaReward() throws Exception {
         String purchase[] = movimento("20220512062450_Binance_001_001_PC", "Dual Savings Purchase",

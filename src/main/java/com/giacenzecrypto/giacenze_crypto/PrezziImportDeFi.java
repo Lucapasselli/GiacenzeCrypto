@@ -215,6 +215,22 @@ public class PrezziImportDeFi {
         return r;
     }
 
+    /** Importazione MiniPay ({@link Trans_MiniPay}): i token per indirizzo, il CELO nativo per simbolo. */
+    static Raccolta RaccogliMiniPay(List<Trans_MiniPay.Transazione> transazioni) {
+        Raccolta r = new Raccolta();
+        for (Trans_MiniPay.Transazione t : transazioni) {
+            long istante = IstanteImport(t.timestamp() * 1000);
+            for (Trans_MiniPay.Movimento m : t.movimenti()) {
+                for (Trans_MiniPay.Token tk : new Trans_MiniPay.Token[]{m.uscita(), m.entrata()}) {
+                    if (tk == null) continue;
+                    if (tk == Trans_MiniPay.CELO_NATIVO) r.simboli().add(new Prezzi.SimboloIstante(Trans_MiniPay.MONETA, istante));
+                    else Token(r, tk.indirizzo(), Trans_MiniPay.RETE, istante);
+                }
+            }
+        }
+        return r;
+    }
+
     /** Scarica a gruppi tutto cio' che la raccolta ha trovato. */
     static void PreScarica(Raccolta r, String origine, Download progress) {
         PrezziDefiLlama.PreScaricaCoppie(r.address(), origine, progress);

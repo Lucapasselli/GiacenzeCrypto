@@ -771,34 +771,36 @@ public final class Dichiarazioni {
             }
             String giorno = v[0].substring(0, 8);
             String anno = giorno.substring(0, 4);
-            int id = v.length > 41 ? DocumentiFonte.IdDaCampo41(v[41]) : 0;
-            if (id <= 0) {
+            int origine = v.length > 41 ? DocumentiFonte.IdDaCampo41(v[41]) : 0;
+            if (origine <= 0 && anno.equals(Anno)) {
+                esito.MovimentiAnnoSenzaDocumento++;
+            }
+            //Anche i documenti collegati (Dual Investment, Subscription...) spiegano i movimenti dell'anno
+            List<Integer> ids = v.length > 41 ? DocumentiFonte.Supporti(v[41]) : new ArrayList<>();
+            if (origine > 0) ids.add(0, origine);
+            for (int id : ids) {
+                DocumentoDiOrigine d = perId.computeIfAbsent(id, k -> {
+                    DocumentoDiOrigine n = new DocumentoDiOrigine();
+                    n.Id = k;
+                    return n;
+                });
+                d.MovimentiTotali++;
                 if (anno.equals(Anno)) {
-                    esito.MovimentiAnnoSenzaDocumento++;
+                    d.MovimentiAnno++;
                 }
-                continue;
-            }
-            DocumentoDiOrigine d = perId.computeIfAbsent(id, k -> {
-                DocumentoDiOrigine n = new DocumentoDiOrigine();
-                n.Id = k;
-                return n;
-            });
-            d.MovimentiTotali++;
-            if (anno.equals(Anno)) {
-                d.MovimentiAnno++;
-            }
-            if (d.PrimaData.isEmpty() || giorno.compareTo(d.PrimaData) < 0) {
-                d.PrimaData = giorno;
-            }
-            if (d.UltimaData.isEmpty() || giorno.compareTo(d.UltimaData) > 0) {
-                d.UltimaData = giorno;
-            }
-            String wallet = v.length > 3 && v[3] != null ? v[3].trim() : "";
-            if (!wallet.isEmpty()) {
-                d.Wallet.add(wallet);
-                String g = GruppoDiWallet.apply(wallet);
-                if (g != null && !g.isBlank()) {
-                    d.Gruppi.add(g.trim());
+                if (d.PrimaData.isEmpty() || giorno.compareTo(d.PrimaData) < 0) {
+                    d.PrimaData = giorno;
+                }
+                if (d.UltimaData.isEmpty() || giorno.compareTo(d.UltimaData) > 0) {
+                    d.UltimaData = giorno;
+                }
+                String wallet = v.length > 3 && v[3] != null ? v[3].trim() : "";
+                if (!wallet.isEmpty()) {
+                    d.Wallet.add(wallet);
+                    String g = GruppoDiWallet.apply(wallet);
+                    if (g != null && !g.isBlank()) {
+                        d.Gruppi.add(g.trim());
+                    }
                 }
             }
         }

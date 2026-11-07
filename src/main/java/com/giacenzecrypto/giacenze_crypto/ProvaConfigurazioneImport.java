@@ -229,7 +229,7 @@ public class ProvaConfigurazioneImport {
             if (movimenti == null) return e;
             movimenti.sort(Comparator.comparing((Movimento m) -> m.v()[0], String.CASE_INSENSITIVE_ORDER));
             e.movimenti.addAll(movimenti);
-            for (String r : Importazioni.movimentiSconosciuti.split("\n")) {
+            for (String r : Importazioni.Sconosciuti().split("\n")) {
                 if (!r.isBlank()) e.scarti.add(r);
             }
             if (!Importazioni.CausaliDerivatiSegnalate.isEmpty()) {
@@ -283,7 +283,7 @@ public class ProvaConfigurazioneImport {
                 movs = ImportazioneGenerica.consolidaGruppo(gruppo, cfg, new ArrayList<>());
             } catch (Exception ex) {
                 LoggerGC.ScriviErrore(ex);
-                Importazioni.movimentiSconosciuti += "ERRORE " + ex + " | " + chiave + "\n";
+                Importazioni.AccodaSconosciuti("ERRORE " + ex + " | " + chiave + "\n");
                 continue;
             }
             gruppiPerChiave.merge(chiave, 1, Integer::sum);

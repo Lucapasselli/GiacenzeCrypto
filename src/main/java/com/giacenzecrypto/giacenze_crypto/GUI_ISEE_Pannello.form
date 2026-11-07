@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.8" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+  </AuxValues>
+
+  <Layout>
+    <DimensionLayout dim="0">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Component id="Label_Anno" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Combo_Anno" min="-2" pref="220" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Calcola" min="-2" pref="140" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Media" min="-2" pref="210" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Component id="Bottone_Guida" min="-2" pref="140" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="Label_Info" pref="1160" max="32767" attributes="0"/>
+                  <Component id="ScrollPane_Rapporti" pref="1160" max="32767" attributes="0"/>
+                  <Component id="ScrollPane_Dettaglio" pref="1160" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Component id="Label_Dettaglio" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Component id="Label_Riepilogo" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      <Component id="Bottone_PrezziMancanti" min="-2" pref="230" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Modifica" min="-2" pref="180" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="Bottone_Scollegati" min="-2" pref="220" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+    <DimensionLayout dim="1">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="Label_Anno" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="Combo_Anno" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="Bottone_Calcola" alignment="3" min="-2" pref="40" max="-2" attributes="0"/>
+                  <Component id="Bottone_Media" alignment="3" min="-2" pref="40" max="-2" attributes="0"/>
+                  <Component id="Bottone_Guida" alignment="3" min="-2" pref="40" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="Label_Info" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="ScrollPane_Rapporti" pref="380" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="Label_Dettaglio" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="Label_Riepilogo" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="ScrollPane_Dettaglio" min="-2" pref="280" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="Bottone_PrezziMancanti" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                  <Component id="Bottone_Modifica" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                  <Component id="Bottone_Scollegati" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+  </Layout>
+  <SubComponents>
+    <Component class="javax.swing.JLabel" name="Label_Anno">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Patrimonio al:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="Combo_Anno">
+      <Properties>
+        <Property name="toolTipText" type="java.lang.String" value="La DSU di un anno usa il patrimonio al 31/12 di due anni prima"/>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Calcola">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Calcolatrice.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Calcola"/>
+        <Property name="toolTipText" type="java.lang.String" value="Scarica i prezzi di fine anno che mancano e calcola i rapporti del Quadro FC2"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_CalcolaActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Media">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Numeri.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Media giornaliera..."/>
+        <Property name="toolTipText" type="java.lang.String" value="Giacenza media giornaliera dei rapporti 99 con i prezzi del calcolo fiscale (informativa): la prima volta pu&#xf2; scaricare molti prezzi"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_MediaActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Guida">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Libro.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Guida..."/>
+        <Property name="toolTipText" type="java.lang.String" value="Apre il manuale del tab ISEE"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_GuidaActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="Label_Info">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;Quadro FC2 della DSU: un rapporto per gruppo wallet e intermediario. Le cripto al 31/12 sono quelle della fotografia del quadro W/RW, gli importi in euro sono arrotondati all&apos;unit&#xe0;.&lt;/html&gt;"/>
+      </Properties>
+    </Component>
+    <Container class="javax.swing.JScrollPane" name="ScrollPane_Rapporti">
+      <AuxValues>
+        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents>
+        <Component class="javax.swing.JTable" name="Tabella_Rapporti">
+          <Properties>
+            <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
+              <Table columnCount="9" rowCount="0">
+                <Column editable="false" title="Gruppo" type="java.lang.String"/>
+                <Column editable="false" title="Tipo rapporto" type="java.lang.String"/>
+                <Column editable="false" title="Codice operatore" type="java.lang.String"/>
+                <Column editable="false" title="Identificativo" type="java.lang.String"/>
+                <Column editable="false" title="Data inizio" type="java.lang.String"/>
+                <Column editable="false" title="Data fine" type="java.lang.String"/>
+                <Column editable="false" title="Valore al 31/12 (EUR)" type="java.lang.String"/>
+                <Column editable="false" title="Giacenza media (EUR)" type="java.lang.String"/>
+                <Column editable="false" title="Avvisi" type="java.lang.String"/>
+              </Table>
+            </Property>
+            <Property name="toolTipText" type="java.lang.String" value="Doppio clic su un rapporto per modificarne identificativo, operatore e date"/>
+          </Properties>
+          <Events>
+            <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="Tabella_RapportiMouseClicked"/>
+          </Events>
+        </Component>
+      </SubComponents>
+    </Container>
+    <Component class="javax.swing.JLabel" name="Label_Dettaglio">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Dettaglio del rapporto selezionato"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="Label_Riepilogo">
+    </Component>
+    <Container class="javax.swing.JScrollPane" name="ScrollPane_Dettaglio">
+      <AuxValues>
+        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents>
+        <Component class="javax.swing.JTable" name="Tabella_Dettaglio">
+          <Properties>
+            <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
+              <Table columnCount="2" rowCount="0">
+                <Column editable="false" title="Voce" type="java.lang.String"/>
+                <Column editable="false" title="Valore" type="java.lang.String"/>
+              </Table>
+            </Property>
+          </Properties>
+        </Component>
+      </SubComponents>
+    </Container>
+    <Component class="javax.swing.JButton" name="Bottone_PrezziMancanti">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Prezzo.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Prezzi mancanti..."/>
+        <Property name="toolTipText" type="java.lang.String" value="I giorni rimasti senza prezzo nella media giornaliera, con i prezzi personalizzati da scrivere"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_PrezziMancantiActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Modifica">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Modifica.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Modifica dati..."/>
+        <Property name="toolTipText" type="java.lang.String" value="Identificativo, codice operatore, data di apertura e di chiusura del rapporto selezionato"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_ModificaActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="Bottone_Scollegati">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/Images/24_Cestino.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Dati senza rapporto"/>
+        <Property name="toolTipText" type="java.lang.String" value="Dati scritti per un periodo FIAT che non esiste pi&#xf9;: il calcolo non li usa"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bottone_ScollegatiActionPerformed"/>
+      </Events>
+    </Component>
+  </SubComponents>
+</Form>

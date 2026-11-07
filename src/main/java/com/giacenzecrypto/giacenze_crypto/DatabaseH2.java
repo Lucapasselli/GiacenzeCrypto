@@ -436,8 +436,8 @@ public class DatabaseH2 {
             //sintetica a colonna singola (idioma WALLET_RETE / EXCHANGE_TOKEN : U_ScriviRecord accetta una
             //sola primaryKeyColumn). Gruppo / TipoRigo / Progressivo restano anche come colonne interrogabili.
             //I campi fiscali (StatoEstero/IdentificativoFiscale/NoteFiscali/FonteFiscale) valgono SOLO sui
-            //righi FIAT ; IdentificativoISEE è l'alias per il modulo FC.1 della DSU, sempre inserito a mano
-            //(il reconcile dei predefiniti non lo tocca mai, vedi Pers_GruppoPeriodoRW_Scrivi).
+            //righi FIAT ; IdentificativoISEE è storico : dal 2026-11-05 i dati del rapporto ISEE stanno in
+            //ISEE_RAPPORTI e RapportiISEE.MigraIdentificativiPeriodi sposta lì il valore e svuota la colonna.
             createTableSQL = "CREATE TABLE IF NOT EXISTS GRUPPO_PERIODO_RW ("
                     + "Gruppo_Tipo_Prog VARCHAR(300) PRIMARY KEY, "
                     + "Gruppo VARCHAR(255), "
@@ -484,6 +484,16 @@ public class DatabaseH2 {
             //riversano qui toccando SOLO le righe Origine=SISTEMA.
             Principale_GruppiWalletRW.Pers_RW_SeminaERiconcilia();
             PrezziPersonalizzati_MigraSymbolMaiuscolo();
+
+            //Dati dei rapporti ISEE scritti dall'utente (2026-11-05, RapportiISEE). L'identificativo ISEE che
+            //stava sul periodo FIAT si sposta qui a ogni apertura (anche dopo il ripristino di un backup
+            //vecchio): una migrazione che non riesce non deve impedire di aprire il database.
+            RapportiISEE.CreaTabella(connectionPersonale);
+            try {
+                RapportiISEE.MigraIdentificativiPeriodi();
+            } catch (RuntimeException ex) {
+                LoggerGC.ScriviErrore(ex);
+            }
 
             successo=true;
             
@@ -1382,7 +1392,7 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
      * @param Origine {@code "SISTEMA"} / {@code "UTENTE"} / {@code null} (colonna non toccata)
      * @param ChiaveDefault identita' stabile della riga di default in {@code RW_Predefiniti.json},
      *        {@code null} = colonna non toccata
-     * @param IdentificativoISEE alias dell'identificativo per il modulo FC.1 della DSU. {@code null} =
+     * @param IdentificativoISEE vecchio identificativo ISEE (storico, vedi {@code RapportiISEE}). {@code null} =
      *        <b>colonna non toccata</b>, ed è quello che rende il campo "sempre a mano" anche sulle righe
      *        {@code SISTEMA} : il reconcile dei predefiniti passa sempre {@code null}, quindi la MERGE
      *        riscrive tutto il resto e lascia stare questo. Dalla GUI il campo si svuota lo stesso, perché

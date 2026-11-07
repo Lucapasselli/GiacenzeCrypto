@@ -39,7 +39,7 @@ import static com.giacenzecrypto.giacenze_crypto.Principale_GruppiWalletRW.TIPO_
  * ha {@code Origine = UTENTE}; le colonne "Calcolo" contengono i <b>codici</b>, non le etichette.
  *
  * <p>I campi abilitati dipendono dal tipo : il bollo solo su CRYPTO, i dati fiscali (Stato estero,
- * "è conto corrente", identificativo, alias ISEE, note, fonte) solo su FIAT — vedi
+ * "è conto corrente", identificativo fiscale, note, fonte) solo su FIAT — vedi
  * {@link #aggiornaAbilitazioni()}. I
  * valori iniziale/finale a mano non si modificano più da qui (2026-09-09) : la riga esistente li
  * <b>conserva</b>, così una riga che li aveva non li perde passando dal dialogo.</p>
@@ -61,6 +61,11 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
     private final int indiceModificato;
     /** Valori campo 7/8 a mano : non più modificabili qui, ma conservati (vedi javadoc di classe). */
     private final String valIniziale, notaIniziale, valFinale, notaFinale;
+    /**
+     * Vecchio identificativo ISEE del rigo FIAT : dal 2026-11-05 i dati del rapporto si scrivono nel tab ISEE
+     * ({@link RapportiISEE}) e la migrazione all'avvio svuota la colonna. Riportato tale e quale, come i valori a mano.
+     */
+    private final String identIsee;
 
     public boolean confermato = false;
     public String[] risultato;
@@ -118,7 +123,6 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         RwDialoghi.impostaData(Data_Inizio, nuovo ? "" : val(rigaEsistente, COL_DATA_INIZIO));
         RwDialoghi.impostaData(Data_Fine, nuovo ? "" : val(rigaEsistente, COL_DATA_FINE));
         Campo_Ident.setText(nuovo ? "" : val(rigaEsistente, COL_IDENT_FISCALE));
-        Campo_Isee.setText(nuovo ? "" : val(rigaEsistente, COL_IDENT_ISEE));
         Campo_Note.setText(nuovo ? "" : val(rigaEsistente, COL_NOTE_FISCALI));
         Campo_Fonte.setText(nuovo ? "" : val(rigaEsistente, COL_FONTE_FISCALE));
         // Non si modificano più da qui, ma non si perdono : li riporto tali e quali nel risultato.
@@ -126,6 +130,7 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         this.notaIniziale = nuovo ? "" : val(rigaEsistente, COL_NOTA_INIZIALE);
         this.valFinale = nuovo ? "" : val(rigaEsistente, COL_VAL_FINALE);
         this.notaFinale = nuovo ? "" : val(rigaEsistente, COL_NOTA_FINALE);
+        this.identIsee = nuovo ? "" : val(rigaEsistente, COL_IDENT_ISEE);
         Combo_ModIni.setSelectedItem(Principale_GruppiWalletRW.etichettaModalita(
                 nuovo ? "" : val(rigaEsistente, COL_MOD_INIZIALE), MODALITA_INIZIALE));
         Combo_ModFin.setSelectedItem(Principale_GruppiWalletRW.etichettaModalita(
@@ -151,7 +156,6 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         Combo_Stato.setEnabled(fiat);
         Combo_ContoCorrente.setEnabled(fiat);
         Campo_Ident.setEnabled(fiat);
-        Campo_Isee.setEnabled(fiat);
         Campo_Note.setEnabled(fiat);
         Campo_Fonte.setEnabled(fiat);
     }
@@ -199,8 +203,6 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         Combo_ContoCorrente = new javax.swing.JComboBox();
         Label_Ident = new javax.swing.JLabel();
         Campo_Ident = new javax.swing.JTextField();
-        Label_Isee = new javax.swing.JLabel();
-        Campo_Isee = new javax.swing.JTextField();
         Label_Note = new javax.swing.JLabel();
         Scroll_Note = new javax.swing.JScrollPane();
         Campo_Note = new javax.swing.JTextArea();
@@ -362,6 +364,7 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         Pannello_Campi.add(Combo_ContoCorrente, gridBagConstraints);
 
         Label_Ident.setText("Identificativo fiscale (solo FIAT) :");
+        Label_Ident.setToolTipText("I dati fiscali del rigo FIAT descrivono l'intermediario del gruppo in quel periodo: valgono per la liquidità del Quadro W/RW, e il tab ISEE ne ricava il codice operatore dei rapporti del gruppo, cripto comprese.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
@@ -378,27 +381,10 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         Pannello_Campi.add(Campo_Ident, gridBagConstraints);
 
-        Label_Isee.setText("Identificativo ISEE (solo FIAT) :");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
-        Pannello_Campi.add(Label_Isee, gridBagConstraints);
-
-        Campo_Isee.setColumns(20);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        Pannello_Campi.add(Campo_Isee, gridBagConstraints);
-
         Label_Note.setText("Note (solo FIAT) :");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
         Pannello_Campi.add(Label_Note, gridBagConstraints);
@@ -411,7 +397,7 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -421,7 +407,7 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         Label_Fonte.setText("Fonte (solo FIAT) :");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
         Pannello_Campi.add(Label_Fonte, gridBagConstraints);
@@ -434,7 +420,7 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -523,7 +509,7 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
         r[COL_E_CONTO_CORRENTE] = fiat && Principale_GruppiWalletRW.CONTO_CORRENTE_SI.equals(
                 String.valueOf(Combo_ContoCorrente.getSelectedItem())) ? Principale_GruppiWalletRW.CONTO_CORRENTE_SI : "";
         r[COL_IDENT_FISCALE] = fiat ? Campo_Ident.getText().trim() : "";
-        r[COL_IDENT_ISEE] = fiat ? Campo_Isee.getText().trim() : "";
+        r[COL_IDENT_ISEE] = fiat ? identIsee : "";
         r[COL_NOTE_FISCALI] = fiat ? Campo_Note.getText().trim() : "";
         r[COL_FONTE_FISCALE] = fiat ? Campo_Fonte.getText().trim() : "";
 
@@ -568,7 +554,6 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
     private javax.swing.JButton Bottone_Ok;
     private javax.swing.JTextArea Campo_Fonte;
     private javax.swing.JTextField Campo_Ident;
-    private javax.swing.JTextField Campo_Isee;
     private javax.swing.JTextArea Campo_Note;
     private javax.swing.JTextField Campo_Prog;
     private javax.swing.JComboBox Combo_Bollo;
@@ -585,7 +570,6 @@ public class GUI_ModificaPeriodoDetenzione extends javax.swing.JDialog {
     private javax.swing.JLabel Label_DataInizio;
     private javax.swing.JLabel Label_Fonte;
     private javax.swing.JLabel Label_Ident;
-    private javax.swing.JLabel Label_Isee;
     private javax.swing.JLabel Label_ModFin;
     private javax.swing.JLabel Label_ModIni;
     private javax.swing.JLabel Label_Note;

@@ -575,13 +575,13 @@ class ImportazioneGenericaCoinbaseTest {
                 + "Coinbase debit of 4 ZZTWO,,Coinbase\n"
                 + "xx,2026-13-45 99:99:99 UTC,Debit,ZZTWO,-1,EUR,€0,€0,€0,€0.00,,,\n"
                 + "yy,N/A,Debit,ZZTWO,-1,EUR,€0,€0,€0,€0.00,,,\n");
-        Importazioni.movimentiSconosciuti = "";
+        Importazioni.AzzeraSconosciuti();
         List<String[]> righe = ImportazioneGenerica.leggiCSV(f.toString(), reale);
 
         assertEquals(2, righe.size(), "le due righe vere");
-        assertTrue(Importazioni.movimentiSconosciuti.contains("yy,N/A"), "dati con la data assente restano segnalati");
-        assertFalse(Importazioni.movimentiSconosciuti.contains("Timestamp"), "l'intestazione non e' un movimento perso");
-        assertTrue(Importazioni.movimentiSconosciuti.contains("DATA NON PARSABILE"),
+        assertTrue(Importazioni.Sconosciuti().contains("yy,N/A"), "dati con la data assente restano segnalati");
+        assertFalse(Importazioni.Sconosciuti().contains("Timestamp"), "l'intestazione non e' un movimento perso");
+        assertTrue(Importazioni.Sconosciuti().contains("DATA NON PARSABILE"),
                 "una data scritta male (con delle cifre) resta segnalata");
     }
 

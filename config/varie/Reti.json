@@ -6,7 +6,7 @@
     "urlTransazione/urlTokenWallet/urlWallet: pagine aperte nel browser, segnaposto {hash} {wallet} {token}.",
     "nodiStorico: nodi pubblici con lo stato storico per la colonna Qta Blockchain. Un nodo nuovo va verificato PRIMA a due altezze contro gli altri nodi della rete: alcuni rispondono 0x0 invece di un errore per lo stato che non hanno, e uno sbagliato fa sembrare giuste giacenze sbagliate. senzaStorico: solo la giacenza di oggi.",
     "nodoPubblico (BASE, ETH): nodi e token usati per IMPORTARE i movimenti (NodoPubblicoDefi), stessa verifica a due altezze. tokenNodo (XLAYER): monete lette nello stato del wallet della carta OKX, simbolo e decimali letti sul nodo, l'ordine conta.",
-    "importNativo: rete importata da una classe propria (ALGO: Trans_Algorand, XRP: Trans_XRPL, TRX: Trans_Tron), al posto di defi. Le versioni che hanno quella classe la trattano come defi, le precedenti la ignorano e la vedono solo riconosciuta, quindi niente versioneMinimaApp sul file intero."
+    "importNativo: rete importata da una classe propria (ALGO: Trans_Algorand, XRP: Trans_XRPL, TRX: Trans_Tron, CELO: Trans_MiniPay), al posto di defi. Le versioni che hanno quella classe la trattano come defi, le precedenti la ignorano e la vedono solo riconosciuta, quindi niente versioneMinimaApp sul file intero."
   ],
   "reti": [
     {
@@ -559,6 +559,21 @@
           "decimali": 6,
           "aToken": true
         }
+      ]
+    },
+    {
+      "id": "CELO",
+      "nome": "Celo",
+      "importNativo": true,
+      "simbolo": "CELO",
+      "coingecko": "celo",
+      "defillama": "celo",
+      "urlTransazione": "https://celo.blockscout.com/tx/{hash}",
+      "urlTokenWallet": "https://celo.blockscout.com/address/{wallet}?tab=token_transfers&token={token}",
+      "urlWallet": "https://celo.blockscout.com/address/{wallet}?tab=tokens",
+      "nodiStorico": [
+        "https://forno.celo.org",
+        "https://celo.gateway.tenderly.co"
       ]
     },
     {

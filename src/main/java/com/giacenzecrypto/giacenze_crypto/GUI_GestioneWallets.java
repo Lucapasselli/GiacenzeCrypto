@@ -74,6 +74,14 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
             if (op.etichetta().equals(ComboBox_Rete.getItemAt(i))) dopo = i + 1;
         }
         ComboBox_Rete.insertItemAt(Trans_EtherFi.ETICHETTA_WALLET, dopo);
+        //"MiniPay (CELO)" subito dopo Celo: chi usa MiniPay non deve sapere che sta su Celo. Si salva su CELO come un
+        //wallet qualsiasi, la Safe della carta la trova l'importazione (Trans_MiniPay)
+        Reti.Rete celo = Reti.Get(Trans_MiniPay.RETE);
+        dopo = ComboBox_Rete.getItemCount();
+        for (int i = 0; celo != null && i < ComboBox_Rete.getItemCount(); i++) {
+            if (celo.etichetta().equals(ComboBox_Rete.getItemAt(i))) dopo = i + 1;
+        }
+        ComboBox_Rete.insertItemAt(Trans_MiniPay.ETICHETTA_WALLET, dopo);
     }
 
     /**
@@ -575,8 +583,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                         //questa sessione, come già avviene se l'interruzione avviene durante la prima fase
                         //(Importazioni.DeFi_RitornaTransazioni). Meglio niente che movimenti senza prezzo.
                         if (AttesaConnessione.Abortita()) {
-                            Importazioni.movimentiSconosciuti =
-                                    Importazioni.AVVISO_IMPORT_ABBANDONATO + Importazioni.movimentiSconosciuti;
+                            Importazioni.PremettiSconosciuti(Importazioni.AVVISO_IMPORT_ABBANDONATO);
                             LoggerGC.ScriviErrore("Scaricamento DeFi abbandonato: connessione assente, "
                                     + RigheDaScrivere.size() + " movimenti NON scritti");
                         }
@@ -594,7 +601,7 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
 
                         //Timbro qui il documento di origine perché questa strada NON passa dal punto di
                         //strozzatura Importazioni.ScriviListaSuMappaCrypto, dove lo fanno tutte le altre
-                        if (IdDocumentoDefi>0 && st.length>41 && Funzioni.noData(st[41])) st[41]=String.valueOf(IdDocumentoDefi);
+                        if (IdDocumentoDefi>0 && st.length>41 && DocumentiFonte.IdDaCampo41(st[41])<=0) st[41]=DocumentiFonte.ConOrigine(st[41], String.valueOf(IdDocumentoDefi));
 
                         Importazioni.InserisciMovimentosuMappaCryptoWallet(st[0], st);
                      //   MappaCryptoWallet.put(st[0], st);
@@ -620,6 +627,8 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                     if (i > 0) OKX_CartaAbbina.Abbina();
                     //Ricariche dei conti ether.fi Cash, col prelievo d'origine (anche da un wallet appena aggiornato)
                     if (i > 0) Trans_EtherFi.Abbina();
+                    //Ricariche e prelievi della carta MiniPay, fra il wallet e la Safe della carta (stessa transazione)
+                    if (i > 0) Trans_MiniPay.Abbina();
 
                     //Adesso per ogni wallet coinvolto controllo le giacenze di fine importazione e sistemo in caso di discrepanze
                     //Salto la cronoschain perchè quella viene gestita a parte

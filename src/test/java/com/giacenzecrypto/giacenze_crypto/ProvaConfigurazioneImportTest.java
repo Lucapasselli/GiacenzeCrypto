@@ -94,7 +94,7 @@ class ProvaConfigurazioneImportTest {
 
         //Niente in archivio, contatori dell'importazione lasciati puliti
         assertEquals(primaInArchivio, Principale.MappaCryptoWallet.size());
-        assertEquals("", Importazioni.movimentiSconosciuti);
+        assertEquals("", Importazioni.Sconosciuti());
         assertEquals(0, Importazioni.TrasazioniSconosciute);
 
         String testo = e.TestoPerIA();

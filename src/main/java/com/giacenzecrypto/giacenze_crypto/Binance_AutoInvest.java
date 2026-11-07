@@ -134,6 +134,10 @@ public class Binance_AutoInvest {
         public int riscattiNonTrovati = 0;
         /** Scambi differiti automatici annullati e rifatti perché univano movimenti di esecuzioni diverse. */
         public int scambiDifferitiSostituiti = 0;
+        /** Scambi di ribilanciamenti creati prima che il file Rebalancing fosse registrato: ora puntano al file. */
+        public int documentiCompletati = 0;
+        /** Movimenti a cui questo passaggio ha collegato un file Subscription o Redemption come documento di supporto. */
+        public int collegati = 0;
         /** Una riga per ogni caso non sistemato. */
         public List<String> dettagli = new ArrayList<>();
         /** Una riga per ogni scambio differito sostituito, con la data: cambia i calcoli di quell'anno. */
@@ -178,6 +182,8 @@ public class Binance_AutoInvest {
         String[] entrata;
         /** Un'entrata con moneta e quantità giuste esiste, ma è classificata in altro modo. */
         boolean entrataAltrove;
+        /** Il file Subscription da cui viene, fra i documenti di origine; 0 se non registrato. */
+        int documento;
     }
 
     /** Un'uscita (o la sua assenza) con gli acquisti che ha pagato. */
@@ -198,6 +204,8 @@ public class Binance_AutoInvest {
         String commissione;
         /** +1 comprata, -1 venduta, 0 non ancora deciso. */
         int segno;
+        /** Campo [41] dei suoi scambi: il file Rebalancing da cui viene, vuoto se non registrato. */
+        String documento = "";
     }
 
     static final class Riscatto {
@@ -206,6 +214,8 @@ public class Binance_AutoInvest {
         String indice;
         String moneta;
         BigDecimal quantita;
+        /** Il file Redemption da cui viene, fra i documenti di origine; 0 se non registrato. */
+        int documento;
     }
 
     static final class Dati {
@@ -245,10 +255,26 @@ public class Binance_AutoInvest {
      * @throws IOException se un file non è leggibile
      */
     public static Esito Abbina(File... files) throws IOException {
-        return Abbina(PrezzatoreDefault, files);
+        return Abbina(PrezzatoreDefault, Map.of(), files);
+    }
+
+    /**
+     * Come {@link #Abbina(File...)}, con i documenti di origine dei file ({@link DocumentiFonte}). Gli scambi dei
+     * ribilanciamenti nascono dal file Rebalancing, che è la loro origine nel campo [41]: non derivano da nessun movimento
+     * importato. I file Subscription e Redemption si collegano invece come documenti di supporto alle esecuzioni e ai
+     * riscatti ({@link DocumentiFonte#CollegaAlGruppo}), anche a quelli sistemati da un passaggio precedente, mentre
+     * l'origine dei loro movimenti resta il CSV principale.
+     * @param documenti file -> id del documento registrato; un file assente lascia il campo vuoto
+     */
+    public static Esito Abbina(Map<File, Integer> documenti, File... files) throws IOException {
+        return Abbina(PrezzatoreDefault, documenti, files);
     }
 
     static Esito Abbina(Prezzatore prezzatore, File... files) throws IOException {
+        return Abbina(prezzatore, Map.of(), files);
+    }
+
+    static Esito Abbina(Prezzatore prezzatore, Map<File, Integer> documenti, File... files) throws IOException {
         Esito esito = new Esito();
         Dati dati = new Dati();
         //Il fuso sta nel nome che Binance dà al file, e l'utente può averlo rinominato: un file senza fuso nel nome
@@ -260,7 +286,9 @@ public class Binance_AutoInvest {
         }
         for (File f : files) {
             Integer fuso = OffsetDalNome(f.getName());
-            LeggiFile(f, dati, fuso != null ? fuso : fusoComune != null ? fusoComune : 0);
+            Integer documento = documenti.get(f);
+            LeggiFile(f, dati, fuso != null ? fuso : fusoComune != null ? fusoComune : 0,
+                    documento != null && documento > 0 ? String.valueOf(documento) : "");
         }
         esito.righeNonRiuscite = dati.righeNonRiuscite;
         esito.righeSottoscrizione = dati.acquisti.size();
@@ -378,6 +406,7 @@ public class Binance_AutoInvest {
             }
             if (mie && !righe.isEmpty()) {
                 esito.esecuzioniGiaAPosto++;
+                esito.collegati += CollegaEsecuzione(e);
                 continue;
             }
             if (altre) {
@@ -389,6 +418,7 @@ public class Binance_AutoInvest {
             if (differite) {
                 if (ScambioDifferitoCoincide(e)) {
                     esito.esecuzioniScambioDifferito++;
+                    esito.collegati += CollegaEsecuzione(e);
                     continue;
                 }
                 //Si annulla solo uno scambio differito fra due movimenti Auto-Invest: con un movimento di
@@ -447,6 +477,7 @@ public class Binance_AutoInvest {
                 continue;
             }
             esito.esecuzioniCreate++;
+            esito.collegati += CollegaEsecuzione(e);
             if (e.uscita == null) esito.usciteGenerate++;
             for (Acquisto a : e.acquisti) if (a.entrata == null) esito.acquistiIndice++;
         }
@@ -481,6 +512,7 @@ public class Binance_AutoInvest {
                     }
                     if (RibilanciamentoGiaCreato(evento.get(0).ts)) {
                         esito.ribilanciamentiGiaAPosto++;
+                        esito.documentiCompletati += CompletaDocumento(evento.get(0).ts, DocumentoDi(evento));
                         continue;
                     }
                     String err = CreaRibilanciamento(evento, exchange, prezzatore);
@@ -492,6 +524,12 @@ public class Binance_AutoInvest {
                     }
                 }
             }
+        }
+
+        if (esito.documentiCompletati > 0) {
+            esito.avvisi.add("File Rebalancing collegato come documento di origine a " + esito.documentiCompletati
+                    + (esito.documentiCompletati == 1 ? " scambio" : " scambi") + " dei ribilanciamenti creati in precedenza:"
+                    + " premere Salva per conservare il collegamento.");
         }
 
         //6. Riscatti
@@ -508,6 +546,7 @@ public class Binance_AutoInvest {
             StatoRiga s = Stato(mov);
             if (s == StatoRiga.MIO) {
                 esito.riscattiGiaAPosto++;
+                esito.collegati += DocumentiFonte.CollegaAlGruppo(mov, r.documento);
                 continue;
             }
             if (s != StatoRiga.NUOVO) {
@@ -523,8 +562,25 @@ public class Binance_AutoInvest {
                 continue;
             }
             esito.riscattiCreati++;
+            esito.collegati += DocumentiFonte.CollegaAlGruppo(mov, r.documento);
         }
         return esito;
+    }
+
+    /**
+     * Collega il file Subscription di un'esecuzione, come documento di supporto, ai suoi movimenti e a quelli del loro
+     * gruppo: uscita, entrate, scambi e gambe speculari. Le righe di un'esecuzione possono venire da parti diverse
+     * dell'export, quindi da più file.
+     * @return quanti nuovi collegamenti
+     */
+    private static int CollegaEsecuzione(Esecuzione e) {
+        int n = 0;
+        Set<Integer> documenti = new LinkedHashSet<>();
+        for (Acquisto a : e.acquisti) if (a.documento > 0) documenti.add(a.documento);
+        for (int d : documenti) {
+            for (String[] r : RigheImportate(e)) n += DocumentiFonte.CollegaAlGruppo(r, d);
+        }
+        return n;
     }
 
     /**
@@ -618,6 +674,14 @@ public class Binance_AutoInvest {
      * @param offset il fuso degli orari del file, in ore: dal suo nome o, se è stato rinominato, da quello degli altri
      */
     static void LeggiFile(File file, Dati dati, int offset) throws IOException {
+        LeggiFile(file, dati, offset, "");
+    }
+
+    /**
+     * @param documento l'id del file fra i documenti di origine, vuoto se non registrato: origine degli scambi dei
+     *        ribilanciamenti, supporto delle esecuzioni (Subscription) e dei riscatti (Redemption)
+     */
+    static void LeggiFile(File file, Dati dati, int offset, String documento) throws IOException {
         List<String> righe = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
             String riga;
@@ -651,6 +715,7 @@ public class Binance_AutoInvest {
                 a.quota = importo[1];
                 a.commissione = c[3].trim();
                 a.origine = c[5].trim();
+                a.documento = DocumentiFonte.IdDaCampo41(documento);
                 dati.acquisti.add(a);
             } else if (tipo == TipoFile.REBALANCING) {
                 dati.fileRibilanciamenti = true;
@@ -662,6 +727,7 @@ public class Binance_AutoInvest {
                 r.moneta = c[2].trim();
                 r.quantita = new BigDecimal(c[3].trim()).abs();
                 r.commissione = c[4].trim();
+                r.documento = documento;
                 dati.ribilanciamenti.add(r);
             } else if (tipo == TipoFile.REDEMPTION) {
                 dati.fileRiscatti = true;
@@ -672,6 +738,7 @@ public class Binance_AutoInvest {
                 r.indice = c[1].trim();
                 r.moneta = c[2].trim();
                 r.quantita = new BigDecimal(c[3].trim()).abs();
+                r.documento = DocumentiFonte.IdDaCampo41(documento);
                 if (r.quantita.signum() != 0) dati.riscatti.add(r);
             }
         }
@@ -1021,7 +1088,7 @@ public class Binance_AutoInvest {
             tsUscita = TsRiga(uscita);
             tipoQuota = uscita[9];
             valoreUscita = uscita[15];
-            documento = uscita[41];
+            documento = DocumentiFonte.SoloOrigine(uscita[41]);
             gruppo.add(uscita);
         } else {
             //Prelievo da Flexible Savings che il CSV non registra: lo si genera sul wallet dell'entrata, al primo
@@ -1041,7 +1108,7 @@ public class Binance_AutoInvest {
                 }
             }
             valoreUscita = valore.setScale(2, RoundingMode.HALF_UP).toPlainString();
-            documento = primaEntrata[41];
+            documento = DocumentiFonte.SoloOrigine(primaEntrata[41]);
             String[] generata = Genera(NuovaMoneta(e.quota, tipoQuota, importoTotale.negate()), null, exchange,
                     primaEntrata[4], tsUscita, valoreUscita, "Importo del piano Auto-Invest prelevato da " + e.acquisti.get(0).origine
                     + " - non presente nel CSV delle transazioni", ORIGINE_SOTTOSCRIZIONE, ID_USCITA_GENERATA, gid);
@@ -1095,7 +1162,7 @@ public class Binance_AutoInvest {
                         WALLET_AUTO_INVEST, tsScambio, entrata[15], null, ORIGINE_SOTTOSCRIZIONE, ID_SPECULARE_USCITA, gid);
                 if (specOut == null) return "impossibile creare il giroconto dal sotto-wallet";
                 Speculare(specOut, "PTW - Trasferimento Interno");
-                specOut[41] = entrata[41];
+                specOut[41] = DocumentiFonte.SoloOrigine(entrata[41]);
                 gruppo.add(specOut);
                 generati.add(specOut);
                 gruppo.add(entrata);
@@ -1132,6 +1199,33 @@ public class Binance_AutoInvest {
             if (v != null && ORIGINE_RIBILANCIAMENTO.equals(v[7])) return true;
         }
         return false;
+    }
+
+    /** Il documento di un ribilanciamento: quello della prima sua riga che ne ha uno (le parti di un export si ripetono). */
+    static String DocumentoDi(List<Ribilanciamento> evento) {
+        for (Ribilanciamento r : evento) if (!Funzioni.noData(r.documento)) return r.documento;
+        return "";
+    }
+
+    /**
+     * Dà il documento agli scambi di un ribilanciamento creato quando il file Rebalancing non veniva ancora registrato.
+     * Un documento già presente non si tocca.
+     * @return quanti scambi lo hanno ricevuto
+     */
+    static int CompletaDocumento(long ts, String documento) {
+        if (Funzioni.noData(documento)) return 0;
+        String dataID = FunzioniDate.ConvertiDatadaLongAlSecondo(ts).replaceAll(" |-|:", "");
+        String inizio = dataID + "_" + ID_SCAMBIO + "_";
+        int n = 0;
+        for (Map.Entry<String, String[]> e : MappaCryptoWallet.entrySet()) {
+            if (!e.getKey().startsWith(inizio)) continue;
+            String[] v = e.getValue();
+            if (v != null && v.length > 41 && ORIGINE_RIBILANCIAMENTO.equals(v[7]) && DocumentiFonte.IdDaCampo41(v[41]) <= 0) {
+                v[41] = DocumentiFonte.ConOrigine(v[41], documento);
+                n++;
+            }
+        }
+        return n;
     }
 
     /** Un pezzo di ribilanciamento: quanto di una moneta venduta va in quanto di una comprata. */
@@ -1286,8 +1380,10 @@ public class Binance_AutoInvest {
         }
         if (AttesaConnessione.Abortita()) return "connessione persa durante la ricerca dei prezzi, non scritto";
         CollegaTutti(gruppo);
+        String documento = DocumentoDi(evento);
         for (String[] v : gruppo) {
             Importazioni.RiempiVuotiArray(v);
+            v[41] = documento;
             MappaCryptoWallet.put(v[0], v);
         }
         return null;
@@ -1303,7 +1399,7 @@ public class Binance_AutoInvest {
             return false;
         }
         Speculare(spec, "PTW - Trasferimento Interno");
-        spec[41] = riscatto[41];
+        spec[41] = DocumentiFonte.SoloOrigine(riscatto[41]);
         riscatto[5] = CAMPO5_ENTRATA;
         riscatto[18] = CAMPO18_ENTRATA;
         CollegaTutti(List.of(riscatto, spec));

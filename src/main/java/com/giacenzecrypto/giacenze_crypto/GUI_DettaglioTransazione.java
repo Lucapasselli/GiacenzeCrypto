@@ -416,6 +416,10 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             Val=new String[]{"Documento di origine",Valore};
             ModelloTabellaCrypto.addRow(Val);
         }
+        //Documenti di supporto: spiegano o classificano il movimento senza averlo creato (Dual Investment, Subscription...)
+        for (String Collegato : DocumentiFonte.DescrizioniSupporti(Transazione[41])){
+            ModelloTabellaCrypto.addRow(new String[]{"Documento collegato",Collegato});
+        }
 
         Tabelle.ColoraTabellaSemplice(Tabella);
         Tabelle.updateRowHeights(Tabella);

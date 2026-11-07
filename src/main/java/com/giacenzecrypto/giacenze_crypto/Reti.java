@@ -36,7 +36,8 @@ final class Reti {
      * le versioni senza la classe ignorano la chiave e le vedono solo riconosciute, invece di mandarne i wallet a
      * Etherscan. Cosi' la rete nuova non costa un {@code versioneMinimaApp} su tutto il file.
      */
-    static final java.util.Set<String> IMPORT_NATIVI = java.util.Set.of(Trans_Algorand.RETE, Trans_XRPL.RETE, Trans_Tron.RETE);
+    static final java.util.Set<String> IMPORT_NATIVI = java.util.Set.of(Trans_Algorand.RETE, Trans_XRPL.RETE, Trans_Tron.RETE,
+            Trans_MiniPay.RETE);
 
     /** API degli explorer che non sono Etherscan V2: restano nel codice perche' ricevono la ApiKey. */
     private static final Map<String, String> API_NON_ETHERSCAN = Map.of(

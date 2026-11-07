@@ -330,6 +330,9 @@ public class Backup_Restore {
         //2026-09-08, non esistono più : un archivio prodotto allora le contiene ancora e il ripristino
         //le ignora da solo, per lo stesso motivo spiegato sopra per i registri GESTITI*.
         t.add(new Tabella("GRUPPO_PERIODO_RW", DB.PERSONALE, Gruppo.GRUPPI_WALLET));
+        //Dati dei rapporti ISEE (IBAN, operatore, apertura, chiusura): la chiave nomina il gruppo e il periodo
+        //FIAT, quindi stanno con i periodi
+        t.add(new Tabella("ISEE_RAPPORTI", DB.PERSONALE, Gruppo.GRUPPI_WALLET));
         //Il registro dei documenti sta nel gruppo dei movimenti: il campo [41] di ogni movimento ne
         //referenzia l'Id, separarli lascerebbe quei riferimenti appesi
         t.add(new Tabella("DOCUMENTIFONTE", DB.PERSONALE, Gruppo.MOVIMENTI));

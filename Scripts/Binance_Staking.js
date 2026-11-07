@@ -2,7 +2,7 @@
 //  - staking SOL (SOL -> BNSOL) e riscatti (BNSOL -> SOL, accreditato giorni dopo)   sapi sol-staking
 //  - staking ETH (ETH -> WBETH) e riscatti (WBETH -> ETH)                            sapi eth-staking
 //  - sottoscrizioni e riscatti di RWUSD (USDC <-> RWUSD)                             sapi rwusd (non censito da ccxt)
-//  - pagamenti Binance Pay (oggi se ne importano solo i "Tax Payment", orderType TAX) sapi pay/transactions
+//  - pagamenti Binance Pay: Tax Payment come cash out, gli altri da classificare     sapi pay/transactions
 // Output su stdout: { "Binance_Staking": { inizio, solStaking, solRiscatti, ethStaking, ethRiscatti, rwusdSottoscrizioni,
 //                     rwusdRiscatti, pay, nonDisponibili: { endpoint: messaggio } } }
 //

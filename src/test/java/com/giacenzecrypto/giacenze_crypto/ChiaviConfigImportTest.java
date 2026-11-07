@@ -112,7 +112,7 @@ class ChiaviConfigImportTest {
         String testo = Importazioni.TestoChiaviConfigSconosciute();
         assertTrue(testo.contains("tipoSeOggi") && testo.contains("1.0.65.07"), testo);
         //Un avviso, non un errore: il riquadro dei movimenti non importati resta vuoto
-        assertEquals("", Importazioni.movimentiSconosciuti);
+        assertEquals("", Importazioni.Sconosciuti());
         Importazioni.AzzeraContatori();
         assertEquals("", Importazioni.TestoChiaviConfigSconosciute());
     }

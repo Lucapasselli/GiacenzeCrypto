@@ -170,7 +170,39 @@ public class Importazioni {
      */
     public static int DocumentoFonteCorrente=0;
     //La mappa delle chain conterrà per ogni chain l'indirizzo del chain explorer e relativa api
-    public static String movimentiSconosciuti="";
+    /**
+     * Righe scartate e avvisi dell'importazione in corso, mostrati nel resoconto. Era una {@code String} accodata con
+     * {@code +=}: ogni riga ricopiava tutto il testo, quadratico, e un file grande letto con la configurazione sbagliata
+     * (decine di migliaia di righe scartate) lo teneva fermo: 13 s per 40.000 righe contro 0,3 s, e quattro volte le
+     * righe costavano quindici volte il tempo (misurato il 2026-11-06). Si scrive solo con i metodi
+     * qui sotto, sincronizzati perche' alcune importazioni lavorano su piu' thread.
+     */
+    private static final StringBuilder MovimentiSconosciuti = new StringBuilder();
+
+    /** Accoda il testo cosi' com'e' (chi chiama mette il suo {@code "\n"}). */
+    public static synchronized void AccodaSconosciuti(String Testo) {
+        MovimentiSconosciuti.append(Testo);
+    }
+
+    /** Mette il testo in testa, prima delle righe gia' accodate. */
+    public static synchronized void PremettiSconosciuti(String Testo) {
+        MovimentiSconosciuti.insert(0, Testo);
+    }
+
+    /** @return le righe scartate e gli avvisi accodati finora */
+    public static synchronized String Sconosciuti() {
+        return MovimentiSconosciuti.toString();
+    }
+
+    public static synchronized void AzzeraSconosciuti() {
+        MovimentiSconosciuti.setLength(0);
+    }
+
+    /** Sostituisce tutto il testo: serve a chi deve rimettere il contenuto di prima. */
+    public static synchronized void ImpostaSconosciuti(String Testo) {
+        MovimentiSconosciuti.setLength(0);
+        MovimentiSconosciuti.append(Testo);
+    }
     /**
      * Movimenti classificati che l'importazione con «sovrascrivi esistenti» ha riportato da classificare,
      * sostituendoli con la riga del file (vedi {@link #InserisciMovimentosuMappaCryptoWallet}). Informativo: il
@@ -185,13 +217,13 @@ public class Importazioni {
      * {@link #SegnalaCausaleDerivato}, azzerata da {@link #AzzeraContatori()}, letta da
      * {@link Importazioni_Resoconto} tramite {@link #TestoAvvisoDerivati()}.
      *
-     * <p>Volutamente indipendente da {@link #movimentiSconosciuti}: qui i movimenti sono importati
+     * <p>Volutamente indipendente da {@link #Sconosciuti()}: qui i movimenti sono importati
      * correttamente, non sono errori di riconoscimento — è un avviso fiscale, non uno di import.
      */
     public static Set<String> CausaliDerivatiSegnalate = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
     /**
-     * Testo premesso a {@link #movimentiSconosciuti} quando l'importazione viene abbandonata per
+     * Testo premesso a {@link #Sconosciuti()} quando l'importazione viene abbandonata per
      * mancanza di connessione. Finisce nel riquadro degli errori di {@code Importazioni_Resoconto},
      * che e' l'unico punto attraversato da tutte le strade di import: senza, l'utente vedrebbe solo
      * "0 transazioni importate" senza sapere perche'.
@@ -253,7 +285,7 @@ public class Importazioni {
             //I nomi vanno qualificati: i campi di Esito hanno lo stesso nome dei contatori statici
             Esito E = new Esito(Origine, Importazioni.Transazioni, Importazioni.TransazioniAggiunte,
                     Importazioni.TrasazioniScartate, Importazioni.TrasazioniSconosciute,
-                    Importazioni.movimentiSconosciuti);
+                    Importazioni.Sconosciuti());
             E.ClassificazioniAnnullate = Importazioni.ClassificazioniAnnullate;
             return E;
         }
@@ -288,7 +320,7 @@ public class Importazioni {
                 TransazioniAggiunte=0;
                 TrasazioniScartate=0;
                 TrasazioniSconosciute=0;
-                movimentiSconosciuti="";
+                AzzeraSconosciuti();
                 CausaliDerivatiSegnalate.clear();
                 GirocontiFiat.AbbinatiImportazione=0;
                 ClassificazioniAnnullate=0;
@@ -300,7 +332,7 @@ public class Importazioni {
      * Chiavi della configurazione d'import usata che questa versione non legge (percorsi puntati, vedi
      * {@code ImportazioneGenerica.ConfigurazioneImport.CHIAVI_NOTE}). Riempita da {@code ImportazioneGenerica.importaRighe},
      * azzerata da {@link #AzzeraContatori()}, letta dal resoconto tramite {@link #TestoChiaviConfigSconosciute()}.
-     * Non passa da {@link #movimentiSconosciuti}: nessuna riga e' stata scartata, e' un avviso.
+     * Non passa da {@link #Sconosciuti()}: nessuna riga e' stata scartata, e' un avviso.
      */
     public static Set<String> ChiaviConfigSconosciute = new TreeSet<>();
 
@@ -420,7 +452,7 @@ public class Importazioni {
      */
     static void SegnalaMappaCausaliNonDisponibile(String nome, Component c) {
         String messaggio = MappeCausali.MessaggioMappaNonDisponibile(nome);
-        movimentiSconosciuti = movimentiSconosciuti + messaggio + "\n";
+        AccodaSconosciuti(messaggio + "\n");
         //Il contatore va incrementato perché alcuni chiamanti (es. CcxtInterop) ignorano il valore di
         //ritorno e giudicano l'esito dai soli contatori: senza questo l'import fallito passerebbe per
         //un import riuscito con zero movimenti
@@ -606,7 +638,7 @@ public class Importazioni {
                     if (MovGenerico==null)
                         {
                                 //   System.out.println("Errore in importazione da CDCAPP csv: "+movimento);
-                                   movimentiSconosciuti=movimentiSconosciuti+riga+"\n";
+                                   AccodaSconosciuti(riga+"\n");
                                    TrasazioniSconosciute++;
                         }
                     String WalletDestinazione="";
@@ -1014,7 +1046,7 @@ public class Importazioni {
         for (String riga[] : righeOrdinate) {
             String MovGenerico = Mappa_Conversione_Causali.get(riga[4]);
             if (MovGenerico == null) {
-                movimentiSconosciuti = movimentiSconosciuti + riga[0] + " " + riga[2] + " " + riga[4] + " " + riga[5] + " " + riga[6] + "\n";
+                AccodaSconosciuti(riga[0] + " " + riga[2] + " " + riga[4] + " " + riga[5] + " " + riga[6] + "\n");
                 TrasazioniSconosciute++;
                 riga[3] = "";
             } else {
@@ -1519,7 +1551,7 @@ public class Importazioni {
                     }
                 } else {
                     if (!riga.isBlank()) {
-                        movimentiSconosciuti = movimentiSconosciuti + riga + "\n";
+                        AccodaSconosciuti(riga + "\n");
                         TrasazioniSconosciute++;
                     }
                 }
@@ -1576,7 +1608,7 @@ public class Importazioni {
         if (AttesaConnessione.Abortita()) {
             LoggerGC.ScriviErrore("Importazione abbandonata: connessione assente, "
                     + lista.size() + " movimenti NON scritti");
-            movimentiSconosciuti = AVVISO_IMPORT_ABBANDONATO + movimentiSconosciuti;
+            PremettiSconosciuti(AVVISO_IMPORT_ABBANDONATO);
             return new int[]{0, 0};
         }
 
@@ -1608,8 +1640,8 @@ public class Importazioni {
             //Timbro il documento di origine. Non sovrascrivo un [41] già valorizzato: chi conosce l'origine
             //esatta di quella riga l'ha già scritta. Il controllo sulla lunghezza è una difesa: se un
             //produttore costruisse righe più corte di ColonneTabella l'accesso diretto lancerebbe a metà import.
-            if (IdDocumento>0 && mov!=null && mov.length>41 && Funzioni.noData(mov[41])) {
-                mov[41]=String.valueOf(IdDocumento);
+            if (IdDocumento>0 && mov!=null && mov.length>41 && DocumentiFonte.IdDaCampo41(mov[41])<=0) {
+                mov[41]=DocumentiFonte.ConOrigine(mov[41], String.valueOf(IdDocumento));
             }
             if (mov[0]!=null){
                 InserisciMovimentosuMappaCryptoWallet(mov[0], mov, Indice);
@@ -1620,6 +1652,7 @@ public class Importazioni {
         }
         //Ricariche dei conti ether.fi Cash: il prelievo d'origine (da un exchange, da un wallet) puo' arrivare dopo
         if (ritorno[0] > 0) Trans_EtherFi.Abbina();
+        if (ritorno[0] > 0) Trans_MiniPay.Abbina();
         return ritorno;
     }
 
@@ -1845,12 +1878,12 @@ public static boolean Ex_BinanceTaxReport_Importa(String fileBinanceTaxReport,bo
                             listaCompleta.addAll(listaConsolidata);
                         }else if (i!=0)
                     {
-                        movimentiSconosciuti=movimentiSconosciuti+"FORMATO DATA ERRATO : "+riga+"\n";
+                        AccodaSconosciuti("FORMATO DATA ERRATO : "+riga+"\n");
                         TrasazioniSconosciute++;
                     }
                     }else
                     {
-                        movimentiSconosciuti=movimentiSconosciuti+"LUNGHEZZA RIGA ERRATA : "+riga+"\n";
+                        AccodaSconosciuti("LUNGHEZZA RIGA ERRATA : "+riga+"\n");
                         TrasazioniSconosciute++;
                     }
         }
@@ -2518,7 +2551,7 @@ public static boolean Ex_Tatax_Importa(String fileTatax, boolean SovrascriEsiste
 
             } else {
                 //se arrivo qua non so che movimento sia
-                movimentiSconosciuti = movimentiSconosciuti + "Errore su un movimento del " + data + " - " + TipoScambio + "\n";
+                AccodaSconosciuti("Errore su un movimento del " + data + " - " + TipoScambio + "\n");
                 TrasazioniSconosciute++;
             }
         }
@@ -2637,7 +2670,7 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                            if (movimentoConvertito==null)
                                 {
                                 //   System.out.println("Errore in importazione da CDCAPP csv: "+movimento);
-                                   movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                   AccodaSconosciuti(movimento+"\n");
                                    TrasazioniSconosciute++;
                                 }
                            else if (movimentoConvertito.trim().equalsIgnoreCase("CASHBACK")||
@@ -2656,7 +2689,7 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                         RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
                                         lista.add(RT);
                                  }else{
-                                     movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                     AccodaSconosciuti(movimento+"\n");
                                      TrasazioniSconosciute++;
                                  }
                                 
@@ -2696,7 +2729,7 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                         RT[14] = PrezzoCSVOri;
                                         lista.add(RT);
                                     }else{
-                                        movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                        AccodaSconosciuti(movimento+"\n");
                                         TrasazioniSconosciute++;
                                     }
                                     
@@ -2729,7 +2762,7 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                             RT[14] = PrezzoCSVOri;
                                             lista.add(RT);
                                         }else{
-                                            movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                            AccodaSconosciuti(movimento+"\n");
                                             TrasazioniSconosciute++;
                                         }
                                         
@@ -2740,7 +2773,13 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                     
                                     
                                     boolean AggiungoFIAT=true;
-                                    
+
+                                    //recurring_buy_order scrive la valuta pagata con importo positivo (EUR,70.00,BTC,...),
+                                    //viban_purchase la scrive negativa: con due monete in ingresso creaMovimento ritorna null
+                                    if (M2.Moneta != null && !M2.Moneta.isBlank() && !Funzioni.isNegativo(M1.Qta) && !Funzioni.isNegativo(M2.Qta)) {
+                                        M1.InvertiQta();
+                                    }
+
                                     //=== MOVIMENTO DI SCAMBIO ====
                                     RT = MovimentiCrypto.creaMovimento(M1, M2,
                                             "Crypto.com App", "Crypto Wallet",
@@ -2760,7 +2799,9 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                         RT[14] = PrezzoCSVOri;
                                         lista.add(RT);
                                     }else{
-                                        movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                        //senza lo scambio l'arrivo delle FIAT resterebbe un deposito orfano
+                                        AggiungoFIAT=false;
+                                        AccodaSconosciuti(movimento+"\n");
                                         TrasazioniSconosciute++;
                                     }
 
@@ -2776,7 +2817,7 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                         RT[14] = PrezzoCSVOri;
                                         lista.add(RT);
                                     }else{
-                                        movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                        AccodaSconosciuti(movimento+"\n");
                                         TrasazioniSconosciute++;
                                     }
                                     }
@@ -2798,7 +2839,7 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                         RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
                                         lista.add(RT);
                                     }else{
-                                        movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                        AccodaSconosciuti(movimento+"\n");
                                         TrasazioniSconosciute++;
                                     }
                                 } //Vendita Crypto x Servizio                                
@@ -2817,7 +2858,7 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                         RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
                                         lista.add(RT);
                                     }else{
-                                        movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                        AccodaSconosciuti(movimento+"\n");
                                         TrasazioniSconosciute++;
                                     }
                                 }
@@ -2832,7 +2873,7 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                         RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
                                         lista.add(RT); 
                                     }else{
-                                        movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                        AccodaSconosciuti(movimento+"\n");
                                         TrasazioniSconosciute++;
                                     }
                                 
@@ -2848,7 +2889,7 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                     RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
                                     lista.add(RT);
                                     }else{
-                                     movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                     AccodaSconosciuti(movimento+"\n");
                                      TrasazioniSconosciute++;
                                  }
                                 }
@@ -2873,7 +2914,7 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                     RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
                                     lista.add(RT); 
                                     }else{
-                                     movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                     AccodaSconosciuti(movimento+"\n");
                                      TrasazioniSconosciute++;
                                  }
                             }
@@ -3007,7 +3048,7 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                     RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
                                     lista.add(RT); 
                                     }else{
-                                     movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                     AccodaSconosciuti(movimento+"\n");
                                      TrasazioniSconosciute++;
                                  }
                                 
@@ -3022,7 +3063,7 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                     RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
                                     lista.add(RT); 
                                     }else{
-                                     movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                     AccodaSconosciuti(movimento+"\n");
                                      TrasazioniSconosciute++;
                                  }
                             }
@@ -3040,7 +3081,7 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                     RT[14] = movimentoSplittato[6] + " " + movimentoSplittato[7];
                                     lista.add(RT); 
                                     }else{
-                                     movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                     AccodaSconosciuti(movimento+"\n");
                                      TrasazioniSconosciute++;
                                  }
                              
@@ -3053,7 +3094,7 @@ public static List<String[]> Ex_CDCAPP_Consolida(List<String> listaMovimentidaCo
                                     {
                                         //qui ci saranno tutti i movimenti scartati
                                     //    System.out.println(movimento);
-                                        movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                        AccodaSconosciuti(movimento+"\n");
                                         TrasazioniSconosciute++;
                                     }
 
@@ -3294,7 +3335,7 @@ public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<
          long DataLong = FunzioniDate.ConvertiDataBinanceTaxReportinLong(movimentoSplittato[1]);        
 
          if (movimentoConvertito == null) {
-             movimentiSconosciuti = movimentiSconosciuti + movimento + "\n";
+             AccodaSconosciuti(movimento + "\n");
              TrasazioniSconosciute++;
          } else if (movimentoConvertito.trim().equalsIgnoreCase("EARN")
                  || movimentoConvertito.trim().equalsIgnoreCase("CASHBACK")) {
@@ -3817,7 +3858,7 @@ public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<
                            if (movimentoConvertito==null)
                                 {
                                 //   System.out.println("Errore in importazione da CDCAPP csv: "+movimento);
-                                   movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                   AccodaSconosciuti(movimento+"\n");
                                    TrasazioniSconosciute++;
                                 }
                            else if (movimentoConvertito.trim().equalsIgnoreCase("CASHBACK")||
@@ -3947,7 +3988,7 @@ public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<
                                     {
                                         //qui ci saranno tutti i movimenti scartati
                                     //    System.out.println(movimento);
-                                        movimentiSconosciuti=movimentiSconosciuti+movimento+"\n";
+                                        AccodaSconosciuti(movimento+"\n");
                                         TrasazioniSconosciute++;
                                     }
                            
@@ -4192,7 +4233,7 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
                 } else {
                     //qui ci saranno tutti i movimenti scartati
                     //    System.out.println(movimento);
-                    movimentiSconosciuti = movimentiSconosciuti + movimentoSplittato[3] + " SCONOSCIUTO\n";
+                    AccodaSconosciuti(movimentoSplittato[3] + " SCONOSCIUTO\n");
                     TrasazioniSconosciute++;
                 }
 
@@ -4380,7 +4421,7 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
 
             } else {
                 //qui ci saranno tutti i movimenti scartati
-                movimentiSconosciuti = movimentiSconosciuti + movimentoSplittato[3] + " SCONOSCIUTO\n";
+                AccodaSconosciuti(movimentoSplittato[3] + " SCONOSCIUTO\n");
                 TrasazioniSconosciute++;
             }
 
@@ -4648,7 +4689,7 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
             } else {
                 //qui ci saranno tutti i movimenti scartati
                 //    System.out.println(movimento);
-                movimentiSconosciuti = movimentiSconosciuti + movimento + "\n";
+                AccodaSconosciuti(movimento + "\n");
                 TrasazioniSconosciute++;
             }
 
@@ -6280,6 +6321,8 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
         if (Rete.equalsIgnoreCase(Trans_XRPL.RETE)) return Trans_XRPL.PROVIDER;
         //TronGrid e TronScan senza chiave (Trans_Tron)
         if (Rete.equalsIgnoreCase(Trans_Tron.RETE)) return Trans_Tron.PROVIDER;
+        //Celo (MiniPay e la sua carta): log di Tenderly su tutta la catena, senza chiavi (Trans_MiniPay)
+        if (Rete.equalsIgnoreCase(Trans_MiniPay.RETE)) return Trans_MiniPay.PROVIDER;
         return "ETHERSCAN";
     }
 
@@ -6632,6 +6675,33 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                             + " sulla blockchain.\n" + String.join("\n", esito.avvisi())
                             + "\nI movimenti vengono importati comunque, le differenze vanno controllate a mano.",
                             "Algorand", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                }
+            }
+            //Celo: log di Tenderly, senza chiavi. Il wallet MiniPay porta con se' la Safe della sua carta (Trans_MiniPay)
+            else if (Rete.equalsIgnoreCase(Trans_MiniPay.RETE)) {
+                progressb.setIndeterminate(true);
+                progressb.SetLabel("Scaricamento di " + walletAddress + " (" + Rete + ") in corso...");
+                Trans_MiniPay.Esito esito = Trans_MiniPay.Scarica(walletAddress,
+                        w -> Trans_MiniPay.UltimoBloccoImportato(MappaCryptoWallet, w),
+                        progressb::FineThread, DocumentoFonteCorrente, progressb::SetMessaggioAvanzamento);
+                progressb.setIndeterminate(false);
+                for (String avviso : esito.avvisi()) {
+                    LoggerGC.ScriviErrore("Celo " + walletAddress + ": " + avviso);
+                }
+                if (!esito.completo()) {
+                    //Come gli altri importatori nativi: meglio niente che una parte
+                    if (ccc != null && !progressb.FineThread()) JOptionPane.showConfirmDialog(ccc,
+                            "Scaricamento del wallet " + walletAddress + " su Celo non completato, nessun movimento importato.\n"
+                            + String.join("\n", esito.avvisi()), "Celo", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
+                } else {
+                    if (ccc != null && esito.safeNuova()) JOptionPane.showConfirmDialog(ccc,
+                            Trans_MiniPay.TestoRiconosciuto(walletAddress, esito.safe()), "MiniPay",
+                            JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    MappaTransazioniDefi.putAll(Trans_MiniPay.ComeTransazioniDefi(esito.transazioni()));
+                    if (ccc != null && !esito.avvisi().isEmpty()) JOptionPane.showConfirmDialog(ccc,
+                            "Wallet " + walletAddress + " su Celo:\n" + String.join("\n", esito.avvisi())
+                            + "\nI movimenti vengono importati comunque.",
+                            "Celo", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null);
                 }
             }
             //Tron: TronGrid e TronScan, senza chiavi (Trans_Tron)

@@ -1214,6 +1214,19 @@ private VoceImport voceSelezionata() {
         return result != null && result.isAction("rifai") ? SceltaAutoInvest.RIFAI : SceltaAutoInvest.ANNULLA;
     }
 
+    /** Quanti movimenti dell'archivio puntano a ciascuno dei documenti dati (campo [41]), come origine o supporto. */
+    private static java.util.Map<Integer, Integer> MovimentiPerDocumento(java.util.Collection<Integer> ids) {
+        java.util.Map<Integer, Integer> conteggi = new java.util.HashMap<>();
+        if (ids.isEmpty()) return conteggi;
+        for (String[] v : Principale.MappaCryptoWallet.values()) {
+            if (v == null || v.length <= 41) continue;
+            for (int id : ids) {
+                if (DocumentiFonte.Collegato(v[41], id)) conteggi.merge(id, 1, Integer::sum);
+            }
+        }
+        return conteggi;
+    }
+
     /** Un nome di file dentro l'HTML di un dialogo: i caratteri che l'HTML interpreta diventano testo. */
     private static String SenzaHtml(String testo) {
         return testo.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
@@ -1234,20 +1247,49 @@ private VoceImport voceSelezionata() {
         Thread thread = new Thread(() -> {
             Binance_AutoInvest.Esito esito = null;
             Exception errore = null;
+            //Ogni file riconosciuto si conserva fra i documenti di origine: il Rebalancing e' l'origine dei ribilanciamenti,
+            //Subscription e Redemption si collegano come supporto ai movimenti che spiegano, nati dal CSV principale
+            java.util.Map<File, DocumentiFonte.Registrazione> registrazioni = new java.util.LinkedHashMap<>();
+            java.util.Map<File, Integer> documenti = new java.util.HashMap<>();
+            java.util.Map<Integer, Integer> primaDellAbbinamento = new java.util.HashMap<>();
             //Con la linea assente i prezzi verrebbero scritti a zero: si aspetta e, se non torna, ci si ferma
             AttesaConnessione.Apri(progressb);
             try {
                 c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 //Niente derivati qui: senza azzerarle il resoconto ripeterebbe l'avviso di un import precedente
                 Importazioni.CausaliDerivatiSegnalate.clear();
-                esito = Binance_AutoInvest.Abbina(files);
-                if (esito.Creati() > 0 || esito.scambiDifferitiSostituiti > 0) {
+                for (File f : files) {
+                    Binance_AutoInvest.TipoFile tipo = Binance_AutoInvest.RiconosciFile(f);
+                    if (tipo != Binance_AutoInvest.TipoFile.SUBSCRIPTION && tipo != Binance_AutoInvest.TipoFile.REBALANCING
+                            && tipo != Binance_AutoInvest.TipoFile.REDEMPTION) continue;
+                    DocumentiFonte.Registrazione r = DocumentiFonte.Registra(f, DocumentiFonte.TIPO_CSV,
+                            "Binance Auto-Invest " + tipo.nome);
+                    if (r.Id <= 0) continue;
+                    registrazioni.put(f, r);
+                    documenti.put(f, r.Id);
+                }
+                primaDellAbbinamento.putAll(MovimentiPerDocumento(documenti.values()));
+                esito = Binance_AutoInvest.Abbina(documenti, files);
+                if (esito.Creati() > 0 || esito.scambiDifferitiSostituiti > 0 || esito.documentiCompletati > 0
+                        || esito.collegati > 0) {
                     Principale.TabellaCryptodaAggiornare = true;
                 }
             } catch (Exception ex) {
                 LoggerGC.ScriviErrore(ex);
                 errore = ex;
             } finally {
+                //Un documento nuovo resta se l'abbinamento e' arrivato in fondo, anche senza movimenti suoi; se e'
+                //fallito si toglie, come fa ChiudiRegistrazione per un import che non ha aggiunto nulla, salvo che
+                //qualche ribilanciamento creato prima dell'errore vi punti gia'
+                java.util.Map<Integer, Integer> dopo = MovimentiPerDocumento(documenti.values());
+                for (DocumentiFonte.Registrazione r : registrazioni.values()) {
+                    if (errore != null && r.Nuovo && dopo.getOrDefault(r.Id, 0) == 0) {
+                        DocumentiFonte.Annulla(r.Id);
+                        continue;
+                    }
+                    DocumentiFonte.AggiornaMovimenti(r.Id,
+                            dopo.getOrDefault(r.Id, 0) - primaDellAbbinamento.getOrDefault(r.Id, 0));
+                }
                 AttesaConnessione.Chiudi();
                 c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 Bottone_SelezionaFile.setEnabled(true);
@@ -1322,7 +1364,7 @@ private VoceImport voceSelezionata() {
             Importazioni_Resoconto res = new Importazioni_Resoconto();
             if (numeroFile == 1) {
                 res.ImpostaValori(Importazioni.Transazioni, Importazioni.TransazioniAggiunte, Importazioni.TrasazioniScartate,
-                        Importazioni.TrasazioniSconosciute, Importazioni.movimentiSconosciuti);
+                        Importazioni.TrasazioniSconosciute, Importazioni.Sconosciuti());
             } else {
                 //Somma() concatena le origini ("a.csv + b.csv + ..."): per il titolo basta il tipo di import
                 //e il numero di file, i nomi restano come intestazioni nell'elenco dei movimenti sconosciuti
@@ -1492,10 +1534,17 @@ if (voce.isJson()) {
             File[] files = ScegliFileDaImportare(false);
             if (files != null) {
                 String FileDaImportare = files[0].getAbsolutePath();
+                //Il file si conserva fra i documenti di origine come quelli Auto-Invest e si collega come documento di
+                //supporto ai contratti abbinati: i movimenti restano nati dal CSV principale
+                DocumentiFonte.Registrazione documento = DocumentiFonte.Registra(files[0], DocumentiFonte.TIPO_CSV,
+                        "Binance Dual Investment");
+                boolean letto = false;
                 try {
-                    Binance_DualInvestment.Esito esito = Binance_DualInvestment.Abbina(new File(FileDaImportare));
+                    Binance_DualInvestment.Esito esito = Binance_DualInvestment.Abbina(new File(FileDaImportare), documento.Id);
+                    //Un file senza contratti non e' un file Dual Investment: non resta fra i documenti
+                    letto = esito.contrattiTotali > 0;
                     //Anche i contratti gia' abbinati a cui si e' scritto il gruppo: Funzioni_AggiornaTutto rende salvabile
-                    if (esito.abbinati > 0 || esito.aggiornati > 0) {
+                    if (esito.abbinati > 0 || esito.aggiornati > 0 || esito.collegati > 0) {
                         Principale.TabellaCryptodaAggiornare = true;
                     }
                     Importazioni_Resoconto res = new Importazioni_Resoconto();
@@ -1528,6 +1577,11 @@ if (voce.isJson()) {
                     LoggerGC.ScriviErrore(ex);
                     Messaggi.WarningMessage("Abbinamento Dual Investment",
                             "Errore durante la lettura del file: " + ex.getMessage(), this);
+                } finally {
+                    //Come per l'Auto-Invest: un errore a meta' puo' aver gia' collegato dei contratti, e il documento resta
+                    if (!letto && documento.Nuovo && MovimentiPerDocumento(java.util.List.of(documento.Id)).isEmpty()) {
+                        DocumentiFonte.Annulla(documento.Id);
+                    }
                 }
                 dispose();
             }

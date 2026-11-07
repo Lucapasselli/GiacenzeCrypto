@@ -58,7 +58,7 @@ class ImportazioneGenericaExodusTest {
         for (List<String[]> gruppo : ImportazioneGenerica.raggruppaRighe(lette, cfg)) {
             movimenti.addAll(ImportazioneGenerica.consolidaGruppo(gruppo, cfg, new ArrayList<>()));
         }
-        assertEquals("", Importazioni.movimentiSconosciuti, "righe scartate");
+        assertEquals("", Importazioni.Sconosciuti(), "righe scartate");
         return movimenti;
     }
 

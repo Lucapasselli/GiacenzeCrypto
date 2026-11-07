@@ -377,10 +377,11 @@ public class Principale_FiltriMovimenti {
     /**
      * Applica il criterio sul documento di origine al campo {@code [41]} di un movimento.
      *
-     * <p>Il campo contiene <b>solo un id</b>, mai un percorso (vedi {@code DocumentiFonte}), quindi il
-     * confronto con un id scelto è un'uguaglianza secca. Vuoto è lo stato legittimo "nessun documento":
-     * lo hanno i movimenti inseriti a mano, le rettifiche di giacenza DeFi e tutto ciò che era già in
-     * archivio prima che la funzione esistesse.
+     * <p>Il campo contiene <b>solo id</b>, mai un percorso: l'origine e, dopo una barra, i documenti di supporto
+     * (vedi {@link DocumentiFonte#IdDaCampo41}). Con / senza documento guardano la sola origine, un id scelto passa
+     * se il movimento nasce da quel documento o ne è collegato. Senza origine è lo stato legittimo dei movimenti
+     * inseriti a mano, delle rettifiche di giacenza DeFi e di tutto ciò che era già in archivio prima che la
+     * funzione esistesse.
      *
      * @param criterio {@link #DOC_TUTTI}, {@link #DOC_CON}, {@link #DOC_SENZA} o un id
      * @param campo41 contenuto del campo {@code [41]} del movimento
@@ -388,10 +389,10 @@ public class Principale_FiltriMovimenti {
      */
     public static boolean PassaDocumento(String criterio, String campo41) {
         if (criterio == null || criterio.equals(DOC_TUTTI)) return true;
-        boolean haDocumento = campo41 != null && !campo41.trim().isEmpty();
+        boolean haDocumento = DocumentiFonte.IdDaCampo41(campo41) > 0;
         if (criterio.equals(DOC_CON)) return haDocumento;
         if (criterio.equals(DOC_SENZA)) return !haDocumento;
-        return haDocumento && campo41.trim().equals(criterio.trim());
+        return DocumentiFonte.Collegato(campo41, DocumentiFonte.IdDaCampo41(criterio));
     }
 
     // =================================================================================================

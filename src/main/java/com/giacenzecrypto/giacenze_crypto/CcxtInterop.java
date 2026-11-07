@@ -1411,7 +1411,8 @@ public static Path getNodeExePath() {
     /**
      * Dopo un'importazione Binance via API: segnala cosa non è stato letto e confronta le giacenze dell'archivio con i
      * saldi attuali di Binance ({@link GiacenzeExchange#SaldiBinance}). Le API non danno le operazioni dei bot di
-     * trading, di margin e futures e i pagamenti Pay oltre i 18 mesi: senza questo confronto la giacenza resterebbe
+     * trading, di margin e futures, i trade spot oltre i due anni ({@link #STORICO_TRADE_BINANCE_GIORNI}) e i
+     * pagamenti Pay oltre i 18 mesi: senza questo confronto la giacenza resterebbe
      * sbagliata senza che nulla lo dica. Solo un avviso: non ferma né annulla nulla, e se i saldi non si leggono lo
      * dice e basta. L'utente può chiedere di non rivederlo finché il contenuto resta uguale
      * ({@link #OPZIONE_AVVISO_BINANCE_IGNORATO}): sul suo archivio completo restavano due differenze minime fisse.
@@ -1447,9 +1448,11 @@ public static Path getNodeExePath() {
                 }
                 sb.append(d).append('\n');
             }
-            Dettagli.append("Le API di Binance non restituiscono le operazioni dei bot di trading, di margin e futures, né i")
-              .append(" pagamenti Binance Pay più vecchi di 18 mesi: queste si trovano solo nel file CSV della cronologia")
-              .append(" delle transazioni. Possono mancare anche movimenti precedenti al primo scaricamento.\n");
+            Dettagli.append("Le API di Binance non restituiscono le operazioni dei bot di trading, di margin e futures, i")
+              .append(" trade spot più vecchi di circa due anni, né i pagamenti Binance Pay più vecchi di 18 mesi: queste")
+              .append(" si trovano solo nel file CSV della cronologia delle transazioni. Possono mancare anche movimenti")
+              .append(" precedenti al primo scaricamento. Un token comprato e rivenduto per intero non lascia differenze")
+              .append(" nelle giacenze, quindi questo confronto non lo segnala.\n");
         }
         if (SaldiNonLetti != null) {
             sb.append(sb.length() > 0 ? "\n" : "").append("Confronto con i saldi di ").append(exchangeId)
@@ -1696,7 +1699,13 @@ public static Path getNodeExePath() {
             }
             JsonObject Staking = null;
             for (JsonObject Risposta : Jsons) if (Risposta.has("Binance_Staking") && Risposta.get("Binance_Staking").isJsonObject()) Staking = Risposta.getAsJsonObject("Binance_Staking");
-            AvvisoDopoImportBinance(exchangeId, AvvisiBinanceStaking(Staking), progress);
+            List<String> Avvisi = AvvisiBinanceStaking(Staking);
+            long Adesso = System.currentTimeMillis();
+            String PayVecchi = AvvisoPayOltreStoricoBinance(startDate, Adesso);
+            if (PayVecchi != null) Avvisi.add(0, PayVecchi);
+            String TradeVecchi = AvvisoTradeOltreStoricoBinance(startDate, Adesso);
+            if (TradeVecchi != null) Avvisi.add(0, TradeVecchi);
+            AvvisoDopoImportBinance(exchangeId, Avvisi, progress);
             //ScriviListaSuMappaCrypto non tocca i contatori statici di Importazioni: l'esito va costruito
             //dai valori che restituisce, altrimenti si mostrerebbero i numeri di un'importazione precedente.
             //Il ramo CCXT di Binance non produce causali sconosciute: quello che non sa convertire non lo genera.
@@ -2007,7 +2016,7 @@ public static Path getNodeExePath() {
                 //Con zero causali sconosciute torna null e il resoconto non si apre a vuoto.
                 Importazioni.Esito sconosciute = Importazioni.Ex_OKX_SoloCausaliSconosciute(righe, exchangeId);
                 if (sconosciute != null) {
-                    System.out.println("Causali OKX non mappate:\n"+Importazioni.movimentiSconosciuti);
+                    System.out.println("Causali OKX non mappate:\n"+Importazioni.Sconosciuti());
                 }
                 return sconosciute;
             }
@@ -2060,7 +2069,7 @@ public static Path getNodeExePath() {
             }
             if (Importazioni.TrasazioniSconosciute > 0) {
                 //I codici bill di OKX non ancora mappati finiscono nel resoconto, ma restano anche a log
-                System.out.println("Causali OKX non mappate:\n"+Importazioni.movimentiSconosciuti);
+                System.out.println("Causali OKX non mappate:\n"+Importazioni.Sconosciuti());
             }
             //Ex_OKX_ImportaDaAPI azzera e rivalorizza i contatori statici, quindi qui sono suoi di sicuro
             return Importazioni.Esito.daiContatori(exchangeId);
@@ -3126,7 +3135,7 @@ public static Path getNodeExePath() {
             JsonArray rewards = json.has("Binance_Rewards") ? json.getAsJsonArray("Binance_Rewards") : new JsonArray();
             lista.addAll(convertBinanceRewards(rewards,Exchange));
 
-            // Staking SOL/ETH, RWUSD, Tax Payment di Binance Pay
+            // Staking SOL/ETH, RWUSD, pagamenti Binance Pay
             if (json.has("Binance_Staking") && json.get("Binance_Staking").isJsonObject())
                 lista.addAll(convertBinanceStaking(json.getAsJsonObject("Binance_Staking"),Exchange));
             /*for (JsonElement s2 : earnLocked) {
@@ -3543,7 +3552,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             String feeamount = obj.optString("totalFee", "");
             String metodo = obj.optString("method", "");//Metodo di pagamento
             String direzione = obj.optString("movimento", "");//può essere deposito o prelievo
-            String insertTime = obj.optString("updateTime", "createTime");
+            String insertTime = obj.optString("updateTime", obj.optString("createTime", ""));
             String status=obj.optString("status", "");//deve essere Successful perchè sia valido
 
 
@@ -3649,7 +3658,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 inserisciFee=false;
             }
 
-            String insertTime = obj.optString("updateTime", "createTime");
+            String insertTime = obj.optString("updateTime", obj.optString("createTime", ""));
             String status=obj.optString("status", "");//deve essere Completed perchè sia valido
 
 
@@ -4340,7 +4349,9 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
      * <li>riscatto di BNSOL e di RWUSD: due righe a una gamba, l'uscita alla richiesta e l'entrata all'accredito
      * giorni dopo, come "Deduction"/"Distribute" del CSV, da abbinare poi come scambio differito;</li>
      * <li>"Tax Payment" di Binance Pay (orderType TAX): uscita delle monete usate come cash out, al valore in euro
-     * del pagamento. Gli altri pagamenti Pay non si importano: li segnala {@link #AvvisiBinanceStaking}.</li>
+     * del pagamento;</li>
+     * <li>gli altri pagamenti Binance Pay (invii fra utenti, negozi, rimborsi, crypto box): depositi e prelievi da
+     * classificare a mano, una riga per moneta mossa, come le righe "Transfer" con nota "Binance Pay" del CSV.</li>
      * </ul>
      * Si importano solo le operazioni riuscite. Un riscatto si importa se il suo accredito cade da {@code inizio} in
      * poi: lo script li cerca da 30 giorni prima per riprendere quelli in corso all'ultimo scaricamento, e quelli
@@ -4387,16 +4398,37 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
             }
         }
         for (JsonObject r : RigheBinance(o, "pay")) {
-            if (!"TAX".equalsIgnoreCase(Testo(r, "orderType"))) continue;
             long t = LungoBinance(r, "transactionTime");
-            if (t < Inizio || !r.has("fundsDetail") || !r.get("fundsDetail").isJsonArray()) continue;
-            JsonArray Fondi = r.getAsJsonArray("fundsDetail");
-            //Il valore in euro e' quello del pagamento, se le monete usate sono una sola
-            String Prezzo = Fondi.size() == 1 && "EUR".equalsIgnoreCase(Testo(r, "currency")) ? Testo(r, "amount") : null;
-            for (JsonElement f : Fondi) {
-                if (!f.isJsonObject()) continue;
-                Voci.add(new VoceBinance(t, MonetaBinance(f.getAsJsonObject(), "currency", "amount", true), null,
-                        "Tax Payment (API)", "CASHOUT O SIMILARE", Prezzo));
+            if (t < Inizio) continue;
+            boolean HaFondi = r.has("fundsDetail") && r.get("fundsDetail").isJsonArray()
+                    && !r.getAsJsonArray("fundsDetail").isEmpty();
+            if ("TAX".equalsIgnoreCase(Testo(r, "orderType"))) {
+                if (!HaFondi) continue;
+                JsonArray Fondi = r.getAsJsonArray("fundsDetail");
+                //Il valore in euro e' quello del pagamento, se le monete usate sono una sola
+                String Prezzo = Fondi.size() == 1 && "EUR".equalsIgnoreCase(Testo(r, "currency")) ? Testo(r, "amount") : null;
+                for (JsonElement f : Fondi) {
+                    if (!f.isJsonObject()) continue;
+                    Voci.add(new VoceBinance(t, MonetaBinance(f.getAsJsonObject(), "currency", "amount", true), null,
+                            "Tax Payment (API)", "CASHOUT O SIMILARE", Prezzo));
+                }
+                continue;
+            }
+            //Tutti gli altri (invii fra utenti, negozi, rimborsi, crypto box): depositi e prelievi da classificare a mano,
+            //come le righe "Transfer" con nota "Binance Pay" del file CSV. Il segno di amount dice la direzione, le monete
+            //mosse sono in fundsDetail (un pagamento puo' usarne piu' d'una), altrimenti in currency/amount.
+            boolean Uscita = Funzioni.isNegativo(Testo(r, "amount"));
+            String Causale = CausalePayBinance(r);
+            List<JsonObject> Fondi = new ArrayList<>();
+            if (HaFondi) {
+                for (JsonElement f : r.getAsJsonArray("fundsDetail")) if (f.isJsonObject()) Fondi.add(f.getAsJsonObject());
+            } else {
+                Fondi.add(r);
+            }
+            for (JsonObject f : Fondi) {
+                Moneta m = MonetaBinance(f, "currency", "amount", Uscita);
+                if (m.Moneta.isBlank() || m.Qta.isBlank() || new BigDecimal(m.Qta).signum() == 0) continue;
+                Voci.add(new VoceBinance(t, Uscita ? m : null, Uscita ? null : m, Causale, null, null));
             }
         }
 
@@ -4426,7 +4458,7 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
 
     /**
      * Ciò che lo scaricamento di {@code Binance_Staking.js} non ha potuto importare, da mostrare all'utente: gli
-     * endpoint che Binance ha rifiutato e i pagamenti Binance Pay diversi dai Tax Payment.
+     * endpoint che Binance ha rifiutato.
      * @param o l'oggetto {@code Binance_Staking}, oppure {@code null}
      * @return righe di testo, vuota se non c'è nulla da segnalare
      */
@@ -4438,15 +4470,61 @@ public static List<String[]> convertBinanceMovimentiFiat(JsonObject JObjetc,Stri
                 Avvisi.add("non letto da Binance: " + e.getKey() + " (" + e.getValue().getAsString() + ")");
             }
         }
-        Map<String, Integer> PerTipo = new TreeMap<>();
-        for (JsonObject r : RigheBinance(o, "pay")) {
-            String Tipo = Testo(r, "orderType");
-            if (!"TAX".equalsIgnoreCase(Tipo)) PerTipo.merge(Tipo.isBlank() ? "?" : Tipo, 1, Integer::sum);
-        }
-        for (Map.Entry<String, Integer> e : PerTipo.entrySet()) {
-            Avvisi.add("Binance Pay, pagamenti di tipo " + e.getKey() + " non importati: " + e.getValue());
-        }
         return Avvisi;
+    }
+
+    /**
+     * Giorni di storico dei trade spot che Binance restituisce via API. Limite non documentato, verificato il
+     * 2026-11-06 su un conto con trade dal 2023: {@code myTrades} (con {@code startTime}, con {@code endTime}, con
+     * {@code fromId} 0, con la finestra esatta di 24 ore) e {@code allOrders} (anche con {@code orderId} 0) non
+     * restituivano nulla prima del 2025, mentre un trade di 21 mesi prima c'era.
+     */
+    static final long STORICO_TRADE_BINANCE_GIORNI = 730;
+
+    /**
+     * L'avviso per i trade spot che Binance non restituisce più, se lo scaricamento parte da prima del suo storico.
+     * Senza, un token comprato e rivenduto per intero in quel periodo sparirebbe senza che il controllo delle
+     * giacenze lo veda.
+     * @param startDate data di inizio dello scaricamento, millisecondi epoch
+     * @param adesso istante attuale, millisecondi epoch
+     * @return la riga da aggiungere agli avvisi, oppure {@code null} se lo scaricamento è tutto nello storico
+     */
+    static String AvvisoTradeOltreStoricoBinance(long startDate, long adesso) {
+        long Limite = adesso - STORICO_TRADE_BINANCE_GIORNI * 24L * 60 * 60 * 1000;
+        if (startDate >= Limite) return null;
+        return "trade spot anteriori al " + DataAvvisoBinance(Limite) + " circa: Binance li restituisce via API solo per gli"
+                + " ultimi due anni, vanno importati dal file CSV della cronologia delle transazioni";
+    }
+
+    /** Giorni di storico di Binance Pay ({@code pay/transactions}): 18 mesi secondo la documentazione di Binance. */
+    static final long STORICO_PAY_BINANCE_GIORNI = 540;
+
+    /**
+     * Come {@link #AvvisoTradeOltreStoricoBinance}, per i pagamenti Binance Pay.
+     * @param startDate data di inizio dello scaricamento, millisecondi epoch
+     * @param adesso istante attuale, millisecondi epoch
+     * @return la riga da aggiungere agli avvisi, oppure {@code null} se lo scaricamento è tutto nello storico
+     */
+    static String AvvisoPayOltreStoricoBinance(long startDate, long adesso) {
+        long Limite = adesso - STORICO_PAY_BINANCE_GIORNI * 24L * 60 * 60 * 1000;
+        if (startDate >= Limite) return null;
+        return "pagamenti Binance Pay anteriori al " + DataAvvisoBinance(Limite) + ": Binance li restituisce via API solo"
+                + " per gli ultimi 18 mesi, vanno importati dal file CSV della cronologia delle transazioni";
+    }
+
+    private static String DataAvvisoBinance(long Istante) {
+        return java.time.Instant.ofEpochMilli(Istante).atZone(java.time.ZoneId.of("Europe/Rome")).toLocalDate()
+                .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    }
+
+    /**
+     * Causale di un pagamento Binance Pay importato come deposito o prelievo: tipo e identificativo, lo stesso che il
+     * file CSV scrive nella nota ({@code Binance Pay - P_...}). Niente dati della controparte.
+     */
+    private static String CausalePayBinance(JsonObject r) {
+        String Tipo = Testo(r, "orderType");
+        String Id = Testo(r, "transactionId");
+        return "Binance Pay - " + (Tipo.isBlank() ? "?" : Tipo) + (Id.isBlank() ? "" : " " + Id) + " (API)";
     }
 
     private static List<JsonObject> RigheBinance(JsonObject o, String Chiave) {

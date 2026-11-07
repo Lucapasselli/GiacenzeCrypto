@@ -346,6 +346,28 @@ Carattere che divide le colonne nel CSV.
 "separatore": ";"
 ```
 
+**Numeri e separatore.** Nei numeri il programma accetta sia il punto sia la virgola come separatore
+decimale (`0.5` e `0,5` valgono uguale), ma non il separatore delle migliaia. In un CSV separato da virgole
+un numero con la virgola va fra virgolette (`"0,5"`): senza, la virgola divide il campo in due. Questi
+casi finiscono fra le righe scartate, con il motivo:
+
+- `PIU' COLONNE DELL'INTESTAZIONE`: la riga ha più colonne piene della riga di intestazione
+  ([`rigaIntestazione`](#rigaintestazione)), di solito per un `12,5` senza virgolette. Le colonne vuote
+  in fondo alla riga non contano.
+- `NUMERO SPEZZATO DAL SEPARATORE`: la riga ha più campi dell'intestazione, contando anche quelli vuoti
+  in fondo, e una quantità, una commissione, un controvalore o un prezzo è un numero intero seguito da un
+  campo di sole cifre, come `12` e `5` per `12,5`.
+- `NUMERO NON LEGGIBILE`: una quantità, una commissione, un controvalore o un prezzo con delle cifre che
+  però non è un numero, per esempio `1.234,56` con il punto delle migliaia. Un valore senza cifre, come
+  `--` o `N/A`, vale come cella vuota.
+
+Un caso non si riconosce: una riga scritta a mano che ha esattamente le colonne dell'intestazione perché
+manca l'ultima, per esempio `...,BTC,12,5` senza il campo finale. Il `5` prende il posto dell'ultima
+colonna e la quantità diventa 12. Negli export veri un numero intero seguito da una colonna di sole cifre
+è normale (una commissione `0` seguita da un'altra colonna `0`), quindi scartare queste righe toglierebbe
+anche righe giuste. In un CSV scritto o corretto a mano conviene mettere i numeri con la virgola fra
+virgolette, oppure usare il punto.
+
 ### `encoding` {#encoding}
 
 **Tipo:** stringa | **Default:** "UTF-8"
@@ -362,7 +384,10 @@ Quante righe iniziali del CSV vanno saltate prima dei dati. Se il CSV non ha int
 
 **Tipo:** numero intero | **Default:** 1
 
-Quale riga (indice 1-based) contiene i nomi delle colonne. Usata solo se autoDetectColonne è true.
+Quale riga (indice 1-based) contiene i nomi delle colonne. Con autoDetectColonne a true le colonne si
+cercano lì. In ogni caso il programma ne conta le colonne, e scarta le righe di dati che ne hanno di più
+(vedi [Numeri e separatore](#separatore)). Se quella riga non arriva fino alle colonne lette (per esempio
+un titolo al posto dell'intestazione), il controllo non si fa.
 
 ### `autoDetectColonne` {#autodetectcolonne}
 

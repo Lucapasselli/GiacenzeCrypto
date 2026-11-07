@@ -69,6 +69,8 @@ public class NoteCompilazione {
     public static final String RT = "RT";
     /** Avviso stampato nei report W/RW e T/RT quando nell'anno ci sono movimenti su derivati ({@link Derivati}). */
     public static final String DERIVATI = "DERIVATI";
+    /** Note in coda al prospetto DSU del tab ISEE ({@link Principale_ISEE_Prospetto}): segnaposto {@code {annoDSU}}. */
+    public static final String DSU = "DSU";
 
     /**
      * Anno oltre il quale non si cercano varianti datate. E' l'anno di entrata in vigore del regime delle

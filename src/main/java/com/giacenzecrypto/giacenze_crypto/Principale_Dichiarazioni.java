@@ -73,7 +73,7 @@ public final class Principale_Dichiarazioni {
                     .showTitleInBody(true)
                     .theme()
                     .type(AppDialog.DialogType.INFO)
-                    .message("L'ultima dichiarazione " + Bozza.Fam.Etichetta + " " + Bozza.Anno
+                    .message("L'ultima dichiarazione " + Bozza.Descrizione()
                             + " archiviata il " + uguale.Creata + " ha gli stessi valori, le stesse opzioni e gli stessi errori.")
                     .details("Puoi aprire i file già archiviati, oppure archiviarne una nuova copia.")
                     .action(AppDialog.DialogAction.builder("annulla", "Annulla")
@@ -592,8 +592,8 @@ public final class Principale_Dichiarazioni {
         }
         Dichiarazioni.Dichiarazione precedente = Dichiarazioni.Definitiva(D.Fam, D.Anno);
         StringBuilder dettagli = new StringBuilder();
-        dettagli.append("Serve a ricordare quale delle dichiarazioni ").append(D.Fam.Etichetta).append(" ")
-                .append(D.Anno).append(" è quella presentata.");
+        dettagli.append("Serve a ricordare quale delle dichiarazioni ").append(D.Descrizione())
+                .append(" è quella presentata.");
         if (precedente != null) {
             dettagli.append("<br><br>La dichiarazione del ").append(precedente.Creata)
                     .append(", oggi definitiva, non lo sarà più.");
@@ -609,7 +609,7 @@ public final class Principale_Dichiarazioni {
                 .showTitleInBody(true)
                 .theme()
                 .type(D.Errori.isBlank() ? AppDialog.DialogType.INFO : AppDialog.DialogType.WARNING)
-                .message("Dichiarazione " + D.Fam.Etichetta + " " + D.Anno + " del " + D.Creata)
+                .message("Dichiarazione " + D.Descrizione() + " del " + D.Creata)
                 .details(dettagli.toString())
                 .action(AppDialog.DialogAction.builder("annulla", "Annulla")
                         .role(AppDialog.ActionRole.SECONDARY).build())
@@ -677,8 +677,8 @@ public final class Principale_Dichiarazioni {
                 .showTitleInBody(true)
                 .theme()
                 .type(AppDialog.DialogType.WARNING)
-                .message("Dichiarazione " + D.Fam.Etichetta + " " + D.Anno + " del " + D.Creata)
-                .details("Per l'anno " + D.Anno + " non resterà nessuna dichiarazione " + D.Fam.Etichetta
+                .message("Dichiarazione " + D.Descrizione() + " del " + D.Creata)
+                .details("Non resterà nessuna dichiarazione " + D.Descrizione()
                         + " definitiva. I file non vengono toccati.")
                 .action(AppDialog.DialogAction.builder("annulla", "Annulla")
                         .role(AppDialog.ActionRole.SECONDARY).build())
@@ -710,7 +710,7 @@ public final class Principale_Dichiarazioni {
                 .showTitleInBody(true)
                 .theme()
                 .type(AppDialog.DialogType.INFO)
-                .message("Dichiarazione " + D.Fam.Etichetta + " " + D.Anno + " del " + D.Creata)
+                .message("Dichiarazione " + D.Descrizione() + " del " + D.Creata)
                 .details("Ad esempio la data di invio o il numero di protocollo telematico.")
                 .textAreaField("Nota:", D.Nota)
                 .textAreaSize(8, 40)
@@ -832,7 +832,7 @@ public final class Principale_Dichiarazioni {
             return false;
         }
         JFileChooser fc = new JFileChooser(DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_CARTELLA_ALLEGATI, ""));
-        fc.setDialogTitle("File da allegare alla dichiarazione " + D.Fam.Etichetta + " " + D.Anno);
+        fc.setDialogTitle("File da allegare alla dichiarazione " + D.Descrizione());
         if (fc.showOpenDialog(owner) != JFileChooser.APPROVE_OPTION || fc.getSelectedFile() == null
                 || !fc.getSelectedFile().isFile()) {
             return false;
@@ -1022,6 +1022,45 @@ public final class Principale_Dichiarazioni {
     }
 
     // =================================================================================================
+    // ETICHETTA "VALORI DIVERSI DALLA DEFINITIVA"
+    // =================================================================================================
+    /**
+     * Le prime differenze di un anno, per il suggerimento dell'etichetta rossa dei quadri e del tab ISEE.
+     *
+     * @param Anno l'anno come lo legge l'utente (per la DSU {@link Dichiarazioni.Dichiarazione#Descrizione()})
+     * @param Diff le differenze di {@link Dichiarazioni#Confronta}: voce, valore nella definitiva, valore ora
+     */
+    public static String TestoDifferenze(String Anno, Dichiarazioni.Dichiarazione Def, List<String[]> Diff) {
+        StringBuilder sb = new StringBuilder("<b>").append(Anno).append("</b>, definitiva del ").append(Def.Creata)
+                .append(": ").append(Diff.size()).append(Diff.size() == 1 ? " differenza" : " differenze").append("<br>");
+        int n = 0;
+        for (String[] d : Diff) {
+            if (n++ == 12) {
+                sb.append("&nbsp;&nbsp;...<br>");
+                break;
+            }
+            sb.append("&nbsp;&nbsp;").append(d[0]).append(": ").append(d[1].isBlank() ? "(vuoto)" : d[1])
+                    .append(" nella definitiva, ").append(d[2].isBlank() ? "(vuoto)" : d[2]).append(" ora<br>");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Mostra (o nasconde, se {@code Anni} è vuota) l'etichetta rossa "valori diversi dalla definitiva", con le
+     * differenze nel suggerimento. Solo l'effetto, nessuna indicazione su cosa fare.
+     */
+    public static void MostraEtichettaDefinitiva(javax.swing.JLabel Etichetta, List<String> Anni, StringBuilder Dettaglio) {
+        if (Anni.isEmpty()) {
+            Etichetta.setVisible(false);
+            return;
+        }
+        Etichetta.setText("Valori diversi dalla dichiarazione definitiva " + String.join(", ", Anni));
+        Etichetta.setToolTipText("<html>" + Dettaglio + "<br>Il confronto completo si fa dall'archivio delle dichiarazioni"
+                + " (pulsante Confronta). Clic per aprirlo.</html>");
+        Etichetta.setVisible(true);
+    }
+
+    // =================================================================================================
     // RIGHE PER LE DUE TABELLE DEL PANNELLO
     // =================================================================================================
     /** Intestazioni della tabella superiore: devono corrispondere a {@link #RigheElenco}. */
@@ -1040,6 +1079,10 @@ public final class Principale_Dichiarazioni {
             if (d.Fam == Dichiarazioni.Famiglia.RW) {
                 v1 = d.Totali.getOrDefault(TOT_RW_FINALE, "");
                 v2 = d.Totali.getOrDefault(TOT_RW_IC, "");
+            } else if (d.Fam == Dichiarazioni.Famiglia.ISEE) {
+                //Nessuna imposta: la seconda colonna resta vuota
+                v1 = d.Totali.getOrDefault(TOT_ISEE_VALORE, "");
+                v2 = "";
             } else {
                 v1 = d.Totali.getOrDefault(TOT_RT_PLUS, "");
                 v2 = d.Totali.getOrDefault(TOT_RT_CORRISPETTIVI, "");
@@ -1079,6 +1122,8 @@ public final class Principale_Dichiarazioni {
     public static final String TOT_RT_COSTI = "Totale dei costi o valori di acquisto";
     public static final String TOT_RT_CORRISPETTIVI = "Totale dei corrispettivi";
     public static final String TOT_RT_PLUS = "Plusvalenze realizzate";
+    /** Totale scritto dalla generazione del prospetto DSU ({@link Principale_ISEE_Prospetto}) e letto dall'elenco. */
+    public static final String TOT_ISEE_VALORE = "Valore complessivo al 31/12 (Sez. I e II)";
 
     /**
      * Righe della tabella inferiore ({@code Voce}, {@code Valore}): stato, totali, righi, file con la
@@ -1089,7 +1134,9 @@ public final class Principale_Dichiarazioni {
         if (D == null) {
             return righe;
         }
-        righe.add(new Object[]{"Dichiarazione", D.Fam.Etichetta + " anno d'imposta " + D.Anno});
+        righe.add(new Object[]{"Dichiarazione", D.Fam == Dichiarazioni.Famiglia.ISEE
+                ? D.Descrizione()
+                : D.Fam.Etichetta + " anno d'imposta " + D.Anno});
         righe.add(new Object[]{"Generata il", D.Creata + " (versione " + D.Versione + ")"});
         righe.add(new Object[]{"Stato", D.Definitiva ? "Definitiva dal " + D.DefinitivaDal : "Non definitiva"});
         righe.add(new Object[]{"Errori al momento della stampa", D.Errori.isBlank() ? "nessuno" : D.Errori});

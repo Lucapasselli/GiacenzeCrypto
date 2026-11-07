@@ -1093,6 +1093,16 @@ public class Stampe {
     }
 
     /**
+     * La veste grafica dei report per un prospetto a tabelle (DSU), che a differenza dei moduli scorre su piu'
+     * pagine: i margini sono quelli dei manuali, cosi' testata e piede non coprono le righe che passano a pagina
+     * nuova. Come {@link #AttivaVesteGrafica} va chiamata prima di {@link #ApriDocumento()}.
+     */
+    public void AttivaVesteProspetto(String Quadro, String Anno) {
+        AttivaVesteGrafica(Quadro, Anno);
+        doc.setMargins(58, 44, 62, 58);
+    }
+
+    /**
      * La stessa veste grafica dei report, per i manuali di {@code docs/documentazione} (vedi
      * {@link GeneraPdfDocumentazione}). A differenza di un report, un manuale e' testo che scorre su piu'
      * pagine : i margini lasciano spazio alla testata e al piede, che stanno sul canvas e non occupano
@@ -1136,6 +1146,16 @@ public class Stampe {
      * @param Generato data e ora di generazione, gia' formattate
      */
     public void AggiungiCopertina(String Quadro, String Sottotitolo, String Anno, String Generato) {
+        AggiungiCopertina(Quadro, Sottotitolo, "Anno d'imposta", Anno, Generato);
+    }
+
+    /**
+     * Come {@link #AggiungiCopertina(String, String, String, String)}, con l'etichetta dell'anno scelta da chi
+     * chiama: per la DSU l'anno non e' un anno d'imposta ma quello del patrimonio.
+     *
+     * @param EtichettaAnno es. {@code "Anno d'imposta"}, {@code "Patrimonio al"}
+     */
+    public void AggiungiCopertina(String Quadro, String Sottotitolo, String EtichettaAnno, String Anno, String Generato) {
         if (cornice == null) return;
         try {
             PdfContentByte cb = writer.getDirectContent();
@@ -1158,12 +1178,12 @@ public class Stampe {
             Testo(cb, Quadro, bfBold, 40, NERO, 70, H - 382, Element.ALIGN_LEFT, 0f);
             Testo(cb, Sottotitolo, bfRegular, 24, GRIGIO_TESTO, 70, H - 416, Element.ALIGN_LEFT, 0f);
             Linea(cb, 70, H - 446, 240, H - 446, VERDE, 2.5f);
-            Testo(cb, "Anno d'imposta " + Anno, bfRegular, 13, NERO, 70, H - 478, Element.ALIGN_LEFT, 0.5f);
+            Testo(cb, EtichettaAnno + " " + Anno, bfRegular, 13, NERO, 70, H - 478, Element.ALIGN_LEFT, 0.5f);
 
             float y = 250;
             Linea(cb, 70, y + 22, W - 70, y + 22, GRIGIO_FILO, 0.6f);
             RigaDato(cb, "Documento", "Report " + Quadro + " - " + Sottotitolo, 70, y, W - 70);
-            RigaDato(cb, "Anno d'imposta", Anno, 70, y - 26, W - 70);
+            RigaDato(cb, EtichettaAnno, Anno, 70, y - 26, W - 70);
             RigaDato(cb, "Generato il", Generato, 70, y - 52, W - 70);
             //Titolo contiene gia' la versione (VarStatiche.componiTitolo).
             RigaDato(cb, "Prodotto da", VarStatiche.Titolo, 70, y - 78, W - 70);
@@ -1594,6 +1614,65 @@ public class Stampe {
                     bfRegular, 6.5f, GRIGIO_TENUE, 46, 28, Element.ALIGN_LEFT, 0f);
             Testo(cb, "Pagina " + pagina, bfRegular, 7, GRIGIO_TESTO, W - 36, 28, Element.ALIGN_RIGHT, 0f);
         }
+    }
+
+    /**
+     * Tabella nel font del programma: intestazione in grassetto su fondo tenue, ripetuta se la tabella continua
+     * sulla pagina dopo. Pensata per i prospetti con la veste grafica ({@link #AttivaVesteProspetto}).
+     *
+     * @param Larghezze pesi relativi delle colonne, uno per titolo
+     * @param ADestra {@code true} per le colonne da allineare a destra (importi), {@code null} = nessuna
+     * @param Righe le righe, ognuna con almeno tante celle quanti i titoli
+     * @param InGrassetto indici delle righe da scrivere in grassetto (totali), {@code null} = nessuna
+     */
+    public void AggiungiTabellaReport(String[] Titoli, float[] Larghezze, boolean[] ADestra, List<String[]> Righe,
+            java.util.Set<Integer> InGrassetto) {
+        CaricaFont();
+        Font intestazione = new Font(bfBold, 7.5f, Font.NORMAL, NERO);
+        Font normale = new Font(bfRegular, 7.5f, Font.NORMAL, NERO);
+        Font grassetto = new Font(bfBold, 7.5f, Font.NORMAL, NERO);
+        PdfPTable table = new PdfPTable(Titoli.length);
+        table.setWidthPercentage(100);
+        table.setWidths(Larghezze);
+        table.setHeaderRows(1);
+        table.setSpacingAfter(8f);
+        for (int c = 0; c < Titoli.length; c++) {
+            PdfPCell cell = CellaReport(Titoli[c], intestazione, ADestra != null && ADestra[c]);
+            cell.setBackgroundColor(FASCIA_MARGINE);
+            table.addCell(cell);
+        }
+        for (int r = 0; r < Righe.size(); r++) {
+            Font f = InGrassetto != null && InGrassetto.contains(r) ? grassetto : normale;
+            String[] riga = Righe.get(r);
+            for (int c = 0; c < Titoli.length; c++) {
+                table.addCell(CellaReport(c < riga.length && riga[c] != null ? riga[c] : "", f,
+                        ADestra != null && ADestra[c]));
+            }
+        }
+        doc.add(table);
+    }
+
+    private static PdfPCell CellaReport(String Testo, Font f, boolean ADestra) {
+        PdfPCell cell = new PdfPCell(new Phrase(Testo, f));
+        cell.setBorderColor(GRIGIO_FILO);
+        cell.setPadding(3f);
+        cell.setHorizontalAlignment(ADestra ? Element.ALIGN_RIGHT : Element.ALIGN_LEFT);
+        return cell;
+    }
+
+    /**
+     * Paragrafo nel font del programma, per i prospetti con la veste grafica.
+     *
+     * @param Grassetto {@code true} per un sottotitolo
+     * @param Dimensione corpo in punti
+     */
+    public void AggiungiParagrafoReport(String Testo, boolean Grassetto, float Dimensione) {
+        CaricaFont();
+        Paragraph par = new Paragraph(Testo, new Font(Grassetto ? bfBold : bfRegular, Dimensione, Font.NORMAL,
+                Grassetto ? NERO : GRIGIO_TESTO));
+        par.setSpacingBefore(Grassetto ? 6f : 0f);
+        par.setSpacingAfter(4f);
+        doc.add(par);
     }
 
     public void AggiungiTabella(String[] Titoli,List<String[]> Dettagli){

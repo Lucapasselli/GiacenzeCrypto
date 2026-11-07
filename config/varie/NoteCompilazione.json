@@ -8,7 +8,8 @@
   "{righi}": "solo FIAT_LOOKUP_FALLITI : elenco dei righi non risolti",
   "{totale}": "solo FIAT_CONTI_CORRENTI e FIAT_IVAFE_LIQUIDITA : totale IVAFE in euro",
   "{numero}": "solo DERIVATI : numero dei movimenti su derivati nell'anno",
-  "{precedenti}": "solo DERIVATI : numero dei movimenti su derivati negli anni precedenti"
+  "{precedenti}": "solo DERIVATI : numero dei movimenti su derivati negli anni precedenti",
+  "{annoDSU}": "solo DSU : anno di presentazione della DSU che usa il patrimonio al 31/12/{anno}"
  },
  "avvertenza": "Gli anni scritti come cifre sono riferimenti a una regola (entrata in vigore del regime, anni delle minusvalenze riportabili) e NON vanno trasformati in segnaposto: non seguono l'anno della dichiarazione. Attenzione ai caratteri: il PDF usa i font base-14 di OpenPDF, che non disegnano le frecce. Le frecce gia' presenti nel testo (ereditate dalle note originali) non compaiono nella stampa: sostituirle con un trattino se si vuole vederle.",
  "centralizzato": true,
@@ -345,6 +346,28 @@
    "                intermediario estero vanno indicati nel quadro RW con un codice proprio.<br>",
    "                I valori di questo report vanno quindi <b>verificati con un professionista</b> prima",
    "                di riportarli in dichiarazione.<br>",
+   "                </font></html>"
+  ],
+  "DSU": [
+   "                <html><font size=\"2\" face=\"Courier New,Courier, mono\" >",
+   "                <br><b>NOTE SUL PROSPETTO DSU</b><br>",
+   "                Il prospetto riporta i rapporti del Quadro FC2 (patrimonio mobiliare) che il programma ricava",
+   "                dai movimenti, uno per gruppo wallet e operatore finanziario, con il patrimonio al 31/12/{anno}",
+   "                usato dalla DSU presentata nel {annoDSU}. I rapporti che il programma non conosce (conti",
+   "                bancari, titoli, polizze e simili) non ci sono.<br>",
+   "                Le cripto-attività non hanno ancora un tipo rapporto proprio nel modello DSU (legge",
+   "                199/2025, commi 32-34, in attesa del decreto attuativo): il prospetto le riporta con il tipo 99",
+   "                e il solo valore al 31/12, come indica la FAQ n. 13 del Ministero del Lavoro del 13/09/2024 per",
+   "                le cripto-attività detenute presso un operatore.<br>",
+   "                La liquidità in valuta presso un operatore segnato come conto corrente sta nella Sez. I",
+   "                (tipo 01) con il saldo al 31/12 e la giacenza media annua (somma dei saldi di fine giornata",
+   "                diviso 365). Negli altri casi è sommata al valore del tipo 99 dello stesso gruppo.<br>",
+   "                I totali (A) e (B) della Sez. I del modulo comprendono tutti i rapporti 01 del componente,",
+   "                anche quelli che non sono in questo prospetto.<br>",
+   "                La giacenza media giornaliera dei rapporti 99 è informativa: la Sez. II del modulo non",
+   "                ha una colonna per la giacenza media.<br>",
+   "                Gli importi sono in euro arrotondati all'unità. Un valore segnato come incompleto ha",
+   "                almeno una moneta senza prezzo al 31/12.<br>",
    "                </font></html>"
   ],
   "T": [

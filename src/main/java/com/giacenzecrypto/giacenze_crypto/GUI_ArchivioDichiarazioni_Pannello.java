@@ -12,8 +12,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
 /**
- * Parte grafica di "Archivio dichiarazioni" (tab <i>Dichiarazioni</i>): elenca le dichiarazioni W/RW e
- * T/RT generate, mostra sotto il dettaglio della riga selezionata e offre le azioni (aprire i file,
+ * Parte grafica di "Archivio dichiarazioni" (tab <i>Dichiarazioni</i>): elenca le dichiarazioni W/RW,
+ * T/RT e i prospetti DSU generati, mostra sotto il dettaglio della riga selezionata e offre le azioni (aprire i file,
  * segnare la definitiva, la nota, gli allegati, la verifica di continuità, il confronto fra due
  * dichiarazioni, esportare, eliminare).
  *

@@ -104,7 +104,10 @@ public final class Principale_ISEE {
         };
     }
 
-    /** Il dettaglio di un rapporto, come coppie voce/valore. */
+    /**
+     * Il dettaglio di un rapporto, come coppie voce/valore: dati, giorni, valore e medie. Le monete e gli avvisi
+     * hanno ciascuno la propria scheda ({@link #Monete}, {@link #Avvisi}).
+     */
     public static List<Object[]> Dettaglio(Calcoli_ISEE.Rapporto r) {
         List<Object[]> out = new ArrayList<>();
         if (r == null) {
@@ -118,11 +121,8 @@ public final class Principale_ISEE {
             out.add(new Object[] {"Saldo al 31/12 (EUR)", r.copreFineAnno ? euro2(r.valore) : "rapporto cessato prima del 31/12"});
             out.add(new Object[] {"Giacenza media annua (EUR, giorni / 365)", r.giacenzaMedia == null ? "" : euro2(r.giacenzaMedia)});
         } else if (r.copreFineAnno) {
-            for (Calcoli_ISEE.Posizione p : r.posizioni) {
-                out.add(new Object[] {"Moneta " + p.moneta, p.qtaFine.stripTrailingZeros().toPlainString() + " = "
-                        + (p.valoreFine == null ? "n.d. (prezzo mancante)" : euro2(p.valoreFine) + " EUR")});
-            }
-            if (r.conLiquidita) {
+            out.add(new Object[] {"Monete al 31/12", r.posizioni.size() + " (dettaglio nella scheda \"Monete\")"});
+            if (r.conLiquidita && r.liquidita.signum() != 0) {
                 out.add(new Object[] {"Liquidità in valuta (EUR)", euro2(r.liquidita)});
             }
             out.add(new Object[] {"Valore al 31/12 (EUR)", euro2(r.valore) + (r.valoreIncompleto ? " (incompleto)" : "")});
@@ -135,11 +135,54 @@ public final class Principale_ISEE {
                     : euro2(r.giacenzaMedia) + (r.mediaIncompleta ? " (incompleta: " + r.giorniSenzaPrezzo
                     + (r.giorniSenzaPrezzo == 1 ? " giorno" : " giorni") + " con giacenza senza prezzo, vedi \"Prezzi mancanti\")" : "")});
         }
-        for (String n : r.note) {
-            out.add(new Object[] {"Avviso", n});
-        }
         Calcoli_ISEE.DatiUtente d = RapportiISEE.Leggi().get(r.chiave);
         out.add(new Object[] {"Dati scritti a mano", d == null ? "nessuno" : DescriviDati(d)});
+        return out;
+    }
+
+    /** Colonne della scheda delle monete, nell'ordine del model. */
+    public static final String[] COLONNE_MONETE = {"Moneta", "Quantità al 31/12", "Valore al 31/12 (EUR)", "Nota"};
+
+    /**
+     * Le monete al 31/12 di un rapporto, una riga per moneta, poi la liquidità se sta qui e il totale, così che la
+     * scheda torni con il "Valore al 31/12" del rapporto. Un rapporto senza monete (conto corrente, cessato prima
+     * del 31/12) ha una sola riga che dice perché.
+     */
+    public static List<Object[]> Monete(Calcoli_ISEE.Rapporto r) {
+        List<Object[]> out = new ArrayList<>();
+        if (r == null) {
+            return out;
+        }
+        if (r.contoCorrente()) {
+            out.add(new Object[] {"", "", "", "Rapporto 01: il valore è il saldo del conto in valuta, non ci sono monete"});
+            return out;
+        }
+        if (!r.copreFineAnno) {
+            out.add(new Object[] {"", "", "", "Rapporto cessato prima del 31/12: le monete stanno sul rapporto successivo"});
+            return out;
+        }
+        for (Calcoli_ISEE.Posizione p : r.posizioni) {
+            String nota = p.negativa() ? "giacenza negativa, conta zero"
+                    : p.valoreFine == null ? "prezzo mancante: il valore del rapporto è incompleto" : "";
+            out.add(new Object[] {p.moneta, p.qtaFine.stripTrailingZeros().toPlainString(),
+                p.valoreFine == null ? "n.d." : euro2(p.valoreFine), nota});
+        }
+        //Il 99 senza conto corrente porta sempre la liquidità del gruppo, anche quando il gruppo non ne ha
+        if (r.conLiquidita && r.liquidita.signum() != 0) {
+            out.add(new Object[] {"Liquidità in valuta", "", euro2(r.liquidita), "saldo in valuta del gruppo, in euro"});
+        }
+        out.add(new Object[] {"Totale", "", euro2(r.valore), r.valoreIncompleto ? "incompleto" : ""});
+        return out;
+    }
+
+    /** Gli avvisi di un rapporto, uno per riga. */
+    public static List<Object[]> Avvisi(Calcoli_ISEE.Rapporto r) {
+        List<Object[]> out = new ArrayList<>();
+        if (r != null) {
+            for (String n : r.note) {
+                out.add(new Object[] {n});
+            }
+        }
         return out;
     }
 
@@ -255,7 +298,7 @@ public final class Principale_ISEE {
 
     // --- formati ---------------------------------------------------------------
 
-    private static String data(LocalDate d) {
+    static String data(LocalDate d) {
         return d == null ? "" : d.format(GG_MM_AAAA);
     }
 
@@ -264,7 +307,7 @@ public final class Principale_ISEE {
         return NumberFormat.getIntegerInstance(Locale.ITALY).format(Calcoli_ISEE.euro(v));
     }
 
-    private static String euro2(BigDecimal v) {
+    static String euro2(BigDecimal v) {
         NumberFormat f = NumberFormat.getNumberInstance(Locale.ITALY);
         f.setMinimumFractionDigits(2);
         f.setMaximumFractionDigits(2);

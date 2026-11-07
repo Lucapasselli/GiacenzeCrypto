@@ -14,6 +14,7 @@ title: ISEE, il patrimonio per la DSU
 - [Scrivere i dati di un rapporto](#modifica)
 - [La giacenza media giornaliera dei rapporti 99](#media)
 - [I prezzi mancanti](#prezzi-mancanti)
+- [Il prospetto DSU](#prospetto)
 - [Dati senza rapporto](#dati-senza-rapporto)
 - [Da dove arrivano i dati](#da-dove)
 - [Domande frequenti](#domande)
@@ -33,7 +34,8 @@ liquidità tenuta presso gli exchange. Per ogni rapporto mostra quello che il qu
 La DSU presentata in un anno usa il patrimonio al 31/12 di **due anni prima**: la DSU 2026 usa il patrimonio al
 31/12/2024. Il tab propone quell'anno.
 
-Il programma non compila né invia la DSU: mostra i valori da riportare. Il tab non cambia nessun movimento e nessun
+Il programma non compila né invia la DSU: mostra i valori da riportare e li archivia in un
+[prospetto](#prospetto) PDF con il suo Excel. Il tab non cambia nessun movimento e nessun
 calcolo dei quadri RT e W/RW, con un'eccezione voluta: i prezzi scritti dalla finestra dei
 [prezzi mancanti](#prezzi-mancanti) sono prezzi personalizzati, e valgono per tutte le valutazioni.
 
@@ -43,17 +45,19 @@ calcolo dei quadri RT e W/RW, con un'eccezione voluta: i prezzi scritti dalla fi
 
 ## Dove si trova {#dove-si-trova}
 
-Nella scheda **Dichiarazioni – ISEE**, fra *RT & Analisi P&L* e *Archivio dichiarazioni*. Il pulsante **Guida...** in alto
+Nella scheda **Dichiarazioni – ISEE**, fra *RT & Analisi P&L* e *Archivio dichiarazioni*. Finché la funzione è in prova
+la voce si chiama *ISEE (bozza)*. Il pulsante **Guida...** in alto
 a destra apre questo manuale.
 
 ![Il tab ISEE con i rapporti del 2024 e il dettaglio del Ledger](immagini/isee/01.png)
 
 Il tab ha tre zone:
 
-- in alto la scelta dell'anno e i pulsanti *Calcola* e *Media giornaliera...*,
+- in alto la scelta dell'anno e i pulsanti *Calcola*, *Media giornaliera...*, *Stampa prospetto PDF* e *Crea Excel con i
+  dettagli*,
 - al centro la **tabella dei rapporti**, con i totali dell'anno sotto, a destra,
-- in basso il **dettaglio** del rapporto selezionato e i pulsanti *Prezzi mancanti...*, *Modifica dati...* e
-  *Dati senza rapporto*.
+- in basso il **dettaglio** del rapporto selezionato, diviso nelle schede *Rapporto*, *Monete* e *Avvisi*, e i pulsanti
+  *Prezzi mancanti...*, *Modifica dati...* e *Dati senza rapporto*.
 
 ## Calcolare i rapporti di un anno {#calcolare}
 
@@ -80,7 +84,7 @@ rapporti 01 e dei rapporti 99. Nell'esempio: *3 rapporti, valore al 31/12: 01 = 
 | **Data fine** | solo se il rapporto è finito nell'anno |
 | **Valore al 31/12 (EUR)** | il valore a fine anno, arrotondato all'euro. *(incompleto)* se almeno una moneta non ha prezzo |
 | **Giacenza media (EUR)** | sul 01 la giacenza media annua. Sul 99 la media giornaliera, solo dopo *Media giornaliera...* |
-| **Avvisi** | quanti avvisi ha il rapporto: il testo è nel dettaglio |
+| **Avvisi** | quanti avvisi ha il rapporto: il testo è nella scheda *Avvisi* del dettaglio |
 
 Gli importi sono arrotondati all'euro: 299,49 diventa 299 e 299,50 diventa 300.
 
@@ -139,20 +143,32 @@ di solito resta aperto. Se il saldo del gruppo è a zero dal giorno di un movime
 
 ## Il dettaglio di un rapporto {#dettaglio}
 
-Selezionando una riga, il dettaglio in basso mostra:
+Selezionando una riga, il dettaglio in basso mostra il rapporto in tre schede. I titoli di *Monete* e *Avvisi* dicono
+quante righe hanno, per esempio *Monete (2)* e *Avvisi (2)*.
+
+La scheda **Rapporto**:
 
 - il **gruppo wallet**, con alias e nome interno,
 - il **codice operatore dal periodo FIAT**, con lo Stato estero,
 - i **giorni del rapporto nell'anno**,
-- per il 99 che arriva al 31/12, **ogni moneta** con la quantità e il valore, oppure *n.d. (prezzo mancante)*,
-- la **liquidità in valuta** e il **valore al 31/12**,
+- per il 99 che arriva al 31/12, il **numero di monete**, il cui dettaglio è nella scheda *Monete*,
+- la **liquidità in valuta**, se il gruppo ne ha, e il **valore al 31/12**,
 - la **giacenza media giornaliera**, oppure *non calcolata*,
-- gli **avvisi**, uno per riga,
 - i **dati scritti a mano** per quel rapporto.
 
-Nell'esempio del primo screenshot il Ledger ha 0,1 BTC per 8.874,78 euro e 50.000 *ZZDEMO* senza prezzo, quindi il
-valore è incompleto. Gli avvisi dicono che il gruppo non ha un periodo FIAT (operatore *END*) e che l'identificativo
-del rapporto non è stato scritto.
+La scheda **Monete** ha una riga per moneta al 31/12: moneta, quantità, valore in euro, oppure *n.d.* se manca il prezzo,
+e una nota. Dopo le monete vengono la liquidità in valuta, se il gruppo ne ha, e il **totale**, che è il valore al 31/12
+del rapporto. Per un rapporto 01, o per un 99 cessato prima del 31/12, una sola riga dice perché non ci sono monete.
+
+![La scheda Monete del Ledger: 0,1 BTC e 50.000 ZZDEMO senza prezzo](immagini/isee/10.png)
+
+La scheda **Avvisi** ha un avviso per riga:
+
+![La scheda Avvisi del Ledger](immagini/isee/11.png)
+
+Nell'esempio il Ledger ha 0,1 BTC per 8.874,78 euro e 50.000 *ZZDEMO* senza prezzo, quindi il valore è incompleto. Gli
+avvisi dicono che il gruppo non ha un periodo FIAT (operatore *END*) e che l'identificativo del rapporto non è stato
+scritto.
 
 ## Scrivere i dati di un rapporto {#modifica}
 
@@ -223,7 +239,8 @@ e la tabella resta com'era. Nella prima fase, quella dei token per indirizzo di 
 muove nella fase delle quotazioni degli exchange.
 
 Alla fine la colonna *Giacenza media* si riempie per tutti i rapporti 99. Un giorno con giacenza e senza prezzo non vale
-zero: la media lo esclude e porta la scritta *(incompleta)*, e il dettaglio dice quanti giorni mancano.
+zero: la media lo esclude e porta la scritta *(incompleta)*, e la scheda *Rapporto* del dettaglio dice quanti giorni
+mancano.
 
 ![La giacenza media giornaliera del 2024, con la media del Ledger incompleta](immagini/isee/07.png)
 
@@ -260,6 +277,52 @@ Alla chiusura della finestra il tab ricalcola il valore al 31/12 e la media, sen
 > finale del quadro W/RW 2024. I prezzi personalizzati si vedono e si correggono anche dalle altre schede, per esempio
 > con *Modifica Valore* in [Giacenze a data](giacenze-a-data.html#prezzi).
 
+## Il prospetto DSU {#prospetto}
+
+I pulsanti **Stampa prospetto PDF** e **Crea Excel con i dettagli** generano insieme un prospetto PDF e un Excel per
+l'anno scelto nella tendina, e li archiviano in *Dichiarazioni – Archivio dichiarazioni*, come i quadri W/RW e T/RT.
+Alla fine il primo apre il PDF, il secondo l'Excel.
+
+Prima di scrivere i file il tab **ricalcola** l'anno, con la media giornaliera se l'ultimo calcolo di quell'anno
+l'aveva: i file nascono dai movimenti, dai prezzi e dai dati dei rapporti del momento. Se il ricalcolo viene interrotto
+non si archivia nulla.
+
+**Il PDF** non è il modulo della DSU: le cripto-attività non sono ancora nel modello, e il prospetto riporta i valori in
+tabelle con le stesse colonne del Quadro FC2, da ricopiare. Le pagine sono:
+
+- la **copertina**, con il patrimonio al 31/12 e la DSU in cui si usa,
+- il **Quadro FC2**: la *Sez. I* con i rapporti 01 (saldo al 31/12, giacenza media, date) e i totali (A) e (B) dei
+  rapporti del prospetto, poi la *Sez. II* con i rapporti 99 (valore al 31/12, date) e il totale. Accanto alla Sez. II
+  c'è la colonna *Media giornaliera (informativa)*, che il modulo non ha: *non calcolata* se non è stata chiesta,
+- il **dettaglio dei rapporti**: per ogni rapporto le monete al 31/12, come nella scheda *Monete*, e gli avvisi,
+- le **opzioni e note**: gli input che cambiano i valori (fotografia del quadro W/RW, token E-Money, prezzi dei token
+  DeFi, media giornaliera) e le note di compilazione.
+
+![La pagina del Quadro FC2 nel prospetto del 2024](immagini/isee/12.png)
+
+I totali (A) e (B) della Sez. I del modulo comprendono tutti i rapporti 01 del componente: quelli del prospetto sono
+solo i rapporti che il programma conosce. Un valore incompleto, una giacenza negativa o una media incompleta compaiono
+in fondo al Quadro FC2 con la scritta *Attenzione* e fra gli errori della dichiarazione archiviata.
+
+**L'Excel** ha un foglio con i righi del Quadro FC2 (importi con due decimali, gruppo wallet e alias, giorni del
+rapporto nell'anno, avvisi), uno con le monete al 31/12 di ogni rapporto, uno con gli avvisi e, se la media è stata
+calcolata, uno con i giorni rimasti senza prezzo.
+
+**Nell'archivio** il prospetto compare con *DSU* nella colonna *Quadri* e con l'anno del **patrimonio**, non quello di
+presentazione: il prospetto della DSU 2026 sta sotto il 2024. Il dettaglio lo dice per esteso, per esempio *DSU 2026
+(patrimonio al 31/12/2024)*. Si possono aprire i file, segnare la dichiarazione presentata come definitiva, aggiungere
+una nota o un allegato e confrontare due prospetti dello stesso anno, come per i quadri. Se l'ultimo prospetto dello
+stesso anno ha gli stessi valori, il programma propone di aprire quello invece di archiviarne una copia.
+
+![Il prospetto DSU nell'archivio delle dichiarazioni](immagini/isee/13.png)
+
+**Valori diversi dalla definitiva.** Se per l'anno c'è un prospetto segnato come definitivo, dopo ogni calcolo il tab
+confronta i rapporti con quelli archiviati. Se sono cambiati, in basso a sinistra compare la scritta rossa *Valori
+diversi dalla dichiarazione definitiva DSU 2026*: il suggerimento elenca le prime differenze, per esempio un
+identificativo scritto dopo la stampa, e un clic apre l'archivio, dove *Confronta* le mostra tutte. La media giornaliera
+dei rapporti 99 si confronta solo se è stata calcolata: un semplice *Calcola* non la rende diversa da una definitiva
+stampata con la media.
+
 ## Dati senza rapporto {#dati-senza-rapporto}
 
 I dati scritti con *Modifica dati...* sono legati al periodo FIAT del gruppo da cui nasce il rapporto. Se quel periodo
@@ -281,7 +344,7 @@ riscritti su quel rapporto con *Modifica dati...*.
 ## Domande frequenti {#domande}
 
 **Perché il codice operatore è END?** Il gruppo non ha un periodo FIAT, oppure il periodo FIAT non ha l'identificativo
-fiscale. Un avviso nel dettaglio dice quale dei due. Per un wallet in autocustodia è il caso normale. Per un exchange si
+fiscale. Un avviso nella scheda *Avvisi* dice quale dei due. Per un wallet in autocustodia è il caso normale. Per un exchange si
 completa il periodo FIAT, oppure si scrive il codice con *Modifica dati...*.
 
 **Perché l'identificativo è il nome del gruppo?** Perché non ne è stato scritto uno. Il programma non conosce l'IBAN, il

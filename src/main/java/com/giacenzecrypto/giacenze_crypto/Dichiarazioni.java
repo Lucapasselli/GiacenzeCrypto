@@ -63,10 +63,15 @@ public final class Dichiarazioni {
     private Dichiarazioni() {
     }
 
-    /** Le due famiglie di quadri: una definitiva per anno ciascuna. */
+    /**
+     * Le famiglie di dichiarazioni: una definitiva per anno ciascuna. Per la DSU l'anno è quello del patrimonio
+     * (31/12), non quello di presentazione: così i documenti di origine sono quelli dei movimenti di quell'anno, come
+     * per i quadri. Una versione che non conosce una famiglia ne ignora le cartelle ({@link #Leggi}).
+     */
     public enum Famiglia {
         RW("W/RW", "RW"),
-        RT("T/RT", "RT");
+        RT("T/RT", "RT"),
+        ISEE("DSU", "ISEE");
 
         /** Etichetta mostrata all'utente. */
         public final String Etichetta;
@@ -136,6 +141,21 @@ public final class Dichiarazioni {
         public String DocumentiInclusi = "";
         /** Movimenti dell'anno senza documento di origine al momento della generazione, {@code -1} se non rilevato. */
         public int MovimentiSenzaDocumento = -1;
+
+        /**
+         * @return famiglia e anno come li legge l'utente: {@code "W/RW 2024"}, e per la DSU, il cui anno è quello
+         *         del patrimonio, {@code "DSU 2026 (patrimonio al 31/12/2024)"}
+         */
+        public String Descrizione() {
+            if (Fam == Famiglia.ISEE) {
+                try {
+                    return Fam.Etichetta + " " + (Integer.parseInt(Anno) + 2) + " (patrimonio al 31/12/" + Anno + ")";
+                } catch (NumberFormatException e) {
+                    return Fam.Etichetta + " (patrimonio al 31/12/" + Anno + ")";
+                }
+            }
+            return (Fam == null ? "" : Fam.Etichetta) + " " + Anno;
+        }
 
         /** @return il nome della cartella, che fa da identificativo; vuoto per una bozza */
         public String Id() {
@@ -491,7 +511,8 @@ public final class Dichiarazioni {
             "Prezzi dagli exchange anche per gli anni già dichiarati");
 
     /** Campi che identificano un rigo invece di essere suoi valori. */
-    private static final List<String> CAMPI_CHIAVE = List.of("Rigo", "Natura", "Periodo", "Tipologia");
+    /** I campi che identificano un rigo nel confronto ({@code Rapporto} è quello dei prospetti DSU). */
+    private static final List<String> CAMPI_CHIAVE = List.of("Rigo", "Natura", "Periodo", "Tipologia", "Rapporto");
 
     private static Map<String, Map<String, String>> RighiPerChiave(Dichiarazione D) {
         Map<String, Map<String, String>> m = new LinkedHashMap<>();

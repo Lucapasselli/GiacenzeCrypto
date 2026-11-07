@@ -32,7 +32,7 @@ class NoteCompilazioneTest {
         NoteCompilazione.W, NoteCompilazione.W8, NoteCompilazione.RW, NoteCompilazione.RW8,
         NoteCompilazione.FIAT, NoteCompilazione.FIAT_LOOKUP_FALLITI,
         NoteCompilazione.FIAT_CONTI_CORRENTI, NoteCompilazione.FIAT_IVAFE_LIQUIDITA,
-        NoteCompilazione.T, NoteCompilazione.RT, NoteCompilazione.DERIVATI
+        NoteCompilazione.T, NoteCompilazione.RT, NoteCompilazione.DERIVATI, NoteCompilazione.DSU
     };
 
     private static Map<String, String> note() throws Exception {
@@ -148,19 +148,27 @@ class NoteCompilazioneTest {
         Pattern p = Pattern.compile("\\{(\\w+)\\}");
         //Le varianti datate vanno controllate come le altre : sono testo che finisce in stampa.
         for (String chiave : note.keySet()) {
-            //Le tre note FIAT condizionali e l'avviso sui derivati ricevono un valore calcolato dal
-            //chiamante : quelle sono verificate a parte, qui restano fuori.
+            //Le tre note FIAT condizionali, l'avviso sui derivati e le note della DSU ricevono un valore
+            //calcolato dal chiamante : quelle sono verificate a parte, qui restano fuori.
             String nuda = chiave.replaceAll("\\.\\d{4}$", "");
             if (nuda.equals(NoteCompilazione.FIAT_LOOKUP_FALLITI)
                     || nuda.equals(NoteCompilazione.FIAT_CONTI_CORRENTI)
                     || nuda.equals(NoteCompilazione.FIAT_IVAFE_LIQUIDITA)
-                    || nuda.equals(NoteCompilazione.DERIVATI)) {
+                    || nuda.equals(NoteCompilazione.DERIVATI)
+                    || nuda.equals(NoteCompilazione.DSU)) {
                 continue;
             }
             String t = NoteCompilazione.SostituisciAnni(note.get(chiave), "2025");
             Matcher m = p.matcher(t);
             assertFalse(m.find(), chiave + " : segnaposto sconosciuto '" + (m.hitEnd() ? "" : m.group()) + "'");
         }
+    }
+
+    @Test
+    void laNotaDellaDSURiceveLAnnoDiPresentazione() throws Exception {
+        String t = NoteCompilazione.Testo(NoteCompilazione.DSU, "2024", Map.of("annoDSU", "2026"));
+        assertTrue(t.contains("31/12/2024") && t.contains("presentata nel 2026"), t);
+        assertFalse(t.contains("{"), "segnaposto non risolto");
     }
 
     @Test

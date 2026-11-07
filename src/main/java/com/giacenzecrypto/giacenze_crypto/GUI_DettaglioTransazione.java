@@ -695,8 +695,6 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella);
-        //Come in Principale: il popup non è figlio di nessun contenitore finché non viene mostrato
-        Icone.AdattaIconeAlTema(PopupMenu);
     }
 
     /**
@@ -708,15 +706,6 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        PopupMenu = new javax.swing.JPopupMenu();
-        MenuItem_CopiaID = new javax.swing.JMenuItem();
-        MenuItem_Copia = new javax.swing.JMenuItem();
-        MenuItem_DocumentoFonte = new javax.swing.JMenuItem();
-        jSeparator6 = new javax.swing.JPopupMenu.Separator();
-        MenuItem_ModificaPrezzo = new javax.swing.JMenuItem();
-        MenuItem_ModificaNote = new javax.swing.JMenuItem();
-        jSeparator7 = new javax.swing.JPopupMenu.Separator();
-        MenuItem_EsportaTabella = new javax.swing.JMenuItem();
         ScrollTabella = new javax.swing.JScrollPane();
         Tabella = new javax.swing.JTable();
         Pannello_Giacenze = new javax.swing.JPanel();
@@ -727,68 +716,6 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         TextPane_Titolo = new javax.swing.JTextPane();
         Bottone_Modifica = new javax.swing.JButton();
         Bottone_ModificaPrezzo = new javax.swing.JButton();
-
-        MenuItem_CopiaID.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Copia.png"))); // NOI18N
-        MenuItem_CopiaID.setText("Copia ID Transazione");
-        MenuItem_CopiaID.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_CopiaIDActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_CopiaID);
-
-        MenuItem_Copia.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Copia.png"))); // NOI18N
-        MenuItem_Copia.setText("Copia selezione");
-        MenuItem_Copia.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_CopiaActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_Copia);
-
-        MenuItem_DocumentoFonte.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Documento.png"))); // NOI18N
-        MenuItem_DocumentoFonte.setText("Apri documento di origine");
-        MenuItem_DocumentoFonte.setToolTipText("Apre il file da cui il movimento è stato importato");
-        MenuItem_DocumentoFonte.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_DocumentoFonteActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_DocumentoFonte);
-        PopupMenu.add(jSeparator6);
-
-        MenuItem_ModificaPrezzo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
-        MenuItem_ModificaPrezzo.setText("Modifica Prezzo");
-        MenuItem_ModificaPrezzo.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                MenuItem_ModificaPrezzoMouseReleased(evt);
-            }
-        });
-        MenuItem_ModificaPrezzo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_ModificaPrezzoActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_ModificaPrezzo);
-
-        MenuItem_ModificaNote.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Nuovo.png"))); // NOI18N
-        MenuItem_ModificaNote.setText("Modifica Note");
-        MenuItem_ModificaNote.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_ModificaNoteActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_ModificaNote);
-        PopupMenu.add(jSeparator7);
-
-        MenuItem_EsportaTabella.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
-        MenuItem_EsportaTabella.setText("Esporta Tabella in Excel");
-        MenuItem_EsportaTabella.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_EsportaTabellaActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_EsportaTabella);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -983,32 +910,13 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         Funzioni_RichiamaPopUpdaTabella(Tabella,evt);
     }//GEN-LAST:event_TabellaMouseReleased
 
-    private void MenuItem_CopiaIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_CopiaIDActionPerformed
-        // TODO add your handling code here:
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        StringSelection stringSelection = new StringSelection(Principale.PopUp_IDTrans);
-        clipboard.setContents(stringSelection, null);
-    }//GEN-LAST:event_MenuItem_CopiaIDActionPerformed
 
-    private void MenuItem_CopiaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_CopiaActionPerformed
-        // TODO add your handling code here:
-        Funzioni.simulaCtrlC();
-    }//GEN-LAST:event_MenuItem_CopiaActionPerformed
 
-    private void MenuItem_DocumentoFonteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_DocumentoFonteActionPerformed
-        Principale_DocumentiFonte.ApriDocumentoDiOrigine(Principale.PopUp_IDTrans, this);
-    }//GEN-LAST:event_MenuItem_DocumentoFonteActionPerformed
 
 
     
     
-    private void MenuItem_ModificaPrezzoMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MenuItem_ModificaPrezzoMouseReleased
-        // TODO add your handling code here:
-    }//GEN-LAST:event_MenuItem_ModificaPrezzoMouseReleased
 
-    private void MenuItem_ModificaPrezzoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaPrezzoActionPerformed
-        ApriModificaPrezzo(IDdt);
-    }//GEN-LAST:event_MenuItem_ModificaPrezzoActionPerformed
 
     private void Bottone_ModificaPrezzoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_ModificaPrezzoActionPerformed
         ApriModificaPrezzo(IDdt);
@@ -1016,13 +924,13 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
 
     /**
      * Chiude il dettaglio, apre {@link GUI_ModificaPrezzo} sul movimento e, alla sua chiusura, riapre il
-     * dettaglio nella stessa posizione. Usato sia dal pulsante sia dalla voce del menu contestuale: per
-     * questo prende l'ID mostrato ({@code IDdt}) e non {@code Principale.PopUp_IDTrans}, che dopo una
+     * dettaglio nella stessa posizione. Usato dal pulsante (la voce del menu contestuale è quella della finestra
+     * principale): prende l'ID mostrato ({@code IDdt}) e non {@code Principale.PopUp_IDTrans}, che dopo una
      * navigazione con le frecce, o senza aver mai aperto il menu, può riferirsi a un altro movimento.
      * @param IDtrans ID del movimento di cui modificare il prezzo
      */
     private void ApriModificaPrezzo(String IDtrans) {
-        if (IDtrans == null || Principale.MappaCryptoWallet.get(IDtrans) == null) {
+        if (SolaLettura || IDtrans == null || Principale.MappaCryptoWallet.get(IDtrans) == null) {
             return;
         }
         Component c=this;
@@ -1076,80 +984,42 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
         }
     }
 
-    private void MenuItem_ModificaNoteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaNoteActionPerformed
-        // TODO add your handling code here:
-        if (Funzioni.GUIModificaNote(Principale.PopUp_Component, Principale.PopUp_IDTrans))TabellaCryptodaAggiornare=true;
-        TransazioniCrypto_CompilaTextPaneDatiMovimento(IDdt);
 
-    }//GEN-LAST:event_MenuItem_ModificaNoteActionPerformed
-
-    private void MenuItem_EsportaTabellaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_EsportaTabellaActionPerformed
-
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        Download progress = new Download();
-        progress.MostraProgressAttesa("Export in Excel", "Esportazione in corso...");
-        progress.setLocationRelativeTo(this);
-
-        // Esegui l'export in background
-        SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
-            /** Esporta in background la tabella corrente in un file Excel. */
-            @Override
-            protected Boolean doInBackground() throws Exception {
-                if (Principale.PopUp_Tabella == null) return true;
-                return Funzioni.Export_CreaExcelDaTabella(Principale.PopUp_Tabella);
-            }
-
-            /** Chiude la finestra di progresso, ripristina il cursore e avvisa se l'export non è riuscito. */
-            @Override
-            protected void done() {
-                progress.dispose();
-                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                boolean riuscito;
-                try {
-                    riuscito = get();
-                } catch (Exception ex) {
-                    LoggerGC.ScriviErrore(ex);
-                    riuscito = false;
-                }
-                if (!riuscito) Funzioni.Export_AvvisaNonRiuscito(GUI_DettaglioTransazione.this);
-            }
-        };
-
-        worker.execute();
-        progress.setVisible(true);// Questo blocca finché done() non chiama dispose()
-
-    }//GEN-LAST:event_MenuItem_EsportaTabellaActionPerformed
 
     
+    /**
+     * Il menu dei movimenti della finestra principale, sul movimento mostrato (ogni riga della tabella è un suo campo),
+     * nel profilo del dettaglio: consultazione più prezzo e note. Dopo una modifica il dettaglio si rilegge.
+     */
     private void Funzioni_RichiamaPopUpdaTabella(JTable tabella, java.awt.event.MouseEvent evt) {
-        
-        System.out.println("ID:"+IDdt);
+        Principale.ApriMenuMovimenti(tabella, evt, IDdt, SolaLettura ? Funzioni.ProfiloMenuMovimenti.DETTAGLIO_SOLA_LETTURA
+                : Funzioni.ProfiloMenuMovimenti.DETTAGLIO_MOVIMENTO, this::RileggiDopoModifica);
+    }
 
-        if (!Funzioni.PopUp_ClickInternoASelezione(tabella, evt)) {
-            tabella.requestFocusInWindow();
-            int row = tabella.rowAtPoint(evt.getPoint());
-            int col = tabella.columnAtPoint(evt.getPoint());
+    /**
+     * Vero se il dettaglio è stato aperto da una finestra di sola consultazione (la classificazione, un LiFo aperto da un
+     * dialogo modale) o sopra un dialogo modale: modificare da qui cambierebbe i movimenti che quella finestra sta usando,
+     * e lei resterebbe con i dati di prima. Resta vero anche scorrendo con le frecce, che non creano un nuovo dettaglio.
+     */
+    private boolean SolaLettura = false;
 
-            if (row != -1 && col != -1) {
-                tabella.setRowSelectionInterval(row, row);
-                tabella.setColumnSelectionInterval(col, col);
-                tabella.changeSelection(row, col, false, false);
-            }
-
+    /** Spegne i pulsanti che modificano e riduce il menu alla consultazione. Da chiamare prima di mostrare il dialogo. */
+    public void ImpostaSolaLettura() {
+        SolaLettura = true;
+        String motivo = "Non disponibile: il dettaglio è aperto da una finestra che non permette modifiche";
+        for (javax.swing.JButton b : new javax.swing.JButton[]{Bottone_Modifica, Bottone_ModificaPrezzo}) {
+            b.setEnabled(false);
+            b.setToolTipText(motivo);
         }
-        int rigaSelezionata = tabella.getSelectedRow();
-        if (rigaSelezionata != -1) {
+    }
 
-            //Questo popup lavora sempre su un solo movimento: allineo comunque la lista delle righe
-            //selezionate, altrimenti resterebbe quella dell'ultimo menu contestuale aperto altrove
-            Principale.PopUp_IDTransSelezionati = new java.util.ArrayList<>();
-            if (IDdt != null && Principale.MappaCryptoWallet.get(IDdt) != null) {
-                Principale.PopUp_IDTransSelezionati.add(IDdt);
-            }
-
-            Funzioni.PopUpMenu(this, evt, PopupMenu, IDdt);
-
+    /** Dopo una voce del menu che ha cambiato i movimenti: rilegge il movimento mostrato, o chiude se non c'è più. */
+    private void RileggiDopoModifica() {
+        if (IDdt == null || Principale.MappaCryptoWallet.get(IDdt) == null) {
+            dispose();
+            return;
         }
+        TransazioniCrypto_CompilaTextPaneDatiMovimento(IDdt);
     }
     
     
@@ -1167,6 +1037,7 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
        * @param c componente da cui recuperare la finestra ancestor per i messaggi di conferma
        */
       public void Funzione_ModificaMovimento(String ID,Component c){
+            if (SolaLettura) return;
             GUI_ModificaMovimento a = new GUI_ModificaMovimento();
             String riga[]=Principale.MappaCryptoWallet.get(ID);
 
@@ -1236,19 +1107,10 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
     private javax.swing.JButton Bottone_MovPrecedente;
     private javax.swing.JButton Bottone_MovSuccessivo;
     private javax.swing.JButton Bottone_Storico;
-    private javax.swing.JMenuItem MenuItem_Copia;
-    private javax.swing.JMenuItem MenuItem_CopiaID;
-    private javax.swing.JMenuItem MenuItem_DocumentoFonte;
-    private javax.swing.JMenuItem MenuItem_EsportaTabella;
-    private javax.swing.JMenuItem MenuItem_ModificaNote;
-    private javax.swing.JMenuItem MenuItem_ModificaPrezzo;
     private javax.swing.JPanel Pannello_Giacenze;
-    private javax.swing.JPopupMenu PopupMenu;
     private javax.swing.JScrollPane ScrollTabella;
     private javax.swing.JTable Tabella;
     private javax.swing.JTextPane TextPane_Titolo;
-    private javax.swing.JPopupMenu.Separator jSeparator6;
-    private javax.swing.JPopupMenu.Separator jSeparator7;
     // End of variables declaration//GEN-END:variables
 
     /**

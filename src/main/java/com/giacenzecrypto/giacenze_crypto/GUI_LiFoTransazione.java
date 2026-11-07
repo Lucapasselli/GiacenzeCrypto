@@ -23,7 +23,9 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
     /**
      * Creates new form Gui_LiFo_Transazione
      */
-    private static String ID="";
+    //Di questa finestra, non statico: con due finestre del LiFo aperte le frecce e il ricalcolo dopo una modifica
+    //lavoravano sul movimento dell'ultima aperta
+    private String ID="";
    // private String Movimento[];
     public Tabelle_PopupSelezioneMultipla popup = new Tabelle_PopupSelezioneMultipla(this);
 
@@ -67,6 +69,43 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
         Tabelle.Tabelle_InizializzaHeader(Tabella_Lifo_Entrata);
         Tabelle.Tabelle_InizializzaHeader(Tabella_Lifo_Uscita);
         Tabelle.Tabelle_InizializzaHeader(jTable1);
+        //Menu dei movimenti della finestra principale su tutte e tre le tabelle (ID nella colonna 1 dei lotti, 0 del
+        //movimento). La finestra si apre anche dal dettaglio e dalla classificazione, dialoghi modali che la
+        //bloccherebbero: in quel caso, e solo in quello, resta esclusa dal blocco. Una finestra esclusa però non
+        //viene tenuta sotto i dialoghi modali delle altre finestre (la conferma di "Elimina Movimento" finiva sotto
+        //il LiFo): per questo esclusa vuol dire anche menu di sola consultazione, e appena non resta aperto nessun
+        //dialogo modale la finestra torna normale (RientraNelBloccoModale)
+        if (Funzioni.DialogoModaleAperto()
+                && getToolkit().isModalExclusionTypeSupported(java.awt.Dialog.ModalExclusionType.APPLICATION_EXCLUDE)) {
+            setModalExclusionType(java.awt.Dialog.ModalExclusionType.APPLICATION_EXCLUDE);
+            for (java.awt.Window w : java.awt.Window.getWindows()) {
+                if (w instanceof java.awt.Dialog d && d.isShowing() && d.isModal()) {
+                    d.addWindowListener(new java.awt.event.WindowAdapter() {
+                        @Override
+                        public void windowClosed(java.awt.event.WindowEvent e) {
+                            javax.swing.SwingUtilities.invokeLater(GUI_LiFoTransazione.this::RientraNelBloccoModale);
+                        }
+                    });
+                    d.addComponentListener(new java.awt.event.ComponentAdapter() {
+                        @Override
+                        public void componentHidden(java.awt.event.ComponentEvent e) {
+                            javax.swing.SwingUtilities.invokeLater(GUI_LiFoTransazione.this::RientraNelBloccoModale);
+                        }
+                    });
+                }
+            }
+            //Se sotto si era aperto un altro dialogo modale (un dettaglio dal LiFo stesso), la finestra rientra quando
+            //torna attiva dopo la sua chiusura
+            addWindowListener(new java.awt.event.WindowAdapter() {
+                @Override
+                public void windowActivated(java.awt.event.WindowEvent e) {
+                    javax.swing.SwingUtilities.invokeLater(GUI_LiFoTransazione.this::RientraNelBloccoModale);
+                }
+            });
+        }
+        AggiungiMenuMovimenti(Tabella_Lifo_Uscita, 1);
+        AggiungiMenuMovimenti(Tabella_Lifo_Entrata, 1);
+        AggiungiMenuMovimenti(jTable1, 0);
         ImageIcon icon = new ImageIcon(VarStatiche.getPathRisorse()+"logo.png");
         this.Bottone_ME_FrecciaDestra.setIcon(Icone.FrecciaDestra);
         this.Bottone_MU_FrecciaDestra.setIcon(Icone.FrecciaDestra);
@@ -102,6 +141,51 @@ public class GUI_LiFoTransazione extends javax.swing.JFrame {
         }
     }
     
+    /**
+     * Toglie l'esclusione dal blocco dei dialoghi modali quando non ne resta aperto nessuno: da qui in poi i dialoghi
+     * modali della finestra principale bloccano di nuovo il LiFo e gli restano sopra, e il menu torna completo.
+     * L'esclusione cambia solo nascondendo e rimostrando la finestra, che resta dov'era.
+     */
+    private void RientraNelBloccoModale() {
+        if (!isDisplayable() || getModalExclusionType() == java.awt.Dialog.ModalExclusionType.NO_EXCLUDE
+                || Funzioni.DialogoModaleAperto()) return;
+        java.awt.Rectangle posizione = getBounds();
+        setVisible(false);
+        setModalExclusionType(java.awt.Dialog.ModalExclusionType.NO_EXCLUDE);
+        setBounds(posizione);
+        setVisible(true);
+    }
+
+    private void AggiungiMenuMovimenti(JTable tabella, int colonnaID) {
+        tabella.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                boolean esclusa = getModalExclusionType() != java.awt.Dialog.ModalExclusionType.NO_EXCLUDE;
+                Principale.ApriMenuMovimenti(tabella, evt, colonnaID, esclusa || Funzioni.DialogoModaleAperto()
+                        ? Funzioni.ProfiloMenuMovimenti.CONSULTAZIONE : Funzioni.ProfiloMenuMovimenti.COMPLETO,
+                        GUI_LiFoTransazione.this::RicaricaDopoModifica);
+            }
+        });
+    }
+
+    /**
+     * Dopo una voce del menu che ha cambiato i movimenti: rifà il calcolo del movimento mostrato, o chiude la
+     * finestra se il movimento non c'è più (eliminato, o rinominato riportando il suo gruppo alla situazione iniziale).
+     */
+    private void RicaricaDopoModifica() {
+        if (Principale.MappaCryptoWallet.get(ID) == null) {
+            dispose();
+            return;
+        }
+        try {
+            Calcoli_PlusvalenzeNew.AggiornaPlusvalenzeConDettagliLifo();
+            InizializzaOggetti(ID);
+        } catch (RuntimeException ex) {
+            LoggerGC.ScriviErrore(ex);
+            dispose();
+        }
+    }
+
     private void InizializzaOggetti(String IDtr){
         ID=IDtr;
         String Movimento[]=Principale.MappaCryptoWallet.get(IDtr);

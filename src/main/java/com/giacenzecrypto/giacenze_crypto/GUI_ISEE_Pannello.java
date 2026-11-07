@@ -13,7 +13,8 @@ import javax.swing.table.DefaultTableModel;
  * Parte grafica del tab "ISEE" di Dichiarazioni: i rapporti del Quadro FC2 della DSU per l'anno scelto, il dettaglio
  * del rapporto selezionato, la modifica dei dati scritti a mano e i dati rimasti senza rapporto. A richiesta la media
  * giornaliera dei rapporti 99 con i prezzi fiscali ({@link Principale_ISEE_Media}) e la sistemazione dei prezzi che
- * mancano ({@link GUI_PrezziMancantiISEE}).
+ * mancano ({@link GUI_PrezziMancantiISEE}). Il dettaglio del rapporto ha tre schede (dati, monete, avvisi); i pulsanti
+ * di stampa ricalcolano l'anno e archiviano il prospetto DSU ({@link Principale_ISEE_Prospetto}).
  *
  * <p>Stesso schema di {@link GUI_ArchivioDichiarazioni_Pannello}: montato pigramente da {@code Principale}, la logica
  * in {@link Principale_ISEE}. Il calcolo non parte da solo all'apertura: scarica prezzi, quindi lo avvia il pulsante.</p>
@@ -31,10 +32,10 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
         initComponents();
         Icone.AdattaIconeAlTema(this);
 
-        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_Rapporti);
-        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_Dettaglio);
-        Tabelle.ColoraTabellaSemplice(Tabella_Rapporti);
-        Tabelle.ColoraTabellaSemplice(Tabella_Dettaglio);
+        for (javax.swing.JTable t : new javax.swing.JTable[] {Tabella_Rapporti, Tabella_Dettaglio, Tabella_Monete, Tabella_Avvisi}) {
+            Tabelle.Tabelle_ApplicaHeaderBoldCentrato(t);
+            Tabelle.ColoraTabellaSemplice(t);
+        }
 
         int annoCorrente = LocalDate.now().getYear();
         Anni = Principale_ISEE.Anni(annoCorrente);
@@ -47,6 +48,9 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
         }
 
         //Scritto a mano: il GUI Builder non modella gli eventi del modello di selezione di una JTable
+        Label_Definitiva.setVisible(false);
+        Label_Definitiva.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
+
         Tabella_Rapporti.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 MostraDettaglio();
@@ -70,14 +74,22 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
         Combo_Anno = new javax.swing.JComboBox<>();
         Bottone_Calcola = new javax.swing.JButton();
         Bottone_Media = new javax.swing.JButton();
+        Bottone_Stampa = new javax.swing.JButton();
+        Bottone_Excel = new javax.swing.JButton();
         Bottone_Guida = new javax.swing.JButton();
         Label_Info = new javax.swing.JLabel();
         ScrollPane_Rapporti = new javax.swing.JScrollPane();
         Tabella_Rapporti = new javax.swing.JTable();
         Label_Dettaglio = new javax.swing.JLabel();
         Label_Riepilogo = new javax.swing.JLabel();
+        TabbedPane_Dettaglio = new javax.swing.JTabbedPane();
         ScrollPane_Dettaglio = new javax.swing.JScrollPane();
         Tabella_Dettaglio = new javax.swing.JTable();
+        ScrollPane_Monete = new javax.swing.JScrollPane();
+        Tabella_Monete = new javax.swing.JTable();
+        ScrollPane_Avvisi = new javax.swing.JScrollPane();
+        Tabella_Avvisi = new javax.swing.JTable();
+        Label_Definitiva = new javax.swing.JLabel();
         Bottone_PrezziMancanti = new javax.swing.JButton();
         Bottone_Modifica = new javax.swing.JButton();
         Bottone_Scollegati = new javax.swing.JButton();
@@ -101,6 +113,24 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
         Bottone_Media.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Bottone_MediaActionPerformed(evt);
+            }
+        });
+
+        Bottone_Stampa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_PDF.png"))); // NOI18N
+        Bottone_Stampa.setText("Stampa prospetto PDF");
+        Bottone_Stampa.setToolTipText("Ricalcola l'anno scelto, genera e archivia insieme il prospetto PDF del Quadro FC2 e l'Excel di dettaglio, poi apre il PDF");
+        Bottone_Stampa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_StampaActionPerformed(evt);
+            }
+        });
+
+        Bottone_Excel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
+        Bottone_Excel.setText("Crea Excel con i dettagli");
+        Bottone_Excel.setToolTipText("Ricalcola l'anno scelto, genera e archivia insieme l'Excel di dettaglio e il prospetto PDF, poi apre l'Excel");
+        Bottone_Excel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Bottone_ExcelActionPerformed(evt);
             }
         });
 
@@ -173,6 +203,72 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
         });
         ScrollPane_Dettaglio.setViewportView(Tabella_Dettaglio);
 
+        TabbedPane_Dettaglio.addTab("Rapporto", ScrollPane_Dettaglio);
+
+        Tabella_Monete.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Moneta", "Quantità al 31/12", "Valore al 31/12 (EUR)", "Nota"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        ScrollPane_Monete.setViewportView(Tabella_Monete);
+
+        TabbedPane_Dettaglio.addTab("Monete", ScrollPane_Monete);
+
+        Tabella_Avvisi.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Avviso"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        ScrollPane_Avvisi.setViewportView(Tabella_Avvisi);
+
+        TabbedPane_Dettaglio.addTab("Avvisi", ScrollPane_Avvisi);
+
+        Label_Definitiva.setFont(new java.awt.Font("Noto Sans", 1, 13)); // NOI18N
+        Label_Definitiva.setForeground(Tabelle.rosso);
+        Label_Definitiva.setText("Valori diversi dalla dichiarazione definitiva");
+        Label_Definitiva.setToolTipText("Clic per aprire l'archivio delle dichiarazioni");
+        Label_Definitiva.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Label_DefinitivaMouseClicked(evt);
+            }
+        });
+
         Bottone_PrezziMancanti.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
         Bottone_PrezziMancanti.setText("Prezzi mancanti...");
         Bottone_PrezziMancanti.setToolTipText("I giorni rimasti senza prezzo nella media giornaliera, con i prezzi personalizzati da scrivere");
@@ -215,17 +311,22 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
                         .addComponent(Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_Media, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Bottone_Stampa, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Bottone_Excel, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(Bottone_Guida, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(Label_Info, javax.swing.GroupLayout.DEFAULT_SIZE, 1160, Short.MAX_VALUE)
                     .addComponent(ScrollPane_Rapporti, javax.swing.GroupLayout.DEFAULT_SIZE, 1160, Short.MAX_VALUE)
-                    .addComponent(ScrollPane_Dettaglio, javax.swing.GroupLayout.DEFAULT_SIZE, 1160, Short.MAX_VALUE)
+                    .addComponent(TabbedPane_Dettaglio, javax.swing.GroupLayout.DEFAULT_SIZE, 1160, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(Label_Dettaglio)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(Label_Riepilogo))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(Label_Definitiva)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(Bottone_PrezziMancanti, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_Modifica, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -242,6 +343,8 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
                     .addComponent(Combo_Anno, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Bottone_Media, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Bottone_Stampa, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Bottone_Excel, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Bottone_Guida, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Label_Info)
@@ -252,9 +355,10 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
                     .addComponent(Label_Dettaglio)
                     .addComponent(Label_Riepilogo))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(ScrollPane_Dettaglio, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(TabbedPane_Dettaglio, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Label_Definitiva)
                     .addComponent(Bottone_PrezziMancanti, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Bottone_Modifica, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Bottone_Scollegati, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -279,6 +383,18 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
             Media(r == null ? null : r.chiave);
         }
     }//GEN-LAST:event_Bottone_MediaActionPerformed
+
+    private void Bottone_StampaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_StampaActionPerformed
+        GeneraProspetto(false);
+    }//GEN-LAST:event_Bottone_StampaActionPerformed
+
+    private void Bottone_ExcelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_ExcelActionPerformed
+        GeneraProspetto(true);
+    }//GEN-LAST:event_Bottone_ExcelActionPerformed
+
+    private void Label_DefinitivaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Label_DefinitivaMouseClicked
+        ApriArchivio();
+    }//GEN-LAST:event_Label_DefinitivaMouseClicked
 
     private void Bottone_PrezziMancantiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_PrezziMancantiActionPerformed
         if (Ris == null || Ris.prezziMancanti.isEmpty()) {
@@ -327,8 +443,9 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
      *
      * @param chiaveDaSelezionare il rapporto da riselezionare dopo il calcolo, {@code null} = nessuno
      * @param conMedia {@code true} per rifare anche la media giornaliera (era già stata calcolata)
+     * @return {@code true} se il calcolo (e la media, se chiesta) è arrivato in fondo
      */
-    private void Calcola(int anno, String chiaveDaSelezionare, boolean conMedia) {
+    private boolean Calcola(int anno, String chiaveDaSelezionare, boolean conMedia) {
         Download progress = new Download();
         progress.setLocationRelativeTo(Proprietario());
         progress.Titolo("ISEE: calcolo dei rapporti del " + anno);
@@ -348,22 +465,43 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
         if (esito[0] == null) {
             Messaggi.WarningMessage("Calcolo non completato", "Il calcolo è stato interrotto o non è riuscito: "
                     + "la tabella mostra ancora il risultato precedente.", Proprietario());
-            return;
+            return false;
         }
         Ris = esito[0];
         if (conMedia) {
-            Media(chiaveDaSelezionare);
-        } else {
-            Riempi(chiaveDaSelezionare);
+            return Media(chiaveDaSelezionare);
         }
+        Riempi(chiaveDaSelezionare);
+        return true;
+    }
+
+    /**
+     * Genera e archivia il prospetto DSU (PDF ed Excel insieme) dell'anno della tendina. Prima ricalcola, con la media
+     * giornaliera se l'ultimo calcolo di quell'anno l'aveva: il tab non sa se movimenti, prezzi o dati dei rapporti
+     * sono cambiati dopo, e i file archiviati devono nascere dai dati di adesso. Interrotto il calcolo, non archivia.
+     */
+    private void GeneraProspetto(boolean apriExcel) {
+        int i = Combo_Anno.getSelectedIndex();
+        if (i < 0 || i >= Anni.size()) {
+            return;
+        }
+        int anno = Anni.get(i);
+        boolean conMedia = Ris != null && Ris.anno == anno && Ris.mediaCalcolata;
+        Calcoli_ISEE.Rapporto r = Selezionato();
+        if (!Calcola(anno, r == null ? null : r.chiave, conMedia)) {
+            return;
+        }
+        Principale_ISEE_Prospetto.Genera(Ris, apriExcel, Proprietario());
     }
 
     /**
      * La media giornaliera dei rapporti 99 sull'ultimo calcolo, in due passi: prima conta (senza rete) le quotazioni
      * che mancano e, se ci vuole più di un minuto, chiede conferma con la stima. Poi le scarica (interrompibile: quello
      * che è arrivato resta in cache) e calcola. Interrotta, la tabella resta com'era.
+     *
+     * @return {@code true} se la media è stata calcolata
      */
-    private void Media(String chiaveDaSelezionare) {
+    private boolean Media(String chiaveDaSelezionare) {
         Calcoli_ISEE.Risultato ris = Ris;
         Download preparazione = new Download();
         preparazione.setLocationRelativeTo(Proprietario());
@@ -383,11 +521,11 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
         preparazione.setVisible(true);
         if (piano[0] == null || preparazione.FineThread()) {
             Riempi(chiaveDaSelezionare);
-            return;
+            return false;
         }
         if (piano[0].secondiStimati() >= 60 && !ConfermaScaricamento(piano[0])) {
             Riempi(chiaveDaSelezionare);
-            return;
+            return false;
         }
 
         Download progress = new Download();
@@ -413,6 +551,7 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
                     + "I prezzi già arrivati restano: ripetendo il calcolo si riparte da lì.", Proprietario());
         }
         Riempi(chiaveDaSelezionare);
+        return fatto[0];
     }
 
     private boolean ConfermaScaricamento(Principale_ISEE_Media.Piano piano) {
@@ -442,6 +581,7 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
             }
         }
         Label_Riepilogo.setText(Principale_ISEE.Riepilogo(Ris));
+        ControllaDefinitiva();
         AdattaLarghezzaColonne(Tabella_Rapporti);
         if (daSelezionare >= 0) {
             int vista = Tabella_Rapporti.convertRowIndexToView(daSelezionare);
@@ -452,6 +592,35 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
         AggiornaStatoPulsanti();
     }
 
+    /**
+     * Dopo ogni calcolo: confronta i rapporti dell'anno con il prospetto DSU segnato definitivo per quell'anno, se c'è,
+     * e se differiscono lo dice l'etichetta rossa, come nei quadri W/RW e T/RT. Senza la media giornaliera calcolata la
+     * media non si confronta ({@link Principale_ISEE_Prospetto#DifferenzeDallaDefinitiva}).
+     */
+    private void ControllaDefinitiva() {
+        Dichiarazioni.Dichiarazione def = Ris == null ? null
+                : Dichiarazioni.Definitiva(Dichiarazioni.Famiglia.ISEE, String.valueOf(Ris.anno));
+        List<String[]> diff = Principale_ISEE_Prospetto.DifferenzeDallaDefinitiva(Ris, def);
+        if (diff.isEmpty()) {
+            Label_Definitiva.setVisible(false);
+            return;
+        }
+        Principale_Dichiarazioni.MostraEtichettaDefinitiva(Label_Definitiva, List.of("DSU " + (Ris.anno + 2)),
+                new StringBuilder(Principale_Dichiarazioni.TestoDifferenze(def.Descrizione(), def, diff)));
+    }
+
+    /** Porta sul tab "Archivio dichiarazioni", fratello di questo nella scheda Dichiarazioni. */
+    private void ApriArchivio() {
+        javax.swing.JTabbedPane schede = (javax.swing.JTabbedPane) SwingUtilities.getAncestorOfClass(javax.swing.JTabbedPane.class, this);
+        if (schede == null) {
+            return;
+        }
+        int i = schede.indexOfTab("Archivio dichiarazioni");
+        if (i >= 0) {
+            schede.setSelectedIndex(i);
+        }
+    }
+
     /** Modifica i dati del rapporto selezionato e ricalcola: una chiusura cambia giorni, media, valore e avvisi. */
     private void Modifica() {
         Calcoli_ISEE.Rapporto r = Selezionato();
@@ -460,13 +629,27 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
         }
     }
 
+    /** Le tre schede del rapporto selezionato; i titoli di Monete e Avvisi portano il numero delle righe. */
     private void MostraDettaglio() {
-        DefaultTableModel m = (DefaultTableModel) Tabella_Dettaglio.getModel();
+        Calcoli_ISEE.Rapporto r = Selezionato();
+        Riempi(Tabella_Dettaglio, Principale_ISEE.Dettaglio(r));
+        Riempi(Tabella_Monete, Principale_ISEE.Monete(r));
+        Riempi(Tabella_Avvisi, Principale_ISEE.Avvisi(r));
+        int monete = r == null ? 0 : r.posizioni.size();
+        int avvisi = r == null ? 0 : r.note.size();
+        TabbedPane_Dettaglio.setTitleAt(TabbedPane_Dettaglio.indexOfComponent(ScrollPane_Monete),
+                monete == 0 ? "Monete" : "Monete (" + monete + ")");
+        TabbedPane_Dettaglio.setTitleAt(TabbedPane_Dettaglio.indexOfComponent(ScrollPane_Avvisi),
+                avvisi == 0 ? "Avvisi" : "Avvisi (" + avvisi + ")");
+    }
+
+    private void Riempi(javax.swing.JTable t, List<Object[]> righe) {
+        DefaultTableModel m = (DefaultTableModel) t.getModel();
         m.setRowCount(0);
-        for (Object[] riga : Principale_ISEE.Dettaglio(Selezionato())) {
+        for (Object[] riga : righe) {
             m.addRow(riga);
         }
-        AdattaLarghezzaColonne(Tabella_Dettaglio);
+        AdattaLarghezzaColonne(t);
     }
 
     private void AggiornaScollegati() {
@@ -514,19 +697,27 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bottone_Calcola;
+    private javax.swing.JButton Bottone_Excel;
     private javax.swing.JButton Bottone_Guida;
     private javax.swing.JButton Bottone_Media;
     private javax.swing.JButton Bottone_Modifica;
     private javax.swing.JButton Bottone_PrezziMancanti;
     private javax.swing.JButton Bottone_Scollegati;
+    private javax.swing.JButton Bottone_Stampa;
     private javax.swing.JComboBox<String> Combo_Anno;
     private javax.swing.JLabel Label_Anno;
+    private javax.swing.JLabel Label_Definitiva;
     private javax.swing.JLabel Label_Dettaglio;
     private javax.swing.JLabel Label_Info;
     private javax.swing.JLabel Label_Riepilogo;
+    private javax.swing.JScrollPane ScrollPane_Avvisi;
     private javax.swing.JScrollPane ScrollPane_Dettaglio;
+    private javax.swing.JScrollPane ScrollPane_Monete;
     private javax.swing.JScrollPane ScrollPane_Rapporti;
+    private javax.swing.JTabbedPane TabbedPane_Dettaglio;
+    private javax.swing.JTable Tabella_Avvisi;
     private javax.swing.JTable Tabella_Dettaglio;
+    private javax.swing.JTable Tabella_Monete;
     private javax.swing.JTable Tabella_Rapporti;
     // End of variables declaration//GEN-END:variables
 }

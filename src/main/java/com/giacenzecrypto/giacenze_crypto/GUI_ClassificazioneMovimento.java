@@ -184,6 +184,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         initComponents();
         RipristinaFiltriAssociazione();
         PortaColonnaGruppoAccantoAlWallet();
+        AggiungiMenuMovimenti();
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(jTable1);
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_MovimentiAbbinati);
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.jTable1.getModel();
@@ -279,6 +280,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         initComponents();
         RipristinaFiltriAssociazione();
         PortaColonnaGruppoAccantoAlWallet();
+        AggiungiMenuMovimenti();
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(jTable1);
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_MovimentiAbbinati);
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.jTable1.getModel();
@@ -421,6 +423,23 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
         if (Gruppo == null) return "";
         String[] a = MappaAlias.get(Gruppo);
         return (a != null && a[1] != null && !a[1].isBlank()) ? a[1] : Gruppo;
+    }
+
+    /**
+     * Menu dei movimenti della finestra principale sulle due tabelle (ID nella colonna 0 del modello), ridotto alla
+     * consultazione: dettagli, LiFo, documento di origine, copia. Una modifica a metà classificazione cambierebbe i
+     * movimenti che questo dialogo sta abbinando.
+     */
+    private void AggiungiMenuMovimenti() {
+        for (javax.swing.JTable t : new javax.swing.JTable[]{jTable1, Tabella_MovimentiAbbinati}) {
+            t.addMouseListener(new java.awt.event.MouseAdapter() {
+                @Override
+                public void mouseReleased(java.awt.event.MouseEvent evt) {
+                    //Senza trasferimento la tabella dei candidati è grigia e non conta
+                    if (t.isEnabled()) Principale.ApriMenuMovimenti(t, evt, 0, Funzioni.ProfiloMenuMovimenti.CONSULTAZIONE, null);
+                }
+            });
+        }
     }
 
     /**

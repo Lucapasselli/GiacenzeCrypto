@@ -54,8 +54,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Stream;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -445,6 +447,109 @@ public class Funzioni {
             "Dettagli Movimento");
 
     /**
+     * Voci del menu dei movimenti che <b>cambiano</b> i movimenti. I profili ridotti
+     * ({@link ProfiloMenuMovimenti}) nascondono queste e lasciano le altre: una voce nuova che modifica va
+     * aggiunta qui, altrimenti comparirebbe anche nei dialoghi di sola consultazione.
+     * {@code PopUpMenuVociSingoloMovimentoTest} verifica che ogni voce del form stia qui o in
+     * {@link #POPUP_VOCI_CONSULTAZIONE}.
+     */
+    public static final List<String> POPUP_VOCI_MODIFICA = List.of(
+            "Modifica Movimento",
+            "Classifica Movimento",
+            "Elimina Movimento",
+            "Modifica Prezzo",
+            POPUP_VOCE_RICALCOLA_PREZZI,
+            POPUP_VOCE_PREZZO_ZERO,
+            "Separa in Deposito/Prelievo",
+            "Crea movimento di scambio da Deposito/Prelievo",
+            "Unisci movimenti omogenei (somma quantità)",
+            POPUP_VOCE_COLLEGA_COMMISSIONI,
+            POPUP_VOCE_SCOLLEGA_COMMISSIONI,
+            "Modifica Note",
+            "Cambia Tipologia Reward",
+            "Trasla Orario");
+
+    /** Voci del menu dei movimenti che non cambiano niente: restano in tutti i profili. */
+    public static final List<String> POPUP_VOCI_CONSULTAZIONE = List.of(
+            "Dettagli Movimento",
+            "Mostra LiFo Transazione",
+            "Apri documento di origine",
+            "Chiedi all'IA",
+            "Copia ID Transazione",
+            "Copia selezione",
+            "Incolla",
+            POPUP_VOCE_SELEZIONA_VISIBILI,
+            "Esporta Tabella in Excel");
+
+    /**
+     * Quali voci del menu dei movimenti mostra una finestra. Il menu è uno solo, quello di {@code Principale},
+     * aperto anche dalle altre finestre con {@code Principale.ApriMenuMovimenti}.
+     */
+    public enum ProfiloMenuMovimenti {
+        /** Tutte le voci: le tabelle della finestra principale, il LiFo, i fallimenti. */
+        COMPLETO,
+        /**
+         * Solo le voci che non cambiano i movimenti: i dialoghi in cui una modifica a metà lavoro sarebbe
+         * pericolosa (la classificazione) o in cui la finestra resterebbe vecchia, e il LiFo quando un dialogo
+         * modale è aperto sotto.
+         */
+        CONSULTAZIONE,
+        /**
+         * Il dettaglio di un movimento: consultazione più prezzo e note, che il dettaglio sa rileggere. Niente
+         * "Dettagli Movimento", che riaprirebbe lo stesso dettaglio sopra se stesso.
+         */
+        DETTAGLIO_MOVIMENTO,
+        /**
+         * Il dettaglio aperto da una finestra in sola consultazione (la classificazione, un LiFo aperto da un dialogo
+         * modale): nessuna voce che modifica, come la finestra da cui viene. Anche i suoi pulsanti di modifica sono spenti.
+         */
+        DETTAGLIO_SOLA_LETTURA;
+
+        /** @return vero se la voce con questa etichetta va mostrata nel profilo */
+        public boolean Mostra(String voce) {
+            if (voce == null || this == COMPLETO) return true;
+            if (this == DETTAGLIO_MOVIMENTO || this == DETTAGLIO_SOLA_LETTURA) {
+                if (voce.equalsIgnoreCase("Dettagli Movimento")) return false;
+            }
+            if (this == DETTAGLIO_MOVIMENTO) {
+                if (voce.equalsIgnoreCase("Modifica Prezzo") || voce.equalsIgnoreCase("Modifica Note")) return true;
+            }
+            return POPUP_VOCI_MODIFICA.stream().noneMatch(voce::equalsIgnoreCase);
+        }
+
+        /**
+         * @return vero se un dettaglio aperto da un menu con questo profilo deve essere in sola lettura: una finestra
+         *         che non lascia modificare non deve farlo fare passando dal dettaglio
+         */
+        public boolean DettaglioInSolaLettura() {
+            return this == CONSULTAZIONE || this == DETTAGLIO_SOLA_LETTURA;
+        }
+    }
+
+    /**
+     * Mostra o nasconde le voci secondo il profilo. Le categorie (sottomenu di primo livello) le decide dopo
+     * {@link #PopUp_SistemaCategorieESeparatori}, in base alle voci rimaste visibili.
+     */
+    public static void PopUp_ApplicaProfilo(JPopupMenu popupMenu, ProfiloMenuMovimenti profilo) {
+        for (JMenuItem item : PopUp_getAllMenuItems(popupMenu)) {
+            if (item instanceof JMenu && item.getParent() == popupMenu) continue;
+            item.setVisible(profilo.Mostra(item.getText()));
+        }
+    }
+
+    /**
+     * Vero se è visibile un dialogo modale. Chi apre il menu dei movimenti da una finestra che i dialoghi modali
+     * non bloccano (il LiFo) lo usa per ridursi alla consultazione: una modifica partita da lì cambierebbe i
+     * movimenti sotto il dialogo aperto.
+     */
+    public static boolean DialogoModaleAperto() {
+        for (java.awt.Window w : java.awt.Window.getWindows()) {
+            if (w instanceof java.awt.Dialog d && d.isShowing() && d.isModal()) return true;
+        }
+        return false;
+    }
+
+    /**
      * Vero se "Seleziona tutte le righe visibili" ha senso sulla tabella: serve la selezione multipla e almeno due righe nella
      * <b>vista</b> (le righe nascoste dai filtri non contano, {@code JTable.selectAll()} non le prende).
      */
@@ -458,7 +563,9 @@ public class Funzioni {
      * disabilitando le singole voci in base al contesto: se non è passato un ID movimento disabilita tutte le
      * voci relative al movimento; altrimenti le abilita e regola "Classifica Movimento" in base a
      * {@link #isDepositoPrelievoClassificabile} e "Cambia Tipologia Reward" in base al tipo di movimento.
-     * Distingue inoltre tra origine tabella (abilita "Esporta Tabella in Excel") e campo di testo (abilita "Incolla").
+     * Distingue inoltre tra origine tabella (mostra "Esporta Tabella in Excel" e "Seleziona tutte le righe visibili")
+     * e campo di testo (mostra "Incolla"): le voci dell'altro caso si nascondono, non si ingrigiscono.
+     * Alla fine {@link #PopUp_SistemaCategorieESeparatori} ingrigisce le categorie senza voci attive.
      * Le voci elencate in {@link #POPUP_VOCI_SOLO_SINGOLO_MOVIMENTO} vengono infine disattivate se la
      * selezione contiene più di un movimento.
      * @param c componente rispetto a cui posizionare il menu
@@ -583,18 +690,23 @@ public class Funzioni {
             {                
                 int row = table.getSelectedRow();
                 if (row == -1) return;
-                PopUp_disabilitaMenuDatesto(pop,"Incolla");
+                PopUp_mostraMenuDaTesto(pop,"Incolla",false);
+                PopUp_mostraMenuDaTesto(pop,"Esporta Tabella in Excel",true);
                 PopUp_abilitaMenuDaTesto(pop,"Esporta Tabella in Excel");
+                PopUp_mostraMenuDaTesto(pop,POPUP_VOCE_SELEZIONA_VISIBILI,true);
                 if (PuoSelezionareTutteLeRighe(table)) PopUp_abilitaMenuDaTesto(pop,POPUP_VOCE_SELEZIONA_VISIBILI);
                 else PopUp_disabilitaMenuDatesto(pop,POPUP_VOCE_SELEZIONA_VISIBILI);
                 Principale.PopUp_Tabella=table;
+                PopUp_SistemaCategorieESeparatori(pop);
                 pop.show(c, Coordinata.x, Coordinata.y);
-            }            
+            }
             else if (C_chiamante instanceof JTextField)
             {
+                PopUp_mostraMenuDaTesto(pop,"Incolla",true);
                 PopUp_abilitaMenuDaTesto(pop,"Incolla");
-                PopUp_disabilitaMenuDatesto(pop,"Esporta Tabella in Excel");
-                PopUp_disabilitaMenuDatesto(pop,POPUP_VOCE_SELEZIONA_VISIBILI);
+                PopUp_mostraMenuDaTesto(pop,"Esporta Tabella in Excel",false);
+                PopUp_mostraMenuDaTesto(pop,POPUP_VOCE_SELEZIONA_VISIBILI,false);
+                PopUp_SistemaCategorieESeparatori(pop);
                 pop.show(c, Coordinata.x, Coordinata.y);
                 Principale.PopUp_Tabella=null;
             }
@@ -720,17 +832,82 @@ public class Funzioni {
     
     
         /**
+         * Le voci si cercano anche dentro i sottomenu: le voci del menu dei movimenti sono raggruppate in
+         * sottomenu (Analizza, Prezzi...), e una ricerca sul solo primo livello lascerebbe le voci spostate
+         * sempre nello stato dell'ultima apertura, senza alcun errore.
          * @param popupMenu il menu contestuale da esaminare
-         * @return la lista di tutti i {@link JMenuItem} diretti contenuti in {@code popupMenu}
+         * @return la lista di tutti i {@link JMenuItem} contenuti in {@code popupMenu}, sottomenu compresi
+         *         (il {@link JMenu} stesso e le sue voci)
          */
         public static List<JMenuItem> PopUp_getAllMenuItems(JPopupMenu popupMenu) {
         List<JMenuItem> items = new ArrayList<>();
-        for (Component comp : popupMenu.getComponents()) {
-            if (comp instanceof JMenuItem) {
-                items.add((JMenuItem) comp);
+        PopUp_AggiungiVoci(popupMenu.getComponents(), items);
+        return items;
+    }
+
+    private static void PopUp_AggiungiVoci(Component[] componenti, List<JMenuItem> items) {
+        for (Component comp : componenti) {
+            if (comp instanceof JMenuItem voce) {
+                items.add(voce);
+                if (voce instanceof JMenu sottomenu) PopUp_AggiungiVoci(sottomenu.getMenuComponents(), items);
             }
         }
-        return items;
+    }
+
+    /**
+     * Mostra o nasconde la voce il cui testo corrisponde (case-insensitive) a quello indicato. Serve per le
+     * voci che dipendono dal tipo di componente (tabella o campo di testo) e non dalla selezione: quelle non
+     * hanno mai senso nell'altro caso, e ingrigite allungherebbero soltanto il menu.
+     */
+    public static void PopUp_mostraMenuDaTesto(JPopupMenu popupMenu, String testo, boolean visibile) {
+        for (JMenuItem item : PopUp_getAllMenuItems(popupMenu)) {
+            if (item.getText() != null && item.getText().equalsIgnoreCase(testo)) {
+                item.setVisible(visibile);
+            }
+        }
+    }
+
+    /**
+     * Ultimo passo prima di mostrare il menu. Ogni sottomenu di <b>primo livello</b> è una categoria di voci:
+     * sparisce quando un profilo ha nascosto tutte le sue voci e si ingrigisce quando nessuna sua voce visibile
+     * è attiva, così non si apre un sottomenu vuoto o tutto grigio.
+     * Un sottomenu riempito di dati come "Chiedi all'IA" va quindi messo dentro una categoria, non al primo
+     * livello: le sue voci sono sempre attive e la regola annullerebbe la disattivazione fatta per testo.
+     * Poi si nascondono i separatori rimasti all'inizio, in fondo o accostati dopo le voci nascoste, sia nel menu
+     * sia dentro le categorie.
+     */
+    static void PopUp_SistemaCategorieESeparatori(JPopupMenu popupMenu) {
+        for (Component comp : popupMenu.getComponents()) {
+            if (comp instanceof JMenu categoria) {
+                PopUp_SistemaSeparatori(categoria.getMenuComponents());
+                boolean visibile = false, attiva = false;
+                for (Component figlio : categoria.getMenuComponents()) {
+                    if (figlio instanceof JMenuItem voce && voce.isVisible()) {
+                        visibile = true;
+                        if (voce.isEnabled()) attiva = true;
+                    }
+                }
+                categoria.setVisible(visibile);
+                categoria.setEnabled(attiva);
+            }
+        }
+        PopUp_SistemaSeparatori(popupMenu.getComponents());
+    }
+
+    private static void PopUp_SistemaSeparatori(Component[] componenti) {
+        Component separatoreInSospeso = null;
+        boolean vocePrecedente = false;
+        for (Component comp : componenti) {
+            if (comp instanceof JSeparator) {
+                comp.setVisible(vocePrecedente);
+                if (vocePrecedente) separatoreInSospeso = comp;
+                vocePrecedente = false;
+            } else if (comp.isVisible()) {
+                vocePrecedente = true;
+                separatoreInSospeso = null;
+            }
+        }
+        if (separatoreInSospeso != null) separatoreInSospeso.setVisible(false);
     }
     
     

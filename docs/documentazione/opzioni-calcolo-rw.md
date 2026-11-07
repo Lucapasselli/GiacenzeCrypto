@@ -970,13 +970,14 @@ del programma: una correzione alle istruzioni non richiede una nuova versione.
 ### Archivio delle dichiarazioni {#archivio-delle-dichiarazioni}
 
 Ogni stampa resta nella scheda **Dichiarazioni** – **Archivio dichiarazioni**, insieme a quelle del quadro T/RT
-(che producono allo stesso modo, con i pulsanti *Stampa Report PDF* e *Crea Excel con i Dettagli* della scheda **RT**, il PDF del Quadro T, quello del Quadro RT e un Excel di dettaglio). Selezionando
+(che producono allo stesso modo, con i pulsanti *Stampa Report PDF* e *Crea Excel con i Dettagli* della scheda **RT**, il PDF del Quadro T, quello del Quadro RT e un Excel di dettaglio) e ai prospetti DSU del tab
+[ISEE](isee.html#prospetto). Selezionando
 una dichiarazione nell'elenco, nella parte sotto compaiono i totali, i righi con i loro valori, gli errori
 presenti al momento della stampa, le opzioni di calcolo usate e lo stato dei file. I file sono di sola lettura e
 il programma controlla che non siano stati modificati o cancellati. Un doppio clic su un file lo apre.
 
 - **Definitiva**: per ogni anno si può segnare la dichiarazione presentata, una per il quadro W/RW e una per
-  il quadro T/RT, con un clic sulla colonna *Definitiva* o con il pulsante omonimo. Segnandola viene creato
+  il quadro T/RT (e una per il prospetto DSU), con un clic sulla colonna *Definitiva* o con il pulsante omonimo. Segnandola viene creato
   anche un backup dei dati, collegato alla dichiarazione e indicato nel dettaglio: permette di ricostruire i
   dati da cui nascono i valori dichiarati, e cancellarlo da *Opzioni – Backup / Ripristino* chiede una
   conferma in più. Dopo ogni calcolo dei quadri, se i valori di un anno sono diversi da quelli della sua

@@ -229,6 +229,16 @@ private static final long serialVersionUID = 3L;
     //ID di TUTTE le righe selezionate al momento dell'apertura del menu contestuale (PopUp_IDTrans è
     //solo il primo): serve alle voci che lavorano su più movimenti insieme
     public static List<String> PopUp_IDTransSelezionati=new ArrayList<>();
+    //Cosa fare dopo una voce del menu che ha cambiato i movimenti, se il menu è stato aperto da un'altra finestra
+    //(ApriMenuMovimenti): rileggere il dettaglio, ricalcolare il LiFo, ricaricare i fallimenti. Null per le
+    //tabelle della finestra principale, che si aggiornano da sole
+    static Runnable PopUp_DopoModifica=null;
+    //Profilo dell'ultimo menu aperto: "Dettagli Movimento" lo usa per aprire il dettaglio in sola lettura quando il menu
+    //veniva da una finestra di sola consultazione
+    static Funzioni.ProfiloMenuMovimenti PopUp_Profilo=Funzioni.ProfiloMenuMovimenti.COMPLETO;
+    //Cresce a ogni Funzioni_AggiornaTutto(): una finestra esterna capisce così se una voce del menu ha cambiato i
+    //movimenti, senza che ogni voce debba dirlo
+    static long VersioneMovimenti=0;
     
     //Quasta rappresenta la lista delle crypto/FIAT/NFT trattati
     public static Set<String> setCryptovalute = new HashSet<>();
@@ -552,6 +562,7 @@ private static final long serialVersionUID = 3L;
         //Il sottomenu "Chiedi a IA" viene creato vuoto dal Designer e riempito qui con i chatbot letti
         //dal file ChatbotIA.json, così l'elenco si aggiorna senza ricompilare
         ChatbotIA.PopolaMenu(MenuItem_ChiediIA, this);
+        PopUp_AvvolgiAzioni();
         //Se nuova versione disponibile fa vedere il pulsante con il quale è possibile scaricarla.
         TransazioniCrypto_Bottone_AggiorbaVersione.setVisible(false);
         Funzioni_NuovaVersioneDisponibile();
@@ -737,31 +748,35 @@ private static final long serialVersionUID = 3L;
         RW_Trasferimenti = new javax.swing.ButtonGroup();
         RW_Liquidita = new javax.swing.ButtonGroup();
         PopupMenu = new javax.swing.JPopupMenu();
+        MenuItem_DettagliMovimento = new javax.swing.JMenuItem();
+        MenuItem_ModificaMovimento = new javax.swing.JMenuItem();
+        MenuItem_ClassificaMovimento = new javax.swing.JMenuItem();
+        MenuItem_EliminaMovimento = new javax.swing.JMenuItem();
+        jSeparator8 = new javax.swing.JPopupMenu.Separator();
+        MenuItem_Analizza = new javax.swing.JMenu();
+        MenuItem_LiFoTransazione = new javax.swing.JMenuItem();
+        MenuItem_DocumentoFonte = new javax.swing.JMenuItem();
+        MenuItem_ChiediIA = new javax.swing.JMenu();
+        MenuItem_Prezzi = new javax.swing.JMenu();
+        MenuItem_ModificaPrezzo = new javax.swing.JMenuItem();
+        MenuItem_RicalcolaPrezzi = new javax.swing.JMenuItem();
+        MenuItem_ConfermaPrezzoZero = new javax.swing.JMenuItem();
+        MenuItem_SeparaUnisci = new javax.swing.JMenu();
+        MenuItem_SeparaMovimento = new javax.swing.JMenuItem();
+        MenuItem_UnisciMovimenti = new javax.swing.JMenuItem();
+        MenuItem_UnisciOmogenei = new javax.swing.JMenuItem();
+        jSeparator4 = new javax.swing.JPopupMenu.Separator();
+        MenuItem_CollegaCommissioni = new javax.swing.JMenuItem();
+        MenuItem_ScollegaCommissioni = new javax.swing.JMenuItem();
+        MenuItem_AltreModifiche = new javax.swing.JMenu();
+        MenuItem_ModificaNote = new javax.swing.JMenuItem();
+        MenuItem_ModificaReward = new javax.swing.JMenuItem();
+        MenuItem_TraslaOrario = new javax.swing.JMenuItem();
+        jSeparator6 = new javax.swing.JPopupMenu.Separator();
         MenuItem_CopiaID = new javax.swing.JMenuItem();
         MenuItem_Copia = new javax.swing.JMenuItem();
         MenuItem_Incolla = new javax.swing.JMenuItem();
         MenuItem_SelezionaVisibili = new javax.swing.JMenuItem();
-        jSeparator4 = new javax.swing.JPopupMenu.Separator();
-        MenuItem_LiFoTransazione = new javax.swing.JMenuItem();
-        MenuItem_DettagliMovimento = new javax.swing.JMenuItem();
-        MenuItem_ChiediIA = new javax.swing.JMenu();
-        MenuItem_DocumentoFonte = new javax.swing.JMenuItem();
-        MenuItem_ModificaMovimento = new javax.swing.JMenuItem();
-        MenuItem_EliminaMovimento = new javax.swing.JMenuItem();
-        jSeparator8 = new javax.swing.JPopupMenu.Separator();
-        MenuItem_ClassificaMovimento = new javax.swing.JMenuItem();
-        MenuItem_SeparaMovimento = new javax.swing.JMenuItem();
-        MenuItem_UnisciMovimenti = new javax.swing.JMenuItem();
-        MenuItem_UnisciOmogenei = new javax.swing.JMenuItem();
-        MenuItem_CollegaCommissioni = new javax.swing.JMenuItem();
-        MenuItem_ScollegaCommissioni = new javax.swing.JMenuItem();
-        MenuItem_TraslaOrario = new javax.swing.JMenuItem();
-        jSeparator6 = new javax.swing.JPopupMenu.Separator();
-        MenuItem_ModificaPrezzo = new javax.swing.JMenuItem();
-        MenuItem_ConfermaPrezzoZero = new javax.swing.JMenuItem();
-        MenuItem_RicalcolaPrezzi = new javax.swing.JMenuItem();
-        MenuItem_ModificaNote = new javax.swing.JMenuItem();
-        MenuItem_ModificaReward = new javax.swing.JMenuItem();
         jSeparator7 = new javax.swing.JPopupMenu.Separator();
         MenuItem_EsportaTabella = new javax.swing.JMenuItem();
         CDC = new javax.swing.JTabbedPane();
@@ -1179,6 +1194,193 @@ private static final long serialVersionUID = 3L;
         CDC_Text_Giorni = new javax.swing.JTextField();
         Bottone_Titolo = new javax.swing.JButton();
 
+        MenuItem_DettagliMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Dettagli.png"))); // NOI18N
+        MenuItem_DettagliMovimento.setText("Dettagli Movimento");
+        MenuItem_DettagliMovimento.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_DettagliMovimentoActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_DettagliMovimento);
+
+        MenuItem_ModificaMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
+        MenuItem_ModificaMovimento.setText("Modifica Movimento");
+        MenuItem_ModificaMovimento.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_ModificaMovimentoActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_ModificaMovimento);
+
+        MenuItem_ClassificaMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Classifica.png"))); // NOI18N
+        MenuItem_ClassificaMovimento.setText("Classifica Movimento");
+        MenuItem_ClassificaMovimento.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_ClassificaMovimentoActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_ClassificaMovimento);
+
+        MenuItem_EliminaMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Cestino.png"))); // NOI18N
+        MenuItem_EliminaMovimento.setText("Elimina Movimento");
+        MenuItem_EliminaMovimento.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_EliminaMovimentoActionPerformed(evt);
+            }
+        });
+        PopupMenu.add(MenuItem_EliminaMovimento);
+        PopupMenu.add(jSeparator8);
+
+        MenuItem_Analizza.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Stack.png"))); // NOI18N
+        MenuItem_Analizza.setText("Analizza");
+
+        MenuItem_LiFoTransazione.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Stack.png"))); // NOI18N
+        MenuItem_LiFoTransazione.setText("Mostra LiFo Transazione");
+        MenuItem_LiFoTransazione.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_LiFoTransazioneActionPerformed(evt);
+            }
+        });
+        MenuItem_Analizza.add(MenuItem_LiFoTransazione);
+
+        MenuItem_DocumentoFonte.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Documento.png"))); // NOI18N
+        MenuItem_DocumentoFonte.setText("Apri documento di origine");
+        MenuItem_DocumentoFonte.setToolTipText("Apre il file da cui il movimento selezionato è stato importato");
+        MenuItem_DocumentoFonte.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_DocumentoFonteActionPerformed(evt);
+            }
+        });
+        MenuItem_Analizza.add(MenuItem_DocumentoFonte);
+
+        MenuItem_ChiediIA.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Libro.png"))); // NOI18N
+        MenuItem_ChiediIA.setText("Chiedi all'IA");
+        MenuItem_ChiediIA.setToolTipText("Chiede a un chatbot di spiegare il movimento selezionato");
+        MenuItem_Analizza.add(MenuItem_ChiediIA);
+
+        PopupMenu.add(MenuItem_Analizza);
+
+        MenuItem_Prezzi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
+        MenuItem_Prezzi.setText("Prezzi");
+
+        MenuItem_ModificaPrezzo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
+        MenuItem_ModificaPrezzo.setText("Modifica Prezzo");
+        MenuItem_ModificaPrezzo.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                MenuItem_ModificaPrezzoMouseReleased(evt);
+            }
+        });
+        MenuItem_ModificaPrezzo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_ModificaPrezzoActionPerformed(evt);
+            }
+        });
+        MenuItem_Prezzi.add(MenuItem_ModificaPrezzo);
+
+        MenuItem_RicalcolaPrezzi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_RicalcolaPrezzi.png"))); // NOI18N
+        MenuItem_RicalcolaPrezzi.setText("Ricalcola Prezzi");
+        MenuItem_RicalcolaPrezzi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_RicalcolaPrezziActionPerformed(evt);
+            }
+        });
+        MenuItem_Prezzi.add(MenuItem_RicalcolaPrezzi);
+
+        MenuItem_ConfermaPrezzoZero.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_PrezzoZero.png"))); // NOI18N
+        MenuItem_ConfermaPrezzoZero.setText("Conferma che il token non ha prezzo (valorizza a Zero)");
+        MenuItem_ConfermaPrezzoZero.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_ConfermaPrezzoZeroActionPerformed(evt);
+            }
+        });
+        MenuItem_Prezzi.add(MenuItem_ConfermaPrezzoZero);
+
+        PopupMenu.add(MenuItem_Prezzi);
+
+        MenuItem_SeparaUnisci.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Unisci.png"))); // NOI18N
+        MenuItem_SeparaUnisci.setText("Separa e unisci");
+
+        MenuItem_SeparaMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Separa.png"))); // NOI18N
+        MenuItem_SeparaMovimento.setText("Separa in Deposito/Prelievo");
+        MenuItem_SeparaMovimento.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_SeparaMovimentoActionPerformed(evt);
+            }
+        });
+        MenuItem_SeparaUnisci.add(MenuItem_SeparaMovimento);
+
+        MenuItem_UnisciMovimenti.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Unisci.png"))); // NOI18N
+        MenuItem_UnisciMovimenti.setText("Crea movimento di scambio da Deposito/Prelievo");
+        MenuItem_UnisciMovimenti.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_UnisciMovimentiActionPerformed(evt);
+            }
+        });
+        MenuItem_SeparaUnisci.add(MenuItem_UnisciMovimenti);
+
+        MenuItem_UnisciOmogenei.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Unisci.png"))); // NOI18N
+        MenuItem_UnisciOmogenei.setText("Unisci movimenti omogenei (somma quantità)");
+        MenuItem_UnisciOmogenei.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_UnisciOmogeneiActionPerformed(evt);
+            }
+        });
+        MenuItem_SeparaUnisci.add(MenuItem_UnisciOmogenei);
+        MenuItem_SeparaUnisci.add(jSeparator4);
+
+        MenuItem_CollegaCommissioni.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Catena.png"))); // NOI18N
+        MenuItem_CollegaCommissioni.setText("Collega commissioni ai movimenti");
+        MenuItem_CollegaCommissioni.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_CollegaCommissioniActionPerformed(evt);
+            }
+        });
+        MenuItem_SeparaUnisci.add(MenuItem_CollegaCommissioni);
+
+        MenuItem_ScollegaCommissioni.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Separa.png"))); // NOI18N
+        MenuItem_ScollegaCommissioni.setText("Scollega commissioni");
+        MenuItem_ScollegaCommissioni.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_ScollegaCommissioniActionPerformed(evt);
+            }
+        });
+        MenuItem_SeparaUnisci.add(MenuItem_ScollegaCommissioni);
+
+        PopupMenu.add(MenuItem_SeparaUnisci);
+
+        MenuItem_AltreModifiche.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
+        MenuItem_AltreModifiche.setText("Altre modifiche");
+
+        MenuItem_ModificaNote.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Nuovo.png"))); // NOI18N
+        MenuItem_ModificaNote.setText("Modifica Note");
+        MenuItem_ModificaNote.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_ModificaNoteActionPerformed(evt);
+            }
+        });
+        MenuItem_AltreModifiche.add(MenuItem_ModificaNote);
+
+        MenuItem_ModificaReward.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Reward.png"))); // NOI18N
+        MenuItem_ModificaReward.setText("Cambia Tipologia Reward");
+        MenuItem_ModificaReward.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_ModificaRewardActionPerformed(evt);
+            }
+        });
+        MenuItem_AltreModifiche.add(MenuItem_ModificaReward);
+
+        MenuItem_TraslaOrario.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_TraslaOrario.png"))); // NOI18N
+        MenuItem_TraslaOrario.setText("Trasla Orario");
+        MenuItem_TraslaOrario.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_TraslaOrarioActionPerformed(evt);
+            }
+        });
+        MenuItem_AltreModifiche.add(MenuItem_TraslaOrario);
+
+        PopupMenu.add(MenuItem_AltreModifiche);
+        PopupMenu.add(jSeparator6);
+
         MenuItem_CopiaID.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Copia.png"))); // NOI18N
         MenuItem_CopiaID.setText("Copia ID Transazione");
         MenuItem_CopiaID.addActionListener(new java.awt.event.ActionListener() {
@@ -1214,173 +1416,6 @@ private static final long serialVersionUID = 3L;
             }
         });
         PopupMenu.add(MenuItem_SelezionaVisibili);
-        PopupMenu.add(jSeparator4);
-
-        MenuItem_LiFoTransazione.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Stack.png"))); // NOI18N
-        MenuItem_LiFoTransazione.setText("Mostra LiFo Transazione");
-        MenuItem_LiFoTransazione.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_LiFoTransazioneActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_LiFoTransazione);
-
-        MenuItem_DettagliMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Dettagli.png"))); // NOI18N
-        MenuItem_DettagliMovimento.setText("Dettagli Movimento");
-        MenuItem_DettagliMovimento.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_DettagliMovimentoActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_DettagliMovimento);
-
-        MenuItem_ChiediIA.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Libro.png"))); // NOI18N
-        MenuItem_ChiediIA.setText("Chiedi all'IA");
-        MenuItem_ChiediIA.setToolTipText("Chiede a un chatbot di spiegare il movimento selezionato");
-        PopupMenu.add(MenuItem_ChiediIA);
-
-        MenuItem_DocumentoFonte.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Documento.png"))); // NOI18N
-        MenuItem_DocumentoFonte.setText("Apri documento di origine");
-        MenuItem_DocumentoFonte.setToolTipText("Apre il file da cui il movimento selezionato è stato importato");
-        MenuItem_DocumentoFonte.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_DocumentoFonteActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_DocumentoFonte);
-
-        MenuItem_ModificaMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
-        MenuItem_ModificaMovimento.setText("Modifica Movimento");
-        MenuItem_ModificaMovimento.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_ModificaMovimentoActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_ModificaMovimento);
-
-        MenuItem_EliminaMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Cestino.png"))); // NOI18N
-        MenuItem_EliminaMovimento.setText("Elimina Movimento");
-        MenuItem_EliminaMovimento.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_EliminaMovimentoActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_EliminaMovimento);
-        PopupMenu.add(jSeparator8);
-
-        MenuItem_ClassificaMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Classifica.png"))); // NOI18N
-        MenuItem_ClassificaMovimento.setText("Classifica Movimento");
-        MenuItem_ClassificaMovimento.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_ClassificaMovimentoActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_ClassificaMovimento);
-
-        MenuItem_SeparaMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Separa.png"))); // NOI18N
-        MenuItem_SeparaMovimento.setText("Separa in Deposito/Prelievo");
-        MenuItem_SeparaMovimento.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_SeparaMovimentoActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_SeparaMovimento);
-
-        MenuItem_UnisciMovimenti.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Unisci.png"))); // NOI18N
-        MenuItem_UnisciMovimenti.setText("Crea movimento di scambio da Deposito/Prelievo");
-        MenuItem_UnisciMovimenti.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_UnisciMovimentiActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_UnisciMovimenti);
-
-        MenuItem_UnisciOmogenei.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Unisci.png"))); // NOI18N
-        MenuItem_UnisciOmogenei.setText("Unisci movimenti omogenei (somma quantità)");
-        MenuItem_UnisciOmogenei.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_UnisciOmogeneiActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_UnisciOmogenei);
-
-        MenuItem_CollegaCommissioni.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Catena.png"))); // NOI18N
-        MenuItem_CollegaCommissioni.setText("Collega commissioni ai movimenti");
-        MenuItem_CollegaCommissioni.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_CollegaCommissioniActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_CollegaCommissioni);
-
-        MenuItem_ScollegaCommissioni.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Separa.png"))); // NOI18N
-        MenuItem_ScollegaCommissioni.setText("Scollega commissioni");
-        MenuItem_ScollegaCommissioni.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_ScollegaCommissioniActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_ScollegaCommissioni);
-
-        MenuItem_TraslaOrario.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_TraslaOrario.png"))); // NOI18N
-        MenuItem_TraslaOrario.setText("Trasla Orario");
-        MenuItem_TraslaOrario.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_TraslaOrarioActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_TraslaOrario);
-        PopupMenu.add(jSeparator6);
-
-        MenuItem_ModificaPrezzo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
-        MenuItem_ModificaPrezzo.setText("Modifica Prezzo");
-        MenuItem_ModificaPrezzo.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                MenuItem_ModificaPrezzoMouseReleased(evt);
-            }
-        });
-        MenuItem_ModificaPrezzo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_ModificaPrezzoActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_ModificaPrezzo);
-
-        MenuItem_ConfermaPrezzoZero.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_PrezzoZero.png"))); // NOI18N
-        MenuItem_ConfermaPrezzoZero.setText("Conferma che il token non ha prezzo (valorizza a Zero)");
-        MenuItem_ConfermaPrezzoZero.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_ConfermaPrezzoZeroActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_ConfermaPrezzoZero);
-
-        MenuItem_RicalcolaPrezzi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_RicalcolaPrezzi.png"))); // NOI18N
-        MenuItem_RicalcolaPrezzi.setText("Ricalcola Prezzi");
-        MenuItem_RicalcolaPrezzi.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_RicalcolaPrezziActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_RicalcolaPrezzi);
-
-        MenuItem_ModificaNote.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Nuovo.png"))); // NOI18N
-        MenuItem_ModificaNote.setText("Modifica Note");
-        MenuItem_ModificaNote.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_ModificaNoteActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_ModificaNote);
-
-        MenuItem_ModificaReward.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Reward.png"))); // NOI18N
-        MenuItem_ModificaReward.setText("Cambia Tipologia Reward");
-        MenuItem_ModificaReward.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                MenuItem_ModificaRewardActionPerformed(evt);
-            }
-        });
-        PopupMenu.add(MenuItem_ModificaReward);
         PopupMenu.add(jSeparator7);
 
         MenuItem_EsportaTabella.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
@@ -4805,7 +4840,7 @@ private static final long serialVersionUID = 3L;
             .addGap(0, 856, Short.MAX_VALUE)
         );
 
-        Dichiarazioni_TabbedPane.addTab("ISEE", ISEE);
+        Dichiarazioni_TabbedPane.addTab("ISEE (bozza)", ISEE);
 
         ArchivioDichiarazioni.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
@@ -9552,6 +9587,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     public void Funzioni_AggiornaTutto() {
         //Se selezionato Situazione Import Crypto lo aggiorno
        System.out.println("Aggiorna Tutto");
+       VersioneMovimenti++;
        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
         //Emetto messaggio di ricalcolo sulla tabella RT se già compilata e
@@ -11178,8 +11214,7 @@ GiacenzeaData_CompilaTabellaToken(true);
         //valorizzato da Funzioni.PopUpMenu solo quando il menu è già stato aperto almeno una volta.
         //Il componente va controllato prima: getWindowAncestor(null) solleva NullPointerException invece
         //di restituire null, quindi senza il controllo il ripiego non verrebbe mai raggiunto
-        Window finestra = c != null ? SwingUtilities.getWindowAncestor(c) : null;
-        if (finestra == null) finestra = this;
+        Window finestra = FinestraDi(c);
 
         //Commissioni collegate che resterebbero senza movimento: si chiede una volta sola, per tutte
         Set<String> commissioniOrfane = CommissioniCollegate.CommissioniOrfane(daEliminare);
@@ -11269,7 +11304,7 @@ GiacenzeaData_CompilaTabellaToken(true);
 
         if (partiCoinvolte.length > 1 && !riga[22].equalsIgnoreCase("AU")) {
             //se rispondo si al messaggio di modifica del movimento vado avanti
-            if (Messaggi.Personalizzati_SINO_ModificaMovimento(this)) {
+            if (Messaggi.Personalizzati_SINO_ModificaMovimento(FinestraDi(c))) {
                 ID = GUI_ClassificazioneMovimento.RiportaTransazioniASituazioneIniziale(partiCoinvolte, ID);
 
                 a.CompilaCampidaID(ID);
@@ -11277,7 +11312,7 @@ GiacenzeaData_CompilaTabellaToken(true);
                 a.setVisible(true);
                 Principale.TabellaCryptodaAggiornare = true;
             } else {
-                Messaggi.InfoMessage("Operazione annullata", "", this);
+                Messaggi.InfoMessage("Operazione annullata", "", FinestraDi(c));
             }
 
         } else {
@@ -11293,16 +11328,123 @@ GiacenzeaData_CompilaTabellaToken(true);
     
     
     private void Funzioni_RichiamaPopUpdaTabella(JTable tabella,java.awt.event.MouseEvent evt,int posizioneID){
+        MenuMovimenti(tabella, evt, IDDaColonna(tabella, posizioneID), Funzioni.ProfiloMenuMovimenti.COMPLETO, this, null);
+    }
 
-       /*     int rigaSelezionata=tabella.getSelectedRow();
-        if (!Funzioni.PopUp_ClickInternoASelezione(tabella, evt)){
-            tabella.requestFocusInWindow();
-            rigaSelezionata=tabella.rowAtPoint(evt.getPoint());
-            if (rigaSelezionata != -1) {
-                tabella.setRowSelectionInterval(rigaSelezionata, rigaSelezionata);
-            }
-            
-        }*/
+    /** @return chi legge l'ID del movimento dalla riga del modello, oppure null se la tabella non ha la colonna */
+    private static java.util.function.IntFunction<String> IDDaColonna(JTable tabella, int posizioneID) {
+        if (posizioneID == -1) return null;
+        return riga -> {
+            Object valore = tabella.getModel().getValueAt(riga, posizioneID);
+            return valore == null ? null : valore.toString();
+        };
+    }
+
+    /**
+     * Apre il menu dei movimenti da una tabella di un'altra finestra: il LiFo, il dettaglio, la classificazione, i
+     * fallimenti. Il menu è uno solo, questo, così voci e regole di abilitazione non si sdoppiano; il profilo dice
+     * quali voci mostrare. Dopo una voce che ha cambiato i movimenti la finestra principale si aggiorna subito
+     * e poi gira {@code dopoModifica}, perché la finestra da cui si è partiti mostra ancora i dati di prima.
+     * @param tabella la tabella cliccata
+     * @param evt l'evento del mouse (il menu si apre col tasto destro, il doppio clic apre il dettaglio)
+     * @param colonnaID colonna del <b>modello</b> con l'ID del movimento
+     * @param profilo le voci da mostrare
+     * @param dopoModifica cosa fare dopo una modifica, o null
+     */
+    public static void ApriMenuMovimenti(JTable tabella, java.awt.event.MouseEvent evt, int colonnaID,
+            Funzioni.ProfiloMenuMovimenti profilo, Runnable dopoModifica) {
+        Principale P = Istanza();
+        if (P != null) P.MenuMovimenti(tabella, evt, IDDaColonna(tabella, colonnaID), profilo,
+                SwingUtilities.getWindowAncestor(tabella), dopoModifica);
+    }
+
+    /**
+     * Come l'altra, per una tabella le cui righe sono tutte lo stesso movimento (il dettaglio, dove ogni riga è un
+     * campo del movimento mostrato).
+     */
+    public static void ApriMenuMovimenti(JTable tabella, java.awt.event.MouseEvent evt, String ID,
+            Funzioni.ProfiloMenuMovimenti profilo, Runnable dopoModifica) {
+        Principale P = Istanza();
+        if (P != null) P.MenuMovimenti(tabella, evt, riga -> ID, profilo,
+                SwingUtilities.getWindowAncestor(tabella), dopoModifica);
+    }
+
+    /**
+     * La finestra da cui è stato aperto il menu dei movimenti, proprietaria dei dialoghi delle sue voci. Con la
+     * finestra principale come proprietaria un dialogo aperto dal LiFo poteva finire sotto il LiFo stesso, quando
+     * questo è escluso dal blocco dei dialoghi modali.
+     */
+    Window PopUp_Finestra() {
+        return FinestraDi(PopUp_Component);
+    }
+
+    /** @return la finestra del componente (o il componente stesso, se è una finestra) se è visibile, altrimenti questa */
+    Window FinestraDi(Component c) {
+        Window w = c instanceof Window f ? f : (c != null ? SwingUtilities.getWindowAncestor(c) : null);
+        return w != null && w.isShowing() ? w : this;
+    }
+
+    /**
+     * Il menu sui campi di testo della finestra principale: profilo completo e niente da aggiornare dopo, altrimenti
+     * erediterebbe profilo e aggiornamento dell'ultimo menu aperto da un'altra finestra.
+     */
+    private void MenuDaCampoDiTesto(java.awt.event.MouseEvent evt) {
+        if (evt.getButton() == java.awt.event.MouseEvent.BUTTON3) {
+            PopUp_DopoModifica = null;
+            PopUp_Profilo = Funzioni.ProfiloMenuMovimenti.COMPLETO;
+            Funzioni.PopUp_ApplicaProfilo(PopupMenu, Funzioni.ProfiloMenuMovimenti.COMPLETO);
+        }
+        Funzioni.PopUpMenu(this, evt, PopupMenu, null);
+    }
+
+    /** @return la finestra principale aperta, o null */
+    private static Principale Istanza() {
+        for (java.awt.Frame f : java.awt.Frame.getFrames()) {
+            if (f instanceof Principale P && f.isDisplayable()) return P;
+        }
+        return null;
+    }
+
+    /**
+     * Fa girare le voci del menu dei movimenti attraverso {@link #PopUp_ConcludiAzione}: ogni voce, dopo i suoi
+     * gestori, controlla se i movimenti sono cambiati e in quel caso avvisa la finestra esterna da cui il menu è
+     * partito. Si sostituiscono i listener invece di aggiungerne uno, perché Swing chiama per primo l'ultimo
+     * aggiunto e il controllo deve venire dopo. Le voci dei chatbot si ricreano a ogni modifica dell'elenco e non
+     * cambiano movimenti: restano fuori.
+     */
+    private void PopUp_AvvolgiAzioni() {
+        for (javax.swing.JMenuItem voce : Funzioni.PopUp_getAllMenuItems(PopupMenu)) {
+            if (voce instanceof javax.swing.JMenu || voce.getParent() == MenuItem_ChiediIA.getPopupMenu()) continue;
+            java.awt.event.ActionListener[] originali = voce.getActionListeners();
+            if (originali.length == 0) continue;
+            for (java.awt.event.ActionListener l : originali) voce.removeActionListener(l);
+            voce.addActionListener(evt -> {
+                long prima = VersioneMovimenti;
+                Runnable dopo = PopUp_DopoModifica;
+                //Stesso ordine di Swing: dall'ultimo aggiunto al primo
+                for (int i = originali.length - 1; i >= 0; i--) originali[i].actionPerformed(evt);
+                PopUp_ConcludiAzione(dopo, prima);
+            });
+        }
+    }
+
+    /**
+     * Chiude una voce del menu aperto da un'altra finestra: se un movimento è stato modificato senza ricalcolo
+     * ({@code TabellaCryptodaAggiornare}) lo fa subito, invece di aspettare che la finestra principale torni in
+     * primo piano, e se i movimenti sono cambiati fa girare {@code dopo}. Con {@code dopo} null (le tabelle della
+     * finestra principale) non fa niente: lì l'aggiornamento resta quello di sempre.
+     */
+    void PopUp_ConcludiAzione(Runnable dopo, long versionePrima) {
+        if (dopo == null) return;
+        if (TabellaCryptodaAggiornare) {
+            TabellaCryptodaAggiornare = false;
+            Funzioni_AggiornaTutto();
+        }
+        if (VersioneMovimenti != versionePrima) dopo.run();
+    }
+
+    private void MenuMovimenti(JTable tabella, java.awt.event.MouseEvent evt, java.util.function.IntFunction<String> IDDaRiga,
+            Funzioni.ProfiloMenuMovimenti profilo, Component finestra, Runnable dopoModifica) {
        if (!Funzioni.PopUp_ClickInternoASelezione(tabella, evt)) {
             tabella.requestFocusInWindow();
             int row = tabella.rowAtPoint(evt.getPoint());
@@ -11324,17 +11466,18 @@ GiacenzeaData_CompilaTabellaToken(true);
             //Raccolgo gli ID di tutte le righe selezionate (non solo della prima): le voci del menu che
             //operano su più movimenti insieme decidono da qui se abilitarsi
             PopUp_IDTransSelezionati=new ArrayList<>();
-            if (posizioneID!=-1)
+            if (IDDaRiga!=null)
             {
 
-                IDTransazione = tabella.getModel().getValueAt(rigaselezionata, posizioneID).toString();
-                if(Principale.MappaCryptoWallet.get(IDTransazione)==null){
+                IDTransazione = IDDaRiga.apply(rigaselezionata);
+                if(IDTransazione!=null&&Principale.MappaCryptoWallet.get(IDTransazione)==null){
                     IDTransazione=null;
                 }
                 for (int riga:Tabelle.Funzioni_getRigheSelezionate(tabella)){
-                    Object valore=tabella.getModel().getValueAt(riga, posizioneID);
-                    if (valore!=null&&Principale.MappaCryptoWallet.get(valore.toString())!=null){
-                        PopUp_IDTransSelezionati.add(valore.toString());
+                    String valore=IDDaRiga.apply(riga);
+                    //Il dettaglio ha tutte le righe dello stesso movimento: l'ID si conta una volta sola
+                    if (valore!=null&&Principale.MappaCryptoWallet.get(valore)!=null&&!PopUp_IDTransSelezionati.contains(valore)){
+                        PopUp_IDTransSelezionati.add(valore);
                     }
                 }
             }
@@ -11347,12 +11490,19 @@ GiacenzeaData_CompilaTabellaToken(true);
             //JTable dentro uno scroll pane ha un'altezza propria pari a tutte le righe, non alla sola
             //parte visibile, quindi setLocationRelativeTo(tabella) centrerebbe il dialogo su quell'area
             //enorme invece che sulla finestra — esattamente come fa il menu contestuale via PopUp_Component.
+            //Da un'altra finestra si centra su quella. Il dettaglio non riapre se stesso (il profilo non mostra la voce)
             if (evt.getClickCount()==2 && SwingUtilities.isLeftMouseButton(evt) && IDTransazione!=null){
-                Funzione_ApriDettaglioMovimento(IDTransazione, this);
+                if (profilo.Mostra("Dettagli Movimento"))
+                    Funzione_ApriDettaglioMovimento(IDTransazione, finestra, profilo.DettaglioInSolaLettura());
                 return;
             }
 
-            Funzioni.PopUpMenu(this, evt, PopupMenu,IDTransazione);
+            if (evt.getButton()==java.awt.event.MouseEvent.BUTTON3) {
+                PopUp_DopoModifica = dopoModifica;
+                PopUp_Profilo = profilo;
+                Funzioni.PopUp_ApplicaProfilo(PopupMenu, profilo);
+            }
+            Funzioni.PopUpMenu(finestra, evt, PopupMenu,IDTransazione);
             // TransazioniCrypto_CompilaTextPaneDatiMovimento();
 
         }
@@ -11364,9 +11514,13 @@ GiacenzeaData_CompilaTabellaToken(true);
      * non possono divergere.
      * @param ID ID del movimento di cui mostrare il dettaglio
      * @param c componente da cui posizionare relativamente il dialogo
+     * @param solaLettura vero se il menu veniva da una finestra di sola consultazione (la classificazione, un LiFo aperto
+     *        da un dialogo modale): il dettaglio non deve diventare la via per modificare ciò che quella finestra non lascia
+     *        modificare. Per prudenza lo è anche con un qualunque dialogo modale aperto sotto, che resterebbe vecchio
      */
-    private void Funzione_ApriDettaglioMovimento(String ID, Component c) {
+    private void Funzione_ApriDettaglioMovimento(String ID, Component c, boolean solaLettura) {
         GUI_DettaglioTransazione t = new GUI_DettaglioTransazione();
+        if (solaLettura || Funzioni.DialogoModaleAperto()) t.ImpostaSolaLettura();
         t.AzzeraMap();
         t.TransazioniCrypto_CompilaTextPaneDatiMovimento(ID);
         t.setLocationRelativeTo(c);
@@ -15357,19 +15511,19 @@ if (result != null && !result.isAction("cancel")) {
     private void Opzioni_ApiKey_Helius_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Helius_TextFieldMouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        MenuDaCampoDiTesto(evt);
     }//GEN-LAST:event_Opzioni_ApiKey_Helius_TextFieldMouseReleased
 
     private void Opzioni_ApiKey_Etherscan_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Etherscan_TextFieldMouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        MenuDaCampoDiTesto(evt);
     }//GEN-LAST:event_Opzioni_ApiKey_Etherscan_TextFieldMouseReleased
 
     private void Opzioni_ApiKey_Coingecko_TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Opzioni_ApiKey_Coingecko_TextFieldMouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        MenuDaCampoDiTesto(evt);
     }//GEN-LAST:event_Opzioni_ApiKey_Coingecko_TextFieldMouseReleased
 
     private void MenuItem_IncollaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_IncollaActionPerformed
@@ -15389,12 +15543,12 @@ if (result != null && !result.isAction("cancel")) {
     private void MenuItem_DettagliMovimentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_DettagliMovimentoActionPerformed
         // TODO add your handling code here:
         if (PopUp_IDTrans!=null){
-            Funzione_ApriDettaglioMovimento(PopUp_IDTrans, PopUp_Component);
+            Funzione_ApriDettaglioMovimento(PopUp_IDTrans, PopUp_Component, PopUp_Profilo.DettaglioInSolaLettura());
         }
     }//GEN-LAST:event_MenuItem_DettagliMovimentoActionPerformed
 
     private void MenuItem_DocumentoFonteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_DocumentoFonteActionPerformed
-        Principale_DocumentiFonte.ApriDocumentoDiOrigine(PopUp_IDTrans, this);
+        Principale_DocumentiFonte.ApriDocumentoDiOrigine(PopUp_IDTrans, PopUp_Finestra());
     }//GEN-LAST:event_MenuItem_DocumentoFonteActionPerformed
 
     private void Opzioni_Bottone_DocumentiFonteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Bottone_DocumentiFonteActionPerformed
@@ -15406,7 +15560,8 @@ if (result != null && !result.isAction("cancel")) {
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         Download progress = new Download();
         progress.MostraProgressAttesa("Export in Excel", "Esportazione in corso...");
-        progress.setLocationRelativeTo(this);
+        Window finestraMenu = PopUp_Finestra();
+        progress.setLocationRelativeTo(finestraMenu);
 
         // Esegui l'export in background
         SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
@@ -15429,7 +15584,7 @@ if (result != null && !result.isAction("cancel")) {
                     LoggerGC.ScriviErrore(ex);
                     riuscito = false;
                 }
-                if (!riuscito) Funzioni.Export_AvvisaNonRiuscito(Principale.this);
+                if (!riuscito) Funzioni.Export_AvvisaNonRiuscito(finestraMenu);
             }
         };
 
@@ -15497,7 +15652,7 @@ if (result != null && !result.isAction("cancel")) {
 
     private void MenuItem_UnisciMovimentiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_UnisciMovimentiActionPerformed
         // TODO add your handling code here:
-        if (Principale_Movimenti_SeparaUnisci.CreaScambioDaDepositoPrelievo(PopUp_IDTransSelezionati, this)) {
+        if (Principale_Movimenti_SeparaUnisci.CreaScambioDaDepositoPrelievo(PopUp_IDTransSelezionati, PopUp_Finestra())) {
             //Ricalcolo una sola volta e azzero il flag, così la riacquisizione del focus dopo la chiusura
             //del dialog di conferma non rifà inutilmente lo stesso ricalcolo
             Funzioni_AggiornaTutto();
@@ -15508,7 +15663,7 @@ if (result != null && !result.isAction("cancel")) {
 
     private void MenuItem_UnisciOmogeneiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_UnisciOmogeneiActionPerformed
         // TODO add your handling code here:
-        if (Principale_Movimenti_SeparaUnisci.UnisciMovimentiOmogenei(PopUp_IDTransSelezionati, this)) {
+        if (Principale_Movimenti_SeparaUnisci.UnisciMovimentiOmogenei(PopUp_IDTransSelezionati, PopUp_Finestra())) {
             //Ricalcolo una sola volta e azzero il flag, così la riacquisizione del focus dopo la chiusura
             //del dialog di conferma non rifà inutilmente lo stesso ricalcolo
             Funzioni_AggiornaTutto();
@@ -15519,7 +15674,7 @@ if (result != null && !result.isAction("cancel")) {
 
     private void MenuItem_CollegaCommissioniActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_CollegaCommissioniActionPerformed
         //Solo informativo: niente ricalcolo, basta rendere salvabile la modifica
-        if (Principale_CommissioniCollegate.CollegaSelezione(PopUp_IDTransSelezionati, this)) {
+        if (Principale_CommissioniCollegate.CollegaSelezione(PopUp_IDTransSelezionati, PopUp_Finestra())) {
             TransazioniCrypto_AggiornaColonnaGruppoCollegato();
             TransazioniCrypto_DaSalvare = true;
             TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
@@ -15528,7 +15683,7 @@ if (result != null && !result.isAction("cancel")) {
 
     private void MenuItem_ScollegaCommissioniActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ScollegaCommissioniActionPerformed
         List<String> selezione = PopUp_IDTransSelezionati.isEmpty() ? List.of(PopUp_IDTrans) : PopUp_IDTransSelezionati;
-        if (Principale_CommissioniCollegate.ScollegaSelezione(selezione, this)) {
+        if (Principale_CommissioniCollegate.ScollegaSelezione(selezione, PopUp_Finestra())) {
             TransazioniCrypto_AggiornaColonnaGruppoCollegato();
             TransazioniCrypto_DaSalvare = true;
             TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
@@ -15564,7 +15719,7 @@ if (result != null && !result.isAction("cancel")) {
             //Passo tutta la selezione, non solo la prima riga, stesso schema di Classifica Movimento
             List<String> selezione = PopUp_IDTransSelezionati.isEmpty()
                     ? List.of(PopUp_IDTrans) : PopUp_IDTransSelezionati;
-            if (Principale_TraslaOrario.TraslaOrario(selezione, this)) {
+            if (Principale_TraslaOrario.TraslaOrario(selezione, PopUp_Finestra())) {
                 //Ricalcolo una sola volta e azzero il flag, così la riacquisizione del focus dopo la chiusura
                 //del dialog di conferma non rifà inutilmente lo stesso ricalcolo
                 Funzioni_AggiornaTutto();
@@ -15590,15 +15745,16 @@ if (result != null && !result.isAction("cancel")) {
      * @param ID ID del movimento da separare
      */
     private void Movimenti_SeparaInDepositoPrelievo(String ID) {
+        Window finestraMenu = PopUp_Finestra();
         Principale_Movimenti_SeparaUnisci.Separazione separazione =
                 Principale_Movimenti_SeparaUnisci.VerificaSeparazione(ID);
 
         if (!separazione.isSeparabile()) {
-            Messaggi.WarningMessage(separazione.Controlli.Titolo, separazione.Controlli.Messaggio, this);
+            Messaggi.WarningMessage(separazione.Controlli.Titolo, separazione.Controlli.Messaggio, finestraMenu);
             return;
         }
 
-        AppDialog.DialogResult result = AppDialog.builder(this)
+        AppDialog.DialogResult result = AppDialog.builder(finestraMenu)
                 .windowTitle("Separazione del movimento")
                 .bodyTitle("Separare il movimento in due?")
                 .showTitleInBody(true)
@@ -15632,7 +15788,7 @@ if (result != null && !result.isAction("cancel")) {
 
         Download progress = new Download();
         progress.MostraProgressAttesa("Separazione del movimento", "Ricerca dei prezzi in corso...");
-        progress.setLocationRelativeTo(this);
+        progress.setLocationRelativeTo(finestraMenu);
 
         SwingWorker<Principale_Movimenti_SeparaUnisci.Esito, Void> worker = new SwingWorker<>() {
             /** Costruisce in background le due gambe e ne ricerca i prezzi, senza toccare la mappa dei movimenti. */
@@ -15653,14 +15809,14 @@ if (result != null && !result.isAction("cancel")) {
                     TabellaCryptodaAggiornare = ricalcoloPendente;
                     Messaggi.WarningMessage("Separazione non riuscita",
                             "Si è verificato un errore durante la preparazione dei due movimenti.<br>"
-                            + "Il movimento originale è stato lasciato invariato.", Principale.this);
+                            + "Il movimento originale è stato lasciato invariato.", finestraMenu);
                     return;
                 }
 
                 if (esito.Riuscito) esito = Principale_Movimenti_SeparaUnisci.ApplicaSeparazione(separazione);
                 if (!esito.Riuscito) {
                     TabellaCryptodaAggiornare = ricalcoloPendente;
-                    Messaggi.WarningMessage(esito.Titolo, esito.Messaggio, Principale.this);
+                    Messaggi.WarningMessage(esito.Titolo, esito.Messaggio, finestraMenu);
                     return;
                 }
 
@@ -15694,14 +15850,20 @@ if (result != null && !result.isAction("cancel")) {
         Download progress=new Download();
         progress.MostraProgressAttesa("Scaricamento Prezzi", "Attendi scaricamento dei prezzi...");
         progress.setLocationRelativeTo(PopUp_Component);
-        
+        //Il gestore finisce appena il dialogo dei prezzi è pronto, prima che l'utente salvi: il controllo
+        //"movimenti cambiati" per la finestra esterna da cui è partito il menu va fatto alla chiusura del dialogo
+        Runnable dopo = PopUp_DopoModifica;
+        long versionePrima = VersioneMovimenti;
+        Component posizione = PopUp_Component;
+
         Thread thread;
             thread = new Thread() {
             /** Apre in background il dialogo {@link GUI_ModificaPrezzo} per il movimento selezionato dal popup. */
             public void run() {
             GUI_ModificaPrezzo t =new GUI_ModificaPrezzo(PopUp_IDTrans,progress);
-            t.setLocationRelativeTo(c);           
+            t.setLocationRelativeTo(dopo != null ? posizione : c);
             t.setVisible(true);
+            SwingUtilities.invokeLater(() -> PopUp_ConcludiAzione(dopo, versionePrima));
             //progress.ChiudiFinestra();
         }
             };
@@ -15718,7 +15880,7 @@ if (result != null && !result.isAction("cancel")) {
         if (PopUp_IDTrans != null) {
             List<String> selezione = PopUp_IDTransSelezionati.isEmpty()
                     ? List.of(PopUp_IDTrans) : PopUp_IDTransSelezionati;
-            if (Principale_Movimenti_PrezzoZero.ConfermaPrezzoZero(selezione, this)) {
+            if (Principale_Movimenti_PrezzoZero.ConfermaPrezzoZero(selezione, PopUp_Finestra())) {
                 //Ricalcolo una sola volta e azzero il flag, così la riacquisizione del focus dopo la chiusura
                 //del dialog di conferma non rifà inutilmente lo stesso ricalcolo
                 Funzioni_AggiornaTutto();
@@ -15735,7 +15897,7 @@ if (result != null && !result.isAction("cancel")) {
         if (PopUp_IDTrans != null) {
             List<String> selezione = PopUp_IDTransSelezionati.isEmpty()
                     ? List.of(PopUp_IDTrans) : PopUp_IDTransSelezionati;
-            if (Principale_Movimenti_RicalcolaPrezzi.RicalcolaPrezzi(selezione, this)) {
+            if (Principale_Movimenti_RicalcolaPrezzi.RicalcolaPrezzi(selezione, PopUp_Finestra())) {
                 //Ricalcolo una sola volta e azzero il flag, così la riacquisizione del focus dopo la chiusura
                 //della finestra di avanzamento non rifà inutilmente lo stesso ricalcolo
                 Funzioni_AggiornaTutto();
@@ -15760,7 +15922,7 @@ if (result != null && !result.isAction("cancel")) {
 
     private void MenuItem_ModificaRewardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ModificaRewardActionPerformed
         // TODO add your handling code here:
-        AppDialog.Builder Dialogo = AppDialog.builder(this)
+        AppDialog.Builder Dialogo = AppDialog.builder(PopUp_Finestra())
                 .windowTitle("Classificazione del movimento")
                 .bodyTitle("Classificare il deposito")
                 .showTitleInBody(true)
@@ -15805,7 +15967,7 @@ if (result != null && !result.isAction("cancel")) {
             }
             Messaggi.WarningMessage(Deposito ? "Deposito da classificare" : "Tipologia del provento",
                     Scartati.size() == IDs.size() ? "Nessun movimento è stato modificato." : "Alcuni movimenti non sono stati modificati.",
-                    Dettaglio.toString().trim(), this);
+                    Dettaglio.toString().trim(), PopUp_Finestra());
         }
     }//GEN-LAST:event_MenuItem_ModificaRewardActionPerformed
 
@@ -17397,7 +17559,7 @@ if (result != null && !result.isAction("cancel")) {
 
     private void TransazioniCryptoFiltro_TextMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TransazioniCryptoFiltro_TextMouseReleased
         // TODO add your handling code here:
-        Funzioni.PopUpMenu(this, evt, PopupMenu,null);
+        MenuDaCampoDiTesto(evt);
     }//GEN-LAST:event_TransazioniCryptoFiltro_TextMouseReleased
 
     private void TransazioniCrypto_Bottone_SalvaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_SalvaActionPerformed
@@ -17731,31 +17893,14 @@ if (result != null && !result.isAction("cancel")) {
                 new StringBuilder(Dichiarazioni_TestoDifferenze(anno, def, diff)));
     }
 
-    /** Le prime differenze di un anno, per il suggerimento dell'etichetta. */
+    /** Vedi {@link Principale_Dichiarazioni#TestoDifferenze}. */
     private static String Dichiarazioni_TestoDifferenze(String Anno, Dichiarazioni.Dichiarazione Def, java.util.List<String[]> Diff) {
-        StringBuilder sb = new StringBuilder("<b>").append(Anno).append("</b>, definitiva del ").append(Def.Creata)
-                .append(": ").append(Diff.size()).append(Diff.size() == 1 ? " differenza" : " differenze").append("<br>");
-        int n = 0;
-        for (String[] d : Diff) {
-            if (n++ == 12) {
-                sb.append("&nbsp;&nbsp;...<br>");
-                break;
-            }
-            sb.append("&nbsp;&nbsp;").append(d[0]).append(": ").append(d[1].isBlank() ? "(vuoto)" : d[1])
-                    .append(" nella definitiva, ").append(d[2].isBlank() ? "(vuoto)" : d[2]).append(" ora<br>");
-        }
-        return sb.toString();
+        return Principale_Dichiarazioni.TestoDifferenze(Anno, Def, Diff);
     }
 
+    /** Vedi {@link Principale_Dichiarazioni#MostraEtichettaDefinitiva}. */
     private static void Dichiarazioni_MostraEtichetta(javax.swing.JLabel Etichetta, java.util.List<String> Anni, StringBuilder Dettaglio) {
-        if (Anni.isEmpty()) {
-            Etichetta.setVisible(false);
-            return;
-        }
-        Etichetta.setText("Valori diversi dalla dichiarazione definitiva " + String.join(", ", Anni));
-        Etichetta.setToolTipText("<html>" + Dettaglio + "<br>Il confronto completo si fa dall'archivio delle dichiarazioni"
-                + " (pulsante Confronta). Clic per aprirlo.</html>");
-        Etichetta.setVisible(true);
+        Principale_Dichiarazioni.MostraEtichettaDefinitiva(Etichetta, Anni, Dettaglio);
     }
 
     /**
@@ -21263,6 +21408,8 @@ try {
     private javax.swing.JLabel Giacenzeadata_Dettaglio_Label;
     private javax.swing.JLabel Giacenzeadata_Walleta_Label;
     private javax.swing.JLabel Giacenzeadata_Walletb_Label;
+    private javax.swing.JMenu MenuItem_AltreModifiche;
+    private javax.swing.JMenu MenuItem_Analizza;
     private javax.swing.JMenu MenuItem_ChiediIA;
     private javax.swing.JMenuItem MenuItem_ClassificaMovimento;
     private javax.swing.JMenuItem MenuItem_CollegaCommissioni;
@@ -21281,7 +21428,9 @@ try {
     private javax.swing.JMenuItem MenuItem_ModificaPrezzo;
     private javax.swing.JMenuItem MenuItem_ModificaReward;
     private javax.swing.JMenuItem MenuItem_RicalcolaPrezzi;
+    private javax.swing.JMenu MenuItem_Prezzi;
     private javax.swing.JMenuItem MenuItem_ScollegaCommissioni;
+    private javax.swing.JMenu MenuItem_SeparaUnisci;
     private javax.swing.JMenuItem MenuItem_SeparaMovimento;
     private javax.swing.JMenuItem MenuItem_TraslaOrario;
     private javax.swing.JMenuItem MenuItem_UnisciMovimenti;

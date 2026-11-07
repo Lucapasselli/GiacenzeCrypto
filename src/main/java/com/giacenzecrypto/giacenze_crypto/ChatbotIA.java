@@ -181,7 +181,13 @@ public class ChatbotIA {
         Menu.removeAll();
         for (Bot b : Lista()) {
             JMenuItem voce = new JMenuItem(b.Nome);
-            voce.addActionListener(evt -> GUI_ChiediIA.Mostra(Principale.PopUp_IDTrans, b, Proprietario));
+            //Il dialogo appartiene alla finestra da cui si è aperto il menu (il dettaglio, il LiFo...), non sempre
+            //alla principale: sotto una finestra esterna resterebbe nascosto
+            voce.addActionListener(evt -> {
+                java.awt.Component c = Principale.PopUp_Component;
+                Window w = c instanceof Window f ? f : (c != null ? javax.swing.SwingUtilities.getWindowAncestor(c) : null);
+                GUI_ChiediIA.Mostra(Principale.PopUp_IDTrans, b, w != null && w.isShowing() ? w : Proprietario);
+            });
             Menu.add(voce);
         }
     }

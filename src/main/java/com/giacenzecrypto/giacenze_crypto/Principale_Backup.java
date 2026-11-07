@@ -537,7 +537,7 @@ public class Principale_Backup {
         for (File f : Archivi) {
             Dichiarazioni.Dichiarazione d = collegati.get(f.getName());
             if (d != null) {
-                citati.add(f.getName() + " : dichiarazione " + d.Fam.Etichetta + " " + d.Anno + " del " + d.Creata);
+                citati.add(f.getName() + " : dichiarazione " + d.Descrizione() + " del " + d.Creata);
             }
         }
         if (!citati.isEmpty()) {
@@ -648,7 +648,7 @@ public class Principale_Backup {
             Dichiarazioni.Dichiarazione d = Dichiarazioni.BackupDelleDefinitive().get(m.Archivio.getName());
             if (d != null) {
                 righe.add(new Object[]{"Collegato alla dichiarazione definitiva",
-                    d.Fam.Etichetta + " " + d.Anno + " del " + d.Creata});
+                    d.Descrizione() + " del " + d.Creata});
             }
         }
         righe.add(new Object[]{"Prezzi", DescrizionePrezzi(m)});

@@ -146,6 +146,15 @@ public class GUI_FallimentiPiattaforme_Pannello extends JPanel {
         TabellaMovimenti.getColumnModel().getColumn(4).setPreferredWidth(170);
         TabellaMovimenti.getColumnModel().getColumn(6).setPreferredWidth(170);
         TabellaMovimenti.getColumnModel().getColumn(10).setPreferredWidth(260);
+        //Il menu dei movimenti della finestra principale, completo: dopo una modifica la procedura si rilegge dai
+        //movimenti, che sono la sua sola fonte
+        TabellaMovimenti.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                Principale.ApriMenuMovimenti(TabellaMovimenti, evt, 10, Funzioni.ProfiloMenuMovimenti.COMPLETO,
+                        GUI_FallimentiPiattaforme_Pannello.this::Ricarica);
+            }
+        });
         JPanel PannelloMovimenti = new JPanel(new BorderLayout(0, 4));
         PannelloMovimenti.add(TitoloMovimenti, BorderLayout.NORTH);
         JScrollPane ScorriMovimenti = new JScrollPane(TabellaMovimenti);

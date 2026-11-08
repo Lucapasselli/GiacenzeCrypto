@@ -2884,8 +2884,8 @@ sezione dell'exchange selezionato.
 
 Exchange e piattaforme: [Binance](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#binance) · [Bitget](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#bitget) · [Bybit](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#bybit) ·
 [Bybit EU](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#bybit-eu) · [Coinbase](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#coinbase) · [Coinbase Pro](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#coinbase-pro) ·
-[CoinTracking](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#cointracking) · [Crypto.com](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#crypto-com) · [Exodus](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#exodus) · [Gate.io](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#gate-io) · [KuCoin](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#kucoin) ·
-[Nexo](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#nexo) · [Nexo Pro](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#nexo-pro) · [OKX](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#okx) · [Tatax](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#tatax)
+[CoinTracking](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#cointracking) · [Crypto.com](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#crypto-com) · [ether.fi](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#ether-fi) · [Exodus](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#exodus) · [Gate.io](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#gate-io) · [KuCoin](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#kucoin) ·
+[MiniPay](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#minipay) · [Nexo](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#nexo) · [Nexo Pro](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#nexo-pro) · [OKX](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#okx) · [Tatax](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/particolarita-exchange.html#tatax)
 
 > **NB** — come si scarica un file passo per passo, con le immagini delle schermate degli exchange, è
 > spiegato nel manuale [Esportazione e importazione da CSV](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/export-import-csv.html). Qui si spiega
@@ -3467,6 +3467,33 @@ sull'inglese: *Dashboard*, poi *Orders* nella barra a sinistra, scheda *Transact
 massimo **180 giorni** per volta), *Export* e *Export to CSV*. Quando il file è pronto si scarica dalla
 stessa maschera. Per coprire tutta la storia del conto servono quindi più file.
 
+## ether.fi
+
+Il conto ether.fi Cash (Optimism) si importa dalla blockchain, con la voce *ether.fi Cash (OP)* in Gestione Wallet. L'unico file
+che si carica dalla finestra *Importazioni* è la cronologia della carta.
+
+| Voce nella finestra | File | Che cosa contiene |
+|---|---|---|
+| **Spese della carta (CSV)** | *transaction history* dell'app ether.fi | Spese con la carta (commerciante, categoria, importo, stato, cashback), più prelievi, swap, bridge e depositi del conto |
+
+Non aggiunge movimenti: completa le spese con la carta già scaricate dalla blockchain, quindi il conto deve essere in Gestione
+Wallet e già importato. Se i movimenti non sono scaricati fino all'ultima spesa del file, il programma propone di scaricarli prima.
+
+- **Il valore in euro**: sulla blockchain si vede il token speso (weEUR, USDC...), valorizzato al prezzo di mercato. Il programma lo
+  sostituisce con quello che la carta ha davvero addebitato.
+- **Lo spread**: nelle note di ogni movimento, e in totale nell'anteprima, c'è la differenza fra il valore che il movimento aveva
+  e quello reale. Positiva vuol dire che il movimento era valorizzato più della spesa. Il cashback maturato si scrive nelle note
+  ma non entra nel valore.
+- **L'anteprima**: prima di scrivere si vede cosa verrà corretto, con lo scarto di tempo di ogni coppia. Niente cambia finché non si
+  conferma.
+- **Solo le spese concluse** (*CLEARED*): quelle in attesa (*PENDING*) possono ancora cambiare importo, quelle annullate non sono
+  avvenute. Le altre righe del file (prelievi, swap, bridge, depositi) non sono spese e si ignorano.
+- **L'abbinamento non è per importo esatto**: le righe del file non hanno l'identificativo della transazione, e la blockchain porta
+  un token e il suo valore in dollari. Il programma abbina per vicinanza di tempo (mezz'ora al massimo) e importo coerente (entro
+  il 5%). Se due pagamenti sono ugualmente plausibili, o nessuno lo è, il movimento resta com'è ed è elencato fra i non abbinati.
+- **Rileggere il file** è sicuro, anche se più recente: i pagamenti già abbinati si riconoscono dalle note e non si duplicano.
+  Il file si conserva fra i documenti di supporto dei movimenti.
+
 ## Exodus
 
 | Voce nella finestra | Che cosa importa |
@@ -3551,6 +3578,30 @@ chiesto all'assistenza di KuCoin.
 - **I tre file non coprono tutto**: Earn, premi, conversioni e trasferimenti fra i sotto-conti non hanno
   un import. Se dopo l'importazione restano giacenze negative, mancano probabilmente movimenti di quei
   prodotti, da aggiungere a mano.
+
+## MiniPay
+
+MiniPay si importa dalla blockchain (rete Celo, voce *MiniPay (CELO)* in Gestione Wallet). L'unico file che si carica dalla
+finestra *Importazioni* è la cronologia della carta.
+
+| Voce nella finestra | File | Che cosa contiene |
+|---|---|---|
+| **Spese della carta (CSV)** | *card history* dell'app MiniPay | Commerciante, importo addebitato in dollari e importo originale di ogni spesa con la carta |
+
+Non aggiunge movimenti: completa le spese con la carta già scaricate dalla blockchain, quindi il wallet MiniPay deve essere
+in Gestione Wallet. Se i movimenti non sono scaricati fino all'ultima riga del file, il programma propone di scaricarli prima.
+
+- **Il valore in euro**: sulla blockchain si vedono solo gli USDT usciti, valorizzati al prezzo di mercato. Il programma li
+  sostituisce con quello che la carta ha davvero addebitato: l'importo originale se è in euro, altrimenti l'addebito in dollari al
+  cambio BCE del giorno.
+- **Lo spread**: nelle note di ogni movimento, e in totale nell'anteprima, c'è la differenza fra il valore che il movimento aveva
+  e quello reale. Positiva vuol dire che il movimento era valorizzato più della spesa.
+- **L'anteprima**: prima di scrivere si vede cosa verrà corretto. Niente cambia finché non si conferma.
+- **I pagamenti in attesa** (*pending*) si ignorano: possono ancora cambiare importo e non sono ancora sulla blockchain.
+- **L'abbinamento è per importo esatto**: i pagamenti non hanno l'hash della transazione. Se un importo non coincide, il
+  movimento resta com'è ed è elencato fra i non abbinati.
+- **Rileggere il file** è sicuro, anche se più recente: i pagamenti già abbinati si riconoscono dalle note e non si duplicano.
+  Il file si conserva fra i documenti di supporto dei movimenti.
 
 ## Nexo
 

@@ -95,6 +95,8 @@ public class Importazioni_Gestione extends javax.swing.JDialog {
     static final String NAT_BINANCE_REPORT = "BINANCE_REPORT";
     static final String NAT_BINANCE_DUAL_INVESTMENT = "BINANCE_DUAL_INVESTMENT";
     static final String NAT_BINANCE_AUTO_INVEST = "BINANCE_AUTO_INVEST";
+    static final String NAT_MINIPAY_CARTA = "MINIPAY_CARTA";
+    static final String NAT_ETHERFI_CARTA = "ETHERFI_CARTA";
     static final String NAT_BYBIT_DEPOSITI_PRELIEVI = "BYBIT_DEPOSITI_PRELIEVI";
     static final String NAT_BYBIT_EU_DEPOSITI_PRELIEVI = "BYBIT_EU_DEPOSITI_PRELIEVI";
     static final String NAT_COINTRACKING   = "COINTRACKING";
@@ -386,6 +388,18 @@ static java.util.Map<String, java.util.List<VoceImport>> RaccogliEstrazioni() {
             + " Subscription, Rebalancing e Redemption (anche in pi&ugrave; parti). Non importa nuove righe: sistema i"
             + " movimenti Auto-Invest gi&agrave; importati dal CSV delle transazioni, che va quindi letto prima, e"
             + " ricostruisce acquisti, ribilanciamenti e riscatti dei piani indice sul sotto-wallet Auto-Invest.</div></html>"));
+    aggiungiEstrazione(estrazioniPerFornitore, new VoceImport("ether.fi",     "Spese della carta (CSV)", NAT_ETHERFI_CARTA, null,
+            "<html><div style='width:380px'>ether.fi Cash &ndash; export <b>transaction history</b> dell'app. Non aggiunge"
+            + " movimenti: abbina le spese con la carta gi&agrave; scaricate dalla catena (conto ether.fi Cash in Gestione"
+            + " Wallet), sostituisce il loro valore in euro con quello reale della spesa e scrive nelle note il dettaglio"
+            + " del pagamento, il cashback e lo spread. Le spese ancora in attesa si ignorano. Se la catena non &egrave;"
+            + " aggiornata fino all'ultima spesa del file propone di scaricarla prima.</div></html>"));
+    aggiungiEstrazione(estrazioniPerFornitore, new VoceImport("MiniPay",      "Spese della carta (CSV)", NAT_MINIPAY_CARTA, null,
+            "<html><div style='width:380px'>MiniPay &ndash; export <b>card history</b> dell'app. Non aggiunge movimenti:"
+            + " abbina le spese con la carta gi&agrave; scaricate dalla catena (wallet MiniPay in Gestione Wallet),"
+            + " sostituisce il loro valore in euro con quello reale della spesa e scrive nelle note il dettaglio del"
+            + " pagamento e lo spread. Se la catena non &egrave; aggiornata fino all'ultima riga del file propone di"
+            + " scaricarla prima.</div></html>"));
     aggiungiEstrazione(estrazioniPerFornitore, new VoceImport("Bybit",        "Dettaglio depositi e prelievi", NAT_BYBIT_DEPOSITI_PRELIEVI, null,
             "<html><div style='width:380px'>Bybit &ndash; export <b>Withdraw &amp; Deposit History</b>"
             + " (assetHistory_withdrawDepositHistory_...). Non aggiunge movimenti: completa i depositi e i"
@@ -1233,6 +1247,259 @@ private VoceImport voceSelezionata() {
     }
 
     /**
+     * Il CSV della carta MiniPay ({@link MiniPay_SpeseCarta}): controlla che il wallet MiniPay esista e che la catena sia
+     * scaricata fino all'ultima riga del file (altrimenti propone di scaricarla), mostra cosa verra' corretto con lo spread
+     * e, su conferma, scrive valori e note e conserva il file come documento di supporto.
+     */
+    private void ImportaSpeseCartaMiniPay() {
+        File[] files = ScegliFileDaImportare(false);
+        if (files == null) {
+            return;
+        }
+        File file = files[0];
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            java.util.List<MiniPay_SpeseCarta.Riga> righe;
+            try {
+                righe = MiniPay_SpeseCarta.Leggi(java.nio.file.Files.readString(file.toPath(), java.nio.charset.StandardCharsets.UTF_8));
+            } catch (IllegalArgumentException ex) {
+                Messaggi.WarningMessage("Carta MiniPay", "Il file non &egrave; la cronologia della carta MiniPay:<br>"
+                        + ex.getMessage(), this);
+                return;
+            } catch (java.io.IOException ex) {
+                Messaggi.WarningMessage("Carta MiniPay", "Impossibile leggere il file:<br>" + ex.getMessage(), this);
+                return;
+            }
+
+            //1. Il wallet MiniPay deve esistere: senza, nessun movimento da correggere e nessun posto dove scaricarli
+            String prefisso = MiniPay_SpeseCarta.PrefissoWallet(righe);
+            java.util.List<String> wallet = MiniPay_SpeseCarta.WalletCompatibili(
+                    DatabaseH2.Pers_Wallets_LeggiTabella().values(), prefisso);
+            if (wallet.isEmpty()) {
+                Messaggi.WarningMessage("Carta MiniPay - importazione annullata",
+                        "In Gestione Wallet non c'&egrave; nessun wallet sulla rete Celo"
+                        + (prefisso == null ? "" : " il cui indirizzo inizi per <b>" + prefisso + "</b>")
+                        + ".<br>Aggiungi prima il wallet MiniPay (voce <b>MiniPay (CELO)</b>) e poi rileggi il file.", this);
+                return;
+            }
+            if (wallet.size() > 1) {
+                Messaggi.WarningMessage("Carta MiniPay - importazione annullata",
+                        "In Gestione Wallet ci sono " + wallet.size() + " wallet sulla rete Celo e il file non contiene un"
+                        + " deposito dal quale riconoscere quello giusto.", this);
+                return;
+            }
+            String walletMiniPay = wallet.get(0);
+            String safe = Trans_MiniPay.SafeRegistrate().get(walletMiniPay.toLowerCase());
+            java.util.Set<String> nomi = MiniPay_SpeseCarta.NomiWallet(walletMiniPay, safe);
+
+            //2. Le spese del file devono essere nell'archivio: se l'ultimo movimento scaricato e' precedente all'ultima
+            //riga approvata del file si scarica prima (il pagamento puo' comunque non essere ancora sulla catena)
+            long finoA = MiniPay_SpeseCarta.UltimoApprovatoMs(righe);
+            long scaricatoFino = MiniPay_SpeseCarta.UltimoMovimentoMs(Principale.MappaCryptoWallet, nomi);
+            if (scaricatoFino < finoA) {
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                AppDialog.DialogResult scarica = AppDialog.builder(this)
+                        .windowTitle("Carta MiniPay")
+                        .bodyTitle("Movimenti non aggiornati")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.INFO)
+                        .message("I movimenti del wallet MiniPay sono scaricati fino al <b>"
+                                + (scaricatoFino == 0 ? "- (nessuno)" : FunzioniDate.ConvertiDatadaLongAlSecondo(scaricatoFino))
+                                + "</b>, il file arriva al <b>" + FunzioniDate.ConvertiDatadaLongAlSecondo(finoA) + "</b>.")
+                        .details("Prima di abbinare le spese scarico i nuovi movimenti dalla catena. Se rinunci l'importazione"
+                                + " viene annullata.")
+                        .action(AppDialog.DialogAction.builder("annulla", "Annulla importazione")
+                                .role(AppDialog.ActionRole.SECONDARY).build())
+                        .action(AppDialog.DialogAction.builder("scarica", "Scarica ora")
+                                .role(AppDialog.ActionRole.PRIMARY).build())
+                        .showDialog();
+                if (scarica == null || !"scarica".equals(scarica.getActionId())) {
+                    return;
+                }
+                GUI_GestioneWallets gestione = new GUI_GestioneWallets();
+                gestione.setLocationRelativeTo(this);
+                gestione.AggiornaWallets(java.util.List.of(walletMiniPay + ";"
+                        + Trans_MiniPay.UltimoBloccoImportato(Principale.MappaCryptoWallet, walletMiniPay) + ";" + Trans_MiniPay.RETE));
+                safe = Trans_MiniPay.SafeRegistrate().get(walletMiniPay.toLowerCase());
+                nomi = MiniPay_SpeseCarta.NomiWallet(walletMiniPay, safe);
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            }
+
+            //3. Anteprima: niente viene scritto prima della conferma
+            MiniPay_SpeseCarta.Piano piano = MiniPay_SpeseCarta.Pianifica(righe, Principale.MappaCryptoWallet, nomi,
+                    Prezzi::CambioUSDEUR);
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            if (piano.abbinamenti.isEmpty()) {
+                Messaggi.InfoMessage("Carta MiniPay", "Nessuna spesa da correggere.",
+                        MiniPay_SpeseCarta.RiepilogoHtml(piano, 15), this);
+                return;
+            }
+            AppDialog.DialogResult conferma = AppDialog.builder(this)
+                    .windowTitle("Carta MiniPay")
+                    .bodyTitle("Spese della carta MiniPay")
+                    .showTitleInBody(true)
+                    .theme()
+                    .type(AppDialog.DialogType.INFO)
+                    .message("Movimenti che verranno corretti: <b>" + piano.abbinamenti.size() + "</b>.")
+                    .details(MiniPay_SpeseCarta.RiepilogoHtml(piano, 15))
+                    .action(AppDialog.DialogAction.builder("annulla", "Annulla")
+                            .role(AppDialog.ActionRole.SECONDARY).build())
+                    .action(AppDialog.DialogAction.builder("applica", "Applica")
+                            .role(AppDialog.ActionRole.PRIMARY).build())
+                    .showDialog();
+            if (conferma == null || !"applica".equals(conferma.getActionId())) {
+                return;
+            }
+
+            //4. Il file si conserva come documento di supporto e si collega a tutto il gruppo di ogni movimento corretto
+            DocumentiFonte.Registrazione documento = DocumentiFonte.Registra(file, DocumentiFonte.TIPO_CSV, "MiniPay carta");
+            int corretti = MiniPay_SpeseCarta.Applica(piano, documento.Id);
+            if (corretti == 0 && documento.Nuovo) {
+                DocumentiFonte.Annulla(documento.Id);
+            }
+            Principale.TabellaCryptodaAggiornare = true;
+            Messaggi.SuccessMessage("Carta MiniPay", "Movimenti corretti: <b>" + corretti + "</b>.<br>"
+                    + "Spread complessivo: <b>" + MiniPay_SpeseCarta.Segno(piano.totaleSalvato().subtract(piano.totaleReale()))
+                    + " EUR (" + MiniPay_SpeseCarta.Segno(piano.spreadPercentuale()) + "%)</b>.<br><br>"
+                    + "Il valore in euro dei movimenti &egrave; cambiato: le plusvalenze e le giacenze degli anni interessati"
+                    + " vengono ricalcolate.<br>Premi <b>Salva</b> nella sezione 'Transazioni Crypto' per rendere permanenti"
+                    + " le modifiche.", this);
+            dispose();
+        } catch (Exception ex) {
+            LoggerGC.ScriviErrore(ex);
+            Messaggi.WarningMessage("Carta MiniPay", "Errore durante l'importazione: " + ex.getMessage(), this);
+        } finally {
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+    }
+
+    /**
+     * Il CSV della carta ether.fi ({@link EtherFi_SpeseCarta}): stesso percorso di {@link #ImportaSpeseCartaMiniPay}, con il
+     * conto ether.fi Cash (la Safe) al posto del wallet MiniPay e l'abbinamento per tempo e importo coerente.
+     */
+    private void ImportaSpeseCartaEtherFi() {
+        File[] files = ScegliFileDaImportare(false);
+        if (files == null) {
+            return;
+        }
+        File file = files[0];
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            java.util.List<EtherFi_SpeseCarta.Riga> righe;
+            try {
+                righe = EtherFi_SpeseCarta.Leggi(java.nio.file.Files.readString(file.toPath(), java.nio.charset.StandardCharsets.UTF_8));
+            } catch (IllegalArgumentException ex) {
+                Messaggi.WarningMessage("Carta ether.fi", "Il file non &egrave; la cronologia della carta ether.fi:<br>"
+                        + ex.getMessage(), this);
+                return;
+            } catch (java.io.IOException ex) {
+                Messaggi.WarningMessage("Carta ether.fi", "Impossibile leggere il file:<br>" + ex.getMessage(), this);
+                return;
+            }
+
+            //1. Il conto ether.fi Cash deve esistere (e essere stato riconosciuto da un'importazione): il file non porta
+            //nessun indirizzo, quindi con piu' conti si chiede quale
+            java.util.List<String> wallet = EtherFi_SpeseCarta.WalletCompatibili(
+                    DatabaseH2.Pers_Wallets_LeggiTabella().values(), Trans_EtherFi.SafeRegistrati());
+            if (wallet.isEmpty()) {
+                Messaggi.WarningMessage("Carta ether.fi - importazione annullata",
+                        "In Gestione Wallet non c'&egrave; nessun conto <b>ether.fi Cash (OP)</b> gi&agrave; importato.<br>"
+                        + "Aggiungilo prima da Gestione Wallet, scarica i suoi movimenti e poi rileggi il file.", this);
+                return;
+            }
+            String walletEtherFi = wallet.get(0);
+            if (wallet.size() > 1) {
+                walletEtherFi = AppDialog.showComboBoxDialog(this, "Carta ether.fi", "Quale conto?",
+                        "In Gestione Wallet ci sono " + wallet.size() + " conti ether.fi Cash e il file non dice di quale sia.",
+                        "Conto:", wallet.toArray(new String[0]));
+                if (walletEtherFi == null) {
+                    return;
+                }
+            }
+
+            //2. Le spese del file devono essere nell'archivio: se l'ultimo movimento scaricato e' precedente all'ultima
+            //spesa conclusa si scarica prima (l'evento sulla catena e' al momento del pagamento)
+            long finoA = EtherFi_SpeseCarta.UltimaSpesaConclusaMs(righe);
+            long scaricatoFino = EtherFi_SpeseCarta.UltimoMovimentoMs(Principale.MappaCryptoWallet, walletEtherFi);
+            if (scaricatoFino < finoA) {
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                AppDialog.DialogResult scarica = AppDialog.builder(this)
+                        .windowTitle("Carta ether.fi")
+                        .bodyTitle("Movimenti non aggiornati")
+                        .showTitleInBody(true)
+                        .theme()
+                        .type(AppDialog.DialogType.INFO)
+                        .message("I movimenti del conto ether.fi Cash sono scaricati fino al <b>"
+                                + (scaricatoFino == 0 ? "- (nessuno)" : FunzioniDate.ConvertiDatadaLongAlSecondo(scaricatoFino))
+                                + "</b>, la ultima spesa conclusa del file &egrave; del <b>"
+                                + FunzioniDate.ConvertiDatadaLongAlSecondo(finoA) + "</b>.")
+                        .details("Prima di abbinare le spese scarico i nuovi movimenti dalla catena. Se rinunci l'importazione"
+                                + " viene annullata.")
+                        .action(AppDialog.DialogAction.builder("annulla", "Annulla importazione")
+                                .role(AppDialog.ActionRole.SECONDARY).build())
+                        .action(AppDialog.DialogAction.builder("scarica", "Scarica ora")
+                                .role(AppDialog.ActionRole.PRIMARY).build())
+                        .showDialog();
+                if (scarica == null || !"scarica".equals(scarica.getActionId())) {
+                    return;
+                }
+                GUI_GestioneWallets gestione = new GUI_GestioneWallets();
+                gestione.setLocationRelativeTo(this);
+                gestione.AggiornaWallets(java.util.List.of(walletEtherFi + ";"
+                        + Trans_EtherFi.UltimoBloccoImportato(Principale.MappaCryptoWallet, walletEtherFi) + ";" + Trans_EtherFi.RETE));
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            }
+
+            //3. Anteprima: niente viene scritto prima della conferma
+            EtherFi_SpeseCarta.Piano piano = EtherFi_SpeseCarta.Pianifica(righe, Principale.MappaCryptoWallet, walletEtherFi,
+                    Prezzi::CambioUSDEUR);
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            if (piano.abbinamenti.isEmpty()) {
+                Messaggi.InfoMessage("Carta ether.fi", "Nessuna spesa da correggere.",
+                        EtherFi_SpeseCarta.RiepilogoHtml(piano, 15), this);
+                return;
+            }
+            AppDialog.DialogResult conferma = AppDialog.builder(this)
+                    .windowTitle("Carta ether.fi")
+                    .bodyTitle("Spese della carta ether.fi")
+                    .showTitleInBody(true)
+                    .theme()
+                    .type(AppDialog.DialogType.INFO)
+                    .message("Movimenti che verranno corretti: <b>" + piano.abbinamenti.size() + "</b>.")
+                    .details(EtherFi_SpeseCarta.RiepilogoHtml(piano, 15))
+                    .action(AppDialog.DialogAction.builder("annulla", "Annulla")
+                            .role(AppDialog.ActionRole.SECONDARY).build())
+                    .action(AppDialog.DialogAction.builder("applica", "Applica")
+                            .role(AppDialog.ActionRole.PRIMARY).build())
+                    .showDialog();
+            if (conferma == null || !"applica".equals(conferma.getActionId())) {
+                return;
+            }
+
+            //4. Il file si conserva come documento di supporto e si collega a tutto il gruppo di ogni movimento corretto
+            DocumentiFonte.Registrazione documento = DocumentiFonte.Registra(file, DocumentiFonte.TIPO_CSV, "ether.fi carta");
+            int corretti = EtherFi_SpeseCarta.Applica(piano, documento.Id);
+            if (corretti == 0 && documento.Nuovo) {
+                DocumentiFonte.Annulla(documento.Id);
+            }
+            Principale.TabellaCryptodaAggiornare = true;
+            Messaggi.SuccessMessage("Carta ether.fi", "Movimenti corretti: <b>" + corretti + "</b>.<br>"
+                    + "Spread complessivo: <b>" + MiniPay_SpeseCarta.Segno(piano.totaleSalvato().subtract(piano.totaleReale()))
+                    + " EUR (" + MiniPay_SpeseCarta.Segno(piano.spreadPercentuale()) + "%)</b>.<br><br>"
+                    + "Il valore in euro dei movimenti &egrave; cambiato: le plusvalenze e le giacenze degli anni interessati"
+                    + " vengono ricalcolate.<br>Premi <b>Salva</b> nella sezione 'Transazioni Crypto' per rendere permanenti"
+                    + " le modifiche.", this);
+            dispose();
+        } catch (Exception ex) {
+            LoggerGC.ScriviErrore(ex);
+            Messaggi.WarningMessage("Carta ether.fi", "Errore durante l'importazione: " + ex.getMessage(), this);
+        } finally {
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+    }
+
+    /**
      * Abbina i piani Auto-Invest ({@link Binance_AutoInvest}) in background: gli acquisti dei piani indice pagati in
      * stablecoin e i ribilanciamenti vanno prezzati, anche in rete. Alla fine il resoconto, come per il Dual Investment.
      */
@@ -1596,6 +1863,14 @@ if (voce.isJson()) {
             if (files != null) {
                 AbbinaAutoInvest(files);
             }
+        }
+
+        else if (voce.isNativo(NAT_MINIPAY_CARTA)) {
+            ImportaSpeseCartaMiniPay();
+        }
+
+        else if (voce.isNativo(NAT_ETHERFI_CARTA)) {
+            ImportaSpeseCartaEtherFi();
         }
 
         else if (voce.isNativo(NAT_BYBIT_DEPOSITI_PRELIEVI) || voce.isNativo(NAT_BYBIT_EU_DEPOSITI_PRELIEVI)) {

@@ -5,6 +5,40 @@ programma all'avvio di una beta, ed è la descrizione della beta su GitHub. L'el
 in preparazione è nella sezione "in lavorazione" di docs/documentazione/changelog.md, dove ogni voce di questo file
 compare con lo stesso titolo. Questo file non è una pagina del sito.
 
+## Versione 1.0.66.02
+
+**Nuove implementazioni**
+
+- **Tab ISEE, il patrimonio per la DSU (in prova)**: nuovo tab *Dichiarazioni – ISEE* che prepara i rapporti del Quadro FC2 della DSU per le cripto-attività e la liquidità presso gli exchange, con il valore al 31/12 e gli avvisi di ognuno. Ci sono la giacenza media giornaliera, la gestione dei prezzi mancanti e la stampa di un prospetto PDF e di un Excel, archiviati come i quadri W/RW e T/RT. Il manuale si apre dal pulsante *Guida...* del tab.
+
+- **Importazione di MiniPay e della carta MiniPay (rete Celo)**: in Gestione Wallet la nuova voce *MiniPay (CELO)* legge dai nodi pubblici di Celo, senza chiavi, i movimenti del wallet e del conto della carta, che importa come wallet a parte. Commissioni in USDT, ricariche fra wallet propri, spese con la carta e ricompense Boost arrivano già classificate, e alla fine i saldi si confrontano con quelli della blockchain.
+
+- **Spese della carta MiniPay da CSV**: la nuova voce *MiniPay > Spese della carta (CSV)* della finestra di importazione legge la cronologia della carta e sostituisce il valore in euro delle spese già scaricate con quello realmente addebitato. Nelle note finiscono commerciante, città, categoria e spread, e prima di scrivere si vede un'anteprima con i totali.
+
+- **Spese della carta ether.fi da CSV**: la voce *ether.fi > Spese della carta (CSV)* fa lo stesso per il conto ether.fi Cash, abbinando le spese per vicinanza di tempo e importo coerente. Se due pagamenti sono ugualmente plausibili non sceglie, e rileggere il file non duplica niente.
+
+- **Classificazione dei prelievi, nuova voce «Spesa con carta»**: per un pagamento con carta saldato in cripto. Per il calcolo è un cashout, come prima, ma ha un nome suo e chiede il valore in euro della spesa. I pagamenti importati da ether.fi, OKX X Layer e MiniPay arrivano già con questo nome.
+
+- **Classificazione dei depositi, nuova voce «Annullo spesa carta»**: per il rimborso di un pagamento con la carta. Il pagamento resta un cashout, il token riaccreditato entra come un acquisto a costo di carico pari al valore del pagamento, senza plusvalenza, anche se arriva in un token diverso.
+
+- **Menu del tasto destro sui movimenti, voci raggruppate**: in alto restano *Dettagli*, *Modifica*, *Classifica* ed *Elimina Movimento*, le altre voci sono raggruppate nei sottomenu *Analizza*, *Prezzi*, *Separa e unisci* e *Altre modifiche*. Un sottomenu senza voci utilizzabili è grigio, e le voci che non servono nel punto in cui si apre il menu non compaiono più.
+
+- **Menu del tasto destro anche nelle altre finestre**: lo stesso menu si apre ora nella finestra del LiFo, nei movimenti di un rimborso in *Fallimenti piattaforme*, nel dettaglio del movimento e nella classificazione, e il doppio clic su un movimento apre il suo dettaglio. Dopo una modifica la finestra si aggiorna da sola, e dove una modifica non è prudente le voci di modifica non ci sono.
+
+- **Più documenti su un movimento, e file di dettaglio Binance fra i documenti di origine**: un movimento può essere collegato, oltre al file da cui nasce, ad altri documenti che lo spiegano. I file di dettaglio di Dual Investment e Auto-Invest si conservano ora fra i documenti, e la gestione documenti ha la nuova colonna *Collegati*. Eliminando un documento solo collegato i movimenti restano.
+
+**Correzione di bug**
+
+- **Importazione dall'app Crypto.com, acquisti ricorrenti, reward del lockup CRO e delisting dal basket**: gli acquisti ricorrenti (*Recurring Buy*) degli export recenti diventano acquisti come gli altri, invece di lasciare euro in più e cripto mancanti. Entrano anche le reward del lockup CRO dei titolari di carta e il delisting di un token dal Crypto Basket. Reimportando un file già letto si aggiungono solo i movimenti mancanti.
+
+- **Importazione da CSV generico, numeri con la virgola decimale**: un numero come `12,5` scritto senza virgolette in un CSV separato da virgole entrava con la quantità sbagliata, e uno come `1.234,56` faceva sparire la riga. Ora queste righe finiscono fra le scartate, con il motivo che spiega il problema.
+
+- **Importazione, lentezza con molte righe scartate**: un file grande letto con la configurazione sbagliata, in cui ogni riga viene scartata, teneva fermo l'import a lungo. Ora il tempo cresce in proporzione alle righe: 40.000 righe scartate passano da 13 secondi a meno di mezzo.
+
+- **Binance dalle API, trade spot più vecchi di due anni**: Binance restituisce via API solo i trade spot degli ultimi due anni circa, e prima i più vecchi si perdevano senza avviso. Ora a fine scaricamento il programma segnala la data da cui mancano, e per il periodo precedente gli scambi vanno importati dal CSV della cronologia delle transazioni.
+
+- **Binance dalle API, pagamenti Binance Pay**: dei pagamenti Binance Pay si importavano solo i "Tax Payment", gli altri lasciavano sbagliata la giacenza. Ora entrano come depositi e prelievi di cripto da classificare. Binance li restituisce solo per gli ultimi 18 mesi, e se lo scaricamento parte da prima l'avviso dice da quando mancano.
+
 ## Versione 1.0.66.01
 
 **Nuove implementazioni**

@@ -578,7 +578,7 @@ esplicita e vanno poi salvate dalla scheda *Transazioni Crypto*.
 
 ## Dove si trova
 
-Nella scheda **Analisi Crypto – Giacenze a Data**. Il pulsante **Guida...** in basso a destra, sopra il dettaglio, apre
+Nella scheda **Analisi Crypto – Giacenze a Data**. Il pulsante **Guida** in basso a destra, sopra il dettaglio, apre
 questo manuale.
 
 ![La scheda Giacenze a data con la tabella dei token e il dettaglio dei movimenti del BTC](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/01.png)
@@ -719,7 +719,7 @@ LiFo del movimento, modifica, eliminazione, classificazione, modifica del prezzo
 
 I pulsanti e le caselle sopra il dettaglio:
 
-- **Colonne...** sceglie quali colonne mostrare e in che ordine, anche prendendole dalla tabella dei movimenti (per esempio
+- **Colonne** sceglie quali colonne mostrare e in che ordine, anche prendendole dalla tabella dei movimenti (per esempio
   *Causale originale*, *Hash Transazione*, *Note*). Le colonne si spostano e si allargano trascinando le intestazioni e la
   disposizione viene ricordata. *Ripristina predefinito* torna alle colonne iniziali.
 - **Mostra solo Qta residue negative** tiene solo le righe in cui la giacenza dopo il movimento è negativa, per trovare il
@@ -957,7 +957,7 @@ Il dialogo dei costi netti permette di:
 
 Nella scheda **Analisi Crypto – Giacenze a Data**, sotto la tabella dei token, accanto a *Mostra Giacenze a Zero* e a
 *Nascondi Token Scam*, c'è il pulsante **Costi netti**. Il manuale dell'intera scheda è **[Giacenze a data](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html)**,
-raggiungibile anche dal pulsante *Guida...* della scheda stessa.
+raggiungibile anche dal pulsante *Guida* della scheda stessa.
 
 - Il pulsante è attivo **solo con il wallet «Tutti»**: il calcolo riguarda tutti i wallet insieme e non avrebbe senso
   per uno solo. Con un wallet o un gruppo selezionato resta spento.
@@ -3472,6 +3472,13 @@ stessa maschera. Per coprire tutta la storia del conto servono quindi più file.
 Il conto ether.fi Cash (Optimism) si importa dalla blockchain, con la voce *ether.fi Cash (OP)* in Gestione Wallet. L'unico file
 che si carica dalla finestra *Importazioni* è la cronologia della carta.
 
+Il secondo conto di ether.fi, il *TradingSafe* su Ethereum, dove arrivano gli swap verso un'altra catena (per esempio USDC in WBTC),
+non va inserito a mano. Il programma lo trova dagli swap e dalle uscite del conto Cash, lo mette nello stesso gruppo wallet e lo importa
+insieme al conto Cash, senza nessuna chiave. Non compare nell'elenco di Gestione Wallet, che resta fatto solo dei wallet inseriti da te. Lo swap che esce dal conto Cash si abbina da solo
+all'entrata sul TradingSafe. Quello nel verso opposto (parte dal TradingSafe e arriva sul conto Cash come deposito) si abbina solo se
+è l'unica coppia possibile entro dieci minuti e i due valori non differiscono di oltre il 25%, perché fra le due catene non c'è un
+identificativo in comune. Negli altri casi restano due movimenti da classificare, mai persi.
+
 | Voce nella finestra | File | Che cosa contiene |
 |---|---|---|
 | **Spese della carta (CSV)** | *transaction history* dell'app ether.fi | Spese con la carta (commerciante, categoria, importo, stato, cashback), più prelievi, swap, bridge e depositi del conto |
@@ -3753,18 +3760,18 @@ calcolo dei quadri RT e W/RW, con un'eccezione voluta: i prezzi scritti dalla fi
 ## Dove si trova
 
 Nella scheda **Dichiarazioni – ISEE**, fra *RT & Analisi P&L* e *Archivio dichiarazioni*. Finché la funzione è in prova
-la voce si chiama *ISEE (bozza)*. Il pulsante **Guida...** in alto
+la voce si chiama *ISEE (bozza)*. Il pulsante **Guida** in alto
 a destra apre questo manuale.
 
 ![Il tab ISEE con i rapporti del 2024 e il dettaglio del Ledger](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/isee/01.png)
 
 Il tab ha tre zone:
 
-- in alto la scelta dell'anno e i pulsanti *Calcola*, *Media giornaliera...*, *Stampa prospetto PDF* e *Crea Excel con i
+- in alto la scelta dell'anno e i pulsanti *Calcola*, *Media giornaliera*, *Stampa prospetto PDF* e *Crea Excel con i
   dettagli*,
 - al centro la **tabella dei rapporti**, con i totali dell'anno sotto, a destra,
 - in basso il **dettaglio** del rapporto selezionato, diviso nelle schede *Rapporto*, *Monete* e *Avvisi*, e i pulsanti
-  *Prezzi mancanti...*, *Modifica dati...* e *Dati senza rapporto*.
+  *Prezzi mancanti*, *Modifica dati* e *Dati senza rapporto*.
 
 ## Calcolare i rapporti di un anno
 
@@ -3786,11 +3793,11 @@ rapporti 01 e dei rapporti 99. Nell'esempio: *3 rapporti, valore al 31/12: 01 = 
 | **Gruppo** | il gruppo wallet del rapporto, con il suo alias |
 | **Tipo rapporto** | *01 Conto corrente* oppure *99 Altri strumenti* |
 | **Codice operatore** | il codice dell'intermediario: *E* seguita dall'identificativo fiscale per un intermediario estero, il codice fiscale per uno italiano, *END* quando non c'è un intermediario o il dato manca |
-| **Identificativo** | quello scritto con *Modifica dati...*: l'IBAN, il numero di conto o l'ID utente. Se non è stato scritto compare il nome del gruppo, con un avviso |
+| **Identificativo** | quello scritto con *Modifica dati*: l'IBAN, il numero di conto o l'ID utente. Se non è stato scritto compare il nome del gruppo, con un avviso |
 | **Data inizio** | solo se il rapporto è iniziato nell'anno, vedi [le date](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/isee.html#date) |
 | **Data fine** | solo se il rapporto è finito nell'anno |
 | **Valore al 31/12 (EUR)** | il valore a fine anno, arrotondato all'euro. *(incompleto)* se almeno una moneta non ha prezzo |
-| **Giacenza media (EUR)** | sul 01 la giacenza media annua. Sul 99 la media giornaliera, solo dopo *Media giornaliera...* |
+| **Giacenza media (EUR)** | sul 01 la giacenza media annua. Sul 99 la media giornaliera, solo dopo *Media giornaliera* |
 | **Avvisi** | quanti avvisi ha il rapporto: il testo è nella scheda *Avvisi* del dettaglio |
 
 Gli importi sono arrotondati all'euro: 299,49 diventa 299 e 299,50 diventa 300.
@@ -3840,11 +3847,11 @@ rapporto divisa per 365. Un esempio: 300 euro dal 01/02/2024 al 31/12/2024 sono 
 
 La data di inizio è, nell'ordine:
 
-1. la data di apertura scritta con *Modifica dati...*,
+1. la data di apertura scritta con *Modifica dati*,
 2. il giorno del cambio di operatore,
 3. il primo movimento del gruppo.
 
-La data di fine è la data di chiusura scritta con *Modifica dati...*, oppure il giorno prima di un cambio di operatore.
+La data di fine è la data di chiusura scritta con *Modifica dati*, oppure il giorno prima di un cambio di operatore.
 Le due date compaiono solo se cadono nell'anno. La data di fine **non** si ricava dai movimenti: un conto a saldo zero
 di solito resta aperto. Se il saldo del gruppo è a zero dal giorno di un movimento dell'anno, un avviso lo segnala.
 
@@ -3879,7 +3886,7 @@ scritto.
 
 ## Scrivere i dati di un rapporto
 
-Il pulsante **Modifica dati...**, o il doppio clic su una riga, apre questa finestra:
+Il pulsante **Modifica dati**, o il doppio clic su una riga, apre questa finestra:
 
 ![La finestra dei dati di un rapporto](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/isee/02.png)
 
@@ -3905,7 +3912,7 @@ nuovo rapporto lussemburghese ha i suoi dati, da scrivere a parte se servono.
 Per un rapporto 99 la DSU chiede il valore al 31/12. La FAQ n. 13 del Ministero del Lavoro del 13/09/2024 indica per le
 cripto-attività presso un prestatore di servizi il codice 99 con il solo controvalore in euro. La giacenza media
 giornaliera di un rapporto 99 è quindi un dato **informativo**: il tab la calcola solo se la chiedi, con il pulsante
-**Media giornaliera...**.
+**Media giornaliera**.
 
 **Come si calcola.** Per ogni giorno del rapporto si prende la quantità di ogni moneta a fine giornata e la si valuta
 al prezzo di fine giornata. La somma dei valori di tutti i giorni si divide per **365**, anche negli anni bisestili, come
@@ -3941,7 +3948,7 @@ pochi secondi. Durante lo scaricamento una finestra mostra l'avanzamento:
 ![Lo scaricamento dei prezzi giornalieri](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/isee/06.png)
 
 Lo scaricamento si può **interrompere** in qualsiasi momento con *Interrompi Elaborazione*. I prezzi già arrivati
-restano: premendo di nuovo *Media giornaliera...* la stima riparte da quello che manca. Interrotta, la media non compare
+restano: premendo di nuovo *Media giornaliera* la stima riparte da quello che manca. Interrotta, la media non compare
 e la tabella resta com'era. Nella prima fase, quella dei token per indirizzo di contratto, la barra resta ferma: si
 muove nella fase delle quotazioni degli exchange.
 
@@ -3967,8 +3974,8 @@ Le azioni:
 - **Vale zero**: scrive il prezzo 0 per ogni giorno dei tratti selezionati. Serve per i token che non hanno un valore,
   come gli airdrop di spam. Funziona anche su molti tratti insieme: su un archivio reale 42.358 giorni sono stati
   scritti in circa 5 secondi.
-- **Prezzo per i tratti...**: chiede un prezzo unitario in euro e lo scrive per ogni giorno dei tratti selezionati.
-- **Prezzo per i giorni...**: lo stesso, per i soli giorni selezionati nella tabella in basso.
+- **Prezzo per i tratti**: chiede un prezzo unitario in euro e lo scrive per ogni giorno dei tratti selezionati.
+- **Prezzo per i giorni**: lo stesso, per i soli giorni selezionati nella tabella in basso.
 
 Il prezzo si scrive con la virgola o con il punto: *0,05*, *0.05* e *1.234,56* sono tutti accettati.
 
@@ -4032,11 +4039,11 @@ stampata con la media.
 
 ## Dati senza rapporto
 
-I dati scritti con *Modifica dati...* sono legati al periodo FIAT del gruppo da cui nasce il rapporto. Se quel periodo
+I dati scritti con *Modifica dati* sono legati al periodo FIAT del gruppo da cui nasce il rapporto. Se quel periodo
 viene cancellato, o se cambia il suo numero, i dati restano nell'archivio ma il calcolo non li trova più. Il pulsante
 **Dati senza rapporto (N)** si attiva quando ce ne sono e mostra un elenco: per ogni voce il gruppo, il tipo, il periodo
 e i dati. Scegliendo una voce la si elimina, dopo una conferma. Se i dati valgono per un rapporto ancora presente, vanno
-riscritti su quel rapporto con *Modifica dati...*.
+riscritti su quel rapporto con *Modifica dati*.
 
 ## Da dove arrivano i dati
 
@@ -4044,7 +4051,7 @@ riscritti su quel rapporto con *Modifica dati...*.
 |---|---|
 | Gruppi wallet e alias | *Opzioni*, gruppi wallet, vedi [Gruppi wallet](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/opzioni-calcolo-rw.html#gruppi-wallet-preconfigurati-e-bollo) |
 | Stato estero, identificativo fiscale, conto corrente | i periodi FIAT del gruppo, vedi [Periodi di detenzione](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/opzioni-calcolo-rw.html#periodi-di-detenzione) e [Liquidità presso intermediari esteri](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/opzioni-calcolo-rw.html#liquidita-presso-intermediari-esteri) |
-| Identificativo, operatore corretto, apertura, chiusura | il tab ISEE, con *Modifica dati...* |
+| Identificativo, operatore corretto, apertura, chiusura | il tab ISEE, con *Modifica dati* |
 | Quantità e prezzi di fine anno | i movimenti e la fotografia del quadro W/RW, vedi [Valori di inizio e fine anno](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/opzioni-calcolo-rw.html#valori-di-inizio-e-fine-anno) |
 | Prezzi di un giorno che mancano | la finestra dei [prezzi mancanti](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/isee.html#prezzi-mancanti) o le altre schede dei prezzi personalizzati |
 
@@ -4052,10 +4059,10 @@ riscritti su quel rapporto con *Modifica dati...*.
 
 **Perché il codice operatore è END?** Il gruppo non ha un periodo FIAT, oppure il periodo FIAT non ha l'identificativo
 fiscale. Un avviso nella scheda *Avvisi* dice quale dei due. Per un wallet in autocustodia è il caso normale. Per un exchange si
-completa il periodo FIAT, oppure si scrive il codice con *Modifica dati...*.
+completa il periodo FIAT, oppure si scrive il codice con *Modifica dati*.
 
 **Perché l'identificativo è il nome del gruppo?** Perché non ne è stato scritto uno. Il programma non conosce l'IBAN, il
-numero di conto o l'ID utente: si scrive con *Modifica dati...*, una volta per tutti gli anni.
+numero di conto o l'ID utente: si scrive con *Modifica dati*, una volta per tutti gli anni.
 
 **Il valore al 31/12 è diverso da quello del quadro W/RW.** Il valore delle cripto è quello della fotografia di fine
 anno del quadro W/RW. Nel tab ISEE c'è in più la liquidità del gruppo (nel 99, o nel 01 se c'è il conto corrente),
@@ -4165,14 +4172,14 @@ minusvalenza di ognuno.
 
 I pulsanti in basso sono:
 
-- **Nuova procedura...** — blocca le giacenze di una piattaforma alla data della domanda di fallimento.
-- **Registra rimborso...** — registra una tranche pagata dalla procedura selezionata.
-- **Chiudi procedura...** — fa uscire il credito non rimborsato.
-- **Annulla ultima operazione...** — toglie la chiusura o l'ultimo rimborso.
-- **Elimina procedura...** — toglie tutti i movimenti della procedura e i suoi dati.
-- **Risultato parte FIAT...** — mostra la differenza della parte in euro del credito, che il programma non calcola
+- **Nuova procedura** — blocca le giacenze di una piattaforma alla data della domanda di fallimento.
+- **Registra rimborso** — registra una tranche pagata dalla procedura selezionata.
+- **Chiudi procedura** — fa uscire il credito non rimborsato.
+- **Annulla ultima operazione** — toglie la chiusura o l'ultimo rimborso.
+- **Elimina procedura** — toglie tutti i movimenti della procedura e i suoi dati.
+- **Risultato parte FIAT** — mostra la differenza della parte in euro del credito, che il programma non calcola
   (vedi [Il credito in euro](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/fallimenti-piattaforme.html#credito-in-euro)).
-- **Guida...** — apre questa guida.
+- **Guida** — apre questa guida.
 
 Sotto i pulsanti si sceglie il [valore dei crediti](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/fallimenti-piattaforme.html#valore-del-credito) nel quadro W/RW e in *Giacenze a data*.
 
@@ -4203,7 +4210,7 @@ rimborsato poi in tre tranche.
 
 ### 1. Il blocco alla data della domanda
 
-Con **Nuova procedura...** si sceglie la piattaforma, si scrive la data della domanda e si preme
+Con **Nuova procedura** si sceglie la piattaforma, si scrive la data della domanda e si preme
 **Leggi le giacenze**.
 
 ![Nuova procedura: giacenze di Celsius alla data della domanda](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/fallimenti-piattaforme/02.png)
@@ -4260,7 +4267,7 @@ I BTC arrivano su Coinbase con il loro costo di carico di 3.200 €, senza plusv
 ### 3. Un rimborso in monete diverse arrivato su un altro exchange
 
 La prima tranche di Celsius ha pagato il 57,65% del credito: 0,25 BTC e 1,9 ETH arrivati su Coinbase il
-15 gennaio 2024. Si seleziona la procedura e si preme **Registra rimborso...**:
+15 gennaio 2024. Si seleziona la procedura e si preme **Registra rimborso**:
 
 - **Data e ora**: il momento del rimborso, prima dei depositi su cui è arrivato. Si scrive
   come *aaaa-mm-gg hh:mm* o *gg/mm/aaaa hh:mm*; senza l'ora vale la mezzanotte. Scegliendo un deposito, il
@@ -4270,7 +4277,7 @@ La prima tranche di Celsius ha pagato il 57,65% del credito: 0,25 BTC e 1,9 ETH 
   creditore riporta di solito l'importo in dollari.
 - **Recupero atteso (%)**: nell'esempio 60%, la stima del recupero totale fatta a questa data.
 
-Con **Aggiungi da deposito importato...** si sceglie ogni deposito su cui sono arrivate le monete. L'elenco
+Con **Aggiungi da deposito importato** si sceglie ogni deposito su cui sono arrivate le monete. L'elenco
 mostra i depositi non ancora classificati su altre piattaforme dalla data della domanda in poi. Un clic
 sull'intestazione ordina le colonne, il clic destro filtra una colonna per valore e il campo *Cerca* tiene
 solo le righe che contengono il testo scritto. Il deposito si sceglie con **Scegli** o con un doppio clic:
@@ -4370,7 +4377,7 @@ posizione restituita nella stessa quantità, come un conto Custody, la via è es
 
 ### Chiusura della procedura
 
-Quando si ritiene che la procedura non pagherà altro, si seleziona e si preme **Chiudi procedura...**. Il
+Quando si ritiene che la procedura non pagherà altro, si seleziona e si preme **Chiudi procedura**. Il
 programma propone come data un minuto dopo l'ultimo movimento della procedura, e la si può cambiare. Nell'esempio
 si chiude alla fine del 2023:
 
@@ -4407,7 +4414,7 @@ ricevuta, al suo valore, oppure è uno scambio fra valute se arrivano euro. La d
 credito in euro e il credito che consuma **non è una plusvalenza o minusvalenza su cripto-attività** e il programma
 non la calcola: l'anteprima di ogni rimborso lo ricorda.
 
-Per chi vuole conoscerla, il pulsante **Risultato parte FIAT...** la mostra per la procedura selezionata, rimborso
+Per chi vuole conoscerla, il pulsante **Risultato parte FIAT** la mostra per la procedura selezionata, rimborso
 per rimborso e per anno. Nel caso 1 di Celsius:
 
 ![Il risultato della parte FIAT di Celsius](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/fallimenti-piattaforme/18.png)
@@ -4422,7 +4429,7 @@ Il programma non riporta queste differenze in nessun quadro.
 
 ## Annullare un'operazione
 
-**Annulla ultima operazione...** toglie l'ultima operazione della procedura selezionata: la chiusura, se c'è,
+**Annulla ultima operazione** toglie l'ultima operazione della procedura selezionata: la chiusura, se c'è,
 altrimenti l'ultimo rimborso. Si può ripetere per tornare indietro una tranche alla volta.
 
 ![Conferma dell'annullamento](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/fallimenti-piattaforme/15.png)
@@ -4431,7 +4438,7 @@ altrimenti l'ultimo rimborso. Si può ripetere per tornare indietro una tranche 
   registrazione.
 - Dopo uno [spostamento della chiusura](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/fallimenti-piattaforme.html#dopo-la-chiusura), annullando si toglie prima la nuova chiusura e
   poi il rimborso: la chiusura originale non torna e va rifatta con *Chiudi procedura*.
-- Quando resta solo il blocco, la procedura si toglie con **Elimina procedura...**, che toglie tutti i suoi
+- Quando resta solo il blocco, la procedura si toglie con **Elimina procedura**, che toglie tutti i suoi
   movimenti e i dati del piano.
 
 Come ogni modifica ai movimenti, gli annullamenti diventano definitivi quando si salva.
@@ -4633,19 +4640,19 @@ fa sull'archivio dopo aver scritto i movimenti: l'abbinamento degli `SCAMBIO DIF
 Una configurazione che funziona può servire ad altri utenti con lo stesso exchange. Il programma ha un
 catalogo di configurazioni condivise dalla community.
 
-**Scaricare.** Nella finestra *Importazioni* il pulsante **Configurazioni della community...** apre il
+**Scaricare.** Nella finestra *Importazioni* il pulsante **Configurazioni della community** apre il
 catalogo. **Scarica** salva le configurazioni scelte nella cartella `config/community/` della cartella di
 lavoro, e da quel momento compaiono nelle tendine con il prefisso *Community:*. Prima di salvare un file il
 programma ne verifica l'impronta e ripete tutti i controlli di sicurezza. Le configurazioni della community
 sono controllate dall'autore del programma prima della pubblicazione, ma nessuno può provarle su ogni file
 reale: **prima di importare, prova la configurazione sul tuo CSV** e controlla i movimenti.
 
-**Condividere.** Nella finestra della prova il pulsante **Condividi con la community...** si attiva solo dopo
+**Condividere.** Nella finestra della prova il pulsante **Condividi con la community** si attiva solo dopo
 una prova senza righe scartate, senza opzioni o tipi sconosciuti e con almeno un movimento. La finestra di
 invio mostra il file così com'è e chiede il consenso alla pubblicazione con licenza MIT. Insieme al file
 parte l'esito della prova, cioè quanti movimenti escono da ogni causale, **ma nessuna riga del tuo CSV**.
 La configurazione diventa scaricabile solo dopo il controllo dell'autore del programma. Dalla finestra del
-catalogo, **Le mie proposte...** permette di ritirare una configurazione inviata. Cosa viene conservato è
+catalogo, **Le mie proposte** permette di ritirare una configurazione inviata. Cosa viene conservato è
 descritto nell'[informativa sulla privacy](https://lucapasselli.github.io/GiacenzeCrypto/privacy/).
 
 Una configurazione condivisa deve rispettare alcune regole in più di una personale:
@@ -5084,7 +5091,7 @@ Quindi: "data": 0, "causale": 1, "moneta": 2 e così via.
 
 **Tipo:** stringa | **Default:** "" (importo e moneta sono due colonne distinte)
 
-Alcuni export scrivono importo e simbolo insieme, per esempio `407.57 AME`. In questo caso indica lo
+Alcuni export scrivono importo e simbolo insieme, per esempio `400 AME`. In questo caso indica lo
 stesso indice di colonna sia per `quantita` sia per `moneta` (e, se serve, per `quantitaUscita`/`monetaUscita`
 e `quantitaFee`/`monetaFee`), e in `separatoreValoreMoneta` il carattere che divide i due pezzi. Quando le
 due colonne coincidono il programma separa il numero dal simbolo usando quel carattere.
@@ -5269,8 +5276,8 @@ Sovrascrive la colonna di raggruppamento **solo per le causali elencate**. Serve
 stesso movimento condividono una colonna diversa da `idGruppo`/`idTransazione` e i loro timestamp non
 sono identici.
 
-Caso reale (Coinbase): le due gambe di un `Convert` hanno la stessa identica stringa nella colonna
-`note` (`"Converted 22 ALEPH to 4.68065032 ZETA"`) ma sull'export a volte cadono a 1-2 secondi di
+Caso tipico (Coinbase): le due gambe di un `Convert` hanno la stessa identica stringa nella colonna
+`note` (`"Converted 20 ALEPH to 5 ZETA"`) ma sull'export a volte cadono a 1-2 secondi di
 distanza; raggruppando sul timestamp esatto verrebbero spezzate in un deposito e un prelievo separati.
 Raggruppando sulla colonna `note` (indice 10) si ricompongono. Va abbinato a `consolidaRigheStessaData`
 + `causaliDifferite` + una `tolleranzaSecondiConsolidamento` sufficiente. Una gamba con valore diverso
@@ -6069,7 +6076,7 @@ Risultato: due ricompense e un prelievo di USDC.
 
 - Se le intestazioni CSV variano di versione in versione, usa autoDetectColonne con mappaAutoDetect.
 
-- Se importo e moneta stanno nella stessa cella (`407.57 AME`), usa `separatoreValoreMoneta`. Se c'è solo la coppia di trading (`KCS-ETH`), usa `coppia`.
+- Se importo e moneta stanno nella stessa cella (`400 AME`), usa `separatoreValoreMoneta`. Se c'è solo la coppia di trading (`KCS-ETH`), usa `coppia`.
 
 - Se il file contiene solo depositi o solo prelievi e non ha una colonna causale utile, usa `versoForzato`.
 

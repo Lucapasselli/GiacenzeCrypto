@@ -90,7 +90,7 @@ public class GUI_ConfigurazioniCommunity extends JDialog {
         Scarica.addActionListener(e -> Scarica());
         JButton Elimina = new JButton("Elimina dal tuo PC");
         Elimina.addActionListener(e -> Elimina());
-        JButton Proposte = new JButton("Le mie proposte...");
+        JButton Proposte = new JButton("Le mie proposte");
         Proposte.addActionListener(e -> LeMieProposte());
         JButton Aggiorna = new JButton("Aggiorna l'elenco");
         Aggiorna.addActionListener(e -> Carica());
@@ -264,7 +264,7 @@ public class GUI_ConfigurazioniCommunity extends JDialog {
         List<CommunityConfigurazioni.PropostaInviata> proposte = CommunityConfigurazioni.ProposteInviate();
         if (proposte.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Da questo PC non e' stata inviata nessuna configurazione.\n"
-                    + "Si propone una configurazione dalla finestra della prova, con \"Condividi con la community...\".",
+                    + "Si propone una configurazione dalla finestra della prova, con \"Condividi con la community\".",
                     getTitle(), JOptionPane.INFORMATION_MESSAGE);
             return;
         }

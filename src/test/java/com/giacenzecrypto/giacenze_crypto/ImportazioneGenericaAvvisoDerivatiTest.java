@@ -75,7 +75,7 @@ class ImportazioneGenericaAvvisoDerivatiTest {
         ConfigurazioneImport cfg = cfgBinanceVeloce();
         List<String[]> differiti = new ArrayList<>();
         List<String[]> gruppo = new ArrayList<>();
-        gruppo.add(rigaBinance("2022-05-12 06:24:50", "Dual Savings Purchase", "USDT", "-100.00000000"));
+        gruppo.add(rigaBinance("2024-05-12 06:24:50", "Dual Savings Purchase", "USDT", "-100.00000000"));
 
         ImportazioneGenerica.consolidaGruppo(gruppo, cfg, differiti);
 
@@ -89,7 +89,7 @@ class ImportazioneGenericaAvvisoDerivatiTest {
         ConfigurazioneImport cfg = cfgBinanceVeloce();
         List<String[]> differiti = new ArrayList<>();
         List<String[]> gruppo = new ArrayList<>();
-        gruppo.add(rigaBinance("2022-05-12 06:24:50", "Staking Rewards", "BTC", "0.001"));
+        gruppo.add(rigaBinance("2024-05-12 06:24:50", "Staking Rewards", "BTC", "0.001"));
 
         ImportazioneGenerica.consolidaGruppo(gruppo, cfg, differiti);
 
@@ -104,7 +104,7 @@ class ImportazioneGenericaAvvisoDerivatiTest {
         cfg.causaliAllertaDerivati.add("Transfer Between Main and Funding Wallet");
         List<String[]> differiti = new ArrayList<>();
         List<String[]> gruppo = new ArrayList<>();
-        gruppo.add(rigaBinance("2022-05-12 06:24:50", "Transfer Between Main and Funding Wallet", "USDT", "-100.00000000"));
+        gruppo.add(rigaBinance("2024-05-12 06:24:50", "Transfer Between Main and Funding Wallet", "USDT", "-100.00000000"));
 
         ImportazioneGenerica.consolidaGruppo(gruppo, cfg, differiti);
 

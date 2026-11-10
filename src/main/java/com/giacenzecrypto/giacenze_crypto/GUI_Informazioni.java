@@ -122,7 +122,7 @@ public class GUI_Informazioni extends JDialog {
         pulsanti.add(novita);
         //Canale stabile o beta e controllo a richiesta. Non nell'edizione Store, che si aggiorna dallo Store
         if (Aggiornamenti.Abilitati()) {
-            JButton aggiornamenti = new JButton("Aggiornamenti...");
+            JButton aggiornamenti = new JButton("Aggiornamenti");
             aggiornamenti.setToolTipText("Controlla se c'è una versione più recente e sceglie il canale (stabile o beta)");
             aggiornamenti.addActionListener(e -> GUI_Aggiornamento.Mostra(this));
             pulsanti.add(Box.createHorizontalStrut(6));
@@ -207,7 +207,7 @@ public class GUI_Informazioni extends JDialog {
         h.append(Store ? " A queste si aggiunge GitHub, da cui si aggiornano i file di configurazione distribuiti.</p>"
                 : " A queste si aggiunge GitHub, da cui si aggiornano i file di configurazione distribuiti e si "
                 + "controlla se esiste una versione più recente (riceve solo il numero della versione in uso, il "
-                + "controllo si disattiva dal pulsante <i>Aggiornamenti...</i>, qui sotto).</p>");
+                + "controllo si disattiva dal pulsante <i>Aggiornamenti</i>, qui sotto).</p>");
 
         h.append("<h3>Fonti dei dati</h3>");
         h.append("<p>Oltre a CoinGecko e a Etherscan, le quotazioni e i movimenti in blockchain ")

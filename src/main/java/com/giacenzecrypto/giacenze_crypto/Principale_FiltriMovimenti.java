@@ -128,7 +128,7 @@ public class Principale_FiltriMovimenti {
         /**
          * I criteri attivi scritti per esteso, una riga ciascuno, nello stesso ordine di {@link #Attivi()}.
          *
-         * <p>&Egrave; l'elenco mostrato nel tooltip del pulsante "Filtri...": il numero da solo dice
+         * <p>&Egrave; l'elenco mostrato nel tooltip del pulsante "Filtri": il numero da solo dice
          * <i>quanti</i> criteri sono accesi ma non <i>quali</i>, e i criteri non sono pi&ugrave; in vista da
          * nessuna parte finch&eacute; non si riapre il dialogo.
          *
@@ -268,7 +268,7 @@ public class Principale_FiltriMovimenti {
     }
 
     /**
-     * Compone il tooltip del pulsante "Filtri...": la frase fissa che spiega cosa fa il pulsante e sotto
+     * Compone il tooltip del pulsante "Filtri": la frase fissa che spiega cosa fa il pulsante e sotto
      * l'elenco dei criteri attivi in questo momento.
      *
      * <p>&Egrave; HTML perch&eacute; un tooltip Swing su pi&ugrave; righe non pu&ograve; essere altro, e per la stessa
@@ -399,7 +399,7 @@ public class Principale_FiltriMovimenti {
     // ELENCO DEI FILTRI ATTIVI (scheda "Filtri") E FILTRO DA UNA RIGA DI DETTAGLIO
     // =================================================================================================
 
-    /** Origine di un filtro nell'elenco: i criteri della finestra "Filtri...", che ricaricano la tabella. */
+    /** Origine di un filtro nell'elenco: i criteri della finestra "Filtri", che ricaricano la tabella. */
     public static final String ORIGINE_CARICAMENTO = "Finestra Filtri";
     /** Origine di un filtro nell'elenco: il campo di ricerca libero. */
     public static final String ORIGINE_RICERCA = "Ricerca";
@@ -469,7 +469,7 @@ public class Principale_FiltriMovimenti {
     }
 
     /**
-     * Le righe dell'elenco dovute ai criteri della finestra "Filtri...".
+     * Le righe dell'elenco dovute ai criteri della finestra "Filtri".
      *
      * @param F i criteri correnti
      * @param NomeDocumento risolutore facoltativo da id a nome del documento

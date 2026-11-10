@@ -313,7 +313,7 @@
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
           <Image iconType="3" name="/Images/24_FrecciaSotto.png"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Configurazioni della community..."/>
+        <Property name="text" type="java.lang.String" value="Configurazioni della community"/>
         <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Configurazioni di importazione scritte da altri utenti e controllate dall&apos;autore del programma:&lt;br&gt;si scaricano da qui e compaiono nelle tendine con il prefisso Community.&lt;/html&gt;"/>
       </Properties>
       <Events>

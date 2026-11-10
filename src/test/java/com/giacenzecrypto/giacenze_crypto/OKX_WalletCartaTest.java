@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class OKX_WalletCartaTest {
 
-    private static final long T0 = 1_791_100_000L;          //timestamp del blocco 0
+    private static final long T0 = 1_700_000_000L;          //timestamp del blocco 0
     private static final long ULTIMO = 20_000;
     private static final String USDG = OKX_WalletCarta.TOKEN_XLAYER.get("USDG").get(0);
     private static final String HOT = "0xca2e000000000000000000000000000000000001";
@@ -95,14 +95,14 @@ class OKX_WalletCartaTest {
         return n;
     }
 
-    /** Caso reale: il trasferimento arriva 34 secondi dopo il bill; la stessa cifra verso un non-wallet non conta. */
+    /** Il trasferimento arriva 34 secondi dopo il bill. La stessa cifra verso un non-wallet non conta. */
     @Test
     void trovaIlWalletDellaCartaDopoIlBill() {
         Nodo n = nodoConCarta();
-        n.trasferimento(10_034, USDG, HOT, CARTA, "111.59");
-        n.trasferimento(10_050, USDG, HOT, EOA, "111.59");             //stesso importo, ma non e' un wallet ERC-4337
+        n.trasferimento(10_034, USDG, HOT, CARTA, "100");
+        n.trasferimento(10_050, USDG, HOT, EOA, "100");             //stesso importo, ma non e' un wallet ERC-4337
         n.trasferimento(10_040, USDG, HOT, ALTRO_AA, "50");            //wallet ERC-4337, importo diverso
-        var esito = OKX_WalletCarta.Trova(List.of(bill(10_000, "111.59")), n);
+        var esito = OKX_WalletCarta.Trova(List.of(bill(10_000, "100")), n);
         assertEquals(CARTA, esito.indirizzo(), esito.note().toString());
         assertTrue(n.chiamate < 80, "richieste al nodo: " + n.chiamate);
     }
@@ -111,14 +111,14 @@ class OKX_WalletCartaTest {
     @Test
     void piuBillDevonoPortareAlloStessoWallet() {
         Nodo n = nodoConCarta();
-        n.trasferimento(10_034, USDG, HOT, CARTA, "111.59");
+        n.trasferimento(10_034, USDG, HOT, CARTA, "100");
         n.trasferimento(15_020, USDG, HOT, CARTA, "20");
-        assertEquals(CARTA, OKX_WalletCarta.Trova(List.of(bill(10_000, "111.59"), bill(15_000, "20")), n).indirizzo());
+        assertEquals(CARTA, OKX_WalletCarta.Trova(List.of(bill(10_000, "100"), bill(15_000, "20")), n).indirizzo());
 
         Nodo diversi = nodoConCarta();
-        diversi.trasferimento(10_034, USDG, HOT, CARTA, "111.59");
+        diversi.trasferimento(10_034, USDG, HOT, CARTA, "100");
         diversi.trasferimento(15_020, USDG, HOT, ALTRO_AA, "20");
-        var esito = OKX_WalletCarta.Trova(List.of(bill(10_000, "111.59"), bill(15_000, "20")), diversi);
+        var esito = OKX_WalletCarta.Trova(List.of(bill(10_000, "100"), bill(15_000, "20")), diversi);
         assertNull(esito.indirizzo());
         assertFalse(esito.note().isEmpty());
     }
@@ -126,19 +126,19 @@ class OKX_WalletCartaTest {
     /** Nessun trasferimento, o due wallet ERC-4337 con lo stesso importo: nessun indirizzo, e una nota. */
     @Test
     void senzaUnCandidatoUnicoNonSiSceglie() {
-        var vuoto = OKX_WalletCarta.Trova(List.of(bill(10_000, "111.59")), nodoConCarta());
+        var vuoto = OKX_WalletCarta.Trova(List.of(bill(10_000, "100")), nodoConCarta());
         assertNull(vuoto.indirizzo());
         assertEquals(1, vuoto.note().size());
 
         Nodo ambiguo = nodoConCarta();
-        ambiguo.trasferimento(10_034, USDG, HOT, CARTA, "111.59");
-        ambiguo.trasferimento(10_100, USDG, HOT, ALTRO_AA, "111.59");
-        assertNull(OKX_WalletCarta.Trova(List.of(bill(10_000, "111.59")), ambiguo).indirizzo());
+        ambiguo.trasferimento(10_034, USDG, HOT, CARTA, "100");
+        ambiguo.trasferimento(10_100, USDG, HOT, ALTRO_AA, "100");
+        assertNull(OKX_WalletCarta.Trova(List.of(bill(10_000, "100")), ambiguo).indirizzo());
 
         //Un trasferimento oltre la finestra (15 minuti) non e' quello del bill
         Nodo tardi = nodoConCarta();
-        tardi.trasferimento(10_000 + OKX_WalletCarta.RITARDO_S + 60, USDG, HOT, CARTA, "111.59");
-        assertNull(OKX_WalletCarta.Trova(List.of(bill(10_000, "111.59")), tardi).indirizzo());
+        tardi.trasferimento(10_000 + OKX_WalletCarta.RITARDO_S + 60, USDG, HOT, CARTA, "100");
+        assertNull(OKX_WalletCarta.Trova(List.of(bill(10_000, "100")), tardi).indirizzo());
     }
 
     /** Una moneta che la carta non usa viene ignorata con una nota. */
@@ -153,14 +153,14 @@ class OKX_WalletCartaTest {
     @Test
     void iTrasferimentiVersoLaCartaSonoIBill325() {
         JsonArray bills = JsonParser.parseString("""
-                [ {"billId":"1","ccy":"USDG","balChg":"-111.59","bal":"0","notes":"Transfer from exchange to smart wallet","ts":"1791109002000","type":"325"},
-                  {"billId":"2","ccy":"USDG","balChg":"111.59","bal":"111.59","notes":"Received from trading account","ts":"1791109002000","type":"130"} ]
+                [ {"billId":"1","ccy":"USDG","balChg":"-100","bal":"0","notes":"Transfer from exchange to smart wallet","ts":"1700000000000","type":"325"},
+                  {"billId":"2","ccy":"USDG","balChg":"100","bal":"100","notes":"Received from trading account","ts":"1700000000000","type":"130"} ]
                 """).getAsJsonArray();
         var lista = OKX_WalletCarta.TrasferimentiVersoCarta(bills);
         assertEquals(1, lista.size());
         assertEquals("USDG", lista.get(0).moneta());
-        assertEquals(0, lista.get(0).qta().compareTo(new BigDecimal("111.59")));
-        assertEquals(1791109002000L, lista.get(0).ts());
+        assertEquals(0, lista.get(0).qta().compareTo(new BigDecimal("100")));
+        assertEquals(1700000000000L, lista.get(0).ts());
     }
 
     /** Il blocco di un istante e' il primo con timestamp uguale o successivo. */

@@ -35,7 +35,7 @@ class OKX_CartaAbbinaTest {
     }
 
     private static String[] bill325(String quando, String qta) {
-        String[] v = riga(quando + "_OKX200061141986_001_001_PC");
+        String[] v = riga(quando + "_OKX900000000001_001_001_PC");
         v[3] = "OKX";
         v[4] = "Principale";
         v[7] = OKX_CartaAbbina.CAUSALE_325 + " - Transfer from exchange to smart wallet";
@@ -57,16 +57,16 @@ class OKX_CartaAbbinaTest {
     }
 
     private static void movimentoOKX(String quando) {
-        String[] v = riga(quando + "_OKX3994783864294264834_001_001_SC");
+        String[] v = riga(quando + "_OKX1000000000000000001_001_001_SC");
         v[3] = "OKX";
     }
 
     @Test
     void ilBill325ELaRicaricaDiventanoUnTrasferimentoEIlDepositoSuccessivoEIlCashback() {
-        String[] p = bill325("20261004121642", "111.59");
-        String[] ricarica = depositoCarta("20261004121716", "111.59", HOT);
-        String[] cashback = depositoCarta("20261009100116", "0.1", HOT);
-        movimentoOKX("20261009163036");
+        String[] p = bill325("20250210100000", "100");
+        String[] ricarica = depositoCarta("20250210100034", "100", HOT);
+        String[] cashback = depositoCarta("20250215100100", "0.1", HOT);
+        movimentoOKX("20250215103000");
 
         OKX_CartaAbbina.Esito e = OKX_CartaAbbina.Abbina(MappaCryptoWallet, W);
         assertEquals(1, e.ricariche());
@@ -84,27 +84,27 @@ class OKX_CartaAbbinaTest {
 
     @Test
     void ilCashbackSiDecideSoloQuandoLArchivioOKXArrivaOltreQuellIstante() {
-        bill325("20261004121642", "111.59");
-        depositoCarta("20261004121716", "111.59", HOT);
-        String[] dopo = depositoCarta("20261009100116", "0.1", HOT);
-        movimentoOKX("20261009100000");   //l'archivio OKX si ferma prima: il 325 di questo deposito potrebbe mancare
+        bill325("20250210100000", "100");
+        depositoCarta("20250210100034", "100", HOT);
+        String[] dopo = depositoCarta("20250215100100", "0.1", HOT);
+        movimentoOKX("20250215100000");   //l'archivio OKX si ferma prima: il 325 di questo deposito potrebbe mancare
 
         OKX_CartaAbbina.Esito e = OKX_CartaAbbina.Abbina(MappaCryptoWallet, W);
         assertEquals(1, e.ricariche());
         assertEquals(0, e.cashback());
         assertTrue(dopo[18].isBlank());
 
-        movimentoOKX("20261009120000");
+        movimentoOKX("20250215120000");
         assertEquals(1, OKX_CartaAbbina.Abbina(MappaCryptoWallet, W).cashback());
     }
 
     @Test
     void unaRicaricaSenzaIlSuo325NonEUnCashbackSeIl325ArrivaDopo() {
         //Importato prima il wallet della carta: il deposito resta un deposito finché OKX non arriva oltre
-        String[] ricarica = depositoCarta("20261004121716", "111.59", HOT);
+        String[] ricarica = depositoCarta("20250210100034", "100", HOT);
         assertEquals(0, OKX_CartaAbbina.Abbina(MappaCryptoWallet, W).cashback());
-        bill325("20261004121642", "111.59");
-        movimentoOKX("20261005080000");
+        bill325("20250210100000", "100");
+        movimentoOKX("20250211080000");
         OKX_CartaAbbina.Esito e = OKX_CartaAbbina.Abbina(MappaCryptoWallet, W);
         assertEquals(1, e.ricariche());
         assertEquals(0, e.cashback());
@@ -113,10 +113,10 @@ class OKX_CartaAbbinaTest {
 
     @Test
     void unDepositoDaUnAltroIndirizzoNonEUnCashbackEUnaQuantitaDiversaNonEUnaRicarica() {
-        String[] p = bill325("20261004121642", "111.59");
-        String[] diverso = depositoCarta("20261004121716", "111.58", HOT);
-        String[] altro = depositoCarta("20261009100116", "0.1", ALTRO);
-        movimentoOKX("20261010000000");
+        String[] p = bill325("20250210100000", "100");
+        String[] diverso = depositoCarta("20250210100034", "99.99", HOT);
+        String[] altro = depositoCarta("20250215100100", "0.1", ALTRO);
+        movimentoOKX("20250216000000");
         OKX_CartaAbbina.Esito e = OKX_CartaAbbina.Abbina(MappaCryptoWallet, W);
         assertEquals(0, e.ricariche());
         assertEquals(0, e.cashback(), "nessuna ricarica abbinata: il mittente delle ricariche non e' noto");
@@ -127,20 +127,20 @@ class OKX_CartaAbbinaTest {
 
     @Test
     void iBill325NonAbbinatiDellArchivioServonoATrovareIlWallet() {
-        bill325("20261004121642", "111.59");
-        String[] abbinato = bill325("20261001080000", "5");
+        bill325("20250210100000", "100");
+        String[] abbinato = bill325("20250209080000", "5");
         abbinato[18] = "PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)";
         java.util.List<OKX_WalletCarta.Trasferimento> t = OKX_CartaAbbina.TrasferimentiDaArchivio(MappaCryptoWallet);
         assertEquals(1, t.size(), "solo quello non ancora abbinato");
         assertEquals("USDG", t.get(0).moneta());
-        assertEquals(0, new java.math.BigDecimal("111.59").compareTo(t.get(0).qta()));
-        assertEquals(FunzioniDate.ConvertiDataIDinLong("20261004121642"), t.get(0).ts());
+        assertEquals(0, new java.math.BigDecimal("100").compareTo(t.get(0).qta()));
+        assertEquals(FunzioniDate.ConvertiDataIDinLong("20250210100000"), t.get(0).ts());
     }
 
     @Test
     void unDepositoFuoriDallaFinestraDelBillNonEUnaRicarica() {
-        bill325("20261004121642", "111.59");
-        String[] tardi = depositoCarta("20261004123500", "111.59", HOT);   //18 minuti dopo
+        bill325("20250210100000", "100");
+        String[] tardi = depositoCarta("20250210101800", "100", HOT);   //18 minuti dopo
         assertEquals(0, OKX_CartaAbbina.Abbina(MappaCryptoWallet, W).ricariche());
         assertTrue(tardi[18].isBlank());
     }

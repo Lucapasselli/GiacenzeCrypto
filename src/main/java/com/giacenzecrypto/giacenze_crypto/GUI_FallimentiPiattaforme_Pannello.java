@@ -176,26 +176,26 @@ public class GUI_FallimentiPiattaforme_Pannello extends JPanel {
         Divisione.setResizeWeight(0);
         add(Divisione, BorderLayout.CENTER);
 
-        JButton Nuova = new JButton("Nuova procedura...");
+        JButton Nuova = new JButton("Nuova procedura");
         Nuova.setToolTipText("Blocca le giacenze di una piattaforma alla data della domanda di fallimento");
         Nuova.addActionListener(e -> NuovaProcedura());
-        Elimina = new JButton("Elimina procedura...");
+        Elimina = new JButton("Elimina procedura");
         Elimina.setToolTipText("Toglie tutti i movimenti della procedura selezionata e i dati del piano");
         Elimina.setEnabled(false);
         Elimina.addActionListener(e -> EliminaProcedura());
-        Rimborso = new JButton("Registra rimborso...");
+        Rimborso = new JButton("Registra rimborso");
         Rimborso.setToolTipText("Registra una tranche pagata dalla procedura selezionata: scambi dal credito alle monete ricevute");
         Rimborso.setEnabled(false);
         Rimborso.addActionListener(e -> RegistraRimborso());
-        Chiudi = new JButton("Chiudi procedura...");
+        Chiudi = new JButton("Chiudi procedura");
         Chiudi.setToolTipText("Fa uscire senza valore il credito non rimborsato e i FIAT rimasti: nessuna minusvalenza");
         Chiudi.setEnabled(false);
         Chiudi.addActionListener(e -> ChiudiProcedura());
-        Annulla = new JButton("Annulla ultima operazione...");
+        Annulla = new JButton("Annulla ultima operazione");
         Annulla.setToolTipText("Toglie la chiusura o, se non c'è, l'ultimo rimborso registrato");
         Annulla.setEnabled(false);
         Annulla.addActionListener(e -> AnnullaUltimaOperazione());
-        RisultatoFiat = new JButton("Risultato parte FIAT...");
+        RisultatoFiat = new JButton("Risultato parte FIAT");
         RisultatoFiat.setToolTipText("Differenza fra valore ricevuto e credito in valuta consumato, rimborso per rimborso e "
                 + "per anno: il programma non la calcola fra plusvalenze e minusvalenze delle cripto-attività");
         RisultatoFiat.setEnabled(false);
@@ -235,7 +235,7 @@ public class GUI_FallimentiPiattaforme_Pannello extends JPanel {
         Pulsanti.add(Annulla);
         Pulsanti.add(Elimina);
         Pulsanti.add(RisultatoFiat);
-        JButton Guida = new JButton("Guida...");
+        JButton Guida = new JButton("Guida");
         Icona(Nuova, "Nuovo");
         Icona(Rimborso, "Prezzo");
         Icona(Chiudi, "Chiave");

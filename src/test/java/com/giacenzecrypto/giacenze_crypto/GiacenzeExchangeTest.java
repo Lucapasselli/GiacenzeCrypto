@@ -10,7 +10,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 /**
- * {@link GiacenzeExchange}: la giacenza di OKX ricostruita dai {@code bal} dei bill, con i casi trovati sui dati reali
+ * {@link GiacenzeExchange}: la giacenza di OKX ricostruita dai {@code bal} dei bill, con casi tipici
  * (catene dei bot, ordine per billId, Earn, storia che comincia a meta'), e la somma dei saldi di Binance.
  */
 class GiacenzeExchangeTest {
@@ -56,16 +56,16 @@ class GiacenzeExchangeTest {
 
     @Test
     void laCatenaSegueIlBillIdEnonLOrario() {
-        //Caso reale: il trasferimento dal Trading ha un billId precedente ma l'orario di un secondo dopo
+        //Il trasferimento dal Trading ha un billId precedente ma l'orario di un secondo dopo
         List<GiacenzeExchange.Bill> b = new ArrayList<>();
         b.add(new GiacenzeExchange.Bill("F", "ETH", 1000, 1, new BigDecimal("0.5"), new BigDecimal("0.5"), "1", "Deposit"));
         b.add(new GiacenzeExchange.Bill("F", "ETH", 2000, 2, new BigDecimal("-0.5"), BigDecimal.ZERO, "75", "Simple Earn subscription"));
-        b.add(new GiacenzeExchange.Bill("F", "ETH", 3001, 3, new BigDecimal("0.017"), new BigDecimal("0.017"), "130", "Received from trading account"));
-        b.add(new GiacenzeExchange.Bill("F", "ETH", 3000, 4, new BigDecimal("-0.017"), BigDecimal.ZERO, "75", "Simple Earn subscription"));
+        b.add(new GiacenzeExchange.Bill("F", "ETH", 3001, 3, new BigDecimal("0.25"), new BigDecimal("0.25"), "130", "Received from trading account"));
+        b.add(new GiacenzeExchange.Bill("F", "ETH", 3000, 4, new BigDecimal("-0.25"), BigDecimal.ZERO, "75", "Simple Earn subscription"));
         GiacenzeExchange.StoricoOKX s = GiacenzeExchange.Costruisci(b, List.of());
-        assertEquals(0, new BigDecimal("0.517").compareTo(s.Saldo("ETH", 5000)),
+        assertEquals(0, new BigDecimal("0.75").compareTo(s.Saldo("ETH", 5000)),
                 "tutto in Earn, nessuna giacenza fantasma nel Funding");
-        assertEquals(0, new BigDecimal("0.517").compareTo(s.InEarn("ETH", 5000)));
+        assertEquals(0, new BigDecimal("0.75").compareTo(s.InEarn("ETH", 5000)));
     }
 
     @Test
@@ -89,18 +89,18 @@ class GiacenzeExchangeTest {
     void laPosizioneOnChainSiChiudeAlRiscattoDelloStorico() {
         List<GiacenzeExchange.Bill> b = new ArrayList<>();
         b.add(B("F", "USDC", 100, "900", "900", "1", "Deposit"));
-        b.add(B("F", "USDC", 200, "-874.1", "25.9", "80", "On-chain Earn subscription"));
-        GiacenzeExchange.OrdineOnChain o = new GiacenzeExchange.OrdineOnChain("1", "USDC", new BigDecimal("874.1"), 210, 5000);
+        b.add(B("F", "USDC", 200, "-800", "100", "80", "On-chain Earn subscription"));
+        GiacenzeExchange.OrdineOnChain o = new GiacenzeExchange.OrdineOnChain("1", "USDC", new BigDecimal("800"), 210, 5000);
         GiacenzeExchange.StoricoOKX s = GiacenzeExchange.Costruisci(b, List.of(o));
         assertEquals(0, new BigDecimal("900").compareTo(s.Saldo("USDC", 1000)));
-        assertEquals(0, new BigDecimal("25.9").compareTo(s.Saldo("USDC", 6000)), "convertita in LYUSDC, non e' piu' USDC");
+        assertEquals(0, new BigDecimal("100").compareTo(s.Saldo("USDC", 6000)), "convertita in LYUSDC, non e' piu' USDC");
     }
 
     @Test
     void unaSottoscrizioneOnChainSenzaOrdineRendeIgnotaLaGiacenza() {
         List<GiacenzeExchange.Bill> b = new ArrayList<>();
         b.add(B("F", "USDC", 100, "900", "900", "1", "Deposit"));
-        b.add(B("F", "USDC", 200, "-874.1", "25.9", "80", "On-chain Earn subscription"));
+        b.add(B("F", "USDC", 200, "-800", "100", "80", "On-chain Earn subscription"));
         GiacenzeExchange.StoricoOKX s = GiacenzeExchange.Costruisci(b, List.of());
         assertNotNull(s.Saldo("USDC", 150));
         assertNull(s.Saldo("USDC", 300));
@@ -125,9 +125,9 @@ class GiacenzeExchangeTest {
         Map<String, GiacenzeExchange.Bill> bills = new LinkedHashMap<>();
         Map<String, GiacenzeExchange.OrdineOnChain> ordini = new LinkedHashMap<>();
         long[] inizio = {Long.MAX_VALUE};
-        GiacenzeExchange.LeggiRisposta("{\"script\":\"OKX_Bills\",\"argomenti\":\"OKX startDate=1713123632000 hostname=my.okx.com\","
+        GiacenzeExchange.LeggiRisposta("{\"script\":\"OKX_Bills\",\"argomenti\":\"OKX startDate=1700000000000 hostname=my.okx.com\","
                 + "\"risposta\":{\"okx_fundingBills\":[]}}", bills, ordini, inizio);
-        assertEquals(1713123632000L, inizio[0]);
+        assertEquals(1700000000000L, inizio[0]);
         assertFalse(inizio[0] < GiacenzeExchange.INIZIO_STORIA_COMPLETA);
         GiacenzeExchange.LeggiRisposta("{\"script\":\"OKX_Bills\",\"argomenti\":\"OKX startDate=1483228800000\","
                 + "\"risposta\":{\"okx_fundingBills\":[]}}", bills, ordini, inizio);

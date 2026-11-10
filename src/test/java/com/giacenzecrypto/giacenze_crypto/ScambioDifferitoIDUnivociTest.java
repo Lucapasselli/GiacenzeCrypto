@@ -80,14 +80,14 @@ class ScambioDifferitoIDUnivociTest {
         }
     }
 
-    private static final String DATA_DEPOSITO = "2022-08-26 10:40:36";
+    private static final String DATA_DEPOSITO = "2024-08-26 10:40:36";
 
     /** Due contratti: prelievi in giorni diversi con la stessa coda dell'ID, depositi nello stesso secondo. */
     private static String[][] dueContrattiNelloStessoSecondo() throws Exception {
-        String[] p1 = movimento("20220408141952_Binance_001_001_PC", "BUSD", "100", "2022-04-08 14:19:52");
-        String[] p2 = movimento("20220417122647_Binance_001_001_PC", "BUSD", "38.4", "2022-04-17 12:26:47");
-        String[] d1 = movimento("20220826104036_Binance_001_001_DC", "BTC", "0.005", DATA_DEPOSITO);
-        String[] d2 = movimento("20220826104036_Binance_001_002_DC", "BTC", "0.002", DATA_DEPOSITO);
+        String[] p1 = movimento("20240408141952_Binance_001_001_PC", "BUSD", "100", "2024-04-08 14:19:52");
+        String[] p2 = movimento("20240417122647_Binance_001_001_PC", "BUSD", "40", "2024-04-17 12:26:47");
+        String[] d1 = movimento("20240826104036_Binance_001_001_DC", "BTC", "0.005", DATA_DEPOSITO);
+        String[] d2 = movimento("20240826104036_Binance_001_002_DC", "BTC", "0.002", DATA_DEPOSITO);
         for (String[] v : new String[][]{p1, p2, d1, d2}) MappaCryptoWallet.put(v[0], v);
         seedPrezzo("BTC", DATA_DEPOSITO);
         seedPrezzo("BUSD", DATA_DEPOSITO);
@@ -155,18 +155,18 @@ class ScambioDifferitoIDUnivociTest {
         GUI_ClassificazioneMovimento.RiportaTransazioniASituazioneIniziale(parti, m[0][0]);
 
         for (String ID : secondo) assertNotNull(MappaCryptoWallet.get(ID), "l'annullamento del primo ha cancellato " + ID);
-        assertNotNull(MappaCryptoWallet.get("20220408141952_Binance_001_001_PC"), "prelievo del primo ripristinato");
-        assertNotNull(MappaCryptoWallet.get("20220826104036_Binance_001_001_DC"), "deposito del primo ripristinato");
+        assertNotNull(MappaCryptoWallet.get("20240408141952_Binance_001_001_PC"), "prelievo del primo ripristinato");
+        assertNotNull(MappaCryptoWallet.get("20240826104036_Binance_001_001_DC"), "deposito del primo ripristinato");
         assertEquals(7, MappaCryptoWallet.size());
     }
 
     @Test
     void senzaIDUnivocoDisponibile_nonToccaNulla() throws Exception {
         //Quarto segmento non numerico: getIDUnivoco non può incrementarlo
-        String[] p = movimento("20220408141952_Binance_001_X_PC", "BUSD", "100", "2022-04-08 14:19:52");
-        String[] d = movimento("20220826104036_Binance_001_001_DC", "BTC", "0.005", DATA_DEPOSITO);
+        String[] p = movimento("20240408141952_Binance_001_X_PC", "BUSD", "100", "2024-04-08 14:19:52");
+        String[] d = movimento("20240826104036_Binance_001_001_DC", "BTC", "0.005", DATA_DEPOSITO);
         //Un movimento occupa già l'ID che toccherebbe allo scambio
-        String[] occupante = movimento("20220826104036_02Binance_001_X_SC", "BTC", "1", DATA_DEPOSITO);
+        String[] occupante = movimento("20240826104036_02Binance_001_X_SC", "BTC", "1", DATA_DEPOSITO);
         for (String[] v : new String[][]{p, d, occupante}) MappaCryptoWallet.put(v[0], v);
         Map<String, String> prima = new TreeMap<>();
         for (String[] v : MappaCryptoWallet.values()) prima.put(v[0], String.join(";", v));
@@ -181,9 +181,9 @@ class ScambioDifferitoIDUnivociTest {
 
     @Test
     void movimentoInesistente_nonToccaNulla() {
-        String[] d = movimento("20220826104036_Binance_001_001_DC", "BTC", "0.005", DATA_DEPOSITO);
+        String[] d = movimento("20240826104036_Binance_001_001_DC", "BTC", "0.005", DATA_DEPOSITO);
         MappaCryptoWallet.put(d[0], d);
-        assertFalse(GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito("20220408141952_Binance_001_001_PC", d[0]));
+        assertFalse(GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito("20240408141952_Binance_001_001_PC", d[0]));
         assertEquals(1, MappaCryptoWallet.size());
         assertSame(d, MappaCryptoWallet.get(d[0]));
     }

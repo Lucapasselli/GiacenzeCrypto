@@ -155,8 +155,8 @@ class Binance_AutoInvestDatasetRealeTest {
     /**
      * Il verso dei ribilanciamenti ricavato dai soli prezzi (come per un piano ancora aperto, senza riscatto) confrontato
      * con quello esatto che danno sottoscrizioni e riscatto. Non può essere esatto: lo sbilancio del verso giusto è fra
-     * lo 0,1% e l'1,2% del valore scambiato, e una moneta da pochi centesimi lo sposta di meno. Sul dataset del
-     * 2026-10-18 sbagliano 2 righe su 153 (BTC per 0,35 euro, DOT per 0,10): la soglia fissa quel risultato.
+     * lo 0,1% e l'1,2% del valore scambiato, e una moneta da pochi centesimi lo sposta di meno. Su un dataset
+     * vero sbagliano pochissime righe (di pochi centesimi): la soglia fissa quel risultato.
      */
     @Test
     void versoDaiPrezzi_coincideConLaQuadratura() throws Exception {

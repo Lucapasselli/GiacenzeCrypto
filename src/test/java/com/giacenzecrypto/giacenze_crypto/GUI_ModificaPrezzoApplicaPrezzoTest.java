@@ -1,6 +1,8 @@
 package com.giacenzecrypto.giacenze_crypto;
 
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -10,10 +12,17 @@ import org.junit.jupiter.api.Test;
  */
 class GUI_ModificaPrezzoApplicaPrezzoTest {
 
+    /** Lo storico ha un buffer statico: ogni prova parte vuota e non lascia voci alle altre classi. */
+    @BeforeEach
+    @AfterEach
+    void azzeraLoStorico() {
+        MovimentiStorico.AzzeraBuffer();
+    }
+
     private static String[] movimentoSenzaPrezzo() {
         String[] m = new String[Importazioni.ColonneTabella];
         for (int i = 0; i < m.length; i++) m[i] = "";
-        m[0] = "20220512062450_Test_001_001_PC";
+        m[0] = "20240512062450_Test_001_001_PC";
         m[8] = "USDT";
         m[15] = "0.00";
         m[32] = "NO";
@@ -42,5 +51,34 @@ class GUI_ModificaPrezzoApplicaPrezzoTest {
         assertEquals("SI", m[32]);
         assertEquals("12.34", m[15]);
         assertTrue(Prezzi.isMovimentoPrezzato(m));
+    }
+
+    @Test
+    void ilPrezzoSceltoVaNelloStoricoConIlLignaggio() {
+        String[] m = movimentoSenzaPrezzo();
+        m[15] = "10.00";
+        m[32] = "SI";
+        m[40] = "USDT|1|10.00|Binance";
+
+        GUI_ModificaPrezzo.ApplicaPrezzoScelto(m, "12.34", "USDT|2|12.34|Coingecko");
+
+        assertEquals(1, MovimentiStorico.VociInAttesa());
+        String lignaggio = m[MovimentiStorico.CAMPO_LIGNAGGIO];
+        assertFalse(lignaggio.isBlank(), "il movimento porta il lignaggio della sua catena");
+        //Il contenuto della riga di prima si legge dal database: lo prova MovimentiStoricoTest, che lo apre
+        assertEquals("12.34", m[15]);
+    }
+
+    @Test
+    void scegliereLoStessoPrezzoNonEUnaModifica() {
+        String[] m = movimentoSenzaPrezzo();
+        m[15] = "10.00";
+        m[32] = "SI";
+        m[40] = "USDT|1|10.00|Binance";
+
+        GUI_ModificaPrezzo.ApplicaPrezzoScelto(m, "10.00", "USDT|1|10.00|Binance");
+
+        assertEquals(0, MovimentiStorico.VociInAttesa());
+        assertEquals("", m[MovimentiStorico.CAMPO_LIGNAGGIO]);
     }
 }

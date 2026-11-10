@@ -228,7 +228,7 @@ class Backup_RestoreTest {
 
     @Test
     void ilBackupCompletoDeiPrezziAttraversaTuttaLaTabella() throws Exception {
-        //Sull'archivio reale questo CSV è di 15 milioni di righe e 779 MB: né l'esportazione né il
+        //Su un archivio grande questo CSV arriva a milioni di righe e a centinaia di MB: né l'esportazione né il
         //ripristino possono tenerlo in memoria. Qui le righe sono molte meno, ma il percorso è lo
         //stesso — e questo test fallirebbe (per tempo o per memoria) se qualcuno rimettesse un buffer.
         final int RIGHE = 60000;

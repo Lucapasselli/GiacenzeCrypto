@@ -53,26 +53,26 @@ class ImportazioneGenericaBinanceConvertTest {
     @Test
     void convertConGambeSfalsateDiUnSecondo_unSoloGruppo() throws Exception {
         List<String[]> righe = new ArrayList<>(List.of(
-                riga("2026-01-10 17:48:20", "BTC", "0.0000128"),
-                riga("2026-01-10 17:48:21", "EUR", "-1")));
+                riga("2025-01-10 17:48:20", "BTC", "0.00001"),
+                riga("2025-01-10 17:48:21", "EUR", "-1")));
         assertEquals(1, ImportazioneGenerica.raggruppaRighe(righe, cfg()).size());
     }
 
     @Test
     void convertNelloStessoSecondo_unSoloGruppo() throws Exception {
         List<String[]> righe = new ArrayList<>(List.of(
-                riga("2026-01-06 16:06:48", "BREV", "-11"),
-                riga("2026-01-06 16:06:48", "BTC", "0.00004525")));
+                riga("2025-01-06 16:06:48", "BREV", "-11"),
+                riga("2025-01-06 16:06:48", "BTC", "0.00005")));
         assertEquals(1, ImportazioneGenerica.raggruppaRighe(righe, cfg()).size());
     }
 
     @Test
     void convertDistintiInGiorniDiversi_restanoSeparati() throws Exception {
         List<String[]> righe = new ArrayList<>(List.of(
-                riga("2026-01-10 17:48:20", "BTC", "0.0000128"),
-                riga("2026-01-10 17:48:21", "EUR", "-1"),
-                riga("2026-01-11 17:48:20", "BTC", "0.00001275"),
-                riga("2026-01-11 17:48:21", "EUR", "-1")));
+                riga("2025-01-10 17:48:20", "BTC", "0.00001"),
+                riga("2025-01-10 17:48:21", "EUR", "-1"),
+                riga("2025-01-11 17:48:20", "BTC", "0.00001"),
+                riga("2025-01-11 17:48:21", "EUR", "-1")));
         assertEquals(2, ImportazioneGenerica.raggruppaRighe(righe, cfg()).size());
     }
 
@@ -80,8 +80,8 @@ class ImportazioneGenericaBinanceConvertTest {
     void convertEurBtcSfalsato_dannoUnoScambioUnico() throws Exception {
         ConfigurazioneImport c = cfg();
         List<String[]> righe = new ArrayList<>(List.of(
-                riga("2026-01-10 17:48:20", "BTC", "0.0000128"),
-                riga("2026-01-10 17:48:21", "EUR", "-1")));
+                riga("2025-01-10 17:48:20", "BTC", "0.00001"),
+                riga("2025-01-10 17:48:21", "EUR", "-1")));
         List<List<String[]>> gruppi = ImportazioneGenerica.raggruppaRighe(righe, c);
         List<String[]> movs = ImportazioneGenerica.consolidaGruppo(gruppi.get(0), c, new ArrayList<>());
 

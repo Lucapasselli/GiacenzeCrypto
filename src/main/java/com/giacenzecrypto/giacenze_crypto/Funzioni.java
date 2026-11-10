@@ -1156,6 +1156,8 @@ public static boolean GUIModificaPrezzo(Component c, String ID) {
             }
 
             if ("yes".equals(zeroActionId)) {
+                //Una modifica a mano va nello storico, prima di scrivere sulla riga
+                MovimentiStorico.AccodaPrimaDiModificare(trans, MovimentiStorico.OP_PREZZO);
                 trans[15] = prezz;
                 trans[32] = "SI";
                 return true;
@@ -1165,6 +1167,8 @@ public static boolean GUIModificaPrezzo(Component c, String ID) {
         }
 
         // Caso normale: salvo il prezzo e marco il movimento come modificato.
+        //Una modifica a mano va nello storico, prima di scrivere sulla riga
+        MovimentiStorico.AccodaPrimaDiModificare(trans, MovimentiStorico.OP_PREZZO);
         trans[15] = prezz;
         trans[32] = "SI";
         return true;
@@ -2440,8 +2444,8 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
                 plusvalenza = true;
             }
         }
-        else if (IDTS[4].equals("DC")//Deposito Crypto
-                || IDTS[4].equals("PC"))//Prelievo Crypto
+        else if (Mov[18].isBlank() && (IDTS[4].equals("DC")//Deposito Crypto, solo se non classificato: gli altri proseguono sul campo 18
+                || IDTS[4].equals("PC")))//Prelievo Crypto
         {
             //Le tipologie possono essere le seguenti
             //PWN -> Trasf. su wallet morto...tolto dal lifo (prelievo)

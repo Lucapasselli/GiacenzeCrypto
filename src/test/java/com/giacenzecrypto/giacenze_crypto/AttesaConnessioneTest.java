@@ -160,8 +160,8 @@ class AttesaConnessioneTest {
     private static List<String[]> movimentiFinti() {
         String[] m = new String[Importazioni.ColonneTabella];
         for (int i = 0; i < m.length; i++) m[i] = "";
-        m[0] = "20220512062450_TestAttesa_001_001_PC";
-        m[1] = "2022-05-12 06:24";
+        m[0] = "20240512062450_TestAttesa_001_001_PC";
+        m[1] = "2024-05-12 06:24";
         m[3] = "TestAttesa";
         m[4] = "Principale";
         m[5] = "PRELIEVO CRYPTO";

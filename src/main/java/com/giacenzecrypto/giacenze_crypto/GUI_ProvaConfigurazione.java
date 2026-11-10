@@ -44,7 +44,7 @@ public class GUI_ProvaConfigurazione extends JDialog {
     private final DefaultTableModel ModelloScarti = Modello("Motivo", "Riga del CSV");
     private final JButton Ripeti = new JButton("Ripeti la prova");
     private final JButton Copia = new JButton("Copia resoconto");
-    private final JButton Condividi = new JButton("Condividi con la community...");
+    private final JButton Condividi = new JButton("Condividi con la community");
 
     /**
      * Esegue la prova in background (cursore d'attesa sul proprietario) e ne mostra l'esito.

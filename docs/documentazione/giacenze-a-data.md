@@ -48,7 +48,7 @@ esplicita e vanno poi salvate dalla scheda *Transazioni Crypto*.
 
 ## Dove si trova {#dove-si-trova}
 
-Nella scheda **Analisi Crypto – Giacenze a Data**. Il pulsante **Guida...** in basso a destra, sopra il dettaglio, apre
+Nella scheda **Analisi Crypto – Giacenze a Data**. Il pulsante **Guida** in basso a destra, sopra il dettaglio, apre
 questo manuale.
 
 ![La scheda Giacenze a data con la tabella dei token e il dettaglio dei movimenti del BTC](immagini/giacenze-a-data/01.png)
@@ -189,7 +189,7 @@ LiFo del movimento, modifica, eliminazione, classificazione, modifica del prezzo
 
 I pulsanti e le caselle sopra il dettaglio:
 
-- **Colonne...** sceglie quali colonne mostrare e in che ordine, anche prendendole dalla tabella dei movimenti (per esempio
+- **Colonne** sceglie quali colonne mostrare e in che ordine, anche prendendole dalla tabella dei movimenti (per esempio
   *Causale originale*, *Hash Transazione*, *Note*). Le colonne si spostano e si allargano trascinando le intestazioni e la
   disposizione viene ricordata. *Ripristina predefinito* torna alle colonne iniziali.
 - **Mostra solo Qta residue negative** tiene solo le righe in cui la giacenza dopo il movimento è negativa, per trovare il

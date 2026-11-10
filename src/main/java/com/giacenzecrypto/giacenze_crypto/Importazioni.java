@@ -776,7 +776,7 @@ public class Importazioni {
      * ({@code ordId}, campo {@code [13]}), conservando l'ordine di prima comparsa.
      *
      * <p><b>Perche' serve.</b> Le righe di uno stesso istante non appartengono per forza alla stessa
-     * operazione. Sui dati reali del 23/07/2026 alle 15:28:21 ci sono <b>16 righe che sono 8 ordini
+     * operazione. In un export vero, nello stesso secondo, ci sono <b>righe che sono ordini
      * distinti</b>, con le gambe interlacciate nel file. Raggruppare per solo orario li fonde in un unico
      * scambio (e' cio' che faceva l'import da CSV), mentre chiudere il gruppo alla prima coppia Buy+Sell li
      * spezza a caso e separa anche le due gambe di un ordine eseguito in piu' fill (e' cio' che faceva
@@ -784,15 +784,14 @@ public class Importazioni {
      * <b>uguale sulle due strade</b>, che e' il presupposto perche' la deduplica possa riconoscere lo stesso
      * movimento importato da CSV e da API.
      *
-     * <p><b>Perche' resta ancorata all'orario</b> invece di raggruppare per ordine su tutto il file: su 162
-     * ordini reali, 2 si estendono su piu' istanti — uno addirittura su 46 minuti (26/06/2026, 16:28:53 e
-     * 17:09:56). Un gruppo che attraversa piu' orari costringerebbe a scegliere quale data dare al movimento
+     * <p><b>Perche' resta ancorata all'orario</b> invece di raggruppare per ordine su tutto il file: in un
+     * export vero alcuni ordini si estendono su piu' istanti, anche per molti minuti. Un gruppo che attraversa piu' orari costringerebbe a scegliere quale data dare al movimento
      * consolidato; restando ancorati all'istante quei due ordini restano due movimenti, che e' il
      * comportamento odierno di entrambe le strade.
      *
      * <p><b>Righe senza {@code ordId}.</b> Finiscono tutte in un unico sottogruppo residuo, in coda. Sono i
      * movimenti del conto Funding (depositi, prelievi, giroconti, rendimenti), che non sono ordini e non
-     * formano scambi. Verificato sui bill reali: <b>nessun bill di trade e' privo di {@code ordId}</b>,
+     * formano scambi. Verificato sui bill di un export: <b>nessun bill di trade e' privo di {@code ordId}</b>,
      * l'unico caso incontrato e' un {@code Withdrawal} del Funding.
      *
      * <p>Se <b>nessuna</b> riga del gruppo ha un {@code ordId} viene restituito il gruppo originale intatto:
@@ -983,8 +982,7 @@ public class Importazioni {
      * allora {@code RitornaScambi} univa le due gambe con {@code _} ({@code <idUscita>_<idEntrata>}), da
      * allora con {@code -}. Confrontate carattere per carattere le due forme non si riconoscono, quindi uno
      * scambio importato prima di quella data veniva reinserito tale e quale dallo scaricamento via API
-     * (difetto <b>C12</b>). Sui dati reali le due forme convivono: 202 scambi OKX con {@code _} e 191 con
-     * {@code -}.
+     * (difetto <b>C12</b>). In pratica le due forme convivono nello storico di uno stesso utente.
      *
      * <p>La normalizzazione e' <b>volutamente stretta</b>: agisce solo su {@code <cifre>_<cifre>}, che e'
      * esattamente la forma dell'ID composto, e lascia intatto tutto il resto. Serve a non toccare gli ID
@@ -4026,7 +4024,7 @@ public static List<String[]> Ex_BinanceTaxReport_Consolida(String movimento,Map<
  * si trova in posizioni diverse e ottiene due identificativi diversi. Il risultato è che la stessa
  * commissione entra <b>due volte</b> invece di essere riconosciuta come già presente.
  *
- * <p>Verificato sui movimenti reali: 44 commissioni duplicate nel solo giugno 2026, ognuna con lo stesso
+ * <p>Verificato su movimenti veri: decine di commissioni duplicate in un solo mese, ognuna con lo stesso
  * {@code billId}, la stessa data e la stessa quantità, e identificativi che differivano soltanto per questo
  * contatore ({@code _001_} contro {@code _002_}, {@code _003_}, {@code _011_}).
  *
@@ -6563,7 +6561,12 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
         //piu' finestre modali identiche di seguito)
         Set<String> AvvisiApiKeyMostrati = new HashSet<>();
         int avaTot=0;
-        for (String wallets : Portafogli) {
+        //I TradingSafe ether.fi (su Ethereum) si importano insieme al loro Safe: quelli gia' scoperti si aggiungono qui,
+        //uno scoperto durante il giro si accoda a quelli ancora da fare
+        List<String> ElencoWallet = new ArrayList<>(Portafogli);
+        ElencoWallet.addAll(Trans_EtherFi.VociTradingSafe(ElencoWallet, MappaCryptoWallet));
+        for (int indiceWallet = 0; indiceWallet < ElencoWallet.size(); indiceWallet++) {
+            String wallets = ElencoWallet.get(indiceWallet);
             avaTot++;
             int ava = 0;
             
@@ -6571,9 +6574,14 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
             String Blocco = wallets.split(";")[1];
             String Rete = wallets.split(";")[2];
             String Provider = DeFi_ProviderEffettivo(Rete);
+            //Il TradingSafe ether.fi e' un contratto: solo i nodi pubblici sanno leggerlo dai log (NodoPubblicoDefi.EseguiPerLog),
+            //anche se c'e' una chiave Etherscan che per un altro wallet Ethereum avrebbe la precedenza
+            if (Rete.equalsIgnoreCase(Trans_EtherFi.RETE_TRADING_SAFE) && Trans_EtherFi.isTradingSafeRegistrato(walletAddress)) {
+                Provider = NodoPubblicoDefi.PROVIDER;
+            }
             //System.out.println(Rete);
             //Se trovo delle reti non supportate da etherscan le aggiungo ad un'altra lista e le passo alla funzione successiva
-            progressb.Titolo(avaTot+" di "+Portafogli.size()+" Importazione di " + walletAddress + "da explorer");
+            progressb.Titolo(avaTot+" di "+ElencoWallet.size()+" Importazione di " + walletAddress + "da explorer");
             //In caso di SOL devo passargli l'ultimo blocco disponibile, non il blocco+1
             if (!Rete.equalsIgnoreCase("SOL")) Blocco = String.valueOf(Integer.parseInt(Blocco) + 1);            
             //ether.fi Cash su Optimism: dai log dei contratti del protocollo, mai dall'explorer, anche quando i nodi non
@@ -6622,6 +6630,15 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                 } else {
                     MappaTransazioniDefi.putAll(Trans_EtherFi.ComeTransazioniDefi(walletAddress, esito.transazioni()));
                     Trans_EtherFi.SegnaImportato(walletAddress);
+                    //Il secondo conto di ether.fi (TradingSafe, Ethereum) dove arrivano gli swap verso un'altra catena: senza il suo
+                    //wallet la gamba in arrivo non esiste. Si scopre dagli swap e dalle uscite del Safe, e si importa in questo stesso giro
+                    List<String> tradingSafeNuovi = Trans_EtherFi.ScopriTradingSafe(walletAddress,
+                            Trans_EtherFi.CandidatiTradingSafe(MappaCryptoWallet, walletAddress, esito.transazioni()), progressb::FineThread);
+                    for (String ts : tradingSafeNuovi) {
+                        ElencoWallet.add(Trans_EtherFi.VoceTradingSafe(ts, MappaCryptoWallet));
+                        if (ccc != null) JOptionPane.showConfirmDialog(ccc, Trans_EtherFi.TestoTradingSafe(walletAddress, ts), "ether.fi",
+                                JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                    }
                     if (ccc != null && !esito.avvisi().isEmpty()) JOptionPane.showConfirmDialog(ccc,
                             "Conto ether.fi " + walletAddress + ":\n" + String.join("\n", esito.avvisi())
                             + "\nI movimenti vengono importati comunque.",

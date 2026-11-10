@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Test di {@link ScartiImport}: la rilettura dei documenti OKX alla ricerca dei movimenti scartati perché
  * sconosciuti.
  *
- * <p>Il caso reale da cui nasce: bill {@code type 328} (Staking earnings) scaricati prima che la tabella dei
+ * <p>Il caso da cui nasce: bill {@code type 328} (Staking earnings) scaricati prima che la tabella dei
  * codici li conoscesse, mai più richiesti perché la data di partenza degli scaricamenti li aveva superati. I
  * test difendono le tre regole della nota di classe: certo solo se registrato, presenza giudicata per unità (un
  * ordine in più fill non è un candidato), unità mista segnalata e non recuperabile.

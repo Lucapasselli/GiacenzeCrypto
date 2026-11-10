@@ -620,7 +620,9 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                         //importatore proprio confrontano da sole i saldi alla prima importazione (Reti.IMPORT_NATIVI)
                         //Neanche i conti ether.fi Cash: il saldo non sta nel wallet ma nel collaterale (Trans_EtherFi.VerificaSaldi)
                         if (!ReteW.equals("CRO") && !ReteW.equals(Trans_XLayer.RETE) && !Reti.IMPORT_NATIVI.contains(ReteW)
-                                && !(ReteW.equals(Trans_EtherFi.RETE) && Trans_EtherFi.isRegistrato(Wallet)))Mappa_Wallet_Dati.put(WalletRete,Dati);
+                                && !(ReteW.equals(Trans_EtherFi.RETE) && Trans_EtherFi.isRegistrato(Wallet))
+                                //Il TradingSafe e' un contratto che non muove la moneta della rete nei log: nessuna rettifica di ETH
+                                && !(ReteW.equals(Trans_EtherFi.RETE_TRADING_SAFE) && Trans_EtherFi.isTradingSafeRegistrato(Wallet)))Mappa_Wallet_Dati.put(WalletRete,Dati);
                     }
 
                     //Ricariche e cashback della carta OKX, se fra i movimenti c'e' il suo wallet su X Layer

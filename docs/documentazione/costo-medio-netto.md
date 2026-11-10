@@ -49,7 +49,7 @@ Il dialogo dei costi netti permette di:
 
 Nella scheda **Analisi Crypto – Giacenze a Data**, sotto la tabella dei token, accanto a *Mostra Giacenze a Zero* e a
 *Nascondi Token Scam*, c'è il pulsante **Costi netti**. Il manuale dell'intera scheda è **[Giacenze a data](giacenze-a-data.html)**,
-raggiungibile anche dal pulsante *Guida...* della scheda stessa.
+raggiungibile anche dal pulsante *Guida* della scheda stessa.
 
 - Il pulsante è attivo **solo con il wallet «Tutti»**: il calcolo riguarda tutti i wallet insieme e non avrebbe senso
   per uno solo. Con un wallet o un gruppo selezionato resta spento.

@@ -42,7 +42,7 @@ class MovimentiCollegatiTest {
         MappaCryptoWallet.clear();
     }
 
-    private static final String DATA_DEPOSITO = "2022-08-26 10:40:36";
+    private static final String DATA_DEPOSITO = "2024-08-26 10:40:36";
 
     private static String[] movimento(String ID, String causale, String moneta, String qta, String data, String valore) {
         String v[] = new String[Importazioni.ColonneTabella];
@@ -92,10 +92,10 @@ class MovimentiCollegatiTest {
 
     /** Due scambi differiti col deposito nello stesso secondo, il secondo nello stato lasciato dal bug C17. */
     private static String[][] collisione() throws Exception {
-        String[] pA = movimento("20220408141952_Binance_001_001_PC", "", "BUSD", "100", "2022-04-08 14:19:52", "100.00");
-        String[] pB = movimento("20220417122647_Binance_001_001_PC", "", "BUSD", "38.4", "2022-04-17 12:26:47", "38.40");
-        String[] dA = movimento("20220826104036_Binance_001_001_DC", "", "BTC", "0.005", DATA_DEPOSITO, "100.00");
-        String[] dB = movimento("20220826104036_Binance_001_002_DC", "", "BTC", "0.002", DATA_DEPOSITO, "40.00");
+        String[] pA = movimento("20240408141952_Binance_001_001_PC", "", "BUSD", "100", "2024-04-08 14:19:52", "100.00");
+        String[] pB = movimento("20240417122647_Binance_001_001_PC", "", "BUSD", "40", "2024-04-17 12:26:47", "40.00");
+        String[] dA = movimento("20240826104036_Binance_001_001_DC", "", "BTC", "0.005", DATA_DEPOSITO, "100.00");
+        String[] dB = movimento("20240826104036_Binance_001_002_DC", "", "BTC", "0.002", DATA_DEPOSITO, "40.00");
         seedPrezzo("BTC", DATA_DEPOSITO);
         seedPrezzo("BUSD", DATA_DEPOSITO);
         assertTrue(GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(pA[0], dA[0]));
@@ -152,16 +152,16 @@ class MovimentiCollegatiTest {
 
     @Test
     void scambioSovrascrittoDiUnContrattoDual_conservaSottoWalletEGruppo() throws Exception {
-        String[] pA = movimento("20220408141952_Binance_001_001_PC", "Dual Savings Purchase", "BUSD", "100.00000000", "2022-04-08 14:19:52", "100.00");
-        String[] pB = movimento("20220417122647_Binance_001_001_PC", "Dual Savings Purchase", "BUSD", "38.40000000", "2022-04-17 12:26:47", "38.40");
-        movimento("20220826104036_Binance_001_001_DC", "Dual Savings Settlement", "BTC", "0.00500000", DATA_DEPOSITO, "100.00");
-        String[] sB = movimento("20220826104036_Binance_001_002_DC", "Dual Savings Settlement", "BTC", "0.00200000", DATA_DEPOSITO, "40.00");
+        String[] pA = movimento("20240408141952_Binance_001_001_PC", "Dual Savings Purchase", "BUSD", "100.00000000", "2024-04-08 14:19:52", "100.00");
+        String[] pB = movimento("20240417122647_Binance_001_001_PC", "Dual Savings Purchase", "BUSD", "40.00000000", "2024-04-17 12:26:47", "40.00");
+        movimento("20240826104036_Binance_001_001_DC", "Dual Savings Settlement", "BTC", "0.00500000", DATA_DEPOSITO, "100.00");
+        String[] sB = movimento("20240826104036_Binance_001_002_DC", "Dual Savings Settlement", "BTC", "0.00200000", DATA_DEPOSITO, "40.00");
         seedPrezzo("BTC", DATA_DEPOSITO);
         seedPrezzo("BUSD", DATA_DEPOSITO);
         StringBuilder f = new StringBuilder("Product,Order Type,Product Id,Subscription Date,Type,Subscription Amount,"
                 + "Target Price,Settlement Date,Fixing Price,APY,Settlement Amount,Status\n");
-        f.append("BUSD/BTC,Buy Low,1005680,2022-04-08 16:19:52,Settled,100.00000000 BUSD,28500,2022-08-26 12:40:36,20000,10%,0.00500000 BTC,Settled\n");
-        f.append("BUSD/BTC,Buy Low,1055026,2022-04-17 14:26:47,Settled,38.40000000 BUSD,28500,2022-08-26 12:40:36,20000,10%,0.00200000 BTC,Settled\n");
+        f.append("BUSD/BTC,Buy Low,1000005,2024-04-08 16:19:52,Settled,100.00000000 BUSD,30000,2024-08-26 12:40:36,20000,10%,0.00500000 BTC,Settled\n");
+        f.append("BUSD/BTC,Buy Low,1000007,2024-04-17 14:26:47,Settled,40.00000000 BUSD,30000,2024-08-26 12:40:36,20000,10%,0.00200000 BTC,Settled\n");
         Path file = tempDir.resolve("dettaglio_" + System.nanoTime() + "_202609182038UTC+2.csv");
         Files.writeString(file, f.toString());
         assertEquals(2, Binance_DualInvestment.Abbina(file.toFile()).abbinati);
@@ -178,21 +178,21 @@ class MovimentiCollegatiTest {
 
         assertEquals(0, controlla().Totale());
         for (String[] v : gruppoDi(pB)) {
-            assertEquals("DUAL-1055026", GruppoOperazione.ChiaveEffettiva(v), v[0]);
+            assertEquals("DUAL-1000007", GruppoOperazione.ChiaveEffettiva(v), v[0]);
             if ("AU".equals(v[22])) assertEquals("Dual Savings", v[4]);
         }
-        for (String[] v : gruppoDi(pA)) assertEquals("DUAL-1005680", GruppoOperazione.ChiaveEffettiva(v), v[0]);
+        for (String[] v : gruppoDi(pA)) assertEquals("DUAL-1000005", GruppoOperazione.ChiaveEffettiva(v), v[0]);
     }
 
     @Test
     void contrattoDualNellaFormaPrecedente_vaFraQuelliDaAggiornare_nonFraGliErrori() {
-        String[] p = movimento("20220512062450_Binance_001_001_PC", "Dual Savings Purchase", "USDT", "100", "2022-05-12 06:24:50", "100.00");
-        String[] s = movimento("20220524083341_Binance_002_001_DC", "Dual Savings Settlement", "USDT", "100", "2022-05-24 08:33:41", "100.00");
-        String[] mirrorP = movimento("20220512062450_Binance_001A_001_DC", "", "USDT", "100", p[1], "100.00");
+        String[] p = movimento("20240512062450_Binance_001_001_PC", "Dual Savings Purchase", "USDT", "100", "2024-05-12 06:24:50", "100.00");
+        String[] s = movimento("20240524083341_Binance_002_001_DC", "Dual Savings Settlement", "USDT", "100", "2024-05-24 08:33:41", "100.00");
+        String[] mirrorP = movimento("20240512062450_Binance_001A_001_DC", "", "USDT", "100", p[1], "100.00");
         mirrorP[4] = "Dual Savings"; mirrorP[18] = "DTW - Trasferimento Interno"; mirrorP[22] = "AU";
-        String[] mirrorS = movimento("20220524083341_Binance_0002_001_PC", "", "USDT", "100", s[1], "100.00");
+        String[] mirrorS = movimento("20240524083341_Binance_0002_001_PC", "", "USDT", "100", s[1], "100.00");
         mirrorS[4] = "Dual Savings"; mirrorS[18] = "PTW - Trasferimento Interno"; mirrorS[22] = "AU";
-        String[] reward = movimento("20220524083341_Binance_00002_001_DC", "", "USDT", "2", s[1], "2.00");
+        String[] reward = movimento("20240524083341_Binance_00002_001_DC", "", "USDT", "2", s[1], "2.00");
         reward[18] = Binance_DualInvestment.CAMPO18_REWARD; reward[22] = "AU"; reward[20] = mirrorS[0];
         p[18] = Binance_DualInvestment.CAMPO18_PURCHASE_STESSA_MONETA; p[20] = mirrorP[0];
         s[18] = Binance_DualInvestment.CAMPO18_SETTLEMENT_STESSA_MONETA; s[20] = mirrorS[0] + "," + reward[0];
@@ -233,15 +233,15 @@ class MovimentiCollegatiTest {
     void contrattoAnnullatoERiassociatoAMano_laChiaveVaSuTuttiECinque() throws Exception {
         //Lo scenario segnalato: abbinamento dal file, cancellazione di un generato (annulla il contratto),
         //poi prelievo e deposito riassociati a mano come scambio differito
-        String[] p = movimento("20220512062450_Binance_001_001_PC", "Dual Savings Purchase", "USDT", "100.00000000", "2022-05-12 06:24:50", "100.00");
-        String[] s = movimento("20220524083341_Binance_002_001_DC", "Dual Savings Settlement", "BTC", "0.00350000", "2022-05-24 08:33:41", "100.00");
-        seedPrezzo("BTC", "2022-05-24 08:33:41");
-        seedPrezzo("USDT", "2022-05-24 08:33:41");
+        String[] p = movimento("20240512062450_Binance_001_001_PC", "Dual Savings Purchase", "USDT", "100.00000000", "2024-05-12 06:24:50", "100.00");
+        String[] s = movimento("20240524083341_Binance_002_001_DC", "Dual Savings Settlement", "BTC", "0.00400000", "2024-05-24 08:33:41", "100.00");
+        seedPrezzo("BTC", "2024-05-24 08:33:41");
+        seedPrezzo("USDT", "2024-05-24 08:33:41");
         Path file = tempDir.resolve("dettaglio_" + System.nanoTime() + "_202609182038UTC+2.csv");
         Files.writeString(file, "Product,Order Type,Product Id,Subscription Date,Type,Subscription Amount,Target Price,"
                 + "Settlement Date,Fixing Price,APY,Settlement Amount,Status\n"
-                + "USDT/BTC,Buy Low,1232611,2022-05-12 08:24:50,Settled,100.00000000 USDT,28500,2022-05-24 10:33:41,29351.32,"
-                + "146.28%,0.00350000 BTC,Settled\n");
+                + "USDT/BTC,Buy Low,1000001,2024-05-12 08:24:50,Settled,100.00000000 USDT,30000,2024-05-24 10:33:41,31000,"
+                + "150%,0.00400000 BTC,Settled\n");
         assertEquals(1, Binance_DualInvestment.Abbina(file.toFile()).abbinati);
         String generato = null;
         for (String[] v : MappaCryptoWallet.values()) if ("AU".equals(v[22])) generato = v[0];
@@ -251,27 +251,27 @@ class MovimentiCollegatiTest {
         assertTrue(GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(p[0], s[0]));
 
         assertEquals(5, MappaCryptoWallet.size());
-        tuttiConLaChiave(p, "DUAL-1232611");
+        tuttiConLaChiave(p, "DUAL-1000001");
         assertEquals(0, controlla().Totale());
     }
 
     @Test
     void iGenerati_nonPortanoLaChiave_laRicavanoDalGruppo() throws Exception {
-        String[] p = movimento("20220512062450_Binance_001_001_PC", "", "USDT", "100", "2022-05-12 06:24:50", "100.00");
-        String[] s = movimento("20220524083341_Binance_002_001_DC", "", "BTC", "0.0035", "2022-05-24 08:33:41", "100.00");
-        seedPrezzo("BTC", "2022-05-24 08:33:41");
-        seedPrezzo("USDT", "2022-05-24 08:33:41");
-        GruppoOperazione.Scrivi(p, "DUAL-1232611");
-        GruppoOperazione.Scrivi(s, "DUAL-1232611");
+        String[] p = movimento("20240512062450_Binance_001_001_PC", "", "USDT", "100", "2024-05-12 06:24:50", "100.00");
+        String[] s = movimento("20240524083341_Binance_002_001_DC", "", "BTC", "0.004", "2024-05-24 08:33:41", "100.00");
+        seedPrezzo("BTC", "2024-05-24 08:33:41");
+        seedPrezzo("USDT", "2024-05-24 08:33:41");
+        GruppoOperazione.Scrivi(p, "DUAL-1000001");
+        GruppoOperazione.Scrivi(s, "DUAL-1000001");
 
         assertTrue(GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(p[0], s[0]));
 
         for (String[] m : gruppoDi(p)) {
             if ("AU".equals(m[22])) assertEquals("", GruppoOperazione.Chiave(m), "la chiave scritta sta solo sugli originali: " + m[0]);
-            else assertEquals("DUAL-1232611", GruppoOperazione.Chiave(m));
+            else assertEquals("DUAL-1000001", GruppoOperazione.Chiave(m));
         }
-        tuttiConLaChiave(p, "DUAL-1232611");
-        assertEquals(5, GruppoOperazione.Membri("DUAL-1232611").size(), "i membri comprendono i generati");
+        tuttiConLaChiave(p, "DUAL-1000001");
+        assertEquals(5, GruppoOperazione.Membri("DUAL-1000001").size(), "i membri comprendono i generati");
         assertEquals(0, controlla().Totale());
     }
 
@@ -290,11 +290,11 @@ class MovimentiCollegatiTest {
 
     @Test
     void chiaviDiverseOCommissioni_laRegolaNonScatta() throws Exception {
-        seedPrezzo("BTC", "2022-05-24 08:33:41");
-        seedPrezzo("USDT", "2022-05-24 08:33:41");
+        seedPrezzo("BTC", "2024-05-24 08:33:41");
+        seedPrezzo("USDT", "2024-05-24 08:33:41");
         //Prelievo e deposito di due contratti diversi: nessuna chiave sui trasferimenti, nessuna segnalazione
-        String[] p = movimento("20220512062450_Binance_001_001_PC", "", "USDT", "100", "2022-05-12 06:24:50", "100.00");
-        String[] s = movimento("20220524083341_Binance_002_001_DC", "", "BTC", "0.0035", "2022-05-24 08:33:41", "100.00");
+        String[] p = movimento("20240512062450_Binance_001_001_PC", "", "USDT", "100", "2024-05-12 06:24:50", "100.00");
+        String[] s = movimento("20240524083341_Binance_002_001_DC", "", "BTC", "0.004", "2024-05-24 08:33:41", "100.00");
         p[GruppoOperazione.CAMPO] = "DUAL-1";
         s[GruppoOperazione.CAMPO] = "DUAL-2";
         assertTrue(GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(p[0], s[0]));
@@ -305,8 +305,8 @@ class MovimentiCollegatiTest {
 
         //Chiave di commissioni sul prelievo: lo scambio la eredita come prima, i trasferimenti no
         MappaCryptoWallet.clear();
-        String[] p2 = movimento("20220512062450_Binance_001_001_PC", "", "USDT", "100", "2022-05-12 06:24:50", "100.00");
-        String[] s2 = movimento("20220524083341_Binance_002_001_DC", "", "BTC", "0.0035", "2022-05-24 08:33:41", "100.00");
+        String[] p2 = movimento("20240512062450_Binance_001_001_PC", "", "USDT", "100", "2024-05-12 06:24:50", "100.00");
+        String[] s2 = movimento("20240524083341_Binance_002_001_DC", "", "BTC", "0.004", "2024-05-24 08:33:41", "100.00");
         p2[CommissioniCollegate.CAMPO] = "chiave-commissione";
         assertTrue(GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(p2[0], s2[0]));
         for (String[] m : gruppoDi(p2)) {

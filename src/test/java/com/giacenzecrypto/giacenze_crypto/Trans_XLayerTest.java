@@ -107,16 +107,16 @@ class Trans_XLayerTest {
     void ilPagamentoConLaCartaEInteressiPiuCashoutConGliInteressiPrima() {
         //Come nel pagamento reale: Aave accredita gli interessi maturati (Transfer da 0x0 + Mint) e poi l'aToken esce
         List<Trans_XLayer.Movimento> m = classifica(
-                transfer(AUSDG, ZERO, W, 34_676),
-                mint(AUSDG, W, W, 34_676, 34_676),
-                transfer(AUSDG, W, RACCOGLITORE, 4_819_278),
-                log(REGOLAMENTO, dati(AUSDG, 4_819_278L), Trans_XLayer.TOPIC_CLAIMED, topic(W), topic(RACCOGLITORE)));
+                transfer(AUSDG, ZERO, W, 30_000),
+                mint(AUSDG, W, W, 30_000, 30_000),
+                transfer(AUSDG, W, RACCOGLITORE, 5_000_000),
+                log(REGOLAMENTO, dati(AUSDG, 5_000_000L), Trans_XLayer.TOPIC_CLAIMED, topic(W), topic(RACCOGLITORE)));
         assertEquals(2, m.size());
         assertEquals("REWARD", m.get(0).tipo());
         assertEquals("aXlrUSDG", m.get(0).entrata().simbolo());
-        assertEquals(BigInteger.valueOf(34_676), m.get(0).qtaEntrata());
+        assertEquals(BigInteger.valueOf(30_000), m.get(0).qtaEntrata());
         assertEquals("CASHOUT O SIMILARE", m.get(1).tipo());
-        assertEquals(BigInteger.valueOf(4_819_278), m.get(1).qtaUscita(), "la quantita' spesa, non il netto con gli interessi");
+        assertEquals(BigInteger.valueOf(5_000_000), m.get(1).qtaUscita(), "la quantita' spesa, non il netto con gli interessi");
         assertEquals(RACCOGLITORE, m.get(1).controparte());
     }
 
@@ -319,8 +319,8 @@ class Trans_XLayerTest {
         //nello stesso blocco anche l'USDG torna a zero: lo stato del 40_000_300 ha entrambi i cambi
         nodo.stati.get(40_000_300L).set(iUSDG, BigInteger.ZERO);
         nodo.transazione(65_432_100L, "0x03", iAUSDG, 105_649_355,
-                transfer(AUSDG, ZERO, W, 34_676), mint(AUSDG, W, W, 34_676, 34_676), transfer(AUSDG, W, RACCOGLITORE, 4_819_278),
-                log(REGOLAMENTO, dati(AUSDG, 4_819_278L), Trans_XLayer.TOPIC_CLAIMED, topic(W), topic(RACCOGLITORE)));
+                transfer(AUSDG, ZERO, W, 30_000), mint(AUSDG, W, W, 30_000, 30_000), transfer(AUSDG, W, RACCOGLITORE, 5_000_000),
+                log(REGOLAMENTO, dati(AUSDG, 5_000_000L), Trans_XLayer.TOPIC_CLAIMED, topic(W), topic(RACCOGLITORE)));
 
         Trans_XLayer.Esito e = Trans_XLayer.Scarica(W, 1, nodo, null, 0);
         assertTrue(e.completo(), e.avvisi().toString());
@@ -339,18 +339,18 @@ class Trans_XLayerTest {
     @Test
     void ilBloccoDiRipartenzaEIlPiuAltoFraIMovimentiDelWallet() {
         TreeMap<String, String[]> archivio = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        String[][] righe = {{W + " (XLAYER)", "72762807"}, {W.toUpperCase().replace("0X", "0x") + " (XLAYER)", "72763840"},
+        String[][] righe = {{W + " (XLAYER)", "1000000"}, {W.toUpperCase().replace("0X", "0x") + " (XLAYER)", "1001033"},
             {W + " (XLAYER)", ""}, {"OKX", "99999999"}, {HOT + " (XLAYER)", "80000000"}};
         int i = 0;
         for (String[] r : righe) {
             String[] v = new String[Importazioni.ColonneTabella];
             java.util.Arrays.fill(v, "");
-            v[0] = "2026100909440" + (i++) + "_X_001_001_DC";
+            v[0] = "2025030309440" + (i++) + "_X_001_001_DC";
             v[3] = r[0];
             v[23] = r[1];
             archivio.put(v[0], v);
         }
-        assertEquals(72_763_840L, Trans_XLayer.UltimoBloccoImportato(archivio, W));
+        assertEquals(1_001_033L, Trans_XLayer.UltimoBloccoImportato(archivio, W));
         assertEquals(0L, Trans_XLayer.UltimoBloccoImportato(archivio, RACCOGLITORE));
     }
 
@@ -366,24 +366,24 @@ class Trans_XLayerTest {
     @Test
     void leRigheDelPagamentoSonoRewardPoiCashoutConLaRewardPrimaNellOrdine() {
         List<Trans_XLayer.Movimento> m = classifica(
-                transfer(AUSDG, ZERO, W, 34_676),
-                mint(AUSDG, W, W, 34_676, 34_676),
-                transfer(AUSDG, W, RACCOGLITORE, 4_819_278),
-                log(REGOLAMENTO, dati(AUSDG, 4_819_278L), Trans_XLayer.TOPIC_CLAIMED, topic(W), topic(RACCOGLITORE)));
-        Trans_XLayer.Transazione t = new Trans_XLayer.Transazione("0x0abc", 72_762_807L, 1_791_531_843L, m);
+                transfer(AUSDG, ZERO, W, 30_000),
+                mint(AUSDG, W, W, 30_000, 30_000),
+                transfer(AUSDG, W, RACCOGLITORE, 5_000_000),
+                log(REGOLAMENTO, dati(AUSDG, 5_000_000L), Trans_XLayer.TOPIC_CLAIMED, topic(W), topic(RACCOGLITORE)));
+        Trans_XLayer.Transazione t = new Trans_XLayer.Transazione("0x0abc", 1_000_000L, 1_700_000_000L, m);
         List<String[]> righe = Trans_XLayer.Righe(W, t, "1.00");
         assertEquals(2, righe.size());
         String[] reward = righe.get(0), cashout = righe.get(1);
         assertTrue(reward[0].endsWith("_RW"), reward[0]);
         assertEquals("REWARD", reward[5]);
         assertEquals("aXlrUSDG", reward[11]);
-        assertEquals("0.034676", reward[13]);
+        assertEquals("0.03", reward[13]);
         assertTrue(cashout[0].endsWith("_PC"), cashout[0]);
         assertEquals("SPESA CON CARTA", cashout[5]);
         assertEquals("PCO - SPESA CON CARTA", cashout[18]);
-        assertEquals("-4.819278", cashout[10]);
+        assertEquals("-5", cashout[10]);
         assertEquals(W + " (XLAYER)", cashout[3]);
-        assertEquals("72762807", cashout[23]);
+        assertEquals("1000000", cashout[23]);
         assertEquals(RACCOGLITORE, cashout[30]);
         assertEquals(Trans_XLayer.CAUSALE_CARTA, cashout[7]);
         assertEquals("XLAYER", reward[34]);

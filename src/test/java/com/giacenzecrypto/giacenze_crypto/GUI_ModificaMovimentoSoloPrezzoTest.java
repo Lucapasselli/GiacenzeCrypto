@@ -20,7 +20,7 @@ class GUI_ModificaMovimentoSoloPrezzoTest {
     private static String[] movimento(String ID, String Auto, String Collegati) {
         String[] v = new String[Importazioni.ColonneTabella];
         v[0] = ID;
-        v[1] = "2022-05-24 08:33";
+        v[1] = "2024-05-24 08:33";
         v[3] = "Binance";
         v[4] = "Dual Savings";
         v[8] = "USDT";
@@ -38,20 +38,20 @@ class GUI_ModificaMovimentoSoloPrezzoTest {
 
     @Test
     void generatoOCollegato_soloPrezzoENote_altrimentiTutto() {
-        assertTrue(GUI_ModificaMovimento.SoloPrezzoENote(movimento("20220524083341_Binance_0002_001_PC", "AU", "")),
+        assertTrue(GUI_ModificaMovimento.SoloPrezzoENote(movimento("20240524083341_Binance_0002_001_PC", "AU", "")),
                 "un generato, anche senza collegamenti (forma vecchia dei Dual)");
-        assertTrue(GUI_ModificaMovimento.SoloPrezzoENote(movimento("20220524083341_Binance_002_001_DC", "A",
-                "20220524083341_Binance_0002_001_PC")), "un importato classificato");
-        assertTrue(GUI_ModificaMovimento.SoloPrezzoENote(movimento("20220524083341_Binance_002_001_DC", "M",
-                "20220524083341_Binance_0002_001_PC")), "un manuale classificato: è il buco della tabella RW");
-        assertFalse(GUI_ModificaMovimento.SoloPrezzoENote(movimento("20220524083341_Binance_002_001_DC", "A", "")));
-        assertFalse(GUI_ModificaMovimento.SoloPrezzoENote(movimento("20220524083341_Binance_002_001_DC", "M", "")));
+        assertTrue(GUI_ModificaMovimento.SoloPrezzoENote(movimento("20240524083341_Binance_002_001_DC", "A",
+                "20240524083341_Binance_0002_001_PC")), "un importato classificato");
+        assertTrue(GUI_ModificaMovimento.SoloPrezzoENote(movimento("20240524083341_Binance_002_001_DC", "M",
+                "20240524083341_Binance_0002_001_PC")), "un manuale classificato: è il buco della tabella RW");
+        assertFalse(GUI_ModificaMovimento.SoloPrezzoENote(movimento("20240524083341_Binance_002_001_DC", "A", "")));
+        assertFalse(GUI_ModificaMovimento.SoloPrezzoENote(movimento("20240524083341_Binance_002_001_DC", "M", "")));
         assertFalse(GUI_ModificaMovimento.SoloPrezzoENote(null));
     }
 
     @Test
     void laModifica_cambiaSoloValoreNotePrezzoELignaggio() {
-        String[] v = movimento("20220524083341_Binance_0002_001_PC", "AU", "20220524083341_Binance_002_001_DC");
+        String[] v = movimento("20240524083341_Binance_0002_001_PC", "AU", "20240524083341_Binance_002_001_DC");
         String[] prima = v.clone();
 
         GUI_ModificaMovimento.ScriviSoloPrezzoENote(v, "110.00", "nota nuova", true, "USDT|1653380000000|1.08|binance");

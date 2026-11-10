@@ -2999,9 +2999,17 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
      * @return {qta commissione, valore commissione, qta reward, valore reward}, {@code null} dove manca
      */
     static BigDecimal[] GeneratiDaCompensare(String IDPartiCoinvolte[]) {
+        return GeneratiDaCompensare(IDPartiCoinvolte, MappaCryptoWallet);
+    }
+
+    /**
+     * Come {@link #GeneratiDaCompensare(String[])} su una mappa qualunque di movimenti: serve a chi ha le righe
+     * di un gruppo ma non nell'archivio (l'anteprima del ripristino delle modifiche manuali).
+     */
+    static BigDecimal[] GeneratiDaCompensare(String IDPartiCoinvolte[], Map<String, String[]> Movimenti) {
         BigDecimal Ritorno[] = new BigDecimal[4];
         for (String ID : IDPartiCoinvolte) {
-            String attuale[] = ID.isBlank() ? null : MappaCryptoWallet.get(ID);
+            String attuale[] = ID.isBlank() ? null : Movimenti.get(ID);
             if (attuale == null || !attuale[22].equalsIgnoreCase("AU")) continue;
             String Spezzato[] = ID.split("_");
             if (Spezzato.length < 5) continue;
@@ -3026,12 +3034,17 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
      *         classificazione non ne ha cambiato la quantità
      */
     static String[] PrelievoPrimaDellaClassificazione(String Movimento[]) {
+        return PrelievoPrimaDellaClassificazione(Movimento, MappaCryptoWallet);
+    }
+
+    /** Come {@link #PrelievoPrimaDellaClassificazione(String[])}, con i generati cercati nella mappa indicata. */
+    static String[] PrelievoPrimaDellaClassificazione(String Movimento[], Map<String, String[]> Movimenti) {
         if (Movimento == null || Movimento.length < 23 || Funzioni.noData(Movimento[20])
                 || "AU".equalsIgnoreCase(Movimento[22])) return null;
         String Spezzato[] = Movimento[0].split("_");
         if (Spezzato.length < 5 || !(Spezzato[4].equalsIgnoreCase("PC") || Spezzato[4].equalsIgnoreCase("PF"))) return null;
         try {
-            BigDecimal Generati[] = GeneratiDaCompensare((Movimento[0] + "," + Movimento[20]).split(","));
+            BigDecimal Generati[] = GeneratiDaCompensare((Movimento[0] + "," + Movimento[20]).split(","), Movimenti);
             if (Generati[0] == null && Generati[2] == null) return null;
             BigDecimal Qta = new BigDecimal(Movimento[10]);
             if (Generati[0] != null) Qta = Qta.add(Generati[0]);
@@ -3065,6 +3078,26 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
         return new long[]{dataOraAttuale - giorniMs, dataOraAttuale + Giorno};
     }
 
+    /** Scarto massimo in percentuale fra il valore in euro del candidato e quello del movimento, per evidenziarlo nello scambio differito. */
+    static final BigDecimal TOLLERANZA_VALORE_DIFFERITO = new BigDecimal("5");
+
+    /**
+     * Vero se i due valori in euro (in valore assoluto) differiscono al massimo di {@code percentuale} per cento
+     * dal valore del movimento attuale. Un valore attuale nullo o non numerico non evidenzia nulla, come un candidato non numerico.
+     */
+    static boolean ValoriVicini(String valoreAttuale, String valoreCandidato, BigDecimal percentuale) {
+        BigDecimal attuale = NumeroAssoluto(valoreAttuale);
+        if (attuale.signum() == 0) return false;
+        if (valoreCandidato == null || valoreCandidato.isBlank()) return false;
+        try {
+            BigDecimal candidato = new BigDecimal(valoreCandidato.trim()).abs();
+            BigDecimal scarto = candidato.subtract(attuale).abs();
+            return scarto.compareTo(attuale.multiply(percentuale).divide(new BigDecimal(100))) <= 0;
+        } catch (NumberFormatException ex) {
+            return false;
+        }
+    }
+
     /**
      * Popola la tabella dei movimenti potenzialmente associabili al movimento {@code ID}, in base al
      * tipo di classificazione selezionata in {@code ComboBox_TipoMovimento} ("trasferimento tra
@@ -3078,6 +3111,7 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
     public void CompilaTabellaMovimetiAssociabili(String ID) {
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.Tabella_MovimentiAbbinati.getModel();
         Tabelle.Funzioni_PulisciTabella(ModelloTabellaDepositiPrelievi);
+        Tabella_MovimentiAbbinati.putClientProperty(Tabelle.PROP_VALORI_VICINI, null);
         //Tabelle.ColoraRigheTabellaCrypto(jTable2);
         Map<String, String[]> MappaAlias = DatabaseH2.Pers_GruppoAlias_LeggiTabella();
         String attuale[] = MappaCryptoWallet.get(ID);
@@ -3203,6 +3237,9 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
             long[] Finestra = FinestraScambioDifferito(TipoMovimentoAttuale.equalsIgnoreCase("PC"), DataOraAttuale, Giorni);
             FinestraMin = Finestra[0];
             FinestraMax = Finestra[1];
+            //I candidati il cui valore in euro e' entro il 5% da quello del movimento attuale si evidenziano in verde
+            String ValoreAttuale = ValoreOriginale(attuale);
+            Set<String> IDValoriVicini = new HashSet<>();
             //In questo caso i movimenti per essere accettati bisogna che abbiano le seguenti carattaristiche
             //1 - Devono essere del tipo movimento opposto a quello del movimento evidenziato
             //2 - Devono essere di una moneta con nome differente (questo limite lo tolgo)
@@ -3247,9 +3284,11 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
                         riga[7] = v[15];
                         riga[8] = AliasGruppoWallet(v[3], MappaAlias);
                         ModelloTabellaDepositiPrelievi.addRow(riga);                 
+                        if (ValoriVicini(ValoreAttuale, v[15], TOLLERANZA_VALORE_DIFFERITO)) IDValoriVicini.add(v[0]);
                     
                     }
                 }}
+            Tabella_MovimentiAbbinati.putClientProperty(Tabelle.PROP_VALORI_VICINI, IDValoriVicini);
             
         }else if (ComboBox_TipoMovimento.getSelectedItem()!=null&&ComboBox_TipoMovimento.getSelectedItem().toString().equals(CB_DC_ANNULLOSPESA)) {
             //ANNULLO SPESA CARTA : i pagamenti che il rimborso può annullare, dal più recente

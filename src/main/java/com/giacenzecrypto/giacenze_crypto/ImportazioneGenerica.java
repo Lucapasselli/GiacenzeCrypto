@@ -459,8 +459,8 @@ public class ImportazioneGenerica {
     static void ordinaRighe(List<String[]> risultato, ConfigurazioneImport cfg) {
         //A parità di data si ordina anche per colonna di raggruppamento, quando ne è configurata una
         //diversa dall'identificativo: il raggruppamento a valle è su righe CONSECUTIVE, e negli export le
-        //gambe di ordini diversi allo stesso secondo sono interlacciate (verificato sull'export OKX del
-        //23/07/2026: 16 righe di 8 ordini distinti, in ordine sparso). Senza questo pareggio ogni ordine
+        //gambe di ordini diversi allo stesso secondo sono interlacciate (verificato su un export OKX:
+        //piu' righe di ordini distinti, in ordine sparso). Senza questo pareggio ogni ordine
         //verrebbe spezzato. Non si tocca l'ordinamento degli altri formati, dove la colonna non c'è.
         int colonnaGruppo = cfg.colonnaIDGruppo;
         int colonnaID = cfg.colonnaIDTransazione;
@@ -484,7 +484,7 @@ public class ImportazioneGenerica {
      * separatore che compare dentro una coppia di {@code "} non chiude il campo. Le virgolette
      * vengono tolte dal contenuto dei campi qui, non prima dello split — farlo prima scambierebbe
      * per separatore di colonna un separatore che sta dentro un campo quotato (es. la virgola delle
-     * migliaia di un importo, {@code "$2,270.52"}), sfasando tutte le colonne successive (bug C16,
+     * migliaia di un importo, {@code "$1,234.56"}), sfasando tutte le colonne successive (bug C16,
      * vedi {@code nocommit/Documentazione/Analisi_Bug_Criticita.md}).
      *
      * <p>Non implementa l'escaping RFC4180 delle virgolette raddoppiate ({@code ""} dentro un campo
@@ -1584,9 +1584,9 @@ public class ImportazioneGenerica {
         BigDecimal qtaFeeBD = BigDecimal.ZERO;
         if (haFee) {
             qtaFeeBD = new BigDecimal(qtaFee).abs();
-            // Prelievo Nexo con fee (Input -0,00579117, Output 0,00572711, Fee 0,00006406): Output e' gia'
+            // Prelievo Nexo con fee (Input -0,006, Output 0,0059, Fee 0,0001): Output e' gia'
             // il netto inviato, Input il totale addebitato. Sottrarre la fee una seconda volta faceva
-            // sparire 0,00006406 dalle rimanenze (PRELIEVO + COMMISSIONI = Output - Fee invece di Input).
+            // sparire 0,0001 dalle rimanenze (PRELIEVO + COMMISSIONI = Output - Fee invece di Input).
             if (!importoGiaNettoDiFee) {
                 ricostruisciLordoConFee(mOUT, monetaFee, qtaFeeBD, cfg);
                 ricostruisciLordoConFee(mIN, monetaFee, qtaFeeBD, cfg);
@@ -1813,8 +1813,8 @@ public class ImportazioneGenerica {
      * <ul>
      * <li>rimuove spazi superflui (compreso lo spazio unificatore {@code U+00A0});</li>
      * <li>rimuove il simbolo di valuta anteposto o posposto ({@code € $ £ ¥}), come
-     * negli export Coinbase ({@code €0.05019}, {@code -€1.48341}) e Nexo ({@code $1059.55}):
-     * il segno meno resta dov'è, quindi {@code -€1.48} diventa {@code -1.48};</li>
+     * negli export Coinbase ({@code €0.05}, {@code -€1.50}) e Nexo ({@code $1000.50}):
+     * il segno meno resta dov'è, quindi {@code -€1.50} diventa {@code -1.50};</li>
      * <li>converte la virgola decimale in punto;</li>
      * <li>trasforma la notazione scientifica in formato decimale espanso
      * tramite {@link BigDecimal#toPlainString()}.</li>
@@ -1877,7 +1877,7 @@ public class ImportazioneGenerica {
             int colonna = c[1];
             if (colonna < 0) continue;
             String grezzo = safe(riga, colonna);
-            //Valore composto ("407.57 AME"): conta solo la parte prima del separatore, come in leggiCoppiaMonetaQuantita
+            //Valore composto ("400 AME"): conta solo la parte prima del separatore, come in leggiCoppiaMonetaQuantita
             if (!cfg.separatoreValoreMoneta.isEmpty() && c[0] == colonna) {
                 int idx = grezzo.indexOf(cfg.separatoreValoreMoneta);
                 if (idx >= 0) grezzo = grezzo.substring(0, idx);
@@ -1998,7 +1998,7 @@ public class ImportazioneGenerica {
      * Legge una coppia quantita'/moneta, gestendo il caso "valore composto" (vedi
      * {@link ConfigurazioneImport#separatoreValoreMoneta}): se le due colonne configurate
      * coincidono, la cella e' "NUMERO&lt;separatore&gt;SIMBOLO" in un'unica cella (es. Gate.io
-     * "407.57 AME") e va spezzata sul primo separatore invece di leggere due colonne distinte.
+     * "400 AME") e va spezzata sul primo separatore invece di leggere due colonne distinte.
      *
      * @return {quantita' normalizzata, moneta normalizzata}
      */
@@ -2607,7 +2607,7 @@ public class ImportazioneGenerica {
         // Colonna/colonna: quando la cella di 'quantita' (o 'quantitaUscita', o 'quantitaFee') e'
         // nella stessa colonna configurata anche come 'moneta' (risp. 'monetaUscita'/'monetaFee'), il
         // valore grezzo e' "NUMERO<separatore>SIMBOLO" in un'unica cella (es. Gate.io Spot Trade
-        // History: "407.57 AME", separatore " ") invece di due colonne separate. Vuoto (default) = comportamento
+        // History: "400 AME", separatore " ") invece di due colonne separate. Vuoto (default) = comportamento
         // invariato, moneta e quantita' restano due colonne distinte come in tutte le altre config.
         public String separatoreValoreMoneta = "";
 

@@ -2,6 +2,7 @@ package com.giacenzecrypto.giacenze_crypto;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -70,6 +71,13 @@ public class MovimentiStorico {
      */
     public static final String OP_SOVRASCRITTURA = "SovrascritturaReimport";
 
+    /**
+     * Operazione delle voci prodotte da «Modifica Prezzo» (la scelta di un prezzo dalla tabella o l'inserimento di un
+     * prezzo a mano): è una modifica sul posto come {@link #OP_IN_PLACE}, con un'etichetta sua perché chi guarda lo
+     * storico sappia che è stato cambiato il prezzo.
+     */
+    public static final String OP_PREZZO = "ModificaPrezzo";
+
     private MovimentiStorico() {
     }
 
@@ -131,6 +139,19 @@ public class MovimentiStorico {
     }
 
     /**
+     * Registra lo stato di un movimento <b>prima</b> di una modifica sul posto (ID invariato): timbra il lignaggio e
+     * accoda la riga com'è adesso. Va chiamata prima di scrivere sulla riga, perché la versione salvata deve essere
+     * quella "com'era prima".
+     *
+     * @param Movimento il movimento in mappa, che sta per essere modificato
+     * @param Operazione etichetta dell'operazione, per esempio {@link #OP_PREZZO}
+     */
+    public static void AccodaPrimaDiModificare(String[] Movimento, String Operazione) {
+        String Lignaggio = AssicuraLignaggio(Movimento);
+        AccodaModifica(Lignaggio, Movimento[0], Movimento[0], Importazioni.SerializzaRiga(Movimento), Operazione);
+    }
+
+    /**
      * Accoda una modifica. {@code DataModifica} è catturata <b>qui</b>, nell'istante della chiamata, e
      * non dentro {@link #SalvaBuffer(java.util.Map)} al momento del flush: è il valore che ordina le
      * versioni dentro il lignaggio, e più modifiche fatte nella stessa sessione non salvata devono
@@ -148,6 +169,18 @@ public class MovimentiStorico {
      */
     public static void AccodaModifica(String Lignaggio, String IdNuovo, String IdVecchio,
             String RigaOriginale, String Operazione) {
+        AccodaModifica(Lignaggio, IdNuovo, IdVecchio, RigaOriginale, Operazione, System.currentTimeMillis());
+    }
+
+    /**
+     * Come {@link #AccodaModifica(String, String, String, String, String)} con l'istante della modifica deciso dal
+     * chiamante: serve al ripristino da file ({@code Principale_Opzioni_ModificheManuali_Ripristino}), che rimette
+     * lo storico con le date in cui le modifiche erano state fatte davvero, non con quella del ripristino.
+     *
+     * @param DataModifica istante della modifica in millisecondi
+     */
+    public static void AccodaModifica(String Lignaggio, String IdNuovo, String IdVecchio,
+            String RigaOriginale, String Operazione, long DataModifica) {
         if (Funzioni.noData(Lignaggio)) {
             //Senza lignaggio la voce non sarebbe leggibile né cancellabile: meglio non scriverla che
             //lasciare una riga che nessuno potrà più collegare a un movimento
@@ -155,7 +188,21 @@ public class MovimentiStorico {
             return;
         }
         BufferModifiche.add(new VoceModifica(Lignaggio, IdNuovo, IdVecchio, RigaOriginale, Operazione,
-                System.currentTimeMillis()));
+                DataModifica));
+    }
+
+    /**
+     * Se il lignaggio ha già una voce di quell'istante per quell'ID di partenza (su disco o in buffer): il
+     * ripristino la usa per non duplicare lo storico su un archivio che lo conserva ancora. L'ID serve perché le
+     * righe di un'unione nascono nello stesso millisecondo e differiscono solo per quello.
+     */
+    public static boolean ContieneVoce(String Lignaggio, long DataModifica, String IdVecchio) {
+        for (String[] v : Versioni(Lignaggio)) {
+            if (v[1].equals(String.valueOf(DataModifica)) && java.util.Objects.equals(v[0], IdVecchio)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -232,6 +279,15 @@ public class MovimentiStorico {
         BufferCancellazioni.clear();
     }
 
+    /**
+     * Scarta le voci in attesa: è l'«Annulla» di Transazioni Crypto, che ricarica i movimenti dal file e quindi
+     * annulla anche le modifiche e le cancellazioni accodate. Senza, quelle voci sarebbero scritte al Salva
+     * successivo, sotto un lignaggio che nessun movimento porta più.
+     */
+    public static void ScartaBuffer() {
+        AzzeraBuffer();
+    }
+
     /** @return quante voci (modifiche + cancellazioni) sono in attesa di essere salvate */
     static int VociInAttesa() {
         return BufferModifiche.size() + BufferCancellazioni.size();
@@ -264,6 +320,36 @@ public class MovimentiStorico {
         }
         Righe.sort((a, b) -> Long.compare(Long.parseLong(b[1]), Long.parseLong(a[1])));
         return Righe;
+    }
+
+    /**
+     * Lo storico di <b>tutti</b> i movimenti modificati a mano, buffer non ancora salvato compreso, in una
+     * lettura sola (una query, non una per movimento).
+     *
+     * <p>Ogni lista è ordinata dalla versione più vecchia alla più recente (l'opposto di
+     * {@link #Versioni(java.lang.String)}), perché chi esporta vuole partire dal movimento com'era
+     * all'inizio. Le righe hanno lo stesso formato di {@link #Versioni(java.lang.String)}
+     * ({@code {IdVecchio, DataModifica, RigaOriginale, Operazione, IdNuovo}}).</p>
+     *
+     * @return lignaggio -> versioni, mai {@code null}
+     */
+    public static Map<String, List<String[]>> TutteLeVersioni() {
+        Map<String, List<String[]>> Catene = new LinkedHashMap<>();
+        List<String[]> Ordinate = new ArrayList<>();
+        for (String[] r : DatabaseH2.StoricoMovimenti_LeggiTutto()) {
+            Ordinate.add(new String[]{r[0], r[1], r[2], r[3], r[4], r[5]});
+        }
+        for (VoceModifica m : BufferModifiche) {
+            Ordinate.add(new String[]{m.lignaggio(), m.idVecchio(), String.valueOf(m.dataModifica()),
+                m.rigaOriginale(), m.operazione(), m.idNuovo()});
+        }
+        //Stabile: a parità di istante resta l'ordine di lettura/accodamento
+        Ordinate.sort((a, b) -> Long.compare(Long.parseLong(a[2]), Long.parseLong(b[2])));
+        for (String[] r : Ordinate) {
+            Catene.computeIfAbsent(r[0], k -> new ArrayList<>())
+                    .add(new String[]{r[1], r[2], r[3], r[4], r[5]});
+        }
+        return Catene;
     }
 
     /**

@@ -603,6 +603,13 @@ stessa maschera. Per coprire tutta la storia del conto servono quindi più file.
 Il conto ether.fi Cash (Optimism) si importa dalla blockchain, con la voce *ether.fi Cash (OP)* in Gestione Wallet. L'unico file
 che si carica dalla finestra *Importazioni* è la cronologia della carta.
 
+Il secondo conto di ether.fi, il *TradingSafe* su Ethereum, dove arrivano gli swap verso un'altra catena (per esempio USDC in WBTC),
+non va inserito a mano. Il programma lo trova dagli swap e dalle uscite del conto Cash, lo mette nello stesso gruppo wallet e lo importa
+insieme al conto Cash, senza nessuna chiave. Non compare nell'elenco di Gestione Wallet, che resta fatto solo dei wallet inseriti da te. Lo swap che esce dal conto Cash si abbina da solo
+all'entrata sul TradingSafe. Quello nel verso opposto (parte dal TradingSafe e arriva sul conto Cash come deposito) si abbina solo se
+è l'unica coppia possibile entro dieci minuti e i due valori non differiscono di oltre il 25%, perché fra le due catene non c'è un
+identificativo in comune. Negli altri casi restano due movimenti da classificare, mai persi.
+
 | Voce nella finestra | File | Che cosa contiene |
 |---|---|---|
 | **Spese della carta (CSV)** | *transaction history* dell'app ether.fi | Spese con la carta (commerciante, categoria, importo, stato, cashback), più prelievi, swap, bridge e depositi del conto |

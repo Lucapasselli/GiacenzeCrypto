@@ -208,7 +208,7 @@ public class GUI_PrezziMancantiISEE extends javax.swing.JDialog {
         Pannello_Pulsanti.add(Bottone_Zero);
 
         Bottone_PrezzoTratti.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
-        Bottone_PrezzoTratti.setText("Prezzo per i tratti...");
+        Bottone_PrezzoTratti.setText("Prezzo per i tratti");
         Bottone_PrezzoTratti.setToolTipText("Scrive lo stesso prezzo unitario in euro per ogni giorno dei tratti selezionati");
         Bottone_PrezzoTratti.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -218,7 +218,7 @@ public class GUI_PrezziMancantiISEE extends javax.swing.JDialog {
         Pannello_Pulsanti.add(Bottone_PrezzoTratti);
 
         Bottone_PrezzoGiorni.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
-        Bottone_PrezzoGiorni.setText("Prezzo per i giorni...");
+        Bottone_PrezzoGiorni.setText("Prezzo per i giorni");
         Bottone_PrezzoGiorni.setToolTipText("Scrive il prezzo unitario in euro dei giorni selezionati nella tabella in basso");
         Bottone_PrezzoGiorni.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

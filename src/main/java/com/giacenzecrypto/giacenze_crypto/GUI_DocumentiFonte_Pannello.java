@@ -140,7 +140,7 @@ public class GUI_DocumentiFonte_Pannello extends javax.swing.JPanel {
         });
 
         Bottone_Esporta.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Salva.png"))); // NOI18N
-        Bottone_Esporta.setText("Esporta selezionati...");
+        Bottone_Esporta.setText("Esporta selezionati");
         Bottone_Esporta.setToolTipText("Scrive i documenti selezionati, decompressi, in una cartella a scelta");
         Bottone_Esporta.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

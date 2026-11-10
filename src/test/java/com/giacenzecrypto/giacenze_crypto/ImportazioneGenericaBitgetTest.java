@@ -77,8 +77,8 @@ class ImportazioneGenericaBitgetTest {
     @Test
     void launchX_expensePiuIncome_unoScambio() throws Exception {
         List<String[]> righe = new ArrayList<>();
-        righe.add(riga("2", "2025-01-22 03:44:55", "J", "LaunchX income", "9.19"));
-        righe.add(riga("1", "2025-01-22 03:44:55", "BGB", "LaunchX expense", "-0.659058093"));
+        righe.add(riga("2", "2025-01-12 03:00:00", "J", "LaunchX income", "10"));
+        righe.add(riga("1", "2025-01-12 03:00:00", "BGB", "LaunchX expense", "-0.66"));
 
         Importazioni.AzzeraContatori();
         List<String[]> movs = importa(righe, bitget());
@@ -87,10 +87,10 @@ class ImportazioneGenericaBitgetTest {
         String[] m = movs.get(0);
         assertEquals("SC", categoria(m));
         assertEquals("BGB", m[8]);
-        assertEquals(0, new BigDecimal(m[10]).compareTo(new BigDecimal("-0.659058093")),
+        assertEquals(0, new BigDecimal(m[10]).compareTo(new BigDecimal("-0.66")),
                 "il BGB impegnato esce dalla giacenza");
         assertEquals("J", m[11]);
-        assertEquals(0, new BigDecimal(m[13]).compareTo(new BigDecimal("9.19")));
+        assertEquals(0, new BigDecimal(m[13]).compareTo(new BigDecimal("10")));
     }
 
     @Test

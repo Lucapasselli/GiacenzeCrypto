@@ -1297,7 +1297,7 @@
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/Images/24_Imbuto.png"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Filtri..."/>
+                <Property name="text" type="java.lang.String" value="Filtri"/>
                 <Property name="toolTipText" type="java.lang.String" value="Apre la finestra con tutti i criteri di filtro dei movimenti"/>
               </Properties>
               <Events>
@@ -1320,7 +1320,7 @@
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/Images/24_Tabella.png"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Colonne..."/>
+                <Property name="text" type="java.lang.String" value="Colonne"/>
                 <Property name="toolTipText" type="java.lang.String" value="Scegli quali colonne mostrare nella tabella dei movimenti"/>
               </Properties>
               <Events>
@@ -2155,7 +2155,7 @@
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/Images/24_Tabella.png"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="Colonne..."/>
+                        <Property name="text" type="java.lang.String" value="Colonne"/>
                         <Property name="toolTipText" type="java.lang.String" value="Scegli quali colonne mostrare nella tabella dei depositi e prelievi"/>
                       </Properties>
                       <Events>
@@ -3243,7 +3243,7 @@
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/Images/24_Libro.png"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="Guida..."/>
+                        <Property name="text" type="java.lang.String" value="Guida"/>
                         <Property name="toolTipText" type="java.lang.String" value="Apre il manuale di Giacenze a data: tabella, dettaglio movimenti, rettifiche e costi netti"/>
                       </Properties>
                       <Events>
@@ -3286,7 +3286,7 @@
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/Images/24_Tabella.png"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="Colonne..."/>
+                        <Property name="text" type="java.lang.String" value="Colonne"/>
                         <Property name="toolTipText" type="java.lang.String" value="Scegli quali colonne mostrare nella tabella dettaglio movimenti"/>
                       </Properties>
                       <Events>
@@ -7370,43 +7370,80 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Component id="Opzioni_Varie_Bottone_ProblemiNoti" pref="229" max="32767" attributes="0"/>
-                                      <Component id="Opzioni_Varie_Bottone_Disclaimer" max="32767" attributes="0"/>
-                                  </Group>
-                                  <Component id="Opzioni_Varie_Checkbox_LogJsonDefi" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="Opzioni_Varie_Checkbox_LogJsonPrezzi" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="Opzioni_Varie_Bottone_InviaLog" alignment="0" min="-2" pref="260" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="32767" attributes="0"/>
+                        <Group type="102" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                            <Component id="Opzioni_Varie_Titolo_Documentazione" alignment="0" min="-2" max="-2" attributes="0"/>
+                            <Component id="Opzioni_Varie_Separatore_Documentazione" alignment="0" min="-2" pref="560" max="-2" attributes="0"/>
+                            <Component id="Opzioni_Varie_Bottone_Disclaimer" alignment="0" min="-2" pref="340" max="-2" attributes="0"/>
+                            <Component id="Opzioni_Varie_Bottone_ProblemiNoti" alignment="0" min="-2" pref="340" max="-2" attributes="0"/>
+                            <Component id="Opzioni_Varie_Titolo_Diagnostica" alignment="0" min="-2" max="-2" attributes="0"/>
+                            <Component id="Opzioni_Varie_Separatore_Diagnostica" alignment="0" min="-2" pref="560" max="-2" attributes="0"/>
+                            <Component id="Opzioni_Varie_Checkbox_LogJsonDefi" alignment="0" min="-2" max="-2" attributes="0"/>
+                            <Component id="Opzioni_Varie_Checkbox_LogJsonPrezzi" alignment="0" min="-2" max="-2" attributes="0"/>
+                            <Component id="Opzioni_Varie_Bottone_InviaLog" alignment="0" min="-2" pref="340" max="-2" attributes="0"/>
+                            <Component id="Opzioni_Varie_Titolo_ModificheManuali" alignment="0" min="-2" max="-2" attributes="0"/>
+                            <Component id="Opzioni_Varie_Separatore_ModificheManuali" alignment="0" min="-2" pref="560" max="-2" attributes="0"/>
+                            <Component id="Opzioni_Varie_Etichetta_ModificheManuali" alignment="0" min="-2" max="-2" attributes="0"/>
+                            <Component id="Opzioni_Varie_Bottone_ModificheManuali" alignment="0" min="-2" pref="340" max="-2" attributes="0"/>
+                            <Component id="Opzioni_Varie_Bottone_RipristinoModificheManuali" alignment="0" min="-2" pref="340" max="-2" attributes="0"/>
                           </Group>
+                          <EmptySpace max="32767" attributes="0"/>
+                        </Group>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_Varie_Bottone_Disclaimer" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_Varie_Bottone_ProblemiNoti" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
-                              <Component id="Opzioni_Varie_Checkbox_LogJsonDefi" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_Varie_Checkbox_LogJsonPrezzi" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
-                              <Component id="Opzioni_Varie_Bottone_InviaLog" min="-2" pref="40" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
-                          </Group>
+                        <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="Opzioni_Varie_Titolo_Documentazione" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="Opzioni_Varie_Separatore_Documentazione" min="-2" pref="10" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="Opzioni_Varie_Bottone_Disclaimer" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="Opzioni_Varie_Bottone_ProblemiNoti" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
+                          <Component id="Opzioni_Varie_Titolo_Diagnostica" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="Opzioni_Varie_Separatore_Diagnostica" min="-2" pref="10" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="Opzioni_Varie_Checkbox_LogJsonDefi" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="Opzioni_Varie_Checkbox_LogJsonPrezzi" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="Opzioni_Varie_Bottone_InviaLog" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
+                          <Component id="Opzioni_Varie_Titolo_ModificheManuali" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="Opzioni_Varie_Separatore_ModificheManuali" min="-2" pref="10" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="Opzioni_Varie_Etichetta_ModificheManuali" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="Opzioni_Varie_Bottone_ModificheManuali" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="Opzioni_Varie_Bottone_RipristinoModificheManuali" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                        </Group>
                       </Group>
                     </DimensionLayout>
                   </Layout>
                   <SubComponents>
+                    <Component class="javax.swing.JLabel" name="Opzioni_Varie_Titolo_Documentazione">
+                      <Properties>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
+                          <FontInfo relative="true">
+                            <Font bold="true" component="Opzioni_Varie_Titolo_Documentazione" property="font" relativeSize="true" size="0"/>
+                          </FontInfo>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Documentazione"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JSeparator" name="Opzioni_Varie_Separatore_Documentazione">
+                    </Component>
                     <Component class="javax.swing.JButton" name="Opzioni_Varie_Bottone_Disclaimer">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Discalimer"/>
+                        <Property name="text" type="java.lang.String" value="Disclaimer"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_Bottone_DisclaimerActionPerformed"/>
@@ -7419,6 +7456,18 @@
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_Bottone_ProblemiNotiActionPerformed"/>
                       </Events>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="Opzioni_Varie_Titolo_Diagnostica">
+                      <Properties>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
+                          <FontInfo relative="true">
+                            <Font bold="true" component="Opzioni_Varie_Titolo_Diagnostica" property="font" relativeSize="true" size="0"/>
+                          </FontInfo>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Diagnostica"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JSeparator" name="Opzioni_Varie_Separatore_Diagnostica">
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="Opzioni_Varie_Checkbox_LogJsonDefi">
                       <Properties>
@@ -7440,11 +7489,46 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="Opzioni_Varie_Bottone_InviaLog">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Invia log all&apos;autore per una segnalazione..."/>
+                        <Property name="text" type="java.lang.String" value="Invia log all&apos;autore per una segnalazione"/>
                         <Property name="toolTipText" type="java.lang.String" value="Apre una finestra in cui rivedere e modificare i log anonimizzati prima di inviarli all&apos;autore per la diagnosi di un problema."/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_Bottone_InviaLogActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="Opzioni_Varie_Titolo_ModificheManuali">
+                      <Properties>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
+                          <FontInfo relative="true">
+                            <Font bold="true" component="Opzioni_Varie_Titolo_ModificheManuali" property="font" relativeSize="true" size="0"/>
+                          </FontInfo>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Modifiche manuali dei movimenti"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JSeparator" name="Opzioni_Varie_Separatore_ModificheManuali">
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="Opzioni_Varie_Etichetta_ModificheManuali">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Elenco dei movimenti modificati a mano, per conservarlo e riapplicarlo dopo una reimportazione."/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="Opzioni_Varie_Bottone_ModificheManuali">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Esporta le modifiche manuali dei movimenti (CSV)"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Scrive in un file CSV l&apos;elenco dei movimenti modificati a mano (orario, prezzo, quantità, unione e altro) con la riga iniziale, quella finale e i campi cambiati."/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_Bottone_ModificheManualiActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="Opzioni_Varie_Bottone_RipristinoModificheManuali">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Ripristina le modifiche manuali da CSV"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Legge un file esportato con il pulsante qui sopra, mostra quante modifiche si ritrovano nell&apos;archivio attuale e, dopo conferma, le applica in memoria. Nulla è scritto su disco finché non premi Salva."/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_Bottone_RipristinoModificheManualiActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>

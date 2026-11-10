@@ -60,8 +60,8 @@ public class TipiOKXTest {
     public void ilVersoVieneDalSegnoDiBalChg() {
         TipiOKX t = TipiOKX.Carica();
         assertNotNull(t);
-        assertEquals("Transfer out", t.Causale("75", "-1004.38", false, ""));
-        assertEquals("Transfer in", t.Causale("75", "1004.38", false, ""));
+        assertEquals("Transfer out", t.Causale("75", "-1000", false, ""));
+        assertEquals("Transfer in", t.Causale("75", "1000", false, ""));
         //Notazione scientifica: BigDecimal.toString la produce da solo sui token con molti decimali, e il
         //test testuale che vi si applicava è il bug M7. Una quantità positiva resta un'entrata.
         assertEquals("Transfer in", t.Causale("326", "2.5E-9", false, ""));

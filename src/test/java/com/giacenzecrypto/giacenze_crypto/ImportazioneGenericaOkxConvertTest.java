@@ -71,22 +71,22 @@ class ImportazioneGenericaOkxConvertTest {
     @Test
     void convertCryptoCrypto_unSoloScambio() throws Exception {
         List<String[]> movs = importa(
-                "3717152364831481856,3717152364697264128,2026-07-06 04:09:33,Spot,TAO-USDC-CONVERT,,0.00506778,USDC,209.68861305,0,0,TAO,0,0,-0.00506778,0,TAO,183.85,0,0,0,-0.95",
-                "3717152364831481857,3717152364697264128,2026-07-06 04:09:33,Spot,TAO-USDC-CONVERT,,1.06265576,USDC,209.68861305,0,0,USDC,0,0,1.06265576,1.06265576,USDC,183.85,0,0,0.93,0.93");
+                "2001,ORD-C,2025-01-14 10:00:00,Spot,TAO-USDC-CONVERT,,0.005,USDC,200,0,0,TAO,0,0,-0.005,0,TAO,180,0,0,0,-0.95",
+                "2002,ORD-C,2025-01-14 10:00:00,Spot,TAO-USDC-CONVERT,,1,USDC,200,0,0,USDC,0,0,1,1,USDC,180,0,0,0.93,0.93");
         assertEquals(1, movs.size(), Arrays.deepToString(movs.toArray()));
         String[] m = movs.get(0);
         assertEquals("TAO", m[8]);
-        assertEquals("-0.00506778", m[10]);
+        assertEquals("-0.005", m[10]);
         assertEquals("USDC", m[11]);
-        assertEquals("1.06265576", m[13]);
+        assertEquals("1", m[13]);
     }
 
     /** La conversione contro euro e' un acquisto: la gamba FIAT la riconosce il programma, non la config. */
     @Test
     void convertControEuro_eUnAcquistoCrypto() throws Exception {
         List<String[]> movs = importa(
-                "3791444272696483840,3791444272629374976,2026-07-31 19:10:44,Spot,USDC-EUR-CONVERT,,57.19923035,EUR,0.87,0,0,USDC,0,0,57.19923035,681.13,USDC,0.87,0,0,596,50.09",
-                "3791444272696483841,3791444272629374976,2026-07-31 19:10:44,Spot,USDC-EUR-CONVERT,,50.00000000,EUR,0.87,0,0,EUR,0,0,-50.00000000,2350.00,EUR,0.87,0,0,2364,-50.30");
+                "2003,ORD-D,2025-01-15 10:00:00,Spot,USDC-EUR-CONVERT,,50,EUR,0.87,0,0,USDC,0,0,50,680,USDC,0.87,0,0,596,50",
+                "2004,ORD-D,2025-01-15 10:00:00,Spot,USDC-EUR-CONVERT,,50.00000000,EUR,0.87,0,0,EUR,0,0,-50.00000000,2400.00,EUR,0.87,0,0,2410,-50.20");
         assertEquals(1, movs.size());
         assertEquals("ACQUISTO CRYPTO", movs.get(0)[5]);
         assertEquals("EUR", movs.get(0)[8]);
@@ -97,10 +97,10 @@ class ImportazioneGenericaOkxConvertTest {
     @Test
     void dueConvertNelloStessoSecondo_restanoDueScambi() throws Exception {
         List<String[]> movs = importa(
-                "1001,ORD-A,2026-07-06 04:09:33,Spot,TAO-USDC-CONVERT,,0.5,USDC,200,0,0,TAO,0,0,-0.5,0,TAO,183,0,0,0,0",
-                "1002,ORD-A,2026-07-06 04:09:33,Spot,TAO-USDC-CONVERT,,100,USDC,200,0,0,USDC,0,0,100,100,USDC,183,0,0,0,0",
-                "1003,ORD-B,2026-07-06 04:09:33,Spot,BTC-USDC-CONVERT,,0.001,USDC,60000,0,0,BTC,0,0,0.001,0.001,BTC,55000,0,0,0,0",
-                "1004,ORD-B,2026-07-06 04:09:33,Spot,BTC-USDC-CONVERT,,60,USDC,60000,0,0,USDC,0,0,-60,0,USDC,55000,0,0,0,0");
+                "1001,ORD-A,2025-01-14 10:00:00,Spot,TAO-USDC-CONVERT,,0.5,USDC,200,0,0,TAO,0,0,-0.5,0,TAO,183,0,0,0,0",
+                "1002,ORD-A,2025-01-14 10:00:00,Spot,TAO-USDC-CONVERT,,100,USDC,200,0,0,USDC,0,0,100,100,USDC,183,0,0,0,0",
+                "1003,ORD-B,2025-01-14 10:00:00,Spot,BTC-USDC-CONVERT,,0.001,USDC,60000,0,0,BTC,0,0,0.001,0.001,BTC,55000,0,0,0,0",
+                "1004,ORD-B,2025-01-14 10:00:00,Spot,BTC-USDC-CONVERT,,60,USDC,60000,0,0,USDC,0,0,-60,0,USDC,55000,0,0,0,0");
         assertEquals(2, movs.size());
     }
 
@@ -111,8 +111,8 @@ class ImportazioneGenericaOkxConvertTest {
     @Test
     void convertDiPolvereConGambaAZero_restaUnPrelievoDaClassificare() throws Exception {
         List<String[]> movs = importa(
-                "3832201364046565377,3832201363878793216,2026-08-14 20:35:00,Spot,SLX-USDC-CONVERT,,0.00000001,USDC,0.0778,0,0,SLX,0,0,-0.00000001,0,SLX,0.06,0,0,0,0",
-                "3832201364046565378,3832201363878793216,2026-08-14 20:35:00,Spot,SLX-USDC-CONVERT,,0.00000000,USDC,0.0778,0,0,USDC,0,0,0.00000000,1000.45,USDC,0.06,0,0,867,0");
+                "2005,ORD-E,2025-01-16 10:00:00,Spot,SLX-USDC-CONVERT,,0.00000001,USDC,0.0778,0,0,SLX,0,0,-0.00000001,0,SLX,0.06,0,0,0,0",
+                "2006,ORD-E,2025-01-16 10:00:00,Spot,SLX-USDC-CONVERT,,0.00000000,USDC,0.0778,0,0,USDC,0,0,0.00000000,1000,USDC,0.06,0,0,867,0");
         assertEquals(1, movs.size());
         assertEquals("PRELIEVO CRYPTO", movs.get(0)[5]);
         assertEquals("SLX", movs.get(0)[8]);

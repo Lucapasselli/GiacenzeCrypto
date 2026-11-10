@@ -67,9 +67,9 @@ class Bybit_DepositiPrelieviTest {
 
     @Test
     void unPrelievoAlLordoSiAbbinaAllaRigaAlNetto() {
-        String[] pre = movimento("20240115110000", "", "XLM", "-176.5233");
+        String[] pre = movimento("20240115110000", "", "XLM", "-180.02");
         Bybit_DepositiPrelievi.Esito e = arricchisci(
-                riga("2024-01-15 10:00:00", "Withdraw", "XLM", "XLM", "176.5033", "HASH2", "Transferred successfully"));
+                riga("2024-01-15 10:00:00", "Withdraw", "XLM", "XLM", "180", "HASH2", "Transferred successfully"));
         assertEquals(1, e.arricchiti);
         assertEquals("HASH2", pre[24]);
     }
@@ -78,20 +78,20 @@ class Bybit_DepositiPrelieviTest {
     void unPrelievoMinoreDellImportoNettoNonSiAbbina() {
         movimento("20240115110000", "", "XLM", "-100");
         Bybit_DepositiPrelievi.Esito e = arricchisci(
-                riga("2024-01-15 10:00:00", "Withdraw", "XLM", "XLM", "176.5033", "HASH2", "Transferred successfully"));
+                riga("2024-01-15 10:00:00", "Withdraw", "XLM", "XLM", "180", "HASH2", "Transferred successfully"));
         assertEquals(0, e.arricchiti);
         assertEquals(1, e.nonTrovati);
     }
 
     @Test
     void laCausaleEscludeGirocontiELaunchpadDiPariImporto() {
-        //Giroconto fra conti (nel file reale mappato IGNORA, qui presente per ipotesi) più vicino nel tempo
-        String[] giroconto = movimento("20240330084400", "internalAccountTransferDeposit", "USDT", "9");
-        String[] launchpad = movimento("20240330084300", "commitmentForLaunchpad", "USDT", "-9");
-        String[] dep = movimento("20240330084424", "Deposit", "USDT", "9");
+        //Giroconto fra conti (nel file vero mappato IGNORA, qui presente per ipotesi) più vicino nel tempo
+        String[] giroconto = movimento("20250112084400", "internalAccountTransferDeposit", "USDT", "9");
+        String[] launchpad = movimento("20250112084300", "commitmentForLaunchpad", "USDT", "-9");
+        String[] dep = movimento("20250112084424", "Deposit", "USDT", "9");
         Bybit_DepositiPrelievi.Esito e = arricchisci(
-                riga("2024-03-30 07:32:04", "Deposit", "USDT", "Polygon PoS", "9", "HASH3", "Completed"),
-                riga("2024-03-30 07:43:00", "Withdraw", "USDT", "Polygon PoS", "9", "HASH4", "Transferred successfully"));
+                riga("2025-01-12 07:32:04", "Deposit", "USDT", "Polygon PoS", "9", "HASH3", "Completed"),
+                riga("2025-01-12 07:43:00", "Withdraw", "USDT", "Polygon PoS", "9", "HASH4", "Transferred successfully"));
         assertEquals("HASH3", dep[24]);
         assertEquals("", giroconto[24]);
         assertEquals("", launchpad[24]);
@@ -101,11 +101,11 @@ class Bybit_DepositiPrelieviTest {
 
     @Test
     void unDepositoAccreditatoOreDopoSiAbbina() {
-        //Bybit EU: accredito 13 ore e 38 dopo la riga del file. Riga 20:10:00 UTC, accredito 09:48:00 UTC del
-        //giorno dopo = 11:48:00 Roma (ora legale)
-        String[] dep = movimento("20250605114800", "Deposit", "USDC", "321.5");
+        //Bybit EU: accredito 14 ore dopo la riga del file. Riga 20:00:00 UTC, accredito 10:00:00 UTC del
+        //giorno dopo = 12:00:00 Roma (ora legale)
+        String[] dep = movimento("20250605120000", "Deposit", "USDC", "300");
         Bybit_DepositiPrelievi.Esito e = arricchisci(
-                riga("2025-06-04 20:10:00", "Deposit", "USDC", "Base Mainnet", "321.500000", "HASH8", "Completed"));
+                riga("2025-06-04 20:00:00", "Deposit", "USDC", "Base Mainnet", "300.000000", "HASH8", "Completed"));
         assertEquals(1, e.arricchiti);
         assertEquals("HASH8", dep[24]);
     }

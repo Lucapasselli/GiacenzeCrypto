@@ -65,13 +65,13 @@ class CcxtInteropConvertOKXBillsTest {
      * Il {@code type} 30 del conto Trading è uno scambio spot registrato con un codice diverso dal 2:
      * fino al 20/08/2026 restava non mappato e le sue righe venivano scartate dall'import, che così non
      * consolidava alcuno scambio. Le due gambe arrivano come sempre a coppie di segno opposto sullo
-     * stesso istante — qui i valori reali segnalati da un utente, SOL comprato con EUR.
+     * stesso istante — qui un esempio, SOL comprato con EUR.
      */
     @Test
     void ilCodice30DelTradingEUnoScambioComeIlCodice2() {
         List<String[]> righe = CcxtInterop.convertOKXBills(bills("""
-            [{"billId":"500","ccy":"SOL","balChg":"0.25568649","type":"30","ordId":"900","ts":"1751530297000"},
-             {"billId":"501","ccy":"EUR","balChg":"-18.4704815127500573","type":"30","ordId":"900","ts":"1751530297000"}]
+            [{"billId":"500","ccy":"SOL","balChg":"0.25","type":"30","ordId":"900","ts":"1700000000000"},
+             {"billId":"501","ccy":"EUR","balChg":"-20","type":"30","ordId":"900","ts":"1700000000000"}]
             """), "Trading");
 
         assertEquals(2, righe.size());
@@ -133,13 +133,13 @@ class CcxtInteropConvertOKXBillsTest {
      * Il prodotto "ETH Staking" (funding {@code type} 137/138, non l'on-chain staking del 328): la
      * sottoscrizione (ETH in uscita) e la "swapping" di ritorno (BETH in entrata) arrivano sullo stesso
      * istante, come le gambe di uno scambio, e vanno entrambe classificate SCAMBIO CRYPTO-CRYPTO — è una
-     * permuta ETH->BETH, non un giroconto interno. Dati reali segnalati da un utente il 2026-09-22.
+     * permuta ETH->BETH, non un giroconto interno.
      */
     @Test
     void ethStakingSubscriptionESwappingSonoUnoScambioEthBeth() {
         List<String[]> righe = CcxtInterop.convertOKXBills(bills("""
-            [{"billId":"800","ccy":"ETH","balChg":"-0.50441892","type":"137","ts":"1788736688000"},
-             {"billId":"801","ccy":"BETH","balChg":"0.50441892","type":"138","ts":"1788736688000"}]
+            [{"billId":"800","ccy":"ETH","balChg":"-0.5","type":"137","ts":"1700000000000"},
+             {"billId":"801","ccy":"BETH","balChg":"0.5","type":"138","ts":"1700000000000"}]
             """), "Funding");
 
         assertEquals(2, righe.size());
@@ -160,7 +160,7 @@ class CcxtInteropConvertOKXBillsTest {
     @Test
     void ethStakingEarningsUsaLaStessaEtichettaDelloStakingOnChain() {
         List<String[]> righe = CcxtInterop.convertOKXBills(bills("""
-            [{"billId":"802","ccy":"BETH","balChg":"0.00002428","type":"139","ts":"1788668536000"}]
+            [{"billId":"802","ccy":"BETH","balChg":"0.001","type":"139","ts":"1700000000000"}]
             """), "Funding");
 
         assertEquals(1, righe.size());
@@ -168,22 +168,22 @@ class CcxtInteropConvertOKXBillsTest {
         assertEquals("REWARD", Importazioni.Ex_OKX_MappaCausali().get("Staking earnings"));
     }
 
-    /** Le due posizioni "Spark USDC" chiuse da OKX il 05/10/2026 alle 11:23:00, come le restituisce OKX_Earn.js */
+    /** Le due posizioni "Spark USDC" chiuse da OKX nello stesso istante, come le restituisce OKX_Earn.js */
     private static final String STORICO_SPARK = """
-        [{"ordId":"10391249","ccy":"USDC","state":"3","protocol":"Spark USDC",
-          "investData":[{"ccy":"USDC","amt":"16.50423707"}],
-          "earningData":[{"ccy":"USDC","earningType":"0","realizedEarnings":"0.04403271"}],
-          "purchasedTime":"1788648822000","redeemedTime":"1791192180000"},
-         {"ordId":"10390503","ccy":"USDC","state":"3","protocol":"Spark USDC",
-          "investData":[{"ccy":"USDC","amt":"874.17246485"}],
-          "earningData":[{"ccy":"USDC","earningType":"0","realizedEarnings":"2.33226117"}],
-          "purchasedTime":"1788605552000","redeemedTime":"1791192180000"}]
+        [{"ordId":"1001","ccy":"USDC","state":"3","protocol":"Spark USDC",
+          "investData":[{"ccy":"USDC","amt":"100"}],
+          "earningData":[{"ccy":"USDC","earningType":"0","realizedEarnings":"0.5"}],
+          "purchasedTime":"1699900000000","redeemedTime":"1700000000000"},
+         {"ordId":"1002","ccy":"USDC","state":"3","protocol":"Spark USDC",
+          "investData":[{"ccy":"USDC","amt":"800"}],
+          "earningData":[{"ccy":"USDC","earningType":"0","realizedEarnings":"3"}],
+          "purchasedTime":"1699800000000","redeemedTime":"1700000000000"}]
         """;
 
-    /** Il bill 330 dello stesso giorno: 890,67670192 LYUSDC accreditati alle 11:22:59, un secondo prima del riscatto */
+    /** Il bill 330 dello stesso giorno: 900 LYUSDC accreditati un secondo prima del riscatto */
     private static final String BILL_LYUSDC = """
-        [{"billId":"200061000001","ccy":"LYUSDC","balChg":"890.67670192","type":"330",
-          "notes":"Liquid Staking swapping","ts":"1791192179000"}]
+        [{"billId":"900001","ccy":"LYUSDC","balChg":"900","type":"330",
+          "notes":"Liquid Staking swapping","ts":"1699999999000"}]
         """;
 
     /**
@@ -209,9 +209,9 @@ class CcxtInteropConvertOKXBillsTest {
             assertTrue(r[14].startsWith("ONCHAIN-"));
             uscita = uscita.add(new java.math.BigDecimal(r[6]));
         }
-        assertEquals(0, uscita.compareTo(new java.math.BigDecimal("-890.67670192")),
+        assertEquals(0, uscita.compareTo(new java.math.BigDecimal("-900")),
                 "esce il capitale delle posizioni, non i rendimenti: quelli arrivano con il bill 328");
-        assertEquals(java.util.Set.of("ONCHAIN-10391249", "ONCHAIN-10390503"),
+        assertEquals(java.util.Set.of("ONCHAIN-1001", "ONCHAIN-1002"),
                 java.util.Set.of(righe.get(1)[14], righe.get(2)[14]));
     }
 
@@ -245,12 +245,12 @@ class CcxtInteropConvertOKXBillsTest {
         assertEquals(1, E.Sconosciute);
     }
 
-    /** Sottoscrizione diretta di Liquid Staking (08/10/2026): 329 in uscita e 330 in entrata nello stesso secondo */
+    /** Sottoscrizione diretta di Liquid Staking: 329 in uscita e 330 in entrata nello stesso secondo */
     private static final String BILL_SOTTOSCRIZIONE_OKSOL = """
-        [{"billId":"200062491912","ccy":"SOL","balChg":"-0.3745958","type":"329",
-          "notes":"Liquid Staking subscription","ts":"1791478227000"},
-         {"billId":"200062491913","ccy":"OKSOL","balChg":"0.3745958","type":"330",
-          "notes":"Liquid Staking swapping","ts":"1791478227000"}]
+        [{"billId":"900002","ccy":"SOL","balChg":"-0.5","type":"329",
+          "notes":"Liquid Staking subscription","ts":"1700000000000"},
+         {"billId":"900003","ccy":"OKSOL","balChg":"0.5","type":"330",
+          "notes":"Liquid Staking swapping","ts":"1700000000000"}]
         """;
 
     /**
@@ -316,7 +316,7 @@ class CcxtInteropConvertOKXBillsTest {
         String interrotto = CcxtInterop.TestoAvvisoLiquidStakingNonAbbinati(nonAbbinati, false);
         for (String testo : List.of(completo, interrotto)) {
             assertTrue(testo.contains(righe.get(0)[0]), testo);
-            assertTrue(testo.contains("890.67670192 LYUSDC"), testo);
+            assertTrue(testo.contains("900 LYUSDC"), testo);
             assertFalse(testo.contains(";"), testo);
         }
         assertTrue(completo.contains("scaricato per intero"));
@@ -334,7 +334,7 @@ class CcxtInteropConvertOKXBillsTest {
         assertEquals(CcxtInterop.CAUSALE_LIQUID_STAKING_SENZA_ORIGINE, righe.get(0)[4]);
 
         //Riscattate un'ora dopo
-        String unOraDopo = STORICO_SPARK.replace("1791192180000", "1791195780000");
+        String unOraDopo = STORICO_SPARK.replace("1700000000000", "1700003600000");
         righe = new java.util.ArrayList<>(CcxtInterop.convertOKXBills(bills(BILL_LYUSDC), "Funding"));
         CcxtInterop.AbbinaLiquidStakingOnChain(righe, bills(unOraDopo));
         assertEquals(1, righe.size());
@@ -348,7 +348,26 @@ class CcxtInteropConvertOKXBillsTest {
      */
     @Test
     void ilCodice30NonVieneInterpretatoSulContoFunding() {
-        assertEquals("OKX type 30", CcxtInterop.causaleBillOKX("30", "0.25568649", false));
+        assertEquals("OKX type 30", CcxtInterop.causaleBillOKX("30", "0.25", false));
+    }
+
+    /**
+     * Il 27 del conto Trading è la conversione rapida (USDT -> USDC): due bill di segno opposto sullo stesso
+     * istante, senza ordine, che devono avere l'etichetta {@code Convert} (scambio cripto/cripto) e non
+     * restare fra i movimenti sconosciuti. Sul Funding il 27 non è elencato e resta non mappato.
+     */
+    @Test
+    void ilCodice27DelContoTradingEUnaConversione() {
+        List<String[]> righe = CcxtInterop.convertOKXBills(bills("""
+            [{"billId":"700","ccy":"USDT","balChg":"-500","type":"27","ts":"1700000000000"},
+             {"billId":"701","ccy":"USDC","balChg":"500","type":"27","ts":"1700000000000"}]
+            """), "Trading");
+        assertEquals(2, righe.size());
+        assertEquals("Convert", righe.get(0)[4]);
+        assertEquals("Convert", righe.get(1)[4]);
+        assertEquals("-500", righe.get(0)[6]);
+        assertEquals("500", righe.get(1)[6]);
+        assertEquals("OKX type 27", CcxtInterop.causaleBillOKX("27", "1", false));
     }
 
     /**
@@ -417,8 +436,8 @@ class CcxtInteropConvertOKXBillsTest {
      */
     @Test
     void iCodiciDelloSpostamentoFraWalletSonoGirocontiInterni() {
-        assertEquals("Transfer out", CcxtInterop.causaleBillOKX("326", "-0.0000331", false));
-        assertEquals("Transfer in", CcxtInterop.causaleBillOKX("327", "0.0000331", false));
+        assertEquals("Transfer out", CcxtInterop.causaleBillOKX("326", "-0.001", false));
+        assertEquals("Transfer in", CcxtInterop.causaleBillOKX("327", "0.001", false));
         var mappa = Importazioni.Ex_OKX_MappaCausali();
         assertEquals("NON CONSIDERARE", mappa.get("Transfer out"));
         assertEquals("NON CONSIDERARE", mappa.get("Transfer in"));
@@ -431,9 +450,9 @@ class CcxtInteropConvertOKXBillsTest {
      */
     @Test
     void laConversioneRapidaEUnoScambioFraDueMonete() {
-        //Le due gambe reali del 30/12/2022 08:00:41: SHIB in uscita, USDT in entrata
-        assertEquals("Convert", CcxtInterop.causaleBillOKX("61", "-9127.5584", false));
-        assertEquals("Convert", CcxtInterop.causaleBillOKX("61", "0.0735811338275006", false));
+        //Le due gambe: SHIB in uscita, USDT in entrata
+        assertEquals("Convert", CcxtInterop.causaleBillOKX("61", "-10000", false));
+        assertEquals("Convert", CcxtInterop.causaleBillOKX("61", "0.07", false));
         assertEquals("SCAMBIO CRYPTO-CRYPTO", Importazioni.Ex_OKX_MappaCausali().get("Convert"));
     }
 
@@ -446,10 +465,10 @@ class CcxtInteropConvertOKXBillsTest {
     void iRendimentiEGliOmaggiSonoReward() {
         var mappa = Importazioni.Ex_OKX_MappaCausali();
 
-        assertEquals("Flash Deals Earnings", CcxtInterop.causaleBillOKX("89", "93.84434534", false));
+        assertEquals("Flash Deals Earnings", CcxtInterop.causaleBillOKX("89", "10", false));
         assertEquals("REWARD", mappa.get("Flash Deals Earnings"));
 
-        assertEquals("Mystery box bonus", CcxtInterop.causaleBillOKX("189", "9127.55842556", false));
+        assertEquals("Mystery box bonus", CcxtInterop.causaleBillOKX("189", "5000", false));
         assertEquals("REWARD", mappa.get("Mystery box bonus"));
     }
 
@@ -519,18 +538,18 @@ class CcxtInteropConvertOKXBillsTest {
      */
     @Test
     void laFeeVieneScorporataELaQuantitaTornaAlLordo() {
-        //Caso reale: sz 0.010711 - fee 0.000007229925 = balChg 0.010703770075
+        //Esempio: sz 0.01 - fee 0.00001 = balChg 0.00999
         List<String[]> righe = CcxtInterop.convertOKXBills(bills("""
-            [{"billId":"800","ccy":"ETH","balChg":"0.010703770075","type":"2","sz":"0.010711",
-              "fee":"-0.000007229925","ts":"1700000000000"}]
+            [{"billId":"800","ccy":"ETH","balChg":"0.00999","type":"2","sz":"0.01",
+              "fee":"-0.00001","ts":"1700000000000"}]
             """), "Trading");
 
         assertEquals(1, righe.size());
         //[6] è il lordo, cioè esattamente sz
-        assertEquals(0, new java.math.BigDecimal("0.010711").compareTo(new java.math.BigDecimal(righe.get(0)[6])));
+        assertEquals(0, new java.math.BigDecimal("0.01").compareTo(new java.math.BigDecimal(righe.get(0)[6])));
         assertEquals("ETH", righe.get(0)[11]);
         //La fee è negativa: è un'uscita, e come tale la legge Ex_OKX_Consolida
-        assertEquals(0, new java.math.BigDecimal("-0.000007229925").compareTo(new java.math.BigDecimal(righe.get(0)[12])));
+        assertEquals(0, new java.math.BigDecimal("-0.00001").compareTo(new java.math.BigDecimal(righe.get(0)[12])));
     }
 
     /**
@@ -541,12 +560,12 @@ class CcxtInteropConvertOKXBillsTest {
     @Test
     void sullaGambaInUscitaSenzaFeeLaQuantitaRestaQuellaDiBalChg() {
         List<String[]> righe = CcxtInterop.convertOKXBills(bills("""
-            [{"billId":"801","ccy":"USDC","balChg":"-19.58924079","type":"2","sz":"19.58924079",
+            [{"billId":"801","ccy":"USDC","balChg":"-20","type":"2","sz":"20",
               "fee":"0","ts":"1700000000000"}]
             """), "Trading");
 
         assertEquals(1, righe.size());
-        assertEquals(0, new java.math.BigDecimal("-19.58924079").compareTo(new java.math.BigDecimal(righe.get(0)[6])));
+        assertEquals(0, new java.math.BigDecimal("-20").compareTo(new java.math.BigDecimal(righe.get(0)[6])));
         //Fee nulla: i campi restano vuoti, altrimenti nascerebbe un movimento di commissione fantasma
         assertEquals("", righe.get(0)[11].trim());
         assertEquals("", righe.get(0)[12].trim());
@@ -603,14 +622,14 @@ class CcxtInteropConvertOKXBillsTest {
      */
     @Test
     void ilCursoreDiRipresaFaAndataERitornoSenzaPerdereNulla() {
-        String salvato = "Funding=1784276517904|1471886517903;Trading=3702022358013911044|1780000000000";
+        String salvato = "Funding=1700000000000|1600000000000;Trading=123456789|1780000000000";
         var riprese = CcxtInterop.ripreseOKX(salvato);
 
         assertEquals(2, riprese.size());
         //L'after non viene interpretato: sul Funding è un timestamp, sul Trading un billId (difetto C8)
-        assertEquals("1784276517904", riprese.get("Funding").after());
-        assertEquals(1471886517903L, riprese.get("Funding").limite());
-        assertEquals("3702022358013911044", riprese.get("Trading").after());
+        assertEquals("1700000000000", riprese.get("Funding").after());
+        assertEquals(1600000000000L, riprese.get("Funding").limite());
+        assertEquals("123456789", riprese.get("Trading").after());
 
         assertEquals(salvato, CcxtInterop.ripreseOKX(riprese));
     }
@@ -632,12 +651,12 @@ class CcxtInteropConvertOKXBillsTest {
         var json = com.google.gson.JsonParser.parseString("""
             {"okx_completo":false,
              "okx_motivo":{"Funding":"tetto_pagine","Trading":""},
-             "okx_ripresa":{"Funding":{"after":"1784276517904","limite":1471886517903}}}
+             "okx_ripresa":{"Funding":{"after":"1700000000000","limite":1600000000000}}}
             """).getAsJsonObject();
 
         var riprese = CcxtInterop.ripreseOKX(json);
         assertEquals(1, riprese.size());
-        assertEquals("1784276517904", riprese.get("Funding").after());
+        assertEquals("1700000000000", riprese.get("Funding").after());
         //Solo il tetto: si importa comunque e si ricorda dove si era arrivati
         assertTrue(CcxtInterop.soloTettoPagineOKX(json));
     }
@@ -676,13 +695,13 @@ class CcxtInteropConvertOKXBillsTest {
      */
     @Test
     void gliInteressiOrariVengonoSommatiPerGiornataEMoneta() {
-        //Tre accrediti ETH e due BTC nella stessa giornata (2026-08-01, ora italiana)
+        //Tre accrediti ETH e due BTC nella stessa giornata (2023-11-14, ora italiana)
         List<String[]> righe = CcxtInterop.convertOKXEarn(bills("""
-            [{"ccy":"ETH","amt":"0.2","earnings":"0.00000136","rate":"0.06","ts":"1785535244000"},
-             {"ccy":"ETH","amt":"0.2","earnings":"0.00000136","rate":"0.06","ts":"1785538844000"},
-             {"ccy":"ETH","amt":"0.2","earnings":"0.00000100","rate":"0.06","ts":"1785542444000"},
-             {"ccy":"BTC","amt":"0.01","earnings":"0.00000003","rate":"0.03","ts":"1785535227000"},
-             {"ccy":"BTC","amt":"0.01","earnings":"0.00000004","rate":"0.03","ts":"1785538827000"}]
+            [{"ccy":"ETH","amt":"0.2","earnings":"0.001","rate":"0.06","ts":"1699963200000"},
+             {"ccy":"ETH","amt":"0.2","earnings":"0.001","rate":"0.06","ts":"1699966800000"},
+             {"ccy":"ETH","amt":"0.2","earnings":"0.002","rate":"0.06","ts":"1699970400000"},
+             {"ccy":"BTC","amt":"0.01","earnings":"0.0001","rate":"0.03","ts":"1699963183000"},
+             {"ccy":"BTC","amt":"0.01","earnings":"0.0002","rate":"0.03","ts":"1699966783000"}]
             """));
 
         assertEquals(2, righe.size(), "una riga per moneta, non una per accredito");
@@ -690,23 +709,23 @@ class CcxtInteropConvertOKXBillsTest {
         String[] btc = righe.stream().filter(r -> r[5].equals("BTC")).findFirst().orElseThrow();
         String[] eth = righe.stream().filter(r -> r[5].equals("ETH")).findFirst().orElseThrow();
 
-        assertEquals("0.00000007", btc[6]);
-        assertEquals("0.00000372", eth[6]);
+        assertEquals("0.0003", btc[6]);
+        assertEquals("0.004", eth[6]);
         //Causale già presente nella mappa condivisa: nessuna nuova categoria da introdurre
         assertEquals("Deposit yield", eth[4]);
         assertEquals("REWARD", Importazioni.Ex_OKX_MappaCausali().get("Deposit yield"));
         //ID deterministico: un secondo scaricamento sullo stesso periodo deve riconoscere la giornata
-        assertEquals("EARN-ETH-20260801", eth[14]);
-        assertEquals("EARN-BTC-20260801", btc[14]);
+        assertEquals("EARN-ETH-20231114", eth[14]);
+        assertEquals("EARN-BTC-20231114", btc[14]);
         //Il movimento porta la data dell'ultimo accredito della giornata
-        assertEquals(FunzioniDate.ConvertiDatadaLongAlSecondo(1785542444000L), eth[0]);
+        assertEquals(FunzioniDate.ConvertiDatadaLongAlSecondo(1699970400000L), eth[0]);
     }
 
     @Test
     void giornateDiverseRestanoMovimentiDiversi() {
         List<String[]> righe = CcxtInterop.convertOKXEarn(bills("""
-            [{"ccy":"USDC","earnings":"0.001","ts":"1785535244000"},
-             {"ccy":"USDC","earnings":"0.002","ts":"1785621644000"}]
+            [{"ccy":"USDC","earnings":"0.001","ts":"1699963200000"},
+             {"ccy":"USDC","earnings":"0.002","ts":"1700049600000"}]
             """));
 
         assertEquals(2, righe.size());
@@ -721,7 +740,7 @@ class CcxtInteropConvertOKXBillsTest {
     void laGiornataInCorsoNonVieneImportata() {
         long ora = System.currentTimeMillis();
         List<String[]> righe = CcxtInterop.convertOKXEarn(bills(
-                "[{\"ccy\":\"ETH\",\"earnings\":\"0.00000136\",\"ts\":\"" + ora + "\"}]"));
+                "[{\"ccy\":\"ETH\",\"earnings\":\"0.001\",\"ts\":\"" + ora + "\"}]"));
 
         assertTrue(righe.isEmpty(), "la giornata odierna va importata solo quando è completa");
     }
@@ -734,22 +753,22 @@ class CcxtInteropConvertOKXBillsTest {
     @Test
     void unAccreditoRipetutoNonVieneContatoDueVolte() {
         List<String[]> righe = CcxtInterop.convertOKXEarn(bills("""
-            [{"ccy":"ETH","earnings":"0.00000136","ts":"1785535244000"},
-             {"ccy":"ETH","earnings":"0.00000136","ts":"1785535244000"},
-             {"ccy":"ETH","earnings":"0.00000136","ts":"1785538844000"}]
+            [{"ccy":"ETH","earnings":"0.001","ts":"1699963200000"},
+             {"ccy":"ETH","earnings":"0.001","ts":"1699963200000"},
+             {"ccy":"ETH","earnings":"0.001","ts":"1699966800000"}]
             """));
 
         assertEquals(1, righe.size());
-        assertEquals("0.00000272", righe.get(0)[6], "il doppione non deve entrare nella somma");
+        assertEquals("0.002", righe.get(0)[6], "il doppione non deve entrare nella somma");
     }
 
     @Test
     void gliAccreditiNulliOMalformatiNonProduconoMovimenti() {
         List<String[]> righe = CcxtInterop.convertOKXEarn(bills("""
-            [{"ccy":"ETH","earnings":"0","ts":"1785535244000"},
-             {"ccy":"ETH","ts":"1785535244000"},
-             {"ccy":"ETH","earnings":"non-numerico","ts":"1785535244000"},
-             {"earnings":"0.001","ts":"1785535244000"}]
+            [{"ccy":"ETH","earnings":"0","ts":"1699963200000"},
+             {"ccy":"ETH","ts":"1699963200000"},
+             {"ccy":"ETH","earnings":"non-numerico","ts":"1699963200000"},
+             {"earnings":"0.001","ts":"1699963200000"}]
             """));
 
         assertTrue(righe.isEmpty());
@@ -765,9 +784,9 @@ class CcxtInteropConvertOKXBillsTest {
     void loStessoBillArrivatoDaDueFinestreEntraUnaVoltaSola() {
         //Le due gambe di uno scambio spot, prese una volta da bills-archive e una dall'archivio trimestrale
         String[] usdcUscita = new String[19];
-        usdcUscita[2] = "Trading"; usdcUscita[5] = "USDC"; usdcUscita[6] = "-28.048493052"; usdcUscita[14] = "3685355100223121000";
+        usdcUscita[2] = "Trading"; usdcUscita[5] = "USDC"; usdcUscita[6] = "-30"; usdcUscita[14] = "900100";
         String[] btcEntrata = new String[19];
-        btcEntrata[2] = "Trading"; btcEntrata[5] = "BTC"; btcEntrata[6] = "0.00046359"; btcEntrata[14] = "3685355100223121001";
+        btcEntrata[2] = "Trading"; btcEntrata[5] = "BTC"; btcEntrata[6] = "0.0005"; btcEntrata[14] = "900101";
 
         List<String[]> righe = CcxtInterop.deduplicaBillOKX(List.of(
                 usdcUscita, btcEntrata, usdcUscita.clone(), btcEntrata.clone()));
@@ -782,9 +801,9 @@ class CcxtInteropConvertOKXBillsTest {
     void bilanciConIDugualeMaContiDiversiRestanoDistinti() {
         //I due endpoint numerano i bill in modo indipendente: la collisione fra conti non è una duplicazione
         String[] funding = new String[19];
-        funding[2] = "Funding"; funding[14] = "200031878277";
+        funding[2] = "Funding"; funding[14] = "900200";
         String[] trading = new String[19];
-        trading[2] = "Trading"; trading[14] = "200031878277";
+        trading[2] = "Trading"; trading[14] = "900200";
 
         assertEquals(2, CcxtInterop.deduplicaBillOKX(List.of(funding, trading)).size());
     }

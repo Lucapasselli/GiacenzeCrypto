@@ -30,7 +30,7 @@ class PrezziFlagValorizzatoTest {
     private static String[] movimento(String flag32, String valore15) {
         String[] m = new String[Importazioni.ColonneTabella];
         for (int i = 0; i < m.length; i++) m[i] = "";
-        m[0] = "20220512062450_Test_001_001_PC";
+        m[0] = "20240512062450_Test_001_001_PC";
         m[8] = "USDT";        //moneta in uscita, serve al controllo SCAM
         m[15] = valore15;
         m[32] = flag32;

@@ -31,8 +31,7 @@ import org.json.JSONObject;
  * <p><b>Ogni record diventa una riga uguale a quella dell'export CSV</b> ({@code order, Date, Coin, Type,
  * Amount, Fee, Available}) e passa dalla stessa configurazione {@code config/import/Bitget CSV.json} e dalla
  * stessa pipeline ({@link ImportazioneGenerica#importaRighe}): causali, consolidamento degli interessi per
- * giorno, scambi, commissioni e deduplica sono quelli del CSV. Verificato su tre export reali (56.507
- * righe): l'id del record e' la colonna {@code order} del CSV, importo e fee coincidono. Cambiano solo
+ * giorno, scambi, commissioni e deduplica sono quelli del CSV. Verificato su tre export interi: l'id del record e' la colonna {@code order} del CSV, importo e fee coincidono. Cambiano solo
  * alcuni nomi di tipo, che {@code causaliAPI} della configurazione riporta all'etichetta del CSV.
  *
  * <p>Fatti dell'API che il codice da' per assodati (verificati il 17/10/2026):

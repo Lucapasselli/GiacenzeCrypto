@@ -1,6 +1,6 @@
 {
   "_commento": "KuCoin - export 'Withdrawal List' (file 'Withdrawal List.csv'). UTF-8, separatore virgola. Colonne: 0=UID 1=Account Type 2=Time(UTC+00:00) 3=Coin 4=Amount 5=Fee (fee di rete, stessa moneta di Amount) 6=Hash 7=Withdrawal Address/Account 8=Transfer Network 9=Status 10=Remarks.",
-  "_commentoImporto": "'Amount' e' il NETTO arrivato a destinazione e la fee e' IN PIU': il saldo scende di Amount + Fee (verificato sul dataset di prova: i 602.49917764 HERO prelevati con fee 70 tornano solo se sul conto ne erano stati comprati 672.49917764). Diverso da Gate.io, dove Amount e' il lordo. Percio' 'ricostruisciLordoSeFeeSuMonetaUscita':false e la fee esce come movimento COMMISSIONI a se', in aggiunta all'Amount.",
+  "_commentoImporto": "'Amount' e' il NETTO arrivato a destinazione e la fee e' IN PIU': il saldo scende di Amount + Fee (verificato su un dataset di prova: i 600 token prelevati con fee 70 tornano solo se sul conto ne erano stati comprati 670). Diverso da Gate.io, dove Amount e' il lordo. Percio' 'ricostruisciLordoSeFeeSuMonetaUscita':false e la fee esce come movimento COMMISSIONI a se', in aggiunta all'Amount.",
   "_commentoCausale": "Il file non ha nessuna colonna causale: OGNI riga e' un prelievo. Stessa tecnica di 'KuCoin Deposits.json': 'success' nella colonna Status (mappata come nota), 'versoForzato':'USCITA'.",
   "_commentoID": "'idTransazione' e' l'Hash on-chain (colonna 6).",
   "_commentoFuso": "L'intestazione dice 'Time(UTC+00:00)': 'fuso':'UTC'.",

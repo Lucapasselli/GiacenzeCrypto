@@ -70,7 +70,7 @@ public class AliasPrezziToken {
         //Chiamata all'avvio (VarCondivise.CompilaMappaChain) e di nuovo quando l'aggiornamento delle
         //configurazioni, che gira in background, scarica un file nuovo: senza la seconda chiamata le voci
         //arrivate in quella sessione restavano inattive fino al riavvio, e i movimenti importati nel frattempo
-        //venivano prezzati senza alias (visto l'08/10/2026: un reward LYUSDC rimasto senza prezzo, con la
+        //venivano prezzati senza alias (visto in pratica: un reward LYUSDC rimasto senza prezzo, con la
         //voce LYUSDC -> USDC gia' sul disco)
         Tabelle t = MappeCausali.CaricaConRipiego(NOME, MappeCausali.Cartella.VARIE, AliasPrezziToken::Interpreta);
         if (t == null) {

@@ -81,8 +81,8 @@ class EmoneyTokenTest {
     @Test
     void contaIMovimentiConUnTokenDellElencoAssenteDallaSezione() {
         Map<String, String[]> archivio = new TreeMap<>();
-        movimento(archivio, "20261004122013_W_001_001_SC", "USDG", "Crypto", "aXlrUSDG", "Crypto");
-        movimento(archivio, "20261009100116_W_001_001_DC", "", "", "USDG", "Crypto");
+        movimento(archivio, "20250302100000_W_001_001_SC", "USDG", "Crypto", "aXlrUSDG", "Crypto");
+        movimento(archivio, "20250303100000_W_001_001_DC", "", "", "USDG", "Crypto");
         movimento(archivio, "20250301100000_OKX_001_001_SC", "usdc", "Crypto", "BTC", "Crypto");   //minuscolo
         movimento(archivio, "20250301110000_OKX_001_001_AC", "EUR", "FIAT", "BTC", "Crypto");
         Principale.Mappa_EMoney.put("USDT", "2000-01-01");
@@ -96,7 +96,7 @@ class EmoneyTokenTest {
     @Test
     void unTokenGiaNellaSezioneNonEContatoNemmenoConMaiuscoleDiverse() {
         Map<String, String[]> archivio = new TreeMap<>();
-        movimento(archivio, "20261009100116_W_001_001_DC", "", "", "EURE", "Crypto");
+        movimento(archivio, "20250303100000_W_001_001_DC", "", "", "EURE", "Crypto");
         Principale.Mappa_EMoney.put("EURe", "2023-01-01");
         assertTrue(EmoneyToken.MancantiNeiMovimenti(archivio, ELENCO).isEmpty());
 

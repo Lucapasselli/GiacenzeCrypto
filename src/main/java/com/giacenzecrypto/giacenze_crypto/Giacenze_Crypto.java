@@ -100,7 +100,14 @@ public class Giacenze_Crypto {
         //è da lì che SplashAvvio legge i tempi dell'avvio precedente per pesare la barra.
         SplashAvvio.fase(SplashAvvio.Fase.DATABASE);
 
-        if (!DatabaseH2.CreaoCollegaDatabase()) {
+        //Un file .mv.db danneggiato non termina più la sessione da solo: RecuperoDatabase chiede se spostarlo
+        //e ne crea uno nuovo. Il dialogo qui sotto resta per tutti gli altri errori (lock, versione, tabelle)
+        RecuperoDatabase.Esito esitoDatabase = RecuperoDatabase.apri();
+        if (esitoDatabase == RecuperoDatabase.Esito.RIFIUTATO || esitoDatabase == RecuperoDatabase.Esito.SEGNALATO) {
+            SplashAvvio.chiudi();
+            System.exit(0);
+        }
+        if (esitoDatabase != RecuperoDatabase.Esito.APERTO) {
             //Lo splash va chiuso prima del dialogo, altrimenti resterebbe sospeso sopra di esso.
             SplashAvvio.chiudi();
             //C5: distingue il lock da un'altra sessione (H2 error code 90020) da qualsiasi altro

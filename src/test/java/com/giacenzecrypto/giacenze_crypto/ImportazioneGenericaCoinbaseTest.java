@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
  *   <li>le altre causali ({@code Send}/{@code Receive}/…) non emettono nessuna commissione in euro e
  *       tengono il controvalore dal {@code Subtotal};</li>
  *   <li><b>raggruppamento dei Convert sulla colonna Notes</b>: le due gambe di una conversione
- *       condividono la stessa stringa Notes ma sull'export reale cadono a 1-2 secondi di distanza, e
+ *       condividono la stessa stringa Notes ma in un export cadono a 1-2 secondi di distanza, e
  *       il raggruppo sul timestamp esatto le spezzerebbe; conversioni diverse e adiacenti non si
  *       mescolano perché una gamba con Notes diverso apre sempre un gruppo nuovo;</li>
  *   <li>il campo <b>Notes</b> del CSV finisce nel campo Note del movimento ({@code [21]}).</li>
@@ -80,21 +80,21 @@ class ImportazioneGenericaCoinbaseTest {
 
     @Test
     void controvaloreAlNetto_totaleMenoCommissione_spreadIncluso() {
-        // Buy ETH: Total 10,00 - commissione 0,0769563498 = 9,9230436502 (Subtotal 8,93304 NON usato)
-        String[] r = riga("x", "2018-02-12 16:40:24 UTC", "Buy", "ETH", "0.01274947",
-                "EUR", "€700.66", "€8.93304", "€10.00", "0.0769563498",
-                "Bought 0.01274947 ETH for 10 EUR using EUR Wallet");
-        assertEquals(0, new BigDecimal("9.9230436502").compareTo(
+        // Buy ETH: Total 10,00 - commissione 0,1 = 9,9 (Subtotal 9,00 NON usato)
+        String[] r = riga("x", "2025-01-10 10:00:00 UTC", "Buy", "ETH", "0.01",
+                "EUR", "€1000.00", "€9.00", "€10.00", "0.1",
+                "Bought 0.01 ETH for 10 EUR using EUR Wallet");
+        assertEquals(0, new BigDecimal("9.9").compareTo(
                 new BigDecimal(ImportazioneGenerica.controvaloreAlNetto(r, cfg()))));
     }
 
     @Test
     void controvaloreAlNetto_commissioneNegativaODust_contaComeZero() {
-        // riga dust 2025: la col Fees porta un rapporto di spread con segno (-0,000189...), non una
+        // riga dust: la col Fees porta un rapporto di spread con segno (-0,0002), non una
         // commissione: va ignorata, il controvalore resta il Total.
-        String[] r = riga("x", "2025-10-21 14:45:08 UTC", "Buy", "BTC", "0.00000053",
-                "EUR", "€94696.41", "€0.05019", "€0.10", "-0.0001891012242288327276495",
-                "Bought 0.00000053 BTC for 0.1 EUR using EUR Wallet");
+        String[] r = riga("x", "2025-01-10 11:00:00 UTC", "Buy", "BTC", "0.000001",
+                "EUR", "€100000.00", "€0.10", "€0.10", "-0.0002",
+                "Bought 0.000001 BTC for 0.1 EUR using EUR Wallet");
         assertEquals(0, new BigDecimal("0.10").compareTo(
                 new BigDecimal(ImportazioneGenerica.controvaloreAlNetto(r, cfg()))));
         assertEquals(0, BigDecimal.ZERO.compareTo(
@@ -103,8 +103,8 @@ class ImportazioneGenericaCoinbaseTest {
 
     @Test
     void controvaloreAlNetto_nullPerLeCausaliNonElencate() {
-        String[] r = riga("x", "2026-03-26 06:35:22 UTC", "Send", "BTC", "-0.0000245",
-                "EUR", "€60547.38", "-€1.48341", "-€1.48038", "€0.00302754900126025", "Sent 0.0000245 BTC");
+        String[] r = riga("x", "2025-01-12 10:00:00 UTC", "Send", "BTC", "-0.00002",
+                "EUR", "€60000.00", "-€1.20", "-€1.18", "€0.02", "Sent 0.00002 BTC");
         assertNull(ImportazioneGenerica.controvaloreAlNetto(r, cfg()));
     }
 
@@ -112,10 +112,10 @@ class ImportazioneGenericaCoinbaseTest {
 
     @Test
     void buy_diventaScambioEuroCrypto_conCommissioneASeEControvaloreAlNetto() {
-        String note = "Bought 0.01274947 ETH for 10 EUR using EUR Wallet";
+        String note = "Bought 0.01 ETH for 10 EUR using EUR Wallet";
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(
-                riga("5a81c37875d25e0001762bfd", "2018-02-12 16:40:24 UTC", "Buy", "ETH", "0.01274947",
-                        "EUR", "€700.66", "€8.93304", "€10.00", "0.0769563498", note),
+                riga("000000000000000000000401", "2025-01-10 10:00:00 UTC", "Buy", "ETH", "0.01",
+                        "EUR", "€1000.00", "€9.00", "€10.00", "0.1", note),
                 null, cfg());
 
         assertNotNull(movs);
@@ -125,15 +125,15 @@ class ImportazioneGenericaCoinbaseTest {
         assertEquals("EUR", scambio[8], "gamba FIAT in uscita sintetizzata");
         assertEquals("FIAT", scambio[9]);
         assertEquals("ETH", scambio[11]);
-        assertEquals("0.01274947", scambio[13], "quantita crypto invariata");
-        assertEquals("9.92", scambio[15], "costo di carico = Total - commissione (10,00 - 0,0769563498), arrotondato");
+        assertEquals("0.01", scambio[13], "quantita crypto invariata");
+        assertEquals("9.90", scambio[15], "costo di carico = Total - commissione (10,00 - 0,1), arrotondato");
         assertTrue(scambio[0].endsWith("_AC"), "categoria ACQUISTO CRYPTO, non deposito crypto");
         assertEquals(note, scambio[21], "il campo Notes finisce in [21]");
 
         String[] comm = movs.get(1);
         assertTrue(comm[5].toUpperCase().contains("COMMISSION"), "movimento COMMISSIONI");
         assertEquals("EUR", comm[8], "commissione pagata in EUR");
-        assertEquals(0, new BigDecimal("0.0769563498").compareTo(new BigDecimal(comm[10]).abs()));
+        assertEquals(0, new BigDecimal("0.1").compareTo(new BigDecimal(comm[10]).abs()));
         assertEquals(note, comm[21]);
 
         //La commissione e' collegata allo scambio della stessa riga (CommissioniCollegate)
@@ -155,10 +155,10 @@ class ImportazioneGenericaCoinbaseTest {
 
     @Test
     void buyConCarta_nessunaGambaEuro_nessunaCommissione_campo18DAC() {
-        String note = "Bought 0.05769095 LTC for 10 EUR using MasterCard ********0198";
+        String note = "Bought 0.05 LTC for 10 EUR using MasterCard ********1234";
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(
-                riga("5aa573f20562f604ce1817ff", "2018-03-11 18:22:42 UTC", "Buy", "LTC", "0.05769095",
-                        "EUR", "€155.67", "€8.98075", "€10.00", "0.0292498135", note),
+                riga("000000000000000000000402", "2025-01-11 10:00:00 UTC", "Buy", "LTC", "0.05",
+                        "EUR", "€200.00", "€9.00", "€10.00", "0.03", note),
                 null, cfg());
 
         assertNotNull(movs);
@@ -166,21 +166,21 @@ class ImportazioneGenericaCoinbaseTest {
         String[] m = movs.get(0);
         assertEquals("", m[8], "nessuna moneta in uscita: gli euro non si muovono");
         assertEquals("LTC", m[11], "gamba crypto in entrata");
-        assertEquals("0.05769095", m[13], "quantita crypto invariata");
+        assertEquals("0.05", m[13], "quantita crypto invariata");
         assertTrue(m[0].endsWith("_AC"), "categoria forzata ad ACQUISTO CRYPTO nell'ID: " + m[0]);
         assertEquals("ACQUISTO CRYPTO", m[5]);
         assertEquals("", m[18], "campo18 vuoto: il motore instrada su TipoID=AC, non serve il marcatore DAC");
-        assertEquals("9.97", m[15], "costo di carico = Total - commissione (10,00 - 0,0292498135), arrotondato");
+        assertEquals("9.97", m[15], "costo di carico = Total - commissione (10,00 - 0,03), arrotondato");
         assertEquals(note, m[21]);
     }
 
     @Test
     void buyDaSaldoEuro_restaScambioEuroCryptoConCommissione() {
         // regressione: con 'noteAcquistoDaSaldo' attivo, un Buy 'using EUR Wallet' NON cambia
-        String note = "Bought 0.01274947 ETH for 10 EUR using EUR Wallet";
+        String note = "Bought 0.01 ETH for 10 EUR using EUR Wallet";
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(
-                riga("5a81c37875d25e0001762bfd", "2018-02-12 16:40:24 UTC", "Buy", "ETH", "0.01274947",
-                        "EUR", "€700.66", "€8.93304", "€10.00", "0.0769563498", note),
+                riga("000000000000000000000401", "2025-01-10 10:00:00 UTC", "Buy", "ETH", "0.01",
+                        "EUR", "€1000.00", "€9.00", "€10.00", "0.1", note),
                 null, cfg());
 
         assertNotNull(movs);
@@ -193,8 +193,8 @@ class ImportazioneGenericaCoinbaseTest {
     @Test
     void buyNotaVuota_comportamentoInvariato_gambaEuroSintetizzata() {
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(
-                riga("x", "2018-03-11 18:22:42 UTC", "Buy", "LTC", "0.05769095",
-                        "EUR", "€155.67", "€8.98075", "€10.00", "0.0292498135", ""),
+                riga("x", "2025-01-11 10:00:00 UTC", "Buy", "LTC", "0.05",
+                        "EUR", "€200.00", "€9.00", "€10.00", "0.03", ""),
                 null, cfg());
         assertNotNull(movs);
         assertEquals(2, movs.size(), "nota vuota: non si puo' concludere 'esterno' -> resta scambio + COMMISSIONI");
@@ -204,10 +204,10 @@ class ImportazioneGenericaCoinbaseTest {
 
     @Test
     void send_nessunaCommissioneInEuro_controvaloreDalSubtotal() {
-        String note = "Sent 0.0000245 BTC to lnbc... (to lnbc2...686ux)";
+        String note = "Sent 0.00002 BTC to lnbc... (to lnbc2...abcde)";
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(
-                riga("69c4d3aa1e03864b6c6f9023", "2026-03-26 06:35:22 UTC", "Send", "BTC", "-0.0000245",
-                        "EUR", "€60547.38", "-€1.48341", "-€1.48038", "€0.00302754900126025", note),
+                riga("000000000000000000000403", "2025-01-12 10:00:00 UTC", "Send", "BTC", "-0.00002",
+                        "EUR", "€60000.00", "-€1.20", "-€1.18", "€0.02", note),
                 null, cfg());
 
         assertNotNull(movs);
@@ -215,7 +215,7 @@ class ImportazioneGenericaCoinbaseTest {
         String[] m = movs.get(0);
         assertEquals("BTC", m[8]);
         assertEquals("", m[11], "trasferimento a gamba singola");
-        assertEquals("1.48", m[15], "controvalore dal Subtotal (col 7), non ricalcolato");
+        assertEquals("1.20", m[15], "controvalore dal Subtotal (col 7), non ricalcolato");
         assertEquals(note, m[21]);
     }
 
@@ -224,8 +224,8 @@ class ImportazioneGenericaCoinbaseTest {
     @Test
     void receiveConNotaCoinbaseEarn_diventaEarn() {
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(
-                riga("5c853275711fa80314ed2b58", "2019-03-10 15:51:17 UTC", "Receive", "ZEC", "0.02",
-                        "EUR", "€44.40", "€0.88803", "€0.88803", "€0.00", "Received 0.02 ZEC from Coinbase Earn"),
+                riga("000000000000000000000404", "2025-01-13 10:00:00 UTC", "Receive", "ZEC", "0.02",
+                        "EUR", "€45.00", "€0.90", "€0.90", "€0.00", "Received 0.02 ZEC from Coinbase Earn"),
                 null, cfg());
 
         assertNotNull(movs);
@@ -257,9 +257,9 @@ class ImportazioneGenericaCoinbaseTest {
     @Test
     void receiveNormale_restaTrasferimentoCrypto() {
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(
-                riga("x", "2025-12-21 11:51:50 UTC", "Receive", "BTC", "0.00001176",
-                        "EUR", "€75648.12", "€0.88962", "€0.88962", "€0.00",
-                        "Received 0.00001176 BTC from an external account (to lnbc1...73hmv)"),
+                riga("x", "2025-01-14 10:00:00 UTC", "Receive", "BTC", "0.00001",
+                        "EUR", "€75000.00", "€0.75", "€0.75", "€0.00",
+                        "Received 0.00001 BTC from an external account (to lnbc1...abcde)"),
                 null, cfg());
 
         assertNotNull(movs);
@@ -271,19 +271,19 @@ class ImportazioneGenericaCoinbaseTest {
 
     @Test
     void convert_gambeADistanzaDiUnSecondo_raggruppatePerNotes_senzaMescolarsi() {
-        String notaA = "Converted 22 ALEPH to 4.68065032 ZETA";
-        String notaB = "Converted 4.942508 ALEO to 2.87098308 ZETA";
+        String notaA = "Converted 20 ALEPH to 5 ZETA";
+        String notaB = "Converted 5 ALEO to 3 ZETA";
         List<String[]> righe = new ArrayList<>();
-        // conversione A: gambe a :05 e :06 (come nell'export reale)
-        righe.add(riga("67f13729479c971d62667f5d", "2025-04-05 13:59:05 UTC", "Convert", "ALEPH", "-22",
-                "EUR", "€0.0493", "€1.08597", "€1.08597", "0", notaA));
-        righe.add(riga("67f1372aa227f2c79b05a9cd", "2025-04-05 13:59:06 UTC", "Convert", "ZETA", "4.68065032",
-                "EUR", "€0.2243", "€1.04975", "€1.08241", "0.022402128672", notaA));
+        // conversione A: gambe a :05 e :06 (come in un export)
+        righe.add(riga("000000000000000000000405", "2025-01-15 10:00:05 UTC", "Convert", "ALEPH", "-20",
+                "EUR", "€0.055", "€1.10", "€1.10", "0", notaA));
+        righe.add(riga("000000000000000000000406", "2025-01-15 10:00:06 UTC", "Convert", "ZETA", "5",
+                "EUR", "€0.20", "€1.00", "€1.05", "0.05", notaA));
         // conversione B, adiacente: Notes diverso -> gruppo separato
-        righe.add(riga("67f13673479c971d62667068", "2025-04-05 13:56:03 UTC", "Convert", "ALEO", "-4.942508",
-                "EUR", "€0.1355", "€0.66968", "€0.66968", "0", notaB));
-        righe.add(riga("67f136740a9bd7f24aba73ee", "2025-04-05 13:56:04 UTC", "Convert", "ZETA", "2.87098308",
-                "EUR", "€0.2240", "€0.64310", "€0.66781", "0.0142056020295", notaB));
+        righe.add(riga("000000000000000000000407", "2025-01-15 09:57:03 UTC", "Convert", "ALEO", "-5",
+                "EUR", "€0.12", "€0.60", "€0.60", "0", notaB));
+        righe.add(riga("000000000000000000000408", "2025-01-15 09:57:04 UTC", "Convert", "ZETA", "3",
+                "EUR", "€0.20", "€0.60", "€0.63", "0.03", notaB));
 
         // le righe arrivano a raggruppaRighe già ordinate per data (come dopo la FASE 3 di leggiCSV)
         righe.sort((a, b) -> a[1].compareTo(b[1]));
@@ -298,12 +298,12 @@ class ImportazioneGenericaCoinbaseTest {
 
     @Test
     void convert_gruppoDiDueGambe_unSoloScambio_nessunaCommissione_noteRiportate() {
-        String nota = "Converted 22 ALEPH to 4.68065032 ZETA";
+        String nota = "Converted 20 ALEPH to 5 ZETA";
         List<String[]> gruppo = List.of(
-                riga("67f13729479c971d62667f5d", "2025-04-05 13:59:05 UTC", "Convert", "ALEPH", "-22",
-                        "EUR", "€0.0493", "€1.08597", "€1.08597", "0", nota),
-                riga("67f1372aa227f2c79b05a9cd", "2025-04-05 13:59:06 UTC", "Convert", "ZETA", "4.68065032",
-                        "EUR", "€0.2243", "€1.04975", "€1.08241", "0.022402128672", nota));
+                riga("000000000000000000000405", "2025-01-15 10:00:05 UTC", "Convert", "ALEPH", "-20",
+                        "EUR", "€0.055", "€1.10", "€1.10", "0", nota),
+                riga("000000000000000000000406", "2025-01-15 10:00:06 UTC", "Convert", "ZETA", "5",
+                        "EUR", "€0.20", "€1.00", "€1.05", "0.05", nota));
 
         List<String[]> movs = ImportazioneGenerica.consolidaGruppo(gruppo, cfg(), new ArrayList<>());
 
@@ -318,11 +318,11 @@ class ImportazioneGenericaCoinbaseTest {
 
         // [15] dello scambio = valore della gamba in ENTRATA (DammiMonetaPrioritaria, dal 2026-09-29:
         // circolare 30/E, valore normale della cripto-attivita' ricevuta). Per la gamba in entrata di un
-        // Convert il controvalore e' Total - Fee: 1.08241 - 0.022402 = 1.06. Fino al 2026-09-29 vinceva la
-        // gamba in uscita (1.08597 -> "1.09"). Nota che per uno scambio cripto/cripto omogeneo post-2023
+        // Convert il controvalore e' Total - Fee: 1.05 - 0.05 = 1.00. Fino al 2026-09-29 vinceva la
+        // gamba in uscita (1.10). Nota che per uno scambio cripto/cripto omogeneo post-2023
         // il motore LIFO (Tipologia 1) NON legge [15]: il costo di carico viene trasferito dalla moneta
         // ceduta, plusvalenza 0.
-        assertEquals("1.06", m[15]);
+        assertEquals("1.00", m[15]);
     }
 
     // ---- causali aggiunte con la v1.008 (segnalazione #19), sulla config reale --------------------

@@ -14,8 +14,8 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Fissa la deduplica dei reimport senza «sovrascrivi» su un prelievo classificato come trasferimento fra wallet.
  * La classificazione toglie al prelievo la commissione generata (o gli aggiunge la reward), il file riporta la
- * quantità originale: la chiave logica non coincideva più e la riga del file rientrava come doppione (15 prelievi
- * sull'archivio reale 2026). Ora conta anche la quantità che il prelievo aveva prima della classificazione, la
+ * quantità originale: la chiave logica non coincideva più e la riga del file rientrava come doppione (più prelievi
+ * in un archivio vero). Ora conta anche la quantità che il prelievo aveva prima della classificazione, la
  * stessa che l'annullamento gli restituisce.
  */
 class DeduplicaPrelievoClassificatoTest {

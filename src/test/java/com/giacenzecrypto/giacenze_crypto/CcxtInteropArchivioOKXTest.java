@@ -15,9 +15,9 @@ import static org.junit.jupiter.api.Assertions.*;
  * <b>deterministica e priva di dipendenze</b>: enumerazione dei trimestri, traduzione
  * {@code instType}/{@code subType} → {@code type} e conversione delle righe del CSV.
  *
- * <p>I valori attesi non sono inventati: vengono dall'archivio reale 2026 Q2 scaricato il 03/08/2026, i cui
- * 112 {@code billId} risultano tutti presenti anche fra i bill scaricati via API. È quella coincidenza a
- * rendere automatica la deduplica fra archivio e scaricamento ordinario, ed è ciò che questi test presidiano.
+ * <p>I valori sono di esempio, ma hanno la forma di quelli dell'archivio: i {@code billId} dell'archivio
+ * coincidono con quelli dei bill scaricati via API. È quella coincidenza a rendere automatica la deduplica
+ * fra archivio e scaricamento ordinario, ed è ciò che questi test presidiano.
  */
 class CcxtInteropArchivioOKXTest {
 
@@ -255,9 +255,9 @@ class CcxtInteropArchivioOKXTest {
         assertEquals("12", CcxtInterop.tipoDaArchivioOKX("-", "200"));
         assertEquals("12", CcxtInterop.tipoDaArchivioOKX("-", "202"));
         //290: unico subType che l'incrocio dei billId non copriva, perché l'archivio è l'unica fonte che lo
-        //espone. È l'uscita verso il Funding, riconosciuta dalla contropartita type=311 del 20/01/2024.
+        //espone. È l'uscita verso il Funding, riconosciuta dalla contropartita type=311.
         assertEquals("1", CcxtInterop.tipoDaArchivioOKX("-", "290"));
-        assertEquals("Transfer out", CcxtInterop.causaleBillOKX("1", "-0.000000654", true));
+        assertEquals("Transfer out", CcxtInterop.causaleBillOKX("1", "-0.001", true));
     }
 
     @Test
@@ -270,37 +270,37 @@ class CcxtInteropArchivioOKXTest {
     // ==================== conversione delle righe ====================
 
     /**
-     * Riga reale dell'archivio 2026 Q2. L'apostrofo iniziale del {@code billId} è la forzatura a testo per
+     * Riga di esempio dell'archivio. L'apostrofo iniziale del {@code billId} è la forzatura a testo per
      * Excel: se non viene tolto, l'identificativo non coincide con quello dello scaricamento via API e il
      * movimento entra <b>una seconda volta</b> invece di essere riconosciuto come già presente.
      */
     @Test
     void lApostrofoDelBillIdVieneTolto() {
         List<String[]> r = CcxtInterop.convertOKXArchivio(righe("""
-            [{"instType":"SPOT","billId":"'3702022358013911043","subType":"1","ts":"1782831263000",
-              "balChg":"0.0004626628199999993","sz":"0.00046359","fee":"-0.00000092718","ccy":"BTC"}]
+            [{"instType":"SPOT","billId":"'1000000000000000001","subType":"1","ts":"1700000000000",
+              "balChg":"0.4989999999999999","sz":"0.5","fee":"-0.001","ccy":"BTC"}]
             """));
 
         assertEquals(1, r.size());
-        assertEquals("3702022358013911043", r.get(0)[14],
+        assertEquals("1000000000000000001", r.get(0)[14],
                 "senza lo strip dell'apostrofo la deduplica contro i bill API non funziona");
     }
 
     /**
      * È il test che presidia la deduplica: lo stesso movimento, preso dalle due strade, deve arrivare
-     * identico. I due {@code balChg} qui sotto sono i valori <b>realmente</b> restituiti dalle due fonti per
-     * il bill 3702022358013911043 — l'API lo dà pulito, il CSV con la sbavatura in virgola mobile — e devono
+     * identico. I due {@code balChg} qui sotto riproducono la differenza fra le due fonti per
+     * il bill 1000000000000000001 — l'API lo dà pulito, il CSV con la sbavatura in virgola mobile — e devono
      * comunque convergere sullo stesso movimento.
      */
     @Test
     void unaRigaDiArchivioProduceLoStessoMovimentoDelBillJSON() {
         String dalCsv = """
-            [{"instType":"SPOT","billId":"'3702022358013911043","subType":"1","ts":"1782831263000",
-              "balChg":"0.0004626628199999993","sz":"0.00046359","fee":"-0.00000092718","ccy":"BTC"}]
+            [{"instType":"SPOT","billId":"'1000000000000000001","subType":"1","ts":"1700000000000",
+              "balChg":"0.4989999999999999","sz":"0.5","fee":"-0.001","ccy":"BTC"}]
             """;
         String dallApi = """
-            [{"billId":"3702022358013911043","type":"2","subType":"1","ts":"1782831263000",
-              "balChg":"0.00046266282","sz":"0.00046359","fee":"-0.00000092718","ccy":"BTC"}]
+            [{"billId":"1000000000000000001","type":"2","subType":"1","ts":"1700000000000",
+              "balChg":"0.499","sz":"0.5","fee":"-0.001","ccy":"BTC"}]
             """;
 
         String[] a = CcxtInterop.convertOKXArchivio(righe(dalCsv)).get(0);
@@ -309,24 +309,24 @@ class CcxtInteropArchivioOKXTest {
         assertArrayEquals(b, a, "archivio e API devono produrre il medesimo movimento");
 
         //Il lordo è il netto più la commissione, e coincide con sz
-        assertEquals(0, new BigDecimal("0.00046359").compareTo(new BigDecimal(a[6])));
+        assertEquals(0, new BigDecimal("0.5").compareTo(new BigDecimal(a[6])));
         assertEquals("BTC", a[11]);
-        assertEquals(0, new BigDecimal("-0.00000092718").compareTo(new BigDecimal(a[12])));
+        assertEquals(0, new BigDecimal("-0.001").compareTo(new BigDecimal(a[12])));
     }
 
     /**
      * Il CSV riporta {@code balChg} con la sbavatura di un passaggio in virgola mobile
-     * ({@code -27.120432230999995}) mentre l'API dà lo stesso numero pulito ({@code -27.120432231}).
+     * ({@code -30.000000000000004}) mentre l'API dà lo stesso numero pulito ({@code -30}).
      * {@code sz} coincide invece esattamente nelle due fonti, quindi è da lì che si ricostruisce.
      */
     @Test
     void laQuantitaVienePulitaUsandoSzCheNelleDueFontiCoincide() {
         List<String[]> r = CcxtInterop.convertOKXArchivio(righe("""
-            [{"instType":"SPOT","billId":"'3702022358013911044","subType":"2","ts":"1782831263000",
-              "balChg":"-27.120432230999995","sz":"27.120432231","fee":"0","ccy":"USDC"}]
+            [{"instType":"SPOT","billId":"'1000000000000000002","subType":"2","ts":"1700000000000",
+              "balChg":"-30.000000000000004","sz":"30","fee":"0","ccy":"USDC"}]
             """));
 
-        assertEquals("-27.120432231", r.get(0)[6], "atteso il valore pulito, non quello del CSV");
+        assertEquals("-30", r.get(0)[6], "atteso il valore pulito, non quello del CSV");
     }
 
     /**
@@ -336,18 +336,18 @@ class CcxtInteropArchivioOKXTest {
     @Test
     void senzaSzLaQuantitaRestaQuellaDichiarata() {
         List<String[]> r = CcxtInterop.convertOKXArchivio(righe("""
-            [{"instType":"-","billId":"'3685373875806871555","subType":"12","ts":"1782831263000",
-              "balChg":"-145.9999999999999","sz":"0","fee":"0","ccy":"USDC"}]
+            [{"instType":"-","billId":"'1000000000000000003","subType":"12","ts":"1700000000000",
+              "balChg":"-99.99999999999999","sz":"0","fee":"0","ccy":"USDC"}]
             """));
 
-        assertEquals(0, new BigDecimal("-145.9999999999999").compareTo(new BigDecimal(r.get(0)[6])));
+        assertEquals(0, new BigDecimal("-99.99999999999999").compareTo(new BigDecimal(r.get(0)[6])));
         assertEquals("Transfer out", r.get(0)[4]);
     }
 
     @Test
     void unSubTypeIgnotoArrivaNelRiepilogoConIlProprioCodice() {
         List<String[]> r = CcxtInterop.convertOKXArchivio(righe("""
-            [{"instType":"-","billId":"'999","subType":"777","ts":"1782831263000",
+            [{"instType":"-","billId":"'999","subType":"777","ts":"1700000000000",
               "balChg":"1","ccy":"ETH","fee":"0"}]
             """));
 
@@ -359,14 +359,14 @@ class CcxtInteropArchivioOKXTest {
     // ==================== stabilità dell'identificativo ====================
 
     /**
-     * Regressione del difetto che ha prodotto <b>44 commissioni duplicate in giugno 2026</b>: lo stesso bill,
+     * Regressione del difetto che ha prodotto <b>commissioni duplicate</b>: lo stesso bill,
      * scaricato una volta dai 3 mesi di {@code account/bills-archive} e una volta dall'archivio trimestrale
      * (due finestre che si sovrappongono), finiva in posizioni diverse del gruppo di consolidamento e
      * riceveva due identificativi diversi, quindi entrava due volte.
      */
     @Test
     void lIdentificativoDellaCommissioneNonDipendeDaCosaEStatoScaricatoInsieme() {
-        String bill = "3687378114812911616";
+        String bill = "1000000000000000004";
 
         //Stesso bill, due posizioni diverse nel gruppo: il numero di movimento deve restare lo stesso
         assertEquals(Importazioni.Ex_OKX_NumMovimentoCommissione(bill, 0),
@@ -388,11 +388,11 @@ class CcxtInteropArchivioOKXTest {
 
     // ==================== notes ====================
 
-    /** {@code type=75} è stato riconosciuto dal campo {@code notes} dei bill reali del Funding. */
+    /** {@code type=75} è stato riconosciuto dal campo {@code notes} dei bill del Funding. */
     @Test
     void laSottoscrizioneSimpleEarnEUnGirocontoInterno() {
-        assertEquals("Transfer out", CcxtInterop.causaleBillOKX("75", "-1004.38", false));
-        assertEquals("Transfer in", CcxtInterop.causaleBillOKX("75", "1004.38", false));
+        assertEquals("Transfer out", CcxtInterop.causaleBillOKX("75", "-1000", false));
+        assertEquals("Transfer in", CcxtInterop.causaleBillOKX("75", "1000", false));
         //e la mappa causali la scarta, come già fa per il riscatto (76)
         assertEquals("NON CONSIDERARE", Importazioni.Ex_OKX_MappaCausali().get("Transfer out"));
     }
@@ -422,15 +422,15 @@ class CcxtInteropArchivioOKXTest {
         //primo giorno, e quella coda è già in archivio.
         List<String[]> righe = List.of(
                 rigaAllOra("2024-04-02 10:00:00"),
-                rigaAllOra("2024-04-14 21:32:43"),
-                rigaAllOra("2024-04-14 21:40:32"),
+                rigaAllOra("2024-04-14 11:59:00"),
+                rigaAllOra("2024-04-14 12:00:00"),
                 rigaAllOra("2024-05-01 08:00:00"));
 
-        long partenza = FunzioniDate.ConvertiDatainLongSecondo("2024-04-14 21:40:32");
+        long partenza = FunzioniDate.ConvertiDatainLongSecondo("2024-04-14 12:00:00");
         List<String[]> tenute = CcxtInterop.filtraArchivioOKXPerData(righe, partenza, List.of());
 
         assertEquals(2, tenute.size(), "restano solo le righe dalla partenza in avanti");
-        assertEquals("2024-04-14 21:40:32", tenute.get(0)[0], "la soglia è inclusiva sull'istante di partenza");
+        assertEquals("2024-04-14 12:00:00", tenute.get(0)[0], "la soglia è inclusiva sull'istante di partenza");
         assertEquals("2024-05-01 08:00:00", tenute.get(1)[0]);
     }
 

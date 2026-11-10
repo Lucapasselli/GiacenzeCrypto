@@ -159,7 +159,7 @@
     },
     "separatoreValoreMoneta": {
       "type": "string",
-      "description": "Per le celle con importo e simbolo insieme (\"407.57 AME\"): carattere che li divide. Si indica lo stesso indice per quantita e moneta. #importo-e-moneta-nella-stessa-cella"
+      "description": "Per le celle con importo e simbolo insieme (\"400 AME\"): carattere che li divide. Si indica lo stesso indice per quantita e moneta. #importo-e-moneta-nella-stessa-cella"
     },
     "coppia": {
       "type": "object",

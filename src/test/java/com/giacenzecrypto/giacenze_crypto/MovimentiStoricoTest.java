@@ -242,4 +242,137 @@ class MovimentiStoricoTest {
         assertEquals(0, righeDi("LIG-1"));
         assertEquals(1, righeDi("LIG-2"), "i lignaggi sono separati per costruzione");
     }
+
+    // ---------------------------------------------------------------------------------------------
+    // Ripristino delle modifiche manuali: data esplicita, doppioni, scarto con Annulla, lettura di tutto
+    // ---------------------------------------------------------------------------------------------
+
+    @Test
+    void laModificaAccodataConUnaDataLaConservaFinoAlDatabase() {
+        MovimentiStorico.AccodaModifica("L1", "B", "A", "riga", "TraslaOrario", 1234L);
+
+        assertTrue(MovimentiStorico.ContieneVoce("L1", 1234L, "A"), "nel buffer");
+        salvaSenzaMovimentiVivi();
+
+        assertEquals(1, righeDi("L1"));
+        assertEquals("1234", DatabaseH2.StoricoMovimenti_Leggi("L1").get(0)[1], "la data decisa dal chiamante, non l'istante del salvataggio");
+        assertTrue(MovimentiStorico.ContieneVoce("L1", 1234L, "A"), "su disco");
+    }
+
+    @Test
+    void ilControlloDeiDoppioniDistingueLIdDiPartenza() {
+        //Le righe di un'unione nascono nello stesso millisecondo: differiscono solo per l'ID di partenza
+        MovimentiStorico.AccodaModifica("L1", "N", "M1", "r1", "UnisciMovimenti", 1000L);
+
+        assertTrue(MovimentiStorico.ContieneVoce("L1", 1000L, "M1"));
+        assertFalse(MovimentiStorico.ContieneVoce("L1", 1000L, "M2"));
+        assertFalse(MovimentiStorico.ContieneVoce("L1", 2000L, "M1"));
+        assertFalse(MovimentiStorico.ContieneVoce("altro", 1000L, "M1"));
+    }
+
+    @Test
+    void annullaScartaLeVociInAttesaEIlSalvataggioSuccessivoNonScriveNulla() {
+        MovimentiStorico.AccodaModifica("L1", "B", "A", "riga", "ModificaMovimento", 1L);
+        MovimentiStorico.AccodaCancellazione("L2");
+        assertEquals(2, MovimentiStorico.VociInAttesa());
+
+        MovimentiStorico.ScartaBuffer();
+        salvaSenzaMovimentiVivi();
+
+        assertEquals(0, MovimentiStorico.VociInAttesa());
+        assertEquals(0, righeDi("L1"), "una modifica annullata non lascia storico orfano");
+    }
+
+    @Test
+    void tutteLeVersioniUnisceDatabaseEBufferDallaPiuVecchia() {
+        MovimentiStorico.AccodaModifica("L1", "B", "A", "r1", "ModificaMovimento", 3000L);
+        salvaSenzaMovimentiVivi();
+        MovimentiStorico.AccodaModifica("L1", "C", "B", "r2", "TraslaOrario", 2000L);
+        MovimentiStorico.AccodaModifica("L2", "Y", "X", "r3", "ModificaMovimento", 1000L);
+
+        Map<String, List<String[]>> tutte = MovimentiStorico.TutteLeVersioni();
+
+        assertEquals(2, tutte.size());
+        assertEquals(2, tutte.get("L1").size());
+        assertEquals("2000", tutte.get("L1").get(0)[1], "dalla piu' vecchia");
+        assertEquals("3000", tutte.get("L1").get(1)[1]);
+        assertEquals("L2", tutte.keySet().iterator().next(), "i lignaggi seguono la prima modifica");
+    }
+
+    @Test
+    void ilRipristinoRimetteLoStoricoVeroConLeDateOriginaliSenzaDoppioni() throws Exception {
+        String[] prima = movimento("A_1", "");
+        prima[15] = "10.00";
+        String[] dopo = movimento("A_1", "L1");
+        dopo[15] = "12.50";
+        Map<String, List<String[]>> storico = Map.of("L1", new java.util.ArrayList<>(java.util.List.<String[]>of(
+                new String[]{"A_1", "1000", Importazioni.SerializzaRiga(prima), "ModificaMovimento", "A_1"})));
+        Principale_Opzioni_ModificheManuali_Ripristino.Contenuto c = Principale_Opzioni_ModificheManuali_Ripristino
+                .Leggi(Principale_Opzioni_ModificheManuali.Testo(Principale_Opzioni_ModificheManuali.Costruisci(Map.of("A_1", dopo), storico)));
+        String[] reimportato = movimento("A_1", "");
+        reimportato[15] = "10.00";
+        Map<String, String[]> archivio = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        archivio.put("A_1", reimportato);
+
+        var piano = Principale_Opzioni_ModificheManuali_Ripristino.Pianifica(c, archivio);
+        Principale_Opzioni_ModificheManuali_Ripristino.Applica(piano, archivio, Principale_Opzioni_ModificheManuali_Ripristino.Storico.PREDEFINITO);
+
+        assertEquals(1, MovimentiStorico.VociInAttesa());
+        assertTrue(MovimentiStorico.ContieneVoce("L1", 1000L, "A_1"));
+        assertEquals("L1", archivio.get("A_1")[MovimentiStorico.CAMPO_LIGNAGGIO]);
+        //Un secondo ripristino sullo stesso archivio non aggiunge nulla
+        var secondo = Principale_Opzioni_ModificheManuali_Ripristino.Pianifica(c, archivio);
+        Principale_Opzioni_ModificheManuali_Ripristino.Applica(secondo, archivio, Principale_Opzioni_ModificheManuali_Ripristino.Storico.PREDEFINITO);
+        assertEquals(1, MovimentiStorico.VociInAttesa());
+    }
+
+    @Test
+    void accodaPrimaDiModificareTimbraIlLignaggioESalvaLaRigaDiPrima() {
+        String[] m = movimento("A_1", "");
+        m[15] = "10.00";
+
+        MovimentiStorico.AccodaPrimaDiModificare(m, MovimentiStorico.OP_PREZZO);
+        m[15] = "99.00";
+
+        assertFalse(m[MovimentiStorico.CAMPO_LIGNAGGIO].isBlank());
+        List<String[]> versioni = MovimentiStorico.Versioni(m[MovimentiStorico.CAMPO_LIGNAGGIO]);
+        assertEquals(1, versioni.size());
+        assertEquals("10.00", Importazioni.DeserializzaRiga(versioni.get(0)[2])[15], "la riga com'era prima della scrittura");
+        assertEquals(MovimentiStorico.OP_PREZZO, versioni.get(0)[3]);
+    }
+
+    @Test
+    void unPrezzoCambiatoConModificaPrezzoSiRipristinaDopoLaReimportazione() throws Exception {
+        String[] riga = movimento("20250101100000_Ex_1_1_AC", "");
+        riga[1] = "2025-01-01 10:00";
+        riga[3] = "Ex";
+        riga[8] = "EUR";
+        riga[10] = "50";
+        riga[11] = "BTC";
+        riga[13] = "0.001";
+        riga[15] = "10.00";
+        riga[32] = "SI";
+        riga[40] = "BTC|1|10.00|Binance";
+        MappaCryptoWallet.put(riga[0], riga);
+        GUI_ModificaPrezzo.ApplicaPrezzoScelto(riga, "12.50", "BTC|2|12.50|Coingecko");
+        var esportazione = Principale_Opzioni_ModificheManuali.Costruisci(MappaCryptoWallet, MovimentiStorico.TutteLeVersioni());
+        var contenuto = Principale_Opzioni_ModificheManuali_Ripristino.Leggi(Principale_Opzioni_ModificheManuali.Testo(esportazione));
+
+        //Reimportazione da zero: il movimento torna com'era, con il prezzo scaricato allora
+        String[] reimportato = riga.clone();
+        reimportato[15] = "10.00";
+        reimportato[40] = "BTC|1|10.00|Binance";
+        reimportato[MovimentiStorico.CAMPO_LIGNAGGIO] = "";
+        Map<String, String[]> archivio = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        archivio.put(reimportato[0], reimportato);
+        var piano = Principale_Opzioni_ModificheManuali_Ripristino.Pianifica(contenuto, archivio);
+        var risultato = Principale_Opzioni_ModificheManuali_Ripristino.Applica(piano, archivio,
+                Principale_Opzioni_ModificheManuali_Ripristino.Storico.PREDEFINITO);
+
+        assertEquals(1, risultato.applicate());
+        assertEquals("12.50", archivio.get(riga[0])[15]);
+        assertEquals("BTC|2|12.50|Coingecko", archivio.get(riga[0])[40]);
+        assertEquals(riga[MovimentiStorico.CAMPO_LIGNAGGIO], archivio.get(riga[0])[MovimentiStorico.CAMPO_LIGNAGGIO]);
+        assertEquals(1, MovimentiStorico.VociInAttesa(), "lo storico c'e' gia' in buffer: non si raddoppia");
+    }
 }

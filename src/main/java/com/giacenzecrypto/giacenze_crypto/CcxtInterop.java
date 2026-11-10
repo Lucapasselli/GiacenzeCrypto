@@ -132,7 +132,7 @@ public class CcxtInterop {
 
     /**
      * Giorni di storico oltre i quali lo scaricamento OKX via API non è più affidabile. Corrisponde a quanto
-     * ha effettivamente restituito {@code /api/v5/asset/bills} sui dati reali (una sola pagina, ferma a poco
+     * ha effettivamente restituito {@code /api/v5/asset/bills} in pratica (una sola pagina, ferma a poco
      * meno di un mese), che è il più corto dei due endpoint interrogati.
      */
     public static final int GIORNI_STORICO_OKX = 30;
@@ -2211,26 +2211,26 @@ public static Path getNodeExePath() {
      *     per orario si aspetta da uno scambio. L'etichetta {@code "Convert"} era già una chiave della mappa
      *     causali, usata dall'import del CSV.</li>
      * <li>{@code 75}/{@code 76} — sottoscrizione e riscatto di Simple Earn, cioè spostamenti fra il conto
-     *     Funding e il prodotto Earn dello stesso utente. Il 75 viene dal campo {@code notes} (03/08/2026).</li>
+     *     Funding e il prodotto Earn dello stesso utente. Il 75 viene dal campo {@code notes}.</li>
      * <li>{@code 80}/{@code 82} — sottoscrizione e riscatto dei "Flash Deals", che sono lo stesso meccanismo
-     *     di Simple Earn con un altro nome: il capitale esce e rientra identico (380,59095613 USDT usciti il
-     *     30/12/2022 e rientrati il 06/01/2023). È un giroconto; il rendimento arriva a parte con il 89.
+     *     di Simple Earn con un altro nome: il capitale esce e rientra identico (lo stesso capitale in USDT esce
+     *     e rientra dopo alcuni giorni). È un giroconto; il rendimento arriva a parte con il 89.
      *     Dal 2026 il campo {@code notes} li chiama {@code "On-chain Earn subscription"}: e' lo stesso
      *     meccanismo, il capitale resta dell'utente dentro il prodotto (es. le posizioni "Spark USDC").
      *     Quando OKX chiude la posizione restituendo un'altra moneta non arriva l'82 ma il 330, vedi
      *     {@link #AbbinaLiquidStakingOnChain}.</li>
      * <li>{@code 89} — il rendimento dei Flash Deals, accreditato in una moneta <b>diversa</b> da quella
-     *     investita (93,84434534 MRST a fronte di USDT vincolati). È un provento, non un giroconto, e va
+     *     investita (un importo in MRST a fronte di USDT vincolati). È un provento, non un giroconto, e va
      *     trattato come gli interessi di Simple Earn.</li>
-     * <li>{@code 189} — omaggio promozionale ("mystery box"), 9127,55842556 SHIB il 31/07/2022. Entra
+     * <li>{@code 189} — omaggio promozionale ("mystery box"). Entra
      *     davvero nel wallet senza contropartita: come gli altri accrediti gratuiti vale un reward.</li>
      * <li>{@code 311} — l'accredito che arriva dal conto Trading. <b>Non è il 130 con un altro nome</b>: le
-     *     due righe del 20/01/2024 hanno per contropartita esatta — stesso istante, stesso importo di segno
+     *     due righe di un caso osservato hanno per contropartita esatta — stesso istante, stesso importo di segno
      *     opposto — due righe {@code subType} 290 dell'archivio del conto Trading, vedi
      *     {@link #tipoDaArchivioOKX}.</li>
      * <li>{@code 328} — il rendimento dello staking on-chain (SOL, ETH, …): un accredito senza contropartita,
-     *     con il campo {@code notes} valorizzato a {@code "<moneta> Staking earnings"} (segnalato il
-     *     07/09/2026 da uno scaricamento reale). È un provento come il 89: entra nel wallet senza che nulla
+     *     con il campo {@code notes} valorizzato a {@code "<moneta> Staking earnings"} (segnalato
+     *     da uno scaricamento vero). È un provento come il 89: entra nel wallet senza che nulla
      *     esca. L'etichetta emessa è {@code "Staking earnings"} — fissa, senza il prefisso della moneta, che
      *     varia — e {@code OKX.json} la porta a {@code REWARD}.</li>
      * </ul>
@@ -2288,8 +2288,8 @@ public static Path getNodeExePath() {
      * righe in formato intermedio a 19 campi, <b>aggregando per giorno e per moneta</b>.
      *
      * <p>L'aggregazione non è un'ottimizzazione ma una necessità: OKX accredita gli interessi <b>ogni ora</b>
-     * (verificato sui dati reali: un record per moneta per ora, con importi dell'ordine di {@code 0.00000003}
-     * BTC), il che su tre monete fa circa 72 movimenti al giorno e 26.000 all'anno, ognuno con la propria
+     * (verificato in pratica: un record per moneta per ora, con importi piccolissimi
+     * in BTC), il che su tre monete fa circa 72 movimenti al giorno e 26.000 all'anno, ognuno con la propria
      * ricerca prezzo. Sommandoli per giornata restano circa 3 movimenti al giorno: il rendimento imponibile è
      * lo stesso, cambia solo il prezzo usato per convertirlo in euro — uno di fine giornata invece di 24.
      *
@@ -2431,11 +2431,10 @@ public static Path getNodeExePath() {
      * Ricostruisce la gamba in uscita delle conversioni di una posizione On-chain Earn in un token di Liquid
      * Staking (funding {@code type} 330), che OKX registra con il solo bill in entrata.
      *
-     * <p>Il caso reale (05/10/2026): due posizioni "Spark USDC" da 874,17246485 e 16,50423707 USDC sono state
-     * chiuse da OKX alle 11:23:00 e convertite in 890,67670192 LYUSDC, accreditati alle 11:22:59 con un bill
-     * 330. Il capitale era uscito dal Funding alla sottoscrizione con il {@code type} 80, che e' un giroconto
+     * <p>Un esempio: due posizioni "Spark USDC" da 800 e 100 USDC vengono chiuse da OKX in uno stesso istante e
+     * convertite in 900 LYUSDC, accreditati un secondo prima con un bill 330. Il capitale era uscito dal Funding alla sottoscrizione con il {@code type} 80, che e' un giroconto
      * verso il prodotto e non viene considerato: per il programma quegli USDC sono quindi ancora in giacenza.
-     * Importare il solo LYUSDC li lascerebbe li' e aggiungerebbe 890 LYUSDC dal nulla. Come per il prodotto
+     * Importare il solo LYUSDC li lascerebbe li' e aggiungerebbe 900 LYUSDC dal nulla. Come per il prodotto
      * ETH Staking (137/138, ETH -> BETH) e' una permuta, e la gamba che manca e' il capitale delle posizioni.
      *
      * <p>Le posizioni si cercano nello storico degli ordini On-chain Earn ({@code staking_storico} di
@@ -2446,11 +2445,11 @@ public static Path getNodeExePath() {
      * cosi' uno scaricamento ripetuto produce lo stesso scambio e la deduplica lo riconosce.
      *
      * <p>I rendimenti maturati nella posizione <b>non</b> si leggono da qui: OKX li accredita a parte, nel token
-     * ricevuto, con un bill "Liquid Staking earnings" (il 05/10/2026 alle 14:44, 2,40712633 LYUSDC contro
-     * 2,37629388 USDC di {@code realizedEarnings}), che e' gia' un REWARD. Leggerli anche qui li conterebbe due volte.
+     * ricevuto, con un bill "Liquid Staking earnings" (alcune ore dopo, 3,1 LYUSDC contro
+     * 3 USDC di {@code realizedEarnings}), che e' gia' un REWARD. Leggerli anche qui li conterebbe due volte.
      *
      * <p>Non e' l'unica forma del 330. Quando l'utente <b>sottoscrive direttamente</b> un prodotto di Liquid Staking
-     * (08/10/2026: 0,3745958 SOL in OKSOL, 1000 USDC in LYUSDC) OKX scrive anche la gamba in uscita, un bill 329
+     * (per esempio SOL in OKSOL, o USDC in LYUSDC) OKX scrive anche la gamba in uscita, un bill 329
      * "Liquid Staking subscription" nello stesso secondo: {@code OKX_Tipi.json} gli da' la stessa etichetta del 330
      * proprio perche' qui sotto venga riconosciuto come uscita gia' presente, e allora non si cerca nessuna posizione.
      * Prima della mappatura del 329 (v1.004) la ricerca falliva e finivano fra gli sconosciuti tutte e due le righe.
@@ -2576,13 +2575,13 @@ public static Path getNodeExePath() {
      *
      * <p>Il {@code subType} 290 non viene dall'incrocio dei {@code billId} come gli altri — l'archivio è
      * l'unica fonte che lo espone — ma dalla sua contropartita sul conto Funding: le due righe del
-     * 20/01/2024 (ETH {@code 0.000000654} e BTC {@code 0.0000000043100594}) hanno stesso istante e stesso
+     * primo caso osservato (una in ETH e una in BTC) hanno stesso istante e stesso
      * importo di segno opposto rispetto a due bill {@code type=311}, che OKX etichetta "Transfer in from
      * trading account". È quindi l'uscita di un giroconto, e va sul {@code type} 1 come 11/12.
      *
      * <p>Il verso non si ricava dal {@code subType} ma sempre dal segno di {@code balChg}, come già fa
-     * {@code causaleBillOKX}: sui dati reali le 44 righe {@code subType=1} hanno tutte {@code balChg}
-     * positivo e le 44 {@code subType=2} tutte negativo, quindi le due letture coincidono e quella per segno
+     * {@code causaleBillOKX}: nei dati osservati le righe {@code subType=1} hanno tutte {@code balChg}
+     * positivo e quelle {@code subType=2} tutte negativo, quindi le due letture coincidono e quella per segno
      * vale anche per i tipi non spot.
      *
      * @param instType valore della colonna {@code instType} ({@code "SPOT"} oppure {@code "-"})
@@ -2809,16 +2808,16 @@ public static Path getNodeExePath() {
      * <b>modificando l'oggetto sul posto</b>.
      *
      * <p>Le due fonti riportano lo stesso movimento con precisione diversa: l'API dà
-     * {@code balChg = 0.00046266282}, il CSV dà {@code 0.0004626628199999993}, cioè lo stesso numero con la
+     * {@code balChg = 0.499}, il CSV dà {@code 0.4989999999999999}, cioè lo stesso numero con la
      * sbavatura di un passaggio in virgola mobile. {@code sz} invece coincide esattamente in entrambe
-     * ({@code 0.00046359}), quindi ricalcolare {@code balChg = segno × |sz| + fee} restituisce cifra per
+     * ({@code 0.5}), quindi ricalcolare {@code balChg = segno × |sz| + fee} restituisce cifra per
      * cifra il valore dell'API. Senza questo passaggio lo stesso scambio importato dalle due strade
      * darebbe quantità diverse a partire dalla quindicesima cifra: irrilevante per l'imposta, ma è
      * sporcizia che non ha motivo di entrare nei calcoli.
      *
      * <p>La riscrittura avviene solo se {@code sz} è valorizzato e il valore ricostruito coincide con quello
-     * dichiarato entro un margine minimo. Sui dati reali il controllo passa su tutte le 88 righe spot,
-     * mentre le 24 righe di giroconto hanno {@code sz} a zero e restano com'erano: se un domani OKX
+     * dichiarato entro un margine minimo. Nei dati osservati il controllo passa su tutte le righe spot,
+     * mentre le righe di giroconto hanno {@code sz} a zero e restano com'erano: se un domani OKX
      * cambiasse il significato di {@code sz}, il controllo se ne accorgerebbe e non toccherebbe nulla.
      *
      * @param o riga dell'archivio, già in forma di bill
@@ -2873,7 +2872,7 @@ public static Path getNodeExePath() {
      * <b>gli stessi identificativi</b> di quelli già importati via API: i periodi sovrapposti si deduplicano
      * da soli invece di generare doppioni.
      *
-     * <p>L'apostrofo iniziale con cui il CSV forza il testo per Excel ({@code '3702022358013911044}) viene
+     * <p>L'apostrofo iniziale con cui il CSV forza il testo per Excel ({@code '1000000000000000001}) viene
      * tolto anche qui e non solo nello script: è la condizione perché gli ID coincidano, e va garantita nel
      * punto in cui l'ID viene consumato.
      *
@@ -2934,7 +2933,7 @@ public static Path getNodeExePath() {
      * prelievo fantasma con l'avanzo spaiato. Una volta consolidato il danno non e' piu' reversibile:
      * l'unico punto utile e' prima del raggruppamento.
      *
-     * <p>Misurato sui dati reali di giugno 2026: 44 operazioni duplicate, che spiegavano esattamente il 100%
+     * <p>Misurato su dati veri: le operazioni duplicate spiegavano esattamente il 100%
      * dello scostamento fra lo scaricamento con archivio e quello senza.
      *
      * <p><b>Chiave.</b> Conto di provenienza ({@code [2]}, {@code "Funding"} o {@code "Trading"}) piu'

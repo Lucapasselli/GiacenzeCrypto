@@ -117,19 +117,19 @@ fa sull'archivio dopo aver scritto i movimenti: l'abbinamento degli `SCAMBIO DIF
 Una configurazione che funziona può servire ad altri utenti con lo stesso exchange. Il programma ha un
 catalogo di configurazioni condivise dalla community.
 
-**Scaricare.** Nella finestra *Importazioni* il pulsante **Configurazioni della community...** apre il
+**Scaricare.** Nella finestra *Importazioni* il pulsante **Configurazioni della community** apre il
 catalogo. **Scarica** salva le configurazioni scelte nella cartella `config/community/` della cartella di
 lavoro, e da quel momento compaiono nelle tendine con il prefisso *Community:*. Prima di salvare un file il
 programma ne verifica l'impronta e ripete tutti i controlli di sicurezza. Le configurazioni della community
 sono controllate dall'autore del programma prima della pubblicazione, ma nessuno può provarle su ogni file
 reale: **prima di importare, prova la configurazione sul tuo CSV** e controlla i movimenti.
 
-**Condividere.** Nella finestra della prova il pulsante **Condividi con la community...** si attiva solo dopo
+**Condividere.** Nella finestra della prova il pulsante **Condividi con la community** si attiva solo dopo
 una prova senza righe scartate, senza opzioni o tipi sconosciuti e con almeno un movimento. La finestra di
 invio mostra il file così com'è e chiede il consenso alla pubblicazione con licenza MIT. Insieme al file
 parte l'esito della prova, cioè quanti movimenti escono da ogni causale, **ma nessuna riga del tuo CSV**.
 La configurazione diventa scaricabile solo dopo il controllo dell'autore del programma. Dalla finestra del
-catalogo, **Le mie proposte...** permette di ritirare una configurazione inviata. Cosa viene conservato è
+catalogo, **Le mie proposte** permette di ritirare una configurazione inviata. Cosa viene conservato è
 descritto nell'[informativa sulla privacy](https://lucapasselli.github.io/GiacenzeCrypto/privacy/).
 
 Una configurazione condivisa deve rispettare alcune regole in più di una personale:
@@ -568,7 +568,7 @@ Quindi: "data": 0, "causale": 1, "moneta": 2 e così via.
 
 **Tipo:** stringa | **Default:** "" (importo e moneta sono due colonne distinte)
 
-Alcuni export scrivono importo e simbolo insieme, per esempio `407.57 AME`. In questo caso indica lo
+Alcuni export scrivono importo e simbolo insieme, per esempio `400 AME`. In questo caso indica lo
 stesso indice di colonna sia per `quantita` sia per `moneta` (e, se serve, per `quantitaUscita`/`monetaUscita`
 e `quantitaFee`/`monetaFee`), e in `separatoreValoreMoneta` il carattere che divide i due pezzi. Quando le
 due colonne coincidono il programma separa il numero dal simbolo usando quel carattere.
@@ -753,8 +753,8 @@ Sovrascrive la colonna di raggruppamento **solo per le causali elencate**. Serve
 stesso movimento condividono una colonna diversa da `idGruppo`/`idTransazione` e i loro timestamp non
 sono identici.
 
-Caso reale (Coinbase): le due gambe di un `Convert` hanno la stessa identica stringa nella colonna
-`note` (`"Converted 22 ALEPH to 4.68065032 ZETA"`) ma sull'export a volte cadono a 1-2 secondi di
+Caso tipico (Coinbase): le due gambe di un `Convert` hanno la stessa identica stringa nella colonna
+`note` (`"Converted 20 ALEPH to 5 ZETA"`) ma sull'export a volte cadono a 1-2 secondi di
 distanza; raggruppando sul timestamp esatto verrebbero spezzate in un deposito e un prelievo separati.
 Raggruppando sulla colonna `note` (indice 10) si ricompongono. Va abbinato a `consolidaRigheStessaData`
 + `causaliDifferite` + una `tolleranzaSecondiConsolidamento` sufficiente. Una gamba con valore diverso
@@ -1553,7 +1553,7 @@ Risultato: due ricompense e un prelievo di USDC.
 
 - Se le intestazioni CSV variano di versione in versione, usa autoDetectColonne con mappaAutoDetect.
 
-- Se importo e moneta stanno nella stessa cella (`407.57 AME`), usa `separatoreValoreMoneta`. Se c'è solo la coppia di trading (`KCS-ETH`), usa `coppia`.
+- Se importo e moneta stanno nella stessa cella (`400 AME`), usa `separatoreValoreMoneta`. Se c'è solo la coppia di trading (`KCS-ETH`), usa `coppia`.
 
 - Se il file contiene solo depositi o solo prelievi e non ha una colonna causale utile, usa `versoForzato`.
 

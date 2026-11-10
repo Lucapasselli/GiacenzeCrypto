@@ -108,7 +108,7 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
         });
 
         Bottone_Media.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Numeri.png"))); // NOI18N
-        Bottone_Media.setText("Media giornaliera...");
+        Bottone_Media.setText("Media giornaliera");
         Bottone_Media.setToolTipText("Giacenza media giornaliera dei rapporti 99 con i prezzi del calcolo fiscale (informativa): la prima volta può scaricare molti prezzi");
         Bottone_Media.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -135,7 +135,7 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
         });
 
         Bottone_Guida.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Libro.png"))); // NOI18N
-        Bottone_Guida.setText("Guida...");
+        Bottone_Guida.setText("Guida");
         Bottone_Guida.setToolTipText("Apre il manuale del tab ISEE");
         Bottone_Guida.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -270,7 +270,7 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
         });
 
         Bottone_PrezziMancanti.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
-        Bottone_PrezziMancanti.setText("Prezzi mancanti...");
+        Bottone_PrezziMancanti.setText("Prezzi mancanti");
         Bottone_PrezziMancanti.setToolTipText("I giorni rimasti senza prezzo nella media giornaliera, con i prezzi personalizzati da scrivere");
         Bottone_PrezziMancanti.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -279,7 +279,7 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
         });
 
         Bottone_Modifica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Modifica.png"))); // NOI18N
-        Bottone_Modifica.setText("Modifica dati...");
+        Bottone_Modifica.setText("Modifica dati");
         Bottone_Modifica.setToolTipText("Identificativo, codice operatore, data di apertura e di chiusura del rapporto selezionato");
         Bottone_Modifica.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -663,7 +663,7 @@ public class GUI_ISEE_Pannello extends javax.swing.JPanel {
         Bottone_Media.setEnabled(Ris != null);
         int mancanti = Ris == null || !Ris.mediaCalcolata ? 0 : Ris.prezziMancanti.size();
         Bottone_PrezziMancanti.setEnabled(mancanti > 0);
-        Bottone_PrezziMancanti.setText(mancanti == 0 ? "Prezzi mancanti..." : "Prezzi mancanti (" + mancanti + ")...");
+        Bottone_PrezziMancanti.setText(mancanti == 0 ? "Prezzi mancanti" : "Prezzi mancanti (" + mancanti + ")");
     }
 
     /** @return il rapporto della riga selezionata, {@code null} se non ce n'è uno */

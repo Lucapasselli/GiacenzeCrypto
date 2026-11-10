@@ -106,7 +106,7 @@
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
           <Image iconType="3" name="/Images/24_Salva.png"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Esporta selezionati..."/>
+        <Property name="text" type="java.lang.String" value="Esporta selezionati"/>
         <Property name="toolTipText" type="java.lang.String" value="Scrive i documenti selezionati, decompressi, in una cartella a scelta"/>
       </Properties>
       <Events>

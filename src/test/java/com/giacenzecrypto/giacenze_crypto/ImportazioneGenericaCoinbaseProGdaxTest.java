@@ -13,9 +13,9 @@ import org.junit.jupiter.api.io.TempDir;
 /**
  * Caratterizza {@code config/import/Coinbase Pro GDAX.json} dopo il passaggio a causale unica
  * (v2.000): niente più composita {@code type.unit}, quindi aggiungere una moneta non richiede una
- * riga nuova in {@code mappaCausali}. Il file di prova reale è {@code test/csvtest/conto19-22.csv}
- * (statement {@code account.csv}: {@code portfolio,type,time,amount,balance,unit,transfer id,trade
- * id,order id}).
+ * riga nuova in {@code mappaCausali}. Il formato è quello dello statement
+ * {@code account.csv}: {@code portfolio,type,time,amount,balance,unit,transfer id,trade
+ * id,order id}.
  *
  * <p>Punti fissati:</p>
  * <ul>
@@ -91,8 +91,8 @@ class ImportazioneGenericaCoinbaseProGdaxTest {
     @Test
     void depositInEuro_diventaDepositoFiat() throws Exception {
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(
-                riga("deposit", "2019-07-19T14:20:52.196Z", "50", "EUR",
-                        "f429d3e2-4dd9-4b7d-bdf4-cebf47bf2e34", ""),
+                riga("deposit", "2025-01-10T10:00:00.000Z", "50", "EUR",
+                        "00000000-0000-0000-0000-000000000001", ""),
                 null, cfgVeloce());
         assertNotNull(movs, "causale 'deposit' riconosciuta");
         assertEquals(1, movs.size());
@@ -102,8 +102,8 @@ class ImportazioneGenericaCoinbaseProGdaxTest {
     @Test
     void depositInCripto_diventaDepositoCrypto() throws Exception {
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(
-                riga("deposit", "2021-01-01T21:23:31.089Z", "0.0647464400000000", "ZEC",
-                        "c46fcfc0-99ca-4a2f-9562-e0b34655daf4", ""),
+                riga("deposit", "2025-01-11T10:00:00.000Z", "0.0600000000000000", "ZEC",
+                        "00000000-0000-0000-0000-000000000002", ""),
                 null, cfgVeloce());
         assertNotNull(movs, "'deposit.ZEC' non è più una causale sconosciuta");
         assertEquals(1, movs.size());
@@ -116,8 +116,8 @@ class ImportazioneGenericaCoinbaseProGdaxTest {
     @Test
     void withdrawalInCripto_diventaPrelievoCrypto() throws Exception {
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(
-                riga("withdrawal", "2021-01-04T13:22:06.388Z", "-525.9893522000000000", "XLM",
-                        "9a8b44eb-60a1-4e5b-b81d-ffe5fab017b9", ""),
+                riga("withdrawal", "2025-01-12T10:00:00.000Z", "-500.0000000000000000", "XLM",
+                        "00000000-0000-0000-0000-000000000003", ""),
                 null, cfgVeloce());
         assertNotNull(movs, "'withdrawal.XLM' non è più una causale sconosciuta");
         assertEquals(1, movs.size());
@@ -143,9 +143,9 @@ class ImportazioneGenericaCoinbaseProGdaxTest {
     void matchDueGambePiuFee_scambioConsolidatoPiuCommissioniASe() throws Exception {
         ConfigurazioneImport c = cfgVeloce();
         List<String[]> righe = new ArrayList<>();
-        righe.add(riga("match", "2021-01-01T21:24:36.761Z", "-0.0647000000000000", "ZEC", "", "761790"));
-        righe.add(riga("match", "2021-01-01T21:24:36.761Z", "0.0001259709000000", "BTC", "", "761790"));
-        righe.add(riga("fee",   "2021-01-01T21:24:36.761Z", "-0.0000006298545000", "BTC", "", "761790"));
+        righe.add(riga("match", "2025-01-13T10:00:00.000Z", "-0.0600000000000000", "ZEC", "", "100001"));
+        righe.add(riga("match", "2025-01-13T10:00:00.000Z", "0.0001200000000000", "BTC", "", "100001"));
+        righe.add(riga("fee",   "2025-01-13T10:00:00.000Z", "-0.0000006000000000", "BTC", "", "100001"));
 
         List<List<String[]>> gruppi = ImportazioneGenerica.raggruppaRighe(righe, c);
         assertEquals(1, gruppi.size(), "stesso trade id, stesso istante -> un solo gruppo");

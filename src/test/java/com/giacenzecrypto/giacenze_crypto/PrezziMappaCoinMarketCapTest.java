@@ -80,7 +80,7 @@ class PrezziMappaCoinMarketCapTest {
 
     @Test
     void sceltaPerVolume_vinceIlVolumeTotalePiuAlto() {
-        //Il caso del 19/01/2022: Biconomy ha il rank migliore oggi ma un volume 500 volte piu' basso
+        //Un caso passato: Biconomy ha il rank migliore oggi ma un volume 500 volte piu' basso
         Map<Integer, List<Prezzi.CandelaCmc>> storici = new LinkedHashMap<>();
         storici.put(11500, List.of(candela(196_777), candela(197_254)));
         storici.put(11221, List.of(candela(103_372_265), candela(106_366_486)));

@@ -161,7 +161,7 @@ public class GUI_RegistraTrancheFallimento extends JDialog {
         TabellaRicevute.setToolTipText("In natura: la stessa moneta che era bloccata, trattata come giroconto (costo trasferito, "
                 + "nessuna plusvalenza) invece che come rimborso");
 
-        JButton DaDeposito = new JButton("Aggiungi da deposito importato...");
+        JButton DaDeposito = new JButton("Aggiungi da deposito importato");
         DaDeposito.addActionListener(e -> AggiungiDeposito());
         JButton Fuori = new JButton("Aggiungi euro ricevuti fuori dal programma");
         Fuori.setToolTipText("Bonifico, PayPal o azioni valutate in euro: escono dalla piattaforma con un prelievo");

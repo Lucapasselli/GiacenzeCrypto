@@ -19,7 +19,7 @@ import org.junit.jupiter.api.io.TempDir;
  * config esistenti le usa, quindi il comportamento di default resta invariato):
  * <ul>
  *   <li>{@code separatoreValoreMoneta}: una cella "NUMERO SIMBOLO" (Gate.io Spot Trade History
- *       impacchetta importo e moneta nella stessa colonna, es. "407.57 AME") si legge quando
+ *       impacchetta importo e moneta nella stessa colonna, es. "400 AME") si legge quando
  *       {@code moneta}/{@code quantita} (o {@code monetaUscita}/{@code quantitaUscita}, o
  *       {@code monetaFee}/{@code quantitaFee}) puntano alla STESSA colonna;</li>
  *   <li>{@code causaliScambiaGambe}: su una riga con entrambe le gambe già presenti, per le
@@ -35,14 +35,14 @@ import org.junit.jupiter.api.io.TempDir;
  * <p>Le config caricano dati sintetici (non i CSV reali dell'utente, che non vanno committati):
  * righe scritte a mano nella stessa forma grezza degli export originali di Gate.io, incluso il TAB
  * che Gate.io lascia in coda alle celle 'No' e 'Deal price' del trade history. I test
- * {@code fileReale_*} scrivono quelle righe su disco con encoding, BOM e fine riga degli export
+ * {@code formatoFile_*} scrivono quelle righe su disco con encoding, BOM e fine riga degli export
  * veri e le leggono con {@link ImportazioneGenerica#leggiCSV}, perche' gli errori di formato stanno
  * proprio li'. La 1.000 delle config era stata scritta su un file passato da un editor che aveva
  * sostituito ogni spazio con ';', e non leggeva gli export originali.</p>
  *
- * <p>Verificato anche contro gli export originali dell'utente (non committati, 2026-09-30): 35
- * trade -> 70 movimenti (35 scambi + 35 commissioni), 6 prelievi -> 12 movimenti, 2 depositi -> 2
- * movimenti, un file depositi con la sola intestazione -> 0 righe, nessuna riga scartata.</p>
+ * <p>Verificato anche contro export originali (non committati): ogni trade produce uno scambio e una
+ * commissione, ogni prelievo un prelievo e una commissione, un file depositi con la sola intestazione
+ * non produce righe, nessuna riga scartata.</p>
  */
 class ImportazioneGenericaGateIoTest {
 
@@ -206,11 +206,11 @@ class ImportazioneGenericaGateIoTest {
     }
 
     @Test
-    void fileReale_trades_utf8ConBomETabInCoda() throws Exception {
+    void formatoFile_trades_utf8ConBomETabInCoda() throws Exception {
         String file = scriviFile("Spot_TradeHistory_2021.csv", "UTF-8", "\n",
                 "No,Time,Trade type,Role,Market,Deal price,Deal amount,Total,Fee",
-                "40982960158\t,2021-04-13 18:29:01,Buy,taker,GT/USDT,3.7459\t,0.259 GT,0.9701881 USDT,0.0019403762 POINT",
-                "98156856334\t,2021-11-28 10:00:27,Sell,taker,NFTX/USDT,98.69\t,0.013 NFTX,1.28297 USDT,0.00384891 USDT");
+                "1000000001\t,2025-01-10 10:00:00,Buy,taker,GT/USDT,3\t,0.3 GT,0.9 USDT,0.002 POINT",
+                "1000000002\t,2025-01-11 10:00:00,Sell,taker,NFTX/USDT,100\t,0.01 NFTX,1 USDT,0.004 USDT");
         ConfigurazioneImport c = cfgTrades();
         List<String[]> righe = ImportazioneGenerica.leggiCSV(file, c);
         assertEquals(2, righe.size(), "nessuna riga scartata per data o formato");
@@ -220,20 +220,20 @@ class ImportazioneGenericaGateIoTest {
         assertEquals(4, movs.size(), "2 scambi + 2 commissioni");
 
         String[] buy = movs.stream().filter(m -> "GT".equals(m[11])).findFirst().orElseThrow();
-        assertEquals("0.259", buy[13]);
+        assertEquals("0.3", buy[13]);
         assertEquals("USDT", buy[8]);
-        assertEquals("-0.9701881", buy[10]);
+        assertEquals("-0.9", buy[10]);
         String[] sell = movs.stream().filter(m -> "NFTX".equals(m[8])).findFirst().orElseThrow();
-        assertEquals("-0.013", sell[10]);
+        assertEquals("-0.01", sell[10]);
         assertEquals("USDT", sell[11]);
-        assertEquals("1.28297", sell[13]);
+        assertEquals("1", sell[13]);
     }
 
     @Test
-    void fileReale_prelievi_utf16leConBomECrlf() throws Exception {
+    void formatoFile_prelievi_utf16leConBomECrlf() throws Exception {
         String file = scriviFile("mywithdrawals_2024.csv", "UTF-16LE", "\r\n",
                 "Order ID\tTime\tNetwork\tAddress\tAddress Name\tTxID\tCoin\tAmount\tTrading Fee\tAmount Received\tStatus",
-                "62675616\t2024-09-04 22:11:38\tXLM\tGXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX 1234567\t\tdeadbeef\tXLM\t22.55\t5.4\t17.15\tSuccess");
+                "1000000003\t2025-01-12 10:00:00\tXLM\tGXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX 1234567\t\tdeadbeef\tXLM\t20\t5\t15\tSuccess");
         ConfigurazioneImport c = cfgWithdrawals();
         List<String[]> righe = ImportazioneGenerica.leggiCSV(file, c);
         assertEquals(1, righe.size());
@@ -244,11 +244,11 @@ class ImportazioneGenericaGateIoTest {
         String[] prelievo = movs.stream().filter(m -> !m[5].equalsIgnoreCase("COMMISSIONI")).findFirst().orElseThrow();
         assertTrue(prelievo[0].endsWith("_PC"), prelievo[0]);
         assertEquals("XLM", prelievo[8]);
-        assertEquals("-22.55", prelievo[10]);
+        assertEquals("-20", prelievo[10]);
     }
 
     @Test
-    void fileReale_depositi_utf16leConBomECrlf_ancheSoloIntestazione() throws Exception {
+    void formatoFile_depositi_utf16leConBomECrlf_ancheSoloIntestazione() throws Exception {
         String intestazione = "Order ID\tTime\tAddress\tTxID\tCoin\tAmount\tStatus";
         ConfigurazioneImport c = cfgDeposits();
         assertTrue(ImportazioneGenerica.leggiCSV(
@@ -256,13 +256,13 @@ class ImportazioneGenericaGateIoTest {
                 "un anno senza depositi: file con la sola intestazione, zero righe");
 
         List<String[]> righe = ImportazioneGenerica.leggiCSV(scriviFile("mydeposits_2023.csv", "UTF-16LE", "\r\n",
-                intestazione, "168772221\t2023-12-28 09:36:34\taXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\tcafebabe\tFIRO\t0.837\tCredited"), c);
+                intestazione, "1000000004\t2025-01-13 10:00:00\taXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\tcafebabe\tFIRO\t0.8\tCredited"), c);
         assertEquals(1, righe.size());
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(conValore(righe).get(0), null, c);
         assertNotNull(movs);
         assertEquals(1, movs.size());
         assertTrue(movs.get(0)[0].endsWith("_DC"), movs.get(0)[0]);
         assertEquals("FIRO", movs.get(0)[11]);
-        assertEquals("0.837", movs.get(0)[13]);
+        assertEquals("0.8", movs.get(0)[13]);
     }
 }

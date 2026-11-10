@@ -737,7 +737,7 @@ public class Binance_DualInvestment {
     }
 
     /**
-     * Interpreta un campo importo del file di dettaglio (es. {@code "0.00001474 BTC"}).
+     * Interpreta un campo importo del file di dettaglio (es. {@code "0.00001500 BTC"}).
      * @param campo il campo da interpretare
      * @return {@code {quantitaAssoluta, moneta}}, o {@code null} se non interpretabile
      */

@@ -24,8 +24,8 @@ import java.util.Set;
  *
  * <p><b>Dopo la pulizia possono comparire giacenze negative su Binance, e non è un errore della pulizia.</b> Le
  * "Real-Time APR Rewards" di Simple Earn non compaiono in nessuna riga dell'export: maturano dentro il prodotto ed
- * escono solo con i riscatti, che l'import ignora. I doppioni coprivano in parte quel buco (sull'archivio 2026
- * dell'utente, da un prelievo totale all'altro, 8,88 USDC di doppioni contro 23,64 di Real-Time APR mancanti).</p>
+ * escono solo con i riscatti, che l'import ignora. I doppioni coprivano in parte quel buco (in un archivio
+ * vero, da un prelievo totale all'altro, i doppioni compensavano solo in parte le Real-Time APR mancanti).</p>
  *
  * <p>Logica pura, senza Swing: l'avviso all'avvio e il pulsante nelle Opzioni stanno in
  * {@link Principale_Opzioni_Pulizie}.</p>

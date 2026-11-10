@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Fissa {@code ImportazioneGenerica.splitCsvRispettoVirgolette} (bug C16,
  * {@code nocommit/Documentazione/Analisi_Bug_Criticita.md}): un campo quotato che contiene il
- * separatore (es. la virgola delle migliaia di un importo, {@code "$2,270.52"} in un export Nexo)
+ * separatore (es. la virgola delle migliaia di un importo, {@code "$1,234.56"} in un export Nexo)
  * non deve sfasare le colonne successive. Il vecchio comportamento faceva
  * {@code riga.replace("\"","")} PRIMA dello split: la virgola interna restava e veniva scambiata
  * per un separatore di colonna.
@@ -15,15 +15,15 @@ class ImportazioneGenericaVirgoletteConSeparatoreTest {
 
     @Test
     void importoQuotatoConVirgolaDelleMigliaia_nonSfasaLeColonneSuccessive() {
-        String riga = "NXT1,Locking Term Deposit,BTC,-0.024,BTC,0.024,\"$2,270.52\",-,-,nota,2025-12-10 7:37:19";
+        String riga = "NXT1,Locking Term Deposit,BTC,-0.05,BTC,0.05,\"$1,234.56\",-,-,nota,2030-01-15 7:37:19";
         String[] campi = ImportazioneGenerica.splitCsvRispettoVirgolette(riga, ",");
 
         assertEquals(11, campi.length, "l'importo quotato conta come UN solo campo");
-        assertEquals("$2,270.52", campi[6], "le virgolette sono tolte ma la virgola interna resta");
+        assertEquals("$1,234.56", campi[6], "le virgolette sono tolte ma la virgola interna resta");
         assertEquals("-", campi[7], "Fee non deve slittare");
         assertEquals("-", campi[8], "Fee Currency non deve slittare");
         assertEquals("nota", campi[9], "Details non deve slittare");
-        assertEquals("2025-12-10 7:37:19", campi[10], "Date non deve slittare");
+        assertEquals("2030-01-15 7:37:19", campi[10], "Date non deve slittare");
     }
 
     @Test

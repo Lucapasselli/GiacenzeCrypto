@@ -166,7 +166,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/Images/24_Prezzo.png"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Prezzo per i tratti..."/>
+            <Property name="text" type="java.lang.String" value="Prezzo per i tratti"/>
             <Property name="toolTipText" type="java.lang.String" value="Scrive lo stesso prezzo unitario in euro per ogni giorno dei tratti selezionati"/>
           </Properties>
           <Events>
@@ -178,7 +178,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/Images/24_Prezzo.png"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Prezzo per i giorni..."/>
+            <Property name="text" type="java.lang.String" value="Prezzo per i giorni"/>
             <Property name="toolTipText" type="java.lang.String" value="Scrive il prezzo unitario in euro dei giorni selezionati nella tabella in basso"/>
           </Properties>
           <Events>

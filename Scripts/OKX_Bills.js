@@ -14,7 +14,7 @@
 //     e che era l'endpoint usato prima. Costa pero' 10 unita' di rate limit: fra una pagina e
 //     l'altra servono ~1,1 s, e a 300 ms si prende un 50011 "Too many requests".
 //     ATTENZIONE: qui `after` e' un TIMESTAMP, non un billId - vedi fetchBills. La prima misura
-//     (03/08/2026) diceva "100 movimenti dal 19/02/2025 al 28/07/2026 e pagina successiva vuota,
+//     diceva "100 movimenti in un periodo e pagina successiva vuota,
 //     quindi storico completo": era sbagliata. Quei 100 erano una sola pagina, e la seconda
 //     tornava vuota perche' le si passava un billId al posto di una data.
 //   - Trading: account/bills-archive copre AL MASSIMO 3 MESI. Per lo storico piu' vecchio serve

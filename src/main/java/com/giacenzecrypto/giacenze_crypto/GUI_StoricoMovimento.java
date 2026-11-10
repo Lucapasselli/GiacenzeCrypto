@@ -138,6 +138,8 @@ public class GUI_StoricoMovimento extends javax.swing.JDialog {
                 "Cambio della tipologia di provento";
             case MovimentiStorico.OP_IN_PLACE ->
                 "Modifica dei dati (ID invariato)";
+            case MovimentiStorico.OP_PREZZO ->
+                "Modifica del prezzo";
             case MovimentiStorico.OP_SOVRASCRITTURA ->
                 "Sostituito dal file reimportato con \"sovrascrivi\"";
             default ->

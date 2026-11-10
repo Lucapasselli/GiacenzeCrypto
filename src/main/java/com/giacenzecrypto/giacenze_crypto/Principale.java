@@ -149,7 +149,7 @@ private static final long serialVersionUID = 3L;
      * I criteri di filtro attivi sulla tabella dei movimenti.
      *
      * <p>Dal 2026-08-13 e' <b>questo</b> il posto dove vivono, non piu' le due combo e le quattro
-     * caselle della barra: quelle sono state tolte e sostituite dal pulsante <i>Filtri...</i>, che
+     * caselle della barra: quelle sono state tolte e sostituite dal pulsante <i>Filtri</i>, che
      * apre {@link GUI_FiltriMovimenti}. Il record porta anche il criterio sul documento di origine,
      * che una casella non l'ha mai avuta.
      *
@@ -455,7 +455,7 @@ private static final long serialVersionUID = 3L;
         });
         // Tabelle con filtri: header completo applicato subito, Tabelle_FiltroColonne non lo rieseguirà
         Tabelle.Tabelle_InizializzaHeader(TransazioniCryptoTabella);
-        //Blocco (23) e Timestamp (29) sono numeri ma non si sommano. Le quantita' (10, 13) si sommano solo se le righe
+        //Blocco (23) e Timestamp (29) sono numeri ma non si sommano. Le quantità (10, 13) si sommano solo se le righe
         //visibili hanno la stessa moneta (8, 11): con un filtro su un token la somma e' utile, altrimenti sarebbe BTC piu' EUR
         TransazioniCryptoTabella.putClientProperty("ColonneSenzaSomma", java.util.Set.of(23, 29));
         TransazioniCryptoTabella.putClientProperty("QtaPerToken", java.util.Map.of(10, 8, 13, 11));
@@ -468,8 +468,8 @@ private static final long serialVersionUID = 3L;
         //Qta Residua (7) e le tre Rimanenze (10-12) sono saldi progressivi dopo ogni movimento: sommarli non ha senso
         SaldiNegativi_TabellaDettaglioMovimenti.putClientProperty("ColonneSenzaSomma", java.util.Set.of(7, 10, 11, 12));
         Tabelle.Tabelle_InizializzaHeader(RW_Tabella_Dettagli);
-        //L'anno (0) e' un numero ma non si somma. Le quantita' (3 e 8) si sommano solo se le righe visibili hanno la stessa
-        //moneta (2 e 7): il quadro mescola token diversi, una somma di LINK e BTC non e' una quantita'
+        //L'anno (0) e' un numero ma non si somma. Le quantità (3 e 8) si sommano solo se le righe visibili hanno la stessa
+        //moneta (2 e 7): il quadro mescola token diversi, una somma di LINK e BTC non e' una quantità
         RW_Tabella_Dettagli.putClientProperty("ColonneSenzaSomma", java.util.Set.of(0));
         RW_Tabella_Dettagli.putClientProperty("QtaPerToken", java.util.Map.of(3, 2, 8, 7));
         Tabelle.Tabelle_InizializzaHeader(RT_Tabella_DettaglioMonete);
@@ -515,7 +515,7 @@ private static final long serialVersionUID = 3L;
         //subito dopo la Qta dell'archivio, larga zero finche' non si sceglie un singolo wallet DeFi
         GiacenzeaData_Tabella.moveColumn(GiacenzeaData_Tabella.convertColumnIndexToView(12), 5);
         //Nel dettaglio anche Blocco (23) e Timestamp (29) dei movimenti: sono numeri, ma la somma non ha senso
-        //Anche la Qta Residua (7), un saldo progressivo dopo ogni movimento. Le quantita' dei movimenti (10, 13) solo se
+        //Anche la Qta Residua (7), un saldo progressivo dopo ogni movimento. Le quantità dei movimenti (10, 13) solo se
         //la moneta e' la stessa: in una vendita BTC -> EUR la Qta Acq. e' in euro
         GiacenzeaData_TabellaDettaglioMovimenti.putClientProperty("ColonneSenzaSomma", java.util.Set.of(7, 13, 14, 15, 16, 17, 18,
                 Principale_GiacenzeaData.DETTAGLIO_INIZIO_MOVIMENTI + 23, Principale_GiacenzeaData.DETTAGLIO_INIZIO_MOVIMENTI + 29));
@@ -690,6 +690,9 @@ private static final long serialVersionUID = 3L;
         CDC_AggiornaGui();
         SplashAvvio.fase(SplashAvvio.Fase.FINE);
         FineCaricamentoDati=true;
+        //Solo ora che il programma è ripartito per intero, e dopo aver letto per intero i file, la copia fatta prima
+        //dell'ultima compattazione non serve più (in background: la lettura di prezzi dura qualche secondo)
+        RecuperoDatabase.VerificaEEliminaCopieInBackground();
         //Dopo la setVisible della finestra (siamo dentro l'invokeLater che la crea e la mostra)
         SwingUtilities.invokeLater(this::AvvisiAvvio);
          
@@ -1103,11 +1106,20 @@ private static final long serialVersionUID = 3L;
         Opzioni_Temi = new javax.swing.JPanel();
         Opzioni_Varie_Checkbox_TemaScuro = new javax.swing.JCheckBox();
         Opzioni_Varie = new javax.swing.JPanel();
+        Opzioni_Varie_Titolo_Documentazione = new javax.swing.JLabel();
+        Opzioni_Varie_Separatore_Documentazione = new javax.swing.JSeparator();
         Opzioni_Varie_Bottone_Disclaimer = new javax.swing.JButton();
         Opzioni_Varie_Bottone_ProblemiNoti = new javax.swing.JButton();
+        Opzioni_Varie_Titolo_Diagnostica = new javax.swing.JLabel();
+        Opzioni_Varie_Separatore_Diagnostica = new javax.swing.JSeparator();
         Opzioni_Varie_Checkbox_LogJsonDefi = new javax.swing.JCheckBox();
         Opzioni_Varie_Checkbox_LogJsonPrezzi = new javax.swing.JCheckBox();
         Opzioni_Varie_Bottone_InviaLog = new javax.swing.JButton();
+        Opzioni_Varie_Titolo_ModificheManuali = new javax.swing.JLabel();
+        Opzioni_Varie_Separatore_ModificheManuali = new javax.swing.JSeparator();
+        Opzioni_Varie_Etichetta_ModificheManuali = new javax.swing.JLabel();
+        Opzioni_Varie_Bottone_ModificheManuali = new javax.swing.JButton();
+        Opzioni_Varie_Bottone_RipristinoModificheManuali = new javax.swing.JButton();
         Opzioni_Pulizie = new javax.swing.JPanel();
         jTabbedPane2 = new javax.swing.JTabbedPane();
         Opzioni_CardWallet_Pannello = new javax.swing.JPanel();
@@ -1830,7 +1842,7 @@ private static final long serialVersionUID = 3L;
         });
 
         TransazioniCrypto_Bottone_Filtri.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Imbuto.png"))); // NOI18N
-        TransazioniCrypto_Bottone_Filtri.setText("Filtri...");
+        TransazioniCrypto_Bottone_Filtri.setText("Filtri");
         TransazioniCrypto_Bottone_Filtri.setToolTipText("Apre la finestra con tutti i criteri di filtro dei movimenti");
         TransazioniCrypto_Bottone_Filtri.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1847,7 +1859,7 @@ private static final long serialVersionUID = 3L;
         });
 
         TransazioniCrypto_Bottone_Colonne.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
-        TransazioniCrypto_Bottone_Colonne.setText("Colonne...");
+        TransazioniCrypto_Bottone_Colonne.setText("Colonne");
         TransazioniCrypto_Bottone_Colonne.setToolTipText("Scegli quali colonne mostrare nella tabella dei movimenti");
         TransazioniCrypto_Bottone_Colonne.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2388,7 +2400,7 @@ private static final long serialVersionUID = 3L;
         });
 
         DepositiPrelievi_Bottone_Colonne.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
-        DepositiPrelievi_Bottone_Colonne.setText("Colonne...");
+        DepositiPrelievi_Bottone_Colonne.setText("Colonne");
         DepositiPrelievi_Bottone_Colonne.setToolTipText("Scegli quali colonne mostrare nella tabella dei depositi e prelievi");
         DepositiPrelievi_Bottone_Colonne.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -3032,7 +3044,7 @@ private static final long serialVersionUID = 3L;
         });
 
         GiacenzeaData_Bottone_Guida.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Libro.png"))); // NOI18N
-        GiacenzeaData_Bottone_Guida.setText("Guida...");
+        GiacenzeaData_Bottone_Guida.setText("Guida");
         GiacenzeaData_Bottone_Guida.setToolTipText("Apre il manuale di Giacenze a data: tabella, dettaglio movimenti, rettifiche e costi netti");
         GiacenzeaData_Bottone_Guida.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -3061,7 +3073,7 @@ private static final long serialVersionUID = 3L;
         });
 
         GiacenzeaData_Bottone_ColonneDettaglio.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Tabella.png"))); // NOI18N
-        GiacenzeaData_Bottone_ColonneDettaglio.setText("Colonne...");
+        GiacenzeaData_Bottone_ColonneDettaglio.setText("Colonne");
         GiacenzeaData_Bottone_ColonneDettaglio.setToolTipText("Scegli quali colonne mostrare nella tabella dettaglio movimenti");
         GiacenzeaData_Bottone_ColonneDettaglio.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -5785,7 +5797,10 @@ private static final long serialVersionUID = 3L;
 
         Opzioni_TabbedPane.addTab("Temi", Opzioni_Temi);
 
-        Opzioni_Varie_Bottone_Disclaimer.setText("Discalimer");
+        Opzioni_Varie_Titolo_Documentazione.setFont(Opzioni_Varie_Titolo_Documentazione.getFont().deriveFont(Opzioni_Varie_Titolo_Documentazione.getFont().getStyle() | java.awt.Font.BOLD));
+        Opzioni_Varie_Titolo_Documentazione.setText("Documentazione");
+
+        Opzioni_Varie_Bottone_Disclaimer.setText("Disclaimer");
         Opzioni_Varie_Bottone_Disclaimer.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Opzioni_Varie_Bottone_DisclaimerActionPerformed(evt);
@@ -5798,6 +5813,9 @@ private static final long serialVersionUID = 3L;
                 Opzioni_Varie_Bottone_ProblemiNotiActionPerformed(evt);
             }
         });
+
+        Opzioni_Varie_Titolo_Diagnostica.setFont(Opzioni_Varie_Titolo_Diagnostica.getFont().deriveFont(Opzioni_Varie_Titolo_Diagnostica.getFont().getStyle() | java.awt.Font.BOLD));
+        Opzioni_Varie_Titolo_Diagnostica.setText("Diagnostica");
 
         Opzioni_Varie_Checkbox_LogJsonDefi.setText("Scrivi nel log i JSON scaricati durante l'importazione dei wallet DeFi");
         Opzioni_Varie_Checkbox_LogJsonDefi.setToolTipText("Attiva la registrazione nel file GiacenzeCrypto.log delle risposte JSON degli explorer (Etherscan, Solana, Bitcoin, Moralis). Utile per il debug, ma il log cresce molto rapidamente.");
@@ -5815,11 +5833,32 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        Opzioni_Varie_Bottone_InviaLog.setText("Invia log all'autore per una segnalazione...");
+        Opzioni_Varie_Bottone_InviaLog.setText("Invia log all'autore per una segnalazione");
         Opzioni_Varie_Bottone_InviaLog.setToolTipText("Apre una finestra in cui rivedere e modificare i log anonimizzati prima di inviarli all'autore per la diagnosi di un problema.");
         Opzioni_Varie_Bottone_InviaLog.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Opzioni_Varie_Bottone_InviaLogActionPerformed(evt);
+            }
+        });
+
+        Opzioni_Varie_Titolo_ModificheManuali.setFont(Opzioni_Varie_Titolo_ModificheManuali.getFont().deriveFont(Opzioni_Varie_Titolo_ModificheManuali.getFont().getStyle() | java.awt.Font.BOLD));
+        Opzioni_Varie_Titolo_ModificheManuali.setText("Modifiche manuali dei movimenti");
+
+        Opzioni_Varie_Etichetta_ModificheManuali.setText("Elenco dei movimenti modificati a mano, per conservarlo e riapplicarlo dopo una reimportazione.");
+
+        Opzioni_Varie_Bottone_ModificheManuali.setText("Esporta le modifiche manuali dei movimenti (CSV)");
+        Opzioni_Varie_Bottone_ModificheManuali.setToolTipText("Scrive in un file CSV l'elenco dei movimenti modificati a mano (orario, prezzo, quantità, unione e altro) con la riga iniziale, quella finale e i campi cambiati.");
+        Opzioni_Varie_Bottone_ModificheManuali.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Varie_Bottone_ModificheManualiActionPerformed(evt);
+            }
+        });
+
+        Opzioni_Varie_Bottone_RipristinoModificheManuali.setText("Ripristina le modifiche manuali da CSV");
+        Opzioni_Varie_Bottone_RipristinoModificheManuali.setToolTipText("Legge un file esportato con il pulsante qui sopra, mostra quante modifiche si ritrovano nell'archivio attuale e, dopo conferma, le applica in memoria. Nulla è scritto su disco finché non premi Salva.");
+        Opzioni_Varie_Bottone_RipristinoModificheManuali.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Varie_Bottone_RipristinoModificheManualiActionPerformed(evt);
             }
         });
 
@@ -5830,27 +5869,53 @@ private static final long serialVersionUID = 3L;
             .addGroup(Opzioni_VarieLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(Opzioni_Varie_Bottone_ProblemiNoti, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                        .addComponent(Opzioni_Varie_Bottone_Disclaimer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(Opzioni_Varie_Titolo_Documentazione)
+                    .addComponent(Opzioni_Varie_Separatore_Documentazione, javax.swing.GroupLayout.PREFERRED_SIZE, 560, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_Varie_Bottone_Disclaimer, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_Varie_Bottone_ProblemiNoti, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_Varie_Titolo_Diagnostica)
+                    .addComponent(Opzioni_Varie_Separatore_Diagnostica, javax.swing.GroupLayout.PREFERRED_SIZE, 560, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_Varie_Checkbox_LogJsonDefi)
                     .addComponent(Opzioni_Varie_Checkbox_LogJsonPrezzi)
-                    .addComponent(Opzioni_Varie_Bottone_InviaLog, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(Opzioni_Varie_Bottone_InviaLog, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_Varie_Titolo_ModificheManuali)
+                    .addComponent(Opzioni_Varie_Separatore_ModificheManuali, javax.swing.GroupLayout.PREFERRED_SIZE, 560, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_Varie_Etichetta_ModificheManuali)
+                    .addComponent(Opzioni_Varie_Bottone_ModificheManuali, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_Varie_Bottone_RipristinoModificheManuali, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         Opzioni_VarieLayout.setVerticalGroup(
             Opzioni_VarieLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_VarieLayout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(Opzioni_Varie_Titolo_Documentazione)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_Varie_Separatore_Documentazione, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_Varie_Bottone_Disclaimer)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_Varie_Bottone_ProblemiNoti)
-                .addGap(18, 18, 18)
+                .addGap(26, 26, 26)
+                .addComponent(Opzioni_Varie_Titolo_Diagnostica)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_Varie_Separatore_Diagnostica, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_Varie_Checkbox_LogJsonDefi)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_Varie_Checkbox_LogJsonPrezzi)
-                .addGap(18, 18, 18)
-                .addComponent(Opzioni_Varie_Bottone_InviaLog, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_Varie_Bottone_InviaLog)
+                .addGap(26, 26, 26)
+                .addComponent(Opzioni_Varie_Titolo_ModificheManuali)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_Varie_Separatore_ModificheManuali, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_Varie_Etichetta_ModificheManuali)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_Varie_Bottone_ModificheManuali)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_Varie_Bottone_RipristinoModificheManuali)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -8749,7 +8814,7 @@ private void SettaIcone(){
      * Legge in background il saldo della moneta a fine dei blocchi delle righe del dettaglio e lo scrive nella colonna
      * 18, prima quelli gia' in cache e poi gli altri a gruppi. Le righe di uno stesso secondo hanno lo stesso saldo e
      * lo stesso termine di confronto, la Qta Residua a fine secondo, che il renderer legge dalla proprieta'
-     * {@link Tabelle#PROP_CONFRONTO_BLOCKCHAIN} (ID → quantita'). Scrive per indice di riga controllando l'ID in
+     * {@link Tabelle#PROP_CONFRONTO_BLOCKCHAIN} (ID → quantità). Scrive per indice di riga controllando l'ID in
      * colonna 8, e scarta tutto se il dettaglio e' stato ricostruito.
      */
     private void GiacenzeaData_LeggiBlockchainDettaglio(String[] WalletBlockchain, GiacenzeBlockchain.Richiesta Moneta,
@@ -15059,6 +15124,18 @@ if (result != null && !result.isAction("cancel")) {
         GUI_InviaLog.Mostra(this);
     }//GEN-LAST:event_Opzioni_Varie_Bottone_InviaLogActionPerformed
 
+    private void Opzioni_Varie_Bottone_ModificheManualiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Bottone_ModificheManualiActionPerformed
+        Principale_Opzioni_ModificheManuali.Esporta(this);
+    }//GEN-LAST:event_Opzioni_Varie_Bottone_ModificheManualiActionPerformed
+
+    private void Opzioni_Varie_Bottone_RipristinoModificheManualiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Bottone_RipristinoModificheManualiActionPerformed
+        //Come ogni operazione di massa: un solo ricalcolo alla fine, il Salva resta all'utente
+        if (Principale_Opzioni_ModificheManuali_Ripristino.Ripristina(this)) {
+            Funzioni_AggiornaTutto();
+            TabellaCryptodaAggiornare = false;
+        }
+    }//GEN-LAST:event_Opzioni_Varie_Bottone_RipristinoModificheManualiActionPerformed
+
     private void Opzioni_Varie_Checkbox_LogJsonDefiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Checkbox_LogJsonDefiActionPerformed
         //Abilita/disabilita la stampa nel log dei JSON scaricati durante l'importazione dei wallet DeFi.
         VarCondivise.LogJsonDefi = Opzioni_Varie_Checkbox_LogJsonDefi.isSelected();
@@ -17530,6 +17607,15 @@ if (result != null && !result.isAction("cancel")) {
     private void TransazioniCrypto_Bottone_AnnullaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_AnnullaActionPerformed
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         TransazioniCrypto_DaSalvare=false;
+        //Le code in attesa vanno scartate PRIMA di ricaricare: nel primo avvio dopo un cambio di versione
+        //(VersioneCambiata resta vera per tutta la sessione) il caricamento riscrive il file dei movimenti, e
+        //Scrivi_Movimenti_Crypto riversa le code su disco. Scartate dopo, sarebbe tardi: lo storico di una modifica
+        //annullata finirebbe nel database, e la cancellazione di un documento in coda verrebbe eseguita.
+        //Ricaricare i movimenti da file fa ricomparire anche quelli di un documento la cui cancellazione
+        //era in coda (Gestione Documentale) ma non ancora salvata, e le voci di storico in attesa riguardano
+        //movimenti che non ci sono più: si scartano tutte e due
+        DocumentiFonte.ScartaBuffer();
+        MovimentiStorico.ScartaBuffer();
         try {
 
             // TODO add your handling code here:
@@ -17538,11 +17624,6 @@ if (result != null && !result.isAction("cancel")) {
         } catch (IOException ex) {
             LoggerGC.ScriviErrore(ex);
         }
-        //Ricaricare i movimenti da file fa ricomparire anche quelli di un documento la cui cancellazione
-        //era in coda (Gestione Documentale) ma non ancora salvata: la coda va scartata, altrimenti quel
-        //documento resterebbe nascosto dal pannello fino al prossimo salvataggio vero pur non avendo
-        //più nulla da cancellare
-        DocumentiFonte.ScartaBuffer();
         GestioneDocumentaleDaAggiornare = true;
         //Metto gli avvisi sulle funzioni che probabilmente sono da ricalcolare
         AccendiLabelRicalcolo();
@@ -20142,7 +20223,7 @@ try {
     private static final String FILTRI_TOOLTIP_TESTA = "Apre la finestra con tutti i criteri di filtro dei movimenti";
 
     /**
-     * Riporta sul pulsante "Filtri..." quanti criteri sono attivi, e nel suo tooltip quali.
+     * Riporta sul pulsante "Filtri" quanti criteri sono attivi, e nel suo tooltip quali.
      *
      * <p>Serve perche' dal 2026-08-13 i criteri non sono piu' in vista: le due combo e le quattro caselle
      * sono state tolte dalla barra e vivono in {@link GUI_FiltriMovimenti}. Senza il numero, chi ha
@@ -20179,7 +20260,7 @@ try {
      * ({@link #FiltriCorrenti}) o di riga (campo di ricerca e filtri per colonna, via
      * {@link #FiltriMovimenti_AltriFiltriAttivi()}). Due segnali, sopra e sotto la tabella:
      * <ul>
-     *   <li>il pulsante <i>Filtri...</i> passa in grassetto con testo "FILTRI ATTIVI (N)", senza cambiare
+     *   <li>il pulsante <i>Filtri</i> passa in grassetto con testo "FILTRI ATTIVI (N)", senza cambiare
      *       colore (l'ambra ce l'ha gia' la banda qui sotto);
      *       il pulsante <i>Azzera Filtri</i> passa in grassetto;</li>
      *   <li>la label del conteggio righe (sotto la tabella) diventa una banda ambra che dice quanti
@@ -20216,7 +20297,7 @@ try {
             TransazioniCrypto_RigheTabella_Label.setFont(righeLabelFontDefault.deriveFont(java.awt.Font.BOLD));
             TransazioniCrypto_RigheTabella_Label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         } else {
-            TransazioniCrypto_Bottone_Filtri.setText("Filtri...");
+            TransazioniCrypto_Bottone_Filtri.setText("Filtri");
             TransazioniCrypto_Bottone_Filtri.setOpaque(false);
             TransazioniCrypto_Bottone_Filtri.setBackground(filtriBgDefault);
             TransazioniCrypto_Bottone_Filtri.setForeground(filtriFgDefault);
@@ -20550,7 +20631,7 @@ try {
         TransazioniCrypto_Tabella_Dettagli.repaint();
         int indice = TransazioniCrypto_TabbedPane.indexOfComponent(TransazioniCrypto_Pannello_Filtri);
         if (indice >= 0) {
-            //Con filtri attivi la linguetta si colora come il pulsante "Filtri..." e la banda sotto la tabella
+            //Con filtri attivi la linguetta si colora come il pulsante "Filtri" e la banda sotto la tabella
             //(ambra, testo bianco, grassetto): sta fuori vista quando si guardano i dettagli, e un contatore in
             //un titolo normale non si nota. A filtri spenti torna com'era (colori null = quelli del tema).
             boolean attivi = !righe.isEmpty();
@@ -21532,6 +21613,8 @@ try {
     private javax.swing.JPanel Opzioni_Varie;
     private javax.swing.JButton Opzioni_Varie_Bottone_Disclaimer;
     private javax.swing.JButton Opzioni_Varie_Bottone_InviaLog;
+    private javax.swing.JButton Opzioni_Varie_Bottone_ModificheManuali;
+    private javax.swing.JButton Opzioni_Varie_Bottone_RipristinoModificheManuali;
     private javax.swing.JButton Opzioni_Varie_Bottone_ProblemiNoti;
     private javax.swing.JCheckBox Opzioni_Varie_Checkbox_LogJsonDefi;
     private javax.swing.JCheckBox Opzioni_Varie_Checkbox_LogJsonPrezzi;
@@ -21555,6 +21638,10 @@ try {
     private javax.swing.JButton RT_Bottone_Excel;
     private javax.swing.JButton RT_Bottone_Stampa;
     private javax.swing.JCheckBox RT_CheckBox_EscludiAnnoCorrente;
+    private javax.swing.JLabel Opzioni_Varie_Etichetta_ModificheManuali;
+    private javax.swing.JLabel Opzioni_Varie_Titolo_Diagnostica;
+    private javax.swing.JLabel Opzioni_Varie_Titolo_Documentazione;
+    private javax.swing.JLabel Opzioni_Varie_Titolo_ModificheManuali;
     private javax.swing.JLabel RT_Label_Avviso;
     private javax.swing.JLabel RT_Label_Definitiva;
     private javax.swing.JPanel RT_PannelloGruppi;
@@ -21701,6 +21788,9 @@ try {
     private javax.swing.JScrollPane jScrollPaneTipologiaMov;
     private javax.swing.JScrollPane jScrollPaneGruppi;
     private javax.swing.JScrollPane jScrollPaneTipologie;
+    private javax.swing.JSeparator Opzioni_Varie_Separatore_Diagnostica;
+    private javax.swing.JSeparator Opzioni_Varie_Separatore_Documentazione;
+    private javax.swing.JSeparator Opzioni_Varie_Separatore_ModificheManuali;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator10;
     private javax.swing.JSeparator jSeparator11;

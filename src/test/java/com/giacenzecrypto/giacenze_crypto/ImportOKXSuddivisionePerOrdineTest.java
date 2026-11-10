@@ -15,8 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * perché {@code Ex_OKX_Consolida} richiede la ricerca prezzi, ma la suddivisione è una funzione pura ed è
  * il punto in cui entrambe le strade — CSV e API — sbagliavano, in due modi opposti.</p>
  *
- * <p>I casi sono ricavati dall'export reale {@code OKX Trading History 2026-01-01~2026-07-31} (391 righe,
- * 162 ordini spot).</p>
+ * <p>I casi riproducono la forma di un export OKX con più ordini nello stesso secondo.</p>
  */
 class ImportOKXSuddivisionePerOrdineTest {
 
@@ -48,20 +47,20 @@ class ImportOKXSuddivisionePerOrdineTest {
     }
 
     /**
-     * Il caso che ha fatto emergere il difetto. Alle 15:28:21 del 23/07/2026 l'export contiene 16 righe che
-     * sono <b>8 ordini distinti</b>, con le gambe mescolate fra loro. Raggruppandole per solo orario — quel
-     * che faceva l'import da CSV — diventavano un unico scambio da 177 USDC invece di otto da 22.
+     * Il caso che ha fatto emergere il difetto. In uno stesso secondo l'export contiene più righe che sono
+     * <b>ordini distinti</b>, con le gambe mescolate fra loro. Raggruppandole per solo orario — quel che
+     * faceva l'import da CSV — diventavano un unico scambio invece di uno per ordine.
      */
     @Test
     void ottoOrdiniNelloStessoSecondoRestanoOttoMovimenti() {
         List<String[]> gruppo = new ArrayList<>();
-        //Ordine di comparsa volutamente interlacciato, come nel file reale
-        gruppo.add(riga("2026-07-23 15:28:21", "Buy",  "BTC",  "0.00034074", "ORD-A", "100"));
-        gruppo.add(riga("2026-07-23 15:28:21", "Buy",  "BTC",  "0.00034074", "ORD-B", "101"));
-        gruppo.add(riga("2026-07-23 15:28:21", "Sell", "USDC", "-22.15028074", "ORD-C", "102"));
-        gruppo.add(riga("2026-07-23 15:28:21", "Sell", "USDC", "-22.15028074", "ORD-B", "103"));
-        gruppo.add(riga("2026-07-23 15:28:21", "Buy",  "BTC",  "0.00034074", "ORD-C", "104"));
-        gruppo.add(riga("2026-07-23 15:28:21", "Sell", "USDC", "-22.15028074", "ORD-A", "105"));
+        //Ordine di comparsa volutamente interlacciato, come in un export vero
+        gruppo.add(riga("2025-01-10 10:00:00", "Buy",  "BTC",  "0.0003", "ORD-A", "100"));
+        gruppo.add(riga("2025-01-10 10:00:00", "Buy",  "BTC",  "0.0003", "ORD-B", "101"));
+        gruppo.add(riga("2025-01-10 10:00:00", "Sell", "USDC", "-20", "ORD-C", "102"));
+        gruppo.add(riga("2025-01-10 10:00:00", "Sell", "USDC", "-20", "ORD-B", "103"));
+        gruppo.add(riga("2025-01-10 10:00:00", "Buy",  "BTC",  "0.0003", "ORD-C", "104"));
+        gruppo.add(riga("2025-01-10 10:00:00", "Sell", "USDC", "-20", "ORD-A", "105"));
 
         List<List<String[]>> sotto = Importazioni.Ex_OKX_SuddividiPerOrdine(gruppo);
 
@@ -81,15 +80,15 @@ class ImportOKXSuddivisionePerOrdineTest {
 
     /**
      * L'errore speculare, quello dell'import da API: chiudere il gruppo alla prima coppia Buy+Sell spezzava
-     * in due scambi un ordine eseguito in due parti. Sul campione reale sono 8 ordini su 162.
+     * in due scambi un ordine eseguito in due parti. In un export vero capita per alcuni ordini.
      */
     @Test
     void unOrdineEseguitoInDueParteRestaUnMovimentoSolo() {
         List<String[]> gruppo = List.of(
-                riga("2026-07-29 18:36:31", "Sell", "USDC", "-6.38135",     "ORD-X", "200"),
-                riga("2026-07-29 18:36:31", "Buy",  "BTC",  "0.0001",       "ORD-X", "201"),
-                riga("2026-07-29 18:36:31", "Sell", "USDC", "-15.36246199", "ORD-X", "202"),
-                riga("2026-07-29 18:36:31", "Buy",  "BTC",  "0.00024074",   "ORD-X", "203"));
+                riga("2025-01-11 10:00:00", "Sell", "USDC", "-5",           "ORD-X", "200"),
+                riga("2025-01-11 10:00:00", "Buy",  "BTC",  "0.0001",       "ORD-X", "201"),
+                riga("2025-01-11 10:00:00", "Sell", "USDC", "-15",          "ORD-X", "202"),
+                riga("2025-01-11 10:00:00", "Buy",  "BTC",  "0.0002",       "ORD-X", "203"));
 
         List<List<String[]>> sotto = Importazioni.Ex_OKX_SuddividiPerOrdine(gruppo);
 
@@ -104,10 +103,10 @@ class ImportOKXSuddivisionePerOrdineTest {
     @Test
     void iMovimentiSenzaOrdineFinisconoInUnGruppoResiduoInCoda() {
         List<String[]> gruppo = List.of(
-                riga("2026-07-17 09:15:19", "Deposit", "ETH", "0.003", "", "300"),
-                riga("2026-07-17 09:15:19", "Buy",     "BTC", "0.001", "ORD-Y", "301"),
-                riga("2026-07-17 09:15:19", "Sell",    "USDC", "-62.7", "ORD-Y", "302"),
-                riga("2026-07-17 09:15:19", "Received", "USDC", "10.31", "", "303"));
+                riga("2025-01-12 10:00:00", "Deposit", "ETH", "0.003", "", "300"),
+                riga("2025-01-12 10:00:00", "Buy",     "BTC", "0.001", "ORD-Y", "301"),
+                riga("2025-01-12 10:00:00", "Sell",    "USDC", "-60", "ORD-Y", "302"),
+                riga("2025-01-12 10:00:00", "Received", "USDC", "10", "", "303"));
 
         List<List<String[]>> sotto = Importazioni.Ex_OKX_SuddividiPerOrdine(gruppo);
 
@@ -126,8 +125,8 @@ class ImportOKXSuddivisionePerOrdineTest {
     @Test
     void senzaNessunOrdineIlGruppoTornaIntatto() {
         List<String[]> gruppo = List.of(
-                riga("2026-05-28 17:23:21", "Buy",  "BTC",  "0.001", "", "400"),
-                riga("2026-05-28 17:23:21", "Sell", "USDC", "-62.7", "", "401"));
+                riga("2025-01-13 10:00:00", "Buy",  "BTC",  "0.001", "", "400"),
+                riga("2025-01-13 10:00:00", "Sell", "USDC", "-60", "", "401"));
 
         List<List<String[]>> sotto = Importazioni.Ex_OKX_SuddividiPerOrdine(gruppo);
 
@@ -161,8 +160,8 @@ class ImportOKXSuddivisionePerOrdineTest {
     @Test
     void laPresenzaDiUnSoloOrdineBastaADisattivareIlRipiego() {
         List<String[]> misto = List.of(
-                riga("2026-07-17 09:15:19", "Deposit", "ETH", "0.003", "", "500"),
-                riga("2026-07-17 09:15:19", "Buy",     "BTC", "0.001", "ORD-Z", "501"));
+                riga("2025-01-12 10:00:00", "Deposit", "ETH", "0.003", "", "500"),
+                riga("2025-01-12 10:00:00", "Buy",     "BTC", "0.001", "ORD-Z", "501"));
 
         assertTrue(Importazioni.Ex_OKX_GruppoHaOrdini(misto));
     }
@@ -173,15 +172,15 @@ class ImportOKXSuddivisionePerOrdineTest {
     void loStessoScambioNelleDueFormeDellIDDaLaStessaChiave() {
         //Fino al 02/04/2026 RitornaScambi univa le gambe con "_", da allora con "-": confrontate carattere
         //per carattere le due forme non si riconoscono, e lo scambio veniva reinserito dallo scaricamento
-        //via API. Sui dati reali le due forme convivono (202 scambi con "_", 191 con "-").
-        assertEquals(Importazioni.ChiaveDedupOKX("699824500376358912-699824500376358913"),
-                     Importazioni.ChiaveDedupOKX("699824500376358912_699824500376358913"));
+        //via API. In pratica le due forme convivono nello storico di uno stesso utente.
+        assertEquals(Importazioni.ChiaveDedupOKX("1000000000000000001-1000000000000000002"),
+                     Importazioni.ChiaveDedupOKX("1000000000000000001_1000000000000000002"));
     }
 
     @Test
     void unBillIdSempliceRestaSeStesso() {
-        assertEquals("4487306919", Importazioni.ChiaveDedupOKX("4487306919"));
-        assertEquals("4487306919", Importazioni.ChiaveDedupOKX("  4487306919  "));
+        assertEquals("1234567890", Importazioni.ChiaveDedupOKX("1234567890"));
+        assertEquals("1234567890", Importazioni.ChiaveDedupOKX("  1234567890  "));
         assertEquals("", Importazioni.ChiaveDedupOKX(null));
         assertEquals("", Importazioni.ChiaveDedupOKX(""));
     }

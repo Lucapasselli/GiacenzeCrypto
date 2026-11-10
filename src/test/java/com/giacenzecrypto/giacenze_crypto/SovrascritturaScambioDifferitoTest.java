@@ -38,8 +38,8 @@ class SovrascritturaScambioDifferitoTest {
         DatabaseH2.connectionPrezzi.close();
     }
 
-    private static final String ID_P = "20220512062450_Binance_001_001_PC";
-    private static final String ID_S = "20220524083341_Binance_002_001_DC";
+    private static final String ID_P = "20240512062450_Binance_001_001_PC";
+    private static final String ID_S = "20240524083341_Binance_002_001_DC";
 
     @BeforeEach
     void preparaScambio() throws Exception {
@@ -49,15 +49,15 @@ class SovrascritturaScambioDifferitoTest {
                 + "KEY (timestamp, exchange, symbol, rete, address) VALUES (?, ?, ?, ?, '', '')";
         try (java.sql.PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(sql)) {
             for (String c : new String[]{"BTC", "USDT"}) {
-                ps.setLong(1, FunzioniDate.ConvertiDatainLongMinuto("2022-05-24 08:33:41"));
+                ps.setLong(1, FunzioniDate.ConvertiDatainLongMinuto("2024-05-24 08:33:41"));
                 ps.setString(2, "binance");
                 ps.setString(3, c);
                 ps.setBigDecimal(4, BigDecimal.ONE);
                 ps.executeUpdate();
             }
         }
-        MappaCryptoWallet.put(ID_P, riga(ID_P, "USDT", "100", "2022-05-12 06:24:50"));
-        MappaCryptoWallet.put(ID_S, riga(ID_S, "BTC", "0.0035", "2022-05-24 08:33:41"));
+        MappaCryptoWallet.put(ID_P, riga(ID_P, "USDT", "100", "2024-05-12 06:24:50"));
+        MappaCryptoWallet.put(ID_S, riga(ID_S, "BTC", "0.004", "2024-05-24 08:33:41"));
         assertTrue(GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(ID_P, ID_S));
         assertEquals(5, MappaCryptoWallet.size());
         assertNull(MappaCryptoWallet.get(ID_P), "il prelievo è stato rinominato");
@@ -94,7 +94,7 @@ class SovrascritturaScambioDifferitoTest {
 
     @Test
     void sovrascrivendoIlPrelievo_loScambioSiAnnullaENienteRaddoppia() {
-        String[] nuova = riga(ID_P, "USDT", "100", "2022-05-12 06:24:50");
+        String[] nuova = riga(ID_P, "USDT", "100", "2024-05-12 06:24:50");
 
         Importazioni.InserisciMovimentosuMappaCryptoWallet(ID_P, nuova, true);
 
@@ -107,7 +107,7 @@ class SovrascritturaScambioDifferitoTest {
 
     @Test
     void sovrascrivendoIlDeposito_loScambioSiAnnullaENienteRaddoppia() {
-        String[] nuova = riga(ID_S, "BTC", "0.0035", "2022-05-24 08:33:41");
+        String[] nuova = riga(ID_S, "BTC", "0.004", "2024-05-24 08:33:41");
 
         Importazioni.InserisciMovimentosuMappaCryptoWallet(ID_S, nuova, true);
 
@@ -120,8 +120,8 @@ class SovrascritturaScambioDifferitoTest {
     @Test
     void reimportDiEntrambiConSovrascrivi_unPrelievoEUnDeposito() {
         List<String[]> file = new ArrayList<>();
-        file.add(riga(ID_P, "USDT", "100", "2022-05-12 06:24:50"));
-        file.add(riga(ID_S, "BTC", "0.0035", "2022-05-24 08:33:41"));
+        file.add(riga(ID_P, "USDT", "100", "2024-05-12 06:24:50"));
+        file.add(riga(ID_S, "BTC", "0.004", "2024-05-24 08:33:41"));
 
         Importazioni.ScriviListaSuMappaCrypto(file, true);
 
@@ -135,7 +135,7 @@ class SovrascritturaScambioDifferitoTest {
     @Test
     void senzaSovrascrivi_unaRigaNuovaConLoStessoIDNonToccaLoScambio() {
         //Un movimento diverso che ha per caso lo stesso ID di partenza del deposito, ormai rinominato
-        String[] nuova = riga(ID_S, "ETH", "1", "2022-05-24 08:33:41");
+        String[] nuova = riga(ID_S, "ETH", "1", "2024-05-24 08:33:41");
 
         Importazioni.InserisciMovimentosuMappaCryptoWallet(ID_S, nuova);
 

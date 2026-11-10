@@ -252,6 +252,178 @@ final class Trans_EtherFi {
         }
     }
 
+    //=====================================================================================================
+    //=== TRADINGSAFE SU ETHEREUM
+    //=====================================================================================================
+
+    /**
+     * Opzione (personale.mv.db): le coppie {@code Safe>TradingSafe} scoperte da qui, indirizzi minuscoli separati da virgola.
+     * Il TradingSafe è il secondo conto di ether.fi, su Ethereum: gli swap verso un'altra catena (per esempio USDC in WBTC)
+     * escono dal Safe e arrivano lì, e senza il suo wallet nell'archivio la gamba in WBTC non esiste.
+     */
+    static final String OPZIONE_TRADING_SAFE = "EtherFi_TradingSafe";
+    /** Opzione: indirizzi già verificati su Ethereum e risultati altro che un TradingSafe, per non rifare la verifica a ogni importazione. */
+    static final String OPZIONE_NON_TRADING_SAFE = "EtherFi_NonTradingSafe";
+    /** La rete del TradingSafe. */
+    static final String RETE_TRADING_SAFE = "ETH";
+    private static final Pattern INDIRIZZO = Pattern.compile("0x[0-9a-fA-F]{40}");
+
+    /** @return TradingSafe registrato → Safe da cui è stato scoperto, indirizzi minuscoli */
+    static Map<String, String> TradingSafeRegistrati() {
+        Map<String, String> m = new LinkedHashMap<>();
+        for (String c : Elenco(OPZIONE_TRADING_SAFE)) {
+            int i = c.indexOf('>');
+            if (i > 0) m.put(c.substring(i + 1), c.substring(0, i));
+        }
+        return m;
+    }
+
+    /** @return {@code true} se l'indirizzo è un TradingSafe scoperto da un Safe ether.fi: si importa insieme al suo Safe */
+    static boolean isTradingSafeRegistrato(String wallet) {
+        return wallet != null && TradingSafeRegistrati().containsKey(wallet.trim().toLowerCase());
+    }
+
+    /** I TradingSafe scoperti dal Safe, indirizzi minuscoli. */
+    static List<String> TradingSafeDi(String safe) {
+        List<String> r = new ArrayList<>();
+        if (safe == null) return r;
+        for (Map.Entry<String, String> e : TradingSafeRegistrati().entrySet()) {
+            if (e.getValue().equalsIgnoreCase(safe.trim())) r.add(e.getKey());
+        }
+        return r;
+    }
+
+    /**
+     * Gli indirizzi che potrebbero essere un TradingSafe del Safe: i destinatari degli swap verso Ethereum e le controparti
+     * di ogni uscita del Safe, sia fra i movimenti già in archivio sia fra quelli appena scaricati. La verifica vera è la
+     * lettura del beacon sulla catena ({@link #IsTradingSafe}), qui si raccoglie soltanto.
+     */
+    static Set<String> CandidatiTradingSafe(Map<String, String[]> archivio, String safe, List<Transazione> nuove) {
+        Set<String> c = new LinkedHashSet<>();
+        String nome = (safe.trim() + " (" + RETE + ")").toLowerCase();
+        for (String[] v : archivio.values()) {
+            if (v == null || v.length <= 30 || v[3] == null || !nome.equals(v[3].trim().toLowerCase())) continue;
+            if ("PC".equals(Categoria(v))) AggiungiCandidato(c, v[7], v[30]);
+        }
+        if (nuove != null) {
+            for (Transazione t : nuove) {
+                for (Movimento m : t.movimenti()) if (m.uscita() != null) AggiungiCandidato(c, m.causale(), m.controparte());
+            }
+        }
+        c.remove(safe.trim().toLowerCase());
+        return c;
+    }
+
+    private static void AggiungiCandidato(Set<String> c, String causale, String controparte) {
+        if (causale != null && causale.startsWith(CAUSALE_SWAP_FRA_CATENE + " verso " + RETE_TRADING_SAFE + ",")) {
+            Matcher m = DESTINAZIONE_SWAP.matcher(causale);
+            if (m.find()) c.add(m.group(1).toLowerCase());
+        }
+        if (controparte != null && INDIRIZZO.matcher(controparte.trim()).matches()) c.add(controparte.trim().toLowerCase());
+    }
+
+    /**
+     * Verifica i candidati su Ethereum e registra i TradingSafe: salva la coppia e mette il wallet nel gruppo wallet del
+     * Safe. Non entra nell'elenco dei wallet dell'utente (come la Safe della carta MiniPay): e' un wallet che si importa
+     * soltanto insieme al suo Safe. Un candidato che non è un TradingSafe non si
+     * verifica più; uno che non si riesce a verificare (nodi non raggiungibili) si riprova alla prossima importazione.
+     *
+     * @return i TradingSafe registrati adesso, indirizzi minuscoli
+     */
+    static List<String> ScopriTradingSafe(String safe, Set<String> candidati, BooleanSupplier interrotto) {
+        List<String> nuovi = new ArrayList<>();
+        if (DatabaseH2.connectionPersonale == null) return nuovi;
+        Set<String> noti = TradingSafeRegistrati().keySet();
+        Set<String> esclusi = Elenco(OPZIONE_NON_TRADING_SAFE);
+        boolean escluso = false;
+        for (String a : candidati) {
+            if (interrotto != null && interrotto.getAsBoolean()) break;
+            if (noti.contains(a) || esclusi.contains(a)) continue;
+            Boolean ts = IsTradingSafe(a);
+            if (ts == null) continue;
+            if (ts) {
+                RegistraTradingSafe(safe, a);
+                nuovi.add(a);
+            } else {
+                esclusi.add(a);
+                escluso = true;
+            }
+        }
+        if (escluso) DatabaseH2.Pers_Opzioni_Scrivi(OPZIONE_NON_TRADING_SAFE, String.join(",", esclusi));
+        return nuovi;
+    }
+
+    static void RegistraTradingSafe(String safe, String tradingSafe) {
+        String s = safe.trim().toLowerCase(), t = tradingSafe.trim().toLowerCase();
+        Set<String> coppie = Elenco(OPZIONE_TRADING_SAFE);
+        if (coppie.add(s + ">" + t)) DatabaseH2.Pers_Opzioni_Scrivi(OPZIONE_TRADING_SAFE, String.join(",", coppie));
+        String nome = t + " (" + RETE_TRADING_SAFE + ")";
+        String gruppo = Gruppo(s + " (" + RETE + ")");
+        if (gruppo != null && Gruppo(nome) == null) DatabaseH2.Pers_GruppoWallet_Scrivi(nome, gruppo);
+    }
+
+    /**
+     * Le voci da aggiungere all'elenco dei wallet da importare (formato {@code indirizzo;ultimoBlocco;rete}): i TradingSafe
+     * dei Safe presenti nell'elenco, che non sono già fra le voci. Un TradingSafe segue sempre il suo Safe.
+     */
+    static List<String> VociTradingSafe(List<String> voci, Map<String, String[]> archivio) {
+        List<String> aggiunte = new ArrayList<>();
+        if (DatabaseH2.connectionPersonale == null) return aggiunte;
+        Map<String, String> coppie = TradingSafeRegistrati();
+        if (coppie.isEmpty()) return aggiunte;
+        Set<String> presenti = new HashSet<>();
+        for (String v : voci) {
+            String[] p = v.split(";");
+            if (p.length > 2) presenti.add(p[0].toLowerCase() + ";" + p[2].toUpperCase());
+        }
+        for (Map.Entry<String, String> e : coppie.entrySet()) {
+            String ts = e.getKey();
+            if (!presenti.contains(e.getValue() + ";" + RETE) || presenti.contains(ts + ";" + RETE_TRADING_SAFE)) continue;
+            aggiunte.add(VoceTradingSafe(ts, archivio));
+        }
+        return aggiunte;
+    }
+
+    /** La voce dell'elenco di importazione di un TradingSafe, col suo ultimo blocco in archivio (0 se non ne ha). */
+    static String VoceTradingSafe(String tradingSafe, Map<String, String[]> archivio) {
+        String nome = (tradingSafe.trim() + " (" + RETE_TRADING_SAFE + ")").toLowerCase();
+        long massimo = 0;
+        for (String[] v : archivio.values()) {
+            if (v == null || v.length <= 23 || v[3] == null || !nome.equals(v[3].trim().toLowerCase())) continue;
+            try {
+                massimo = Math.max(massimo, Long.parseLong(v[23].trim()));
+            } catch (NumberFormatException e) {
+                //movimento senza blocco: non dice da dove ripartire
+            }
+        }
+        return tradingSafe.trim() + ";" + massimo + ";" + RETE_TRADING_SAFE;
+    }
+
+    /**
+     * @return {@code TRUE} se l'indirizzo è un TradingSafe di ether.fi su Ethereum (contratto con il beacon dei TradingSafe),
+     *         {@code FALSE} se non lo è, {@code null} se i nodi non rispondono
+     */
+    static Boolean IsTradingSafe(String indirizzo) {
+        NodoPubblicoDefi.Configurazione conf = NodoPubblicoDefi.ConfigurazioneRete(RETE_TRADING_SAFE);
+        if (conf == null) return null;
+        try {
+            NodoPubblicoDefi.Nodo nodo = new NodoPubblicoDefi.NodiPubblici(conf);
+            JsonArray p = new JsonArray();
+            p.add(indirizzo.toLowerCase());
+            p.add("latest");
+            String codice = nodo.chiama(NodoPubblicoDefi.Uso.STATO, "eth_getCode", p).getAsString();
+            if (codice == null || codice.length() <= 2) return false;
+            JsonArray q = new JsonArray();
+            q.add(indirizzo.toLowerCase());
+            q.add(NodoPubblicoDefi.Scansione.SLOT_BEACON);
+            q.add("latest");
+            return IsBeaconTradingSafe(nodo.chiama(NodoPubblicoDefi.Uso.STATO, "eth_getStorageAt", q).getAsString());
+        } catch (Exception e) {
+            LoggerGC.ScriviErrore("EtherFi: verifica del TradingSafe " + indirizzo + " non riuscita : " + e.getMessage());
+            return null;
+        }
+    }
+
     /**
      * @param valoreSlot il contenuto dello slot EIP-1967 del beacon di un contratto (32 byte in esadecimale)
      * @return {@code true} se è il beacon dei TradingSafe di ether.fi: il wallet si importa dai log
@@ -294,6 +466,15 @@ final class Trans_EtherFi {
                 + "I suoi movimenti (ricariche, scambi, spese con la carta, interessi) si leggono dagli eventi del\n"
                 + "protocollo ether.fi sui nodi pubblici di Optimism, senza nessuna chiave. Il wallet è stato messo nel\n"
                 + "gruppo wallet di ether.fi, se non ne aveva già uno.";
+    }
+
+    /** Testo dell'avviso quando il TradingSafe di un Safe viene scoperto la prima volta. */
+    static String TestoTradingSafe(String safe, String tradingSafe) {
+        return "Il conto ether.fi " + safe + " manda fondi a un secondo conto di ether.fi su Ethereum (TradingSafe):\n"
+                + tradingSafe + "\n\n"
+                + "Non va inserito fra i wallet: si importa insieme al Safe, nello stesso gruppo wallet, dai nodi pubblici di\n"
+                + "Ethereum e senza nessuna chiave. Gli swap fra i due conti\n"
+                + "(per esempio USDC in WBTC) non restano a meta'.";
     }
 
     /** I movimenti già in archivio del wallet, cioè quelli scritti prima del riconoscimento dalla strada generica. */
@@ -1074,7 +1255,8 @@ final class Trans_EtherFi {
             GUI_ClassificazioneMovimento.CreaMovimentiTrasferimentosuWalletProprio(scelto[0], d[0]);
             abbinate++;
         }
-        return abbinate + AbbinaRiscatti(archivio, nomi) + AbbinaSwapFraCatene(archivio, nomi);
+        return abbinate + AbbinaRiscatti(archivio, nomi) + AbbinaSwapFraCatene(archivio, nomi)
+                + AbbinaSwapDaTradingSafe(archivio, nomi, TradingSafeRegistrati());
     }
 
     private static final Pattern DESTINAZIONE_SWAP = Pattern.compile(
@@ -1120,21 +1302,94 @@ final class Trans_EtherFi {
                 break;
             }
             if (scelto == null) continue;
-            //I due wallet devono essere nello stesso gruppo, o il trasferimento generato lascerebbe il gruppo di uscita
-            //senza la moneta: se il wallet di destinazione non ne ha uno prende quello del Safe, se ne ha un altro si lascia
-            String gruppoSwap = Gruppo(s[3]), gruppoDeposito = Gruppo(scelto[3]);
-            if (gruppoDeposito == null && gruppoSwap != null) {
-                DatabaseH2.Pers_GruppoWallet_Scrivi(scelto[3].trim(), gruppoSwap);
-            } else if (gruppoDeposito != null && !gruppoDeposito.equals(gruppoSwap)) {
-                LoggerGC.ScriviErrore("EtherFi: swap fra catene non abbinato, " + scelto[3] + " e " + s[3] + " sono in gruppi wallet diversi");
-                continue;
-            }
+            if (!GruppiCompatibili(s, scelto)) continue;
             if (GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(s[0], scelto[0], "ether.fi swap")) {
                 usati.add(scelto[0]);
                 abbinati++;
             }
         }
         return abbinati;
+    }
+
+    /**
+     * I due wallet devono essere nello stesso gruppo, o il trasferimento generato lascerebbe il gruppo di uscita senza la
+     * moneta: se il wallet di destinazione non ne ha uno prende quello del Safe, se ne ha un altro non si abbina.
+     */
+    private static boolean GruppiCompatibili(String[] uscita, String[] entrata) {
+        String gruppoUscita = Gruppo(uscita[3]), gruppoEntrata = Gruppo(entrata[3]);
+        if (gruppoEntrata == null && gruppoUscita != null) {
+            DatabaseH2.Pers_GruppoWallet_Scrivi(entrata[3].trim(), gruppoUscita);
+        } else if (gruppoEntrata != null && !gruppoEntrata.equals(gruppoUscita)) {
+            LoggerGC.ScriviErrore("EtherFi: swap fra catene non abbinato, " + entrata[3] + " e " + uscita[3] + " sono in gruppi wallet diversi");
+            return false;
+        }
+        return true;
+    }
+
+    /** Dopo l'uscita dal TradingSafe la moneta di destinazione arriva sul Safe entro pochi minuti (qui nessun identificativo in comune). */
+    private static final long FINESTRA_SWAP_INVERSO_MS = 10 * 60 * 1000L;
+
+    /**
+     * Collega uno swap che parte dal TradingSafe (su Ethereum) e arriva sul Safe (su Optimism): l'uscita è un prelievo non
+     * classificato del TradingSafe, l'entrata un deposito generico del suo Safe, di un'altra moneta, arrivato entro dieci
+     * minuti. Non esiste nessun identificativo in comune fra le due catene, quindi si abbina <b>solo se la coppia è
+     * univoca</b> (un solo deposito possibile per quell'uscita e una sola uscita possibile per quel deposito) e, se
+     * entrambi hanno un valore, questi non differiscono di più del 25%. Ogni dubbio lascia i due movimenti da classificare,
+     * come prima. Diventa uno scambio differito.
+     *
+     * @param tradingSafe TradingSafe registrato → Safe
+     * @return quanti swap ha abbinato
+     */
+    static int AbbinaSwapDaTradingSafe(Map<String, String[]> archivio, Set<String> nomiSafe, Map<String, String> tradingSafe) {
+        if (tradingSafe == null || tradingSafe.isEmpty()) return 0;
+        List<String[]> uscite = new ArrayList<>();
+        List<String[]> depositi = new ArrayList<>();
+        for (String[] v : archivio.values()) {
+            if (v == null || v.length <= 30 || v[3] == null || v[7] == null || !v[18].isBlank()) continue;
+            String nome = v[3].trim().toLowerCase();
+            String cat = Categoria(v);
+            if ("PC".equals(cat) && nome.endsWith(" (" + RETE_TRADING_SAFE.toLowerCase() + ")")
+                    && tradingSafe.containsKey(nome.substring(0, nome.length() - RETE_TRADING_SAFE.length() - 3))) uscite.add(v);
+            else if ("DC".equals(cat) && nomiSafe.contains(nome) && v[7].equals("Deposito")) depositi.add(v);
+        }
+        Map<String, List<String[]>> candidati = new HashMap<>();
+        Map<String, Integer> usi = new HashMap<>();
+        for (String[] u : uscite) {
+            String nome = u[3].trim().toLowerCase();
+            String safe = tradingSafe.get(nome.substring(0, nome.length() - RETE_TRADING_SAFE.length() - 3));
+            long t = FunzioniDate.ConvertiDatainLongMinuto(u[1]);
+            List<String[]> l = new ArrayList<>();
+            for (String[] d : depositi) {
+                if (!d[3].trim().equalsIgnoreCase(safe + " (" + RETE + ")") || d[11].equalsIgnoreCase(u[8])) continue;
+                long td = FunzioniDate.ConvertiDatainLongMinuto(d[1]);
+                if (td < t - MARGINE_SWAP_MS / 5 || td > t + FINESTRA_SWAP_INVERSO_MS) continue;
+                if (!ValoriVicini(u[15], d[15])) continue;
+                l.add(d);
+            }
+            candidati.put(u[0], l);
+            for (String[] d : l) usi.merge(d[0], 1, Integer::sum);
+        }
+        int abbinati = 0;
+        for (String[] u : uscite) {
+            List<String[]> l = candidati.get(u[0]);
+            if (l == null || l.size() != 1 || usi.get(l.get(0)[0]) != 1) continue;
+            String[] d = l.get(0);
+            if (!GruppiCompatibili(u, d)) continue;
+            if (GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(u[0], d[0], "ether.fi swap")) abbinati++;
+        }
+        return abbinati;
+    }
+
+    /** Vero se i due valori in euro non differiscono di più del 25%, o se uno dei due manca (non si può dire). */
+    private static boolean ValoriVicini(String a, String b) {
+        try {
+            BigDecimal x = new BigDecimal(a.trim()).abs(), y = new BigDecimal(b.trim()).abs();
+            if (x.signum() == 0 || y.signum() == 0) return true;
+            BigDecimal rapporto = x.divide(y, 6, java.math.RoundingMode.HALF_UP);
+            return rapporto.compareTo(new BigDecimal("0.8")) >= 0 && rapporto.compareTo(new BigDecimal("1.25")) <= 0;
+        } catch (RuntimeException e) {
+            return true;
+        }
     }
 
     /**

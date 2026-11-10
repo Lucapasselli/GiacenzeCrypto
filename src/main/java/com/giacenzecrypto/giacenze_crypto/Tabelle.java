@@ -177,6 +177,16 @@ public class Tabelle {
 
     
     
+    /** Proprieta' client di una tabella di candidati: insieme degli ID (colonna 0 del modello) il cui valore (colonna 7) va evidenziato in verde. */
+    public static final String PROP_VALORI_VICINI = "ValoriVicini";
+
+    private static boolean ValoreVicino(JTable table, int modelRow) {
+        Object p = table.getClientProperty(PROP_VALORI_VICINI);
+        if (!(p instanceof Set<?> ids)) return false;
+        Object id = table.getModel().getValueAt(modelRow, 0);
+        return id != null && ids.contains(id.toString());
+    }
+
     /**
      * Applica alla tabella dei movimenti crypto un renderer che alterna lo sfondo delle righe (in base al
      * tema chiaro/scuro), colora in verde/rosso i depositi/prelievi e i valori positivi/negativi in colonna 11,
@@ -254,6 +264,11 @@ public class Tabelle {
                 else if (tabDepPrel && dirDP != 0 && (mCol == 3 || mCol == 4 || mCol == 5)) {
                     c.setBackground(bg);
                     setForeground(dirDP < 0 ? rosso : verdeScuro);
+                }
+                else if (mCol == 7 && ValoreVicino(table, modelRow)) {
+                    //Candidato di una classificazione con valore entro la tolleranza da quello del movimento da abbinare
+                    c.setBackground(Principale.tema.equalsIgnoreCase("Scuro") ? new Color(38, 87, 48) : new Color(198, 239, 206));
+                    setForeground(Principale.tema.equalsIgnoreCase("Scuro") ? new Color(200, 255, 200) : new Color(0, 97, 0));
                 }
 
                 else if (!tabMovimenti && table.convertColumnIndexToModel(col)==5 &&

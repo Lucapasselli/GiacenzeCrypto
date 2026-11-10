@@ -25,7 +25,7 @@ import org.junit.jupiter.api.io.TempDir;
  *   <li>la conversione dei piccoli saldi in MNT, con le gambe su secondi consecutivi, è un solo
  *       scambio;</li>
  *   <li>la riga Spot con Type vuoto non viene scartata ma diventa un prelievo da classificare;</li>
- *   <li>gli interessi del Funding in notazione scientifica ({@code 2.7E-7}) sono un'entrata
+ *   <li>gli interessi del Funding in notazione scientifica ({@code 3E-7}) sono un'entrata
  *       (bug M7 su questo tracciato);</li>
  *   <li>sottoscrizioni/riscatti Earn, Launchpool e giroconti non producono movimenti;</li>
  *   <li>Funding dal 2026: 'Convert' e' un acquisto (gamba in euro) o uno scambio, 'Airdrop Bonus' un
@@ -169,8 +169,8 @@ class ImportazioneGenericaBybitTest {
     @Test
     void conversionePiccoliSaldi_gambeSuSecondiDiversi_unoScambio() throws Exception {
         List<String[]> righe = new ArrayList<>();
-        righe.add(rigaSpot("convertSmallBalanceIntoBITIncreaseAssets", "MNT", "0.861709440000000000", "2024-03-02 10:30:44"));
-        righe.add(rigaSpot("smallBalanceIntoBITReduceAsset", "USDT", "-0.518251350000000000", "2024-03-02 10:30:45"));
+        righe.add(rigaSpot("convertSmallBalanceIntoBITIncreaseAssets", "MNT", "1.000000000000000000", "2025-01-12 10:00:00"));
+        righe.add(rigaSpot("smallBalanceIntoBITReduceAsset", "USDT", "-0.500000000000000000", "2025-01-12 10:00:01"));
 
         List<String[]> movs = importa(righe, spot());
         assertEquals(1, movs.size(), "le due gambe a un secondo di distanza sono lo stesso scambio");
@@ -194,14 +194,14 @@ class ImportazioneGenericaBybitTest {
     @Test
     void interesseInNotazioneScientifica_eUnEntrata() throws Exception {
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(
-                rigaFunding("2024-12-31 00:19:34", "BTC", "2.70000000000E-7", "Earn",
+                rigaFunding("2024-06-15 08:00:00", "BTC", "3.00000000000E-7", "Earn",
                         "Easy Earn | Flexible Interest Distribution"), null, funding());
         assertNotNull(movs);
         assertEquals(1, movs.size());
         String[] m = movs.get(0);
         assertEquals("RW", categoria(m));
         assertEquals("BTC", m[11], "gamba in entrata, non in uscita");
-        assertEquals(0, new BigDecimal(m[13]).compareTo(new BigDecimal("0.00000027")));
+        assertEquals(0, new BigDecimal(m[13]).compareTo(new BigDecimal("0.0000003")));
     }
 
     @Test
@@ -244,16 +244,16 @@ class ImportazioneGenericaBybitTest {
 
     @Test
     void launchpad_bitImpegnatoETokenRicevuto_unoScambio() throws Exception {
-        //Dati reali 2022: il token arriva nello stesso secondo o a un secondo dal BIT impegnato.
+        //Esempio: il token arriva nello stesso secondo o a un secondo dal BIT impegnato.
         List<String[]> movs = importa(List.of(
-                rigaSpot("commitmentForLaunchpad", "BIT", "-0.110131", "2022-04-27 11:08:26"),
-                rigaSpot("airdropAssetIncrease", "APEX", "2.6796", "2022-04-27 11:08:27"),
-                rigaSpot("commitmentForLaunchpad", "BIT", "-0.686780", "2022-07-19 11:11:08"),
-                rigaSpot("airdropAssetIncrease", "SLG", "11.8615", "2022-07-19 11:11:08")), spot());
+                rigaSpot("commitmentForLaunchpad", "BIT", "-0.1", "2025-01-10 10:00:00"),
+                rigaSpot("airdropAssetIncrease", "APEX", "2.5", "2025-01-10 10:00:01"),
+                rigaSpot("commitmentForLaunchpad", "BIT", "-0.7", "2025-01-11 10:00:00"),
+                rigaSpot("airdropAssetIncrease", "SLG", "12", "2025-01-11 10:00:00")), spot());
         assertEquals(2, movs.size(), "una sottoscrizione = uno scambio BIT -> token, non due movimenti");
         assertTrue(movs.stream().allMatch(m -> categoria(m).equals("SC")));
         String[] apex = movs.stream().filter(m -> m[8].equals("BIT") && m[11].equals("APEX")).findFirst().orElseThrow();
-        assertEquals(0, new BigDecimal(apex[10]).abs().compareTo(new BigDecimal("0.110131")));
+        assertEquals(0, new BigDecimal(apex[10]).abs().compareTo(new BigDecimal("0.1")));
     }
 
     @Test
@@ -261,9 +261,9 @@ class ImportazioneGenericaBybitTest {
         //Distribuzioni indipendenti (di norma alle 03:00), e quelle dal 2023 il cui impegno sta nel
         //Funding: nel gruppo manca il commitmentForLaunchpad e la riga non diventa mezzo scambio.
         List<String[]> movs = importa(List.of(
-                rigaSpot("airdropAssetIncrease", "STRM", "1.0866", "2022-04-28 00:02:07"),
-                rigaSpot("commitmentForLaunchpad", "BIT", "-0.483668", "2022-05-05 11:12:10"),
-                rigaSpot("airdropAssetIncrease", "PLY", "120.917", "2022-05-05 11:12:12")), spot());
+                rigaSpot("airdropAssetIncrease", "STRM", "1", "2025-01-12 03:00:00"),
+                rigaSpot("commitmentForLaunchpad", "BIT", "-0.5", "2025-01-13 10:00:00"),
+                rigaSpot("airdropAssetIncrease", "PLY", "120", "2025-01-13 10:00:02")), spot());
         assertEquals(3, movs.size());
         long airdrop = movs.stream().filter(m -> categoria(m).equals("RW") || m[5].toUpperCase().contains("AIRDROP")).count();
         assertEquals(2, airdrop, "STRM da solo e PLY a 2 secondi dal BIT sono airdrop");
@@ -324,9 +324,9 @@ class ImportazioneGenericaBybitTest {
     @Test
     void funding_prelievoAnnullato_nessunMovimento() throws Exception {
         List<String[]> righe = new ArrayList<>();
-        righe.add(rigaFunding("2026-06-10 18:00:00", "BTC", "-0.003500000000000000", "Withdraw", "Withdrawal"));
+        righe.add(rigaFunding("2026-06-10 18:00:00", "BTC", "-0.004000000000000000", "Withdraw", "Withdrawal"));
         righe.add(rigaFunding("2026-06-10 18:02:00", "USDT", "-5", "Withdraw", "Withdrawal"));
-        righe.add(rigaFunding("2026-06-10 18:05:00", "BTC", "0.003500000000000000", "Withdraw", "Withdrawal Canceled"));
+        righe.add(rigaFunding("2026-06-10 18:05:00", "BTC", "0.004000000000000000", "Withdraw", "Withdrawal Canceled"));
 
         List<String[]> movs = importa(righe, funding());
         assertEquals(1, movs.size(), "il prelievo annullato e il suo annullamento non entrano");
@@ -338,13 +338,13 @@ class ImportazioneGenericaBybitTest {
     void funding_prelievoAnnullatoGiaInArchivio_annullamentoEntra() throws Exception {
         //File importato prima che 'Withdrawal Canceled' fosse conosciuta: il prelievo e' gia' in archivio.
         ConfigurazioneImport f = funding();
-        String[] prelievo = rigaFunding("2026-06-10 18:00:00", "BTC", "-0.003500000000000000", "Withdraw", "Withdrawal");
+        String[] prelievo = rigaFunding("2026-06-10 18:00:00", "BTC", "-0.004000000000000000", "Withdraw", "Withdrawal");
         String[] archiviato = ImportazioneGenerica.costruisciMovimenti(prelievo, null, f).get(0);
         Principale.MappaCryptoWallet.put(archiviato[0], archiviato);
         try {
             List<String[]> righe = new ArrayList<>();
             righe.add(prelievo);
-            righe.add(rigaFunding("2026-06-10 18:05:00", "BTC", "0.003500000000000000", "Withdraw", "Withdrawal Canceled"));
+            righe.add(rigaFunding("2026-06-10 18:05:00", "BTC", "0.004000000000000000", "Withdraw", "Withdrawal Canceled"));
             List<String[]> movs = importa(righe, f);
             assertEquals(List.of("DC", "PC"), movs.stream().map(ImportazioneGenericaBybitTest::categoria).sorted().toList(),
                     "il prelievo cadra' come doppione, l'annullamento deve entrare");
@@ -358,7 +358,7 @@ class ImportazioneGenericaBybitTest {
         List<String[]> righe = new ArrayList<>();
         //Importo diverso: non e' il prelievo annullato. E un annullamento il cui prelievo e' in un altro export.
         righe.add(rigaFunding("2026-06-10 18:00:00", "BTC", "-0.0034", "Withdraw", "Withdrawal"));
-        righe.add(rigaFunding("2026-06-10 18:05:00", "BTC", "0.0035", "Withdraw", "Withdrawal Canceled"));
+        righe.add(rigaFunding("2026-06-10 18:05:00", "BTC", "0.004", "Withdraw", "Withdrawal Canceled"));
         //L'annullamento abbina solo prelievi precedenti.
         righe.add(rigaFunding("2026-06-11 10:00:00", "ETH", "0.5", "Withdraw", "Withdrawal Canceled"));
         righe.add(rigaFunding("2026-06-11 11:00:00", "ETH", "-0.5", "Withdraw", "Withdrawal"));

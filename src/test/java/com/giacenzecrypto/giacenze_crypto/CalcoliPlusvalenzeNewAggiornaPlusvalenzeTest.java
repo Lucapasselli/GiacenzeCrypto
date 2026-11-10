@@ -265,6 +265,28 @@ class CalcoliPlusvalenzeNewAggiornaPlusvalenzeTest {
                 "Con l'opzione attiva ogni scambio cripto-cripto e' rilevante");
     }
 
+    @Test
+    void depositiEPrelieviCrypto_MovimentoRilevanteLeggeIlCampo18() {
+        //La maschera del LiFo mostrava RILEVANTE un trasferimento fra wallet: i DC/PC classificati
+        //non arrivavano mai ai rami sul campo 18
+        assertFalse(Funzioni.MovimentoRilevante(movimento("2025-01-20 09:19", "PC", "PTW - Trasferimento",
+                "TRASFERIMENTO TRA WALLET", "BTC", "Crypto", "-2", "", "", "", "203595.57")),
+                "Il trasferimento fra wallet (prelievo) non e' rilevante");
+        assertFalse(Funzioni.MovimentoRilevante(movimento("2025-01-20 09:20", "DC", "DTW - Trasferimento",
+                "TRASFERIMENTO TRA WALLET", "", "", "", "BTC", "Crypto", "2", "203595.57")),
+                "Il trasferimento fra wallet (deposito) non e' rilevante");
+        assertFalse(Funzioni.MovimentoRilevante(movimento("2025-01-20 09:21", "PC", "PWN - Wallet morto",
+                "PRELIEVO", "BTC", "Crypto", "-2", "", "", "", "100")),
+                "Il prelievo su wallet morto toglie dal LiFo senza plusvalenza");
+        assertTrue(Funzioni.MovimentoRilevante(movimento("2025-01-20 09:22", "PC", "PCO - Cashout",
+                "PRELIEVO", "BTC", "Crypto", "-2", "", "", "", "100")));
+        assertTrue(Funzioni.MovimentoRilevante(movimento("2025-01-20 09:23", "DC", "DAC - Acquisto",
+                "DEPOSITO", "", "", "", "BTC", "Crypto", "2", "100")));
+        assertTrue(Funzioni.MovimentoRilevante(movimento("2025-01-20 09:24", "PC", "",
+                "PRELIEVO", "BTC", "Crypto", "-2", "", "", "", "100")),
+                "Non classificato: segue PL_CosiderareMovimentiNC");
+    }
+
     // ------------------------------------------------------------------
     // Reward / staking
     // ------------------------------------------------------------------

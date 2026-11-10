@@ -144,15 +144,15 @@ class Binance_AutoInvestTest {
 
     @Test
     void pianoSuPiuMonete_unaUscitaTreEntrate() throws Exception {
-        String[] uscita = movimento("2023-08-31 01:07:39", "Auto-Invest Transaction", "BUSD", "Crypto", "-2", "1.84");
-        String[] bnb = movimento("2023-08-31 01:10:35", "Auto-Invest Transaction", "BNB", "Crypto", "0.00177812", "0.37");
-        String[] btc = movimento("2023-08-31 01:10:39", "Auto-Invest Transaction", "BTC", "Crypto", "0.00002917", "0.73");
-        String[] eth = movimento("2023-08-31 01:10:45", "Auto-Invest Transaction", "ETH", "Crypto", "0.00046675", "0.74");
+        String[] uscita = movimento("2025-08-31 01:07:39", "Auto-Invest Transaction", "BUSD", "Crypto", "-2", "1.84");
+        String[] bnb = movimento("2025-08-31 01:10:35", "Auto-Invest Transaction", "BNB", "Crypto", "0.002", "0.37");
+        String[] btc = movimento("2025-08-31 01:10:39", "Auto-Invest Transaction", "BTC", "Crypto", "0.00003", "0.73");
+        String[] eth = movimento("2025-08-31 01:10:45", "Auto-Invest Transaction", "ETH", "Crypto", "0.0005", "0.74");
 
         Binance_AutoInvest.Esito e = Binance_AutoInvest.Abbina(PREZZATORE, sottoscrizioni(
-                "2023-08-31 01:00:00,BNB,0.40000000 BUSD,0.00080000 BUSD,0.00177812 BNB,Flexible Savings,Success",
-                "2023-08-31 01:00:00,BTC,0.80000000 BUSD,0.00160000 BUSD,0.00002917 BTC,Spot Wallet,Success",
-                "2023-08-31 01:00:00,ETH,0.80000000 BUSD,0.00160000 BUSD,0.00046675 ETH,Spot Wallet,Success"));
+                "2025-08-31 01:00:00,BNB,0.40000000 BUSD,0.00080000 BUSD,0.002 BNB,Flexible Savings,Success",
+                "2025-08-31 01:00:00,BTC,0.80000000 BUSD,0.00160000 BUSD,0.00003 BTC,Spot Wallet,Success",
+                "2025-08-31 01:00:00,ETH,0.80000000 BUSD,0.00160000 BUSD,0.0005 ETH,Spot Wallet,Success"));
 
         assertEquals(1, e.esecuzioni);
         assertEquals(1, e.esecuzioniCreate, e.dettagli.toString());
@@ -161,7 +161,7 @@ class Binance_AutoInvestTest {
         //Importati intatti nelle quantità e nei valori
         assertEquals("-2", uscita[10]);
         assertEquals("1.84", uscita[15]);
-        assertEquals("0.00177812", bnb[13]);
+        assertEquals("0.002", bnb[13]);
         //Uscita + speculare + 3 scambi + 3 speculari + 3 entrate
         assertEquals(11, uscita[20].split(",").length + 1);
         assertGruppoSimmetrico(uscita);
@@ -179,9 +179,9 @@ class Binance_AutoInvestTest {
         //Secondo passaggio: niente da fare
         int n = MappaCryptoWallet.size();
         Binance_AutoInvest.Esito e2 = Binance_AutoInvest.Abbina(PREZZATORE, sottoscrizioni(
-                "2023-08-31 01:00:00,BNB,0.40000000 BUSD,0.00080000 BUSD,0.00177812 BNB,Flexible Savings,Success",
-                "2023-08-31 01:00:00,BTC,0.80000000 BUSD,0.00160000 BUSD,0.00002917 BTC,Spot Wallet,Success",
-                "2023-08-31 01:00:00,ETH,0.80000000 BUSD,0.00160000 BUSD,0.00046675 ETH,Spot Wallet,Success"));
+                "2025-08-31 01:00:00,BNB,0.40000000 BUSD,0.00080000 BUSD,0.002 BNB,Flexible Savings,Success",
+                "2025-08-31 01:00:00,BTC,0.80000000 BUSD,0.00160000 BUSD,0.00003 BTC,Spot Wallet,Success",
+                "2025-08-31 01:00:00,ETH,0.80000000 BUSD,0.00160000 BUSD,0.0005 ETH,Spot Wallet,Success"));
         assertEquals(1, e2.esecuzioniGiaAPosto);
         assertEquals(0, e2.Creati());
         assertEquals(n, MappaCryptoWallet.size());
@@ -196,14 +196,14 @@ class Binance_AutoInvestTest {
 
     @Test
     void dueUsciteStessoOrario_siSeparanoPerSommaEsatta() throws Exception {
-        String[] u1 = movimento("2023-09-29 01:01:04", "Auto-Invest Transaction", "FDUSD", "Crypto", "-1", "0.94");
-        String[] u2 = movimento("2023-09-29 01:02:11", "Auto-Invest Transaction", "FDUSD", "Crypto", "-0.5", "0.47");
-        String[] bel = movimento("2023-09-29 01:10:43", "Auto-Invest Transaction", "BEL", "Crypto", "0.75770036", "0.46");
-        String[] iotx = movimento("2023-09-29 01:10:48", "Auto-Invest Transaction", "IOTX", "Crypto", "64.93376881", "0.93");
+        String[] u1 = movimento("2025-09-29 01:01:04", "Auto-Invest Transaction", "FDUSD", "Crypto", "-1", "0.94");
+        String[] u2 = movimento("2025-09-29 01:02:11", "Auto-Invest Transaction", "FDUSD", "Crypto", "-0.5", "0.47");
+        String[] bel = movimento("2025-09-29 01:10:43", "Auto-Invest Transaction", "BEL", "Crypto", "0.75", "0.46");
+        String[] iotx = movimento("2025-09-29 01:10:48", "Auto-Invest Transaction", "IOTX", "Crypto", "65", "0.93");
 
         Binance_AutoInvest.Esito e = Binance_AutoInvest.Abbina(PREZZATORE, sottoscrizioni(
-                "2023-09-29 01:00:00,BEL,0.50000000 FDUSD,0.00100000 FDUSD,0.75770036 BEL,Spot Wallet,Success",
-                "2023-09-29 01:00:00,IOTX,1.00000000 FDUSD,0.00200000 FDUSD,64.93376881 IOTX,Spot Wallet,Success"));
+                "2025-09-29 01:00:00,BEL,0.50000000 FDUSD,0.00100000 FDUSD,0.75 BEL,Spot Wallet,Success",
+                "2025-09-29 01:00:00,IOTX,1.00000000 FDUSD,0.00200000 FDUSD,65 IOTX,Spot Wallet,Success"));
 
         assertEquals(2, e.esecuzioniCreate, e.dettagli.toString());
         assertTrue(Arrays.asList(u1[20].split(",")).contains(iotx[0]), "1 FDUSD ha pagato gli IOTX");
@@ -213,11 +213,11 @@ class Binance_AutoInvestTest {
 
     @Test
     void senzaUscitaNelCsv_laSiGenera() throws Exception {
-        String[] eth = movimento("2022-11-11 14:22:46", "Auto-Invest Transaction", "ETH", "Crypto", "0.00000784", "0.01");
-        movimento("2022-10-01 10:00:00", "Deposit", "BUSD", "Crypto", "10", "10.00"); //solo per il tipo della moneta
+        String[] eth = movimento("2024-11-11 14:22:46", "Auto-Invest Transaction", "ETH", "Crypto", "0.00001", "0.01");
+        movimento("2024-10-01 10:00:00", "Deposit", "BUSD", "Crypto", "10", "10.00"); //solo per il tipo della moneta
 
         Binance_AutoInvest.Esito e = Binance_AutoInvest.Abbina(PREZZATORE, sottoscrizioni(
-                "2022-11-11 14:00:00,ETH,0.01000000 BUSD,--,0.00000784 ETH,Spot Wallet + Flexible Savings,Success"));
+                "2024-11-11 14:00:00,ETH,0.01000000 BUSD,--,0.00001 ETH,Spot Wallet + Flexible Savings,Success"));
 
         assertEquals(1, e.esecuzioniCreate, e.dettagli.toString());
         assertEquals(1, e.usciteGenerate);
@@ -237,27 +237,27 @@ class Binance_AutoInvestTest {
     @Test
     void pianoIndice_ribilanciamentoERiscatto_sottoWalletAZero() throws Exception {
         //Due acquisti EUR di BTC e ADA, un ribilanciamento che vende ADA e compra BTC e SOL, un riscatto finale
-        String[] u1 = movimento("2023-06-13 03:08:49", "Auto-Invest Transaction", "EUR", "FIAT", "-0.4", "0.40");
-        String[] u2 = movimento("2023-06-14 03:07:47", "Auto-Invest Transaction", "EUR", "FIAT", "-0.4", "0.40");
-        String[] rBtc = movimento("2023-08-10 05:36:45", "Index-Auto-Investment - Redeem Positions", "BTC", "Crypto", "0.000009", "0.45");
-        String[] rAda = movimento("2023-08-10 05:36:45", "Index-Auto-Investment - Redeem Positions", "ADA", "Crypto", "0.5", "0.25");
-        String[] rSol = movimento("2023-08-10 05:36:45", "Index-Auto-Investment - Redeem Positions", "SOL", "Crypto", "0.001", "0.10");
+        String[] u1 = movimento("2025-06-13 03:08:49", "Auto-Invest Transaction", "EUR", "FIAT", "-0.4", "0.40");
+        String[] u2 = movimento("2025-06-14 03:07:47", "Auto-Invest Transaction", "EUR", "FIAT", "-0.4", "0.40");
+        String[] rBtc = movimento("2025-08-10 05:36:45", "Index-Auto-Investment - Redeem Positions", "BTC", "Crypto", "0.000009", "0.45");
+        String[] rAda = movimento("2025-08-10 05:36:45", "Index-Auto-Investment - Redeem Positions", "ADA", "Crypto", "0.5", "0.25");
+        String[] rSol = movimento("2025-08-10 05:36:45", "Index-Auto-Investment - Redeem Positions", "SOL", "Crypto", "0.001", "0.10");
 
         Binance_AutoInvest.Esito e = Binance_AutoInvest.Abbina(PREZZATORE,
                 sottoscrizioni(
-                        "2023-06-13 03:00:00,BTC,0.20000000 EUR,--,0.000004 BTC,Spot Wallet,Success",
-                        "2023-06-13 03:00:00,ADA,0.20000000 EUR,--,0.4 ADA,Spot Wallet,Success",
-                        "2023-06-14 03:00:00,BTC,0.20000000 EUR,--,0.000004 BTC,Spot Wallet,Success",
-                        "2023-06-14 03:00:00,ADA,0.20000000 EUR,--,0.4 ADA,Spot Wallet,Success"),
+                        "2025-06-13 03:00:00,BTC,0.20000000 EUR,--,0.000004 BTC,Spot Wallet,Success",
+                        "2025-06-13 03:00:00,ADA,0.20000000 EUR,--,0.4 ADA,Spot Wallet,Success",
+                        "2025-06-14 03:00:00,BTC,0.20000000 EUR,--,0.000004 BTC,Spot Wallet,Success",
+                        "2025-06-14 03:00:00,ADA,0.20000000 EUR,--,0.4 ADA,Spot Wallet,Success"),
                 ribilanciamenti(
-                        "2023-08-10 05:36:45,Indice,LTC,0,0.00000000 USDT",
-                        "2023-06-30 10:00:15,Indice,ADA,0.3,0.00100000 USDT",
-                        "2023-06-30 10:00:15,Indice,BTC,0.000001,0.00100000 USDT",
-                        "2023-06-30 10:00:15,Indice,SOL,0.001,0.00100000 USDT"),
+                        "2025-08-10 05:36:45,Indice,LTC,0,0.00000000 USDT",
+                        "2025-06-30 10:00:15,Indice,ADA,0.3,0.00100000 USDT",
+                        "2025-06-30 10:00:15,Indice,BTC,0.000001,0.00100000 USDT",
+                        "2025-06-30 10:00:15,Indice,SOL,0.001,0.00100000 USDT"),
                 riscatti(
-                        "2023-08-10 05:36:45,Indice,BTC,0.000009,0",
-                        "2023-08-10 05:36:45,Indice,ADA,0.5,0",
-                        "2023-08-10 05:36:45,Indice,SOL,0.001,0"));
+                        "2025-08-10 05:36:45,Indice,BTC,0.000009,0",
+                        "2025-08-10 05:36:45,Indice,ADA,0.5,0",
+                        "2025-08-10 05:36:45,Indice,SOL,0.001,0"));
 
         assertEquals(2, e.esecuzioniCreate, e.dettagli.toString());
         assertEquals(4, e.acquistiIndice);
@@ -297,18 +297,18 @@ class Binance_AutoInvestTest {
         int n = MappaCryptoWallet.size();
         Binance_AutoInvest.Esito e2 = Binance_AutoInvest.Abbina(PREZZATORE,
                 sottoscrizioni(
-                        "2023-06-13 03:00:00,BTC,0.20000000 EUR,--,0.000004 BTC,Spot Wallet,Success",
-                        "2023-06-13 03:00:00,ADA,0.20000000 EUR,--,0.4 ADA,Spot Wallet,Success",
-                        "2023-06-14 03:00:00,BTC,0.20000000 EUR,--,0.000004 BTC,Spot Wallet,Success",
-                        "2023-06-14 03:00:00,ADA,0.20000000 EUR,--,0.4 ADA,Spot Wallet,Success"),
+                        "2025-06-13 03:00:00,BTC,0.20000000 EUR,--,0.000004 BTC,Spot Wallet,Success",
+                        "2025-06-13 03:00:00,ADA,0.20000000 EUR,--,0.4 ADA,Spot Wallet,Success",
+                        "2025-06-14 03:00:00,BTC,0.20000000 EUR,--,0.000004 BTC,Spot Wallet,Success",
+                        "2025-06-14 03:00:00,ADA,0.20000000 EUR,--,0.4 ADA,Spot Wallet,Success"),
                 ribilanciamenti(
-                        "2023-06-30 10:00:15,Indice,ADA,0.3,0.00100000 USDT",
-                        "2023-06-30 10:00:15,Indice,BTC,0.000001,0.00100000 USDT",
-                        "2023-06-30 10:00:15,Indice,SOL,0.001,0.00100000 USDT"),
+                        "2025-06-30 10:00:15,Indice,ADA,0.3,0.00100000 USDT",
+                        "2025-06-30 10:00:15,Indice,BTC,0.000001,0.00100000 USDT",
+                        "2025-06-30 10:00:15,Indice,SOL,0.001,0.00100000 USDT"),
                 riscatti(
-                        "2023-08-10 05:36:45,Indice,BTC,0.000009,0",
-                        "2023-08-10 05:36:45,Indice,ADA,0.5,0",
-                        "2023-08-10 05:36:45,Indice,SOL,0.001,0"));
+                        "2025-08-10 05:36:45,Indice,BTC,0.000009,0",
+                        "2025-08-10 05:36:45,Indice,ADA,0.5,0",
+                        "2025-08-10 05:36:45,Indice,SOL,0.001,0"));
         assertEquals(0, e2.Creati());
         assertEquals(2, e2.esecuzioniGiaAPosto);
         assertEquals(1, e2.ribilanciamentiGiaAPosto);
@@ -319,14 +319,14 @@ class Binance_AutoInvestTest {
 
     @Test
     void pianoIndiceAperto_versoDaiPrezzi() throws Exception {
-        movimento("2023-06-13 03:08:49", "Auto-Invest Transaction", "EUR", "FIAT", "-150", "150.00");
+        movimento("2025-06-13 03:08:49", "Auto-Invest Transaction", "EUR", "FIAT", "-150", "150.00");
         Binance_AutoInvest.Esito e = Binance_AutoInvest.Abbina(PREZZATORE,
                 sottoscrizioni(
-                        "2023-06-13 03:00:00,BTC,50.00000000 EUR,--,0.001 BTC,Spot Wallet,Success",
-                        "2023-06-13 03:00:00,ETH,100.00000000 EUR,--,0.05 ETH,Spot Wallet,Success"),
+                        "2025-06-13 03:00:00,BTC,50.00000000 EUR,--,0.001 BTC,Spot Wallet,Success",
+                        "2025-06-13 03:00:00,ETH,100.00000000 EUR,--,0.05 ETH,Spot Wallet,Success"),
                 ribilanciamenti(
-                        "2023-06-30 10:00:15,Indice,ETH,0.0125,0.01 USDT",
-                        "2023-06-30 10:00:15,Indice,BTC,0.0005,0.01 USDT"));
+                        "2025-06-30 10:00:15,Indice,ETH,0.0125,0.01 USDT",
+                        "2025-06-30 10:00:15,Indice,BTC,0.0005,0.01 USDT"));
         assertEquals(1, e.ribilanciamentiCreati, e.dettagli.toString());
         assertEquals(2, e.monetePerPrezzo);
         //ETH vale 100 euro e BTC 50: il ribilanciamento sposta 25 euro, e lo sbilancio è nullo in tutti e due i versi.
@@ -346,13 +346,13 @@ class Binance_AutoInvestTest {
      */
     @Test
     void ribilanciamento_documentoDiOrigineDalFileRebalancing() throws Exception {
-        String[] uscita = movimento("2023-06-13 03:08:49", "Auto-Invest Transaction", "EUR", "FIAT", "-150", "150.00");
+        String[] uscita = movimento("2025-06-13 03:08:49", "Auto-Invest Transaction", "EUR", "FIAT", "-150", "150.00");
         String[] righeSottoscrizioni = {
-            "2023-06-13 03:00:00,BTC,50.00000000 EUR,--,0.001 BTC,Spot Wallet,Success",
-            "2023-06-13 03:00:00,ETH,100.00000000 EUR,--,0.05 ETH,Spot Wallet,Success"};
+            "2025-06-13 03:00:00,BTC,50.00000000 EUR,--,0.001 BTC,Spot Wallet,Success",
+            "2025-06-13 03:00:00,ETH,100.00000000 EUR,--,0.05 ETH,Spot Wallet,Success"};
         String[] righeRibilanciamenti = {
-            "2023-06-30 10:00:15,Indice,ETH,0.0125,0.01 USDT",
-            "2023-06-30 10:00:15,Indice,BTC,0.0005,0.01 USDT"};
+            "2025-06-30 10:00:15,Indice,ETH,0.0125,0.01 USDT",
+            "2025-06-30 10:00:15,Indice,BTC,0.0005,0.01 USDT"};
 
         //Con il file registrato: lo scambio nasce con il suo id
         File sott = sottoscrizioni(righeSottoscrizioni);
@@ -396,25 +396,25 @@ class Binance_AutoInvestTest {
     @Test
     void scambioDifferitoAutomatico_giustoResta_sbagliatoSiRifa() throws Exception {
         //Giusto: 0,1 USDT -> FUN della stessa esecuzione
-        String[] uFun = movimento("2023-05-02 09:02:09", "Auto-Invest Transaction", "USDT", "Crypto", "-0.1", "0.09");
-        String[] eFun = movimento("2023-05-02 09:13:42", "Auto-Invest Transaction", "FUN", "Crypto", "17.37873739", "0.09");
+        String[] uFun = movimento("2025-05-02 09:02:09", "Auto-Invest Transaction", "USDT", "Crypto", "-0.1", "0.09");
+        String[] eFun = movimento("2025-05-02 09:13:42", "Auto-Invest Transaction", "FUN", "Crypto", "17", "0.09");
         //Sbagliato: 2 EUR del piano indice abbinati ai BNB di un altro piano
-        String[] uEur = movimento("2023-08-30 02:38:16", "Auto-Invest Transaction", "EUR", "FIAT", "-2", "2.00");
-        String[] uBusd = movimento("2023-08-30 02:42:00", "Auto-Invest Transaction", "BUSD", "Crypto", "-2", "1.84");
-        String[] eBnb = movimento("2023-08-30 02:46:35", "Auto-Invest Transaction", "BNB", "Crypto", "0.00175691", "0.37");
-        String[] eBtc = movimento("2023-08-30 02:46:39", "Auto-Invest Transaction", "BTC", "Crypto", "0.00002866", "0.73");
-        String[] eEth = movimento("2023-08-30 02:46:46", "Auto-Invest Transaction", "ETH", "Crypto", "0.00045972", "0.74");
+        String[] uEur = movimento("2025-08-30 02:38:16", "Auto-Invest Transaction", "EUR", "FIAT", "-2", "2.00");
+        String[] uBusd = movimento("2025-08-30 02:42:00", "Auto-Invest Transaction", "BUSD", "Crypto", "-2", "1.84");
+        String[] eBnb = movimento("2025-08-30 02:46:35", "Auto-Invest Transaction", "BNB", "Crypto", "0.002", "0.37");
+        String[] eBtc = movimento("2025-08-30 02:46:39", "Auto-Invest Transaction", "BTC", "Crypto", "0.00003", "0.73");
+        String[] eEth = movimento("2025-08-30 02:46:46", "Auto-Invest Transaction", "ETH", "Crypto", "0.00045", "0.74");
         assertTrue(GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(uFun[0], eFun[0]));
         assertTrue(GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(uEur[0], eBnb[0]));
         String idFun = uFun[0];
 
         Binance_AutoInvest.Esito e = Binance_AutoInvest.Abbina(PREZZATORE, sottoscrizioni(
-                "2023-05-02 09:00:00,FUN,0.10000000 USDT,--,17.37873739 FUN,Flexible Savings,Success",
-                "2023-08-30 02:30:00,BTC,1.00000000 EUR,--,0.00002 BTC,Spot Wallet,Success",
-                "2023-08-30 02:30:00,ETH,1.00000000 EUR,--,0.0005 ETH,Spot Wallet,Success",
-                "2023-08-30 02:40:00,BNB,0.40000000 BUSD,0.00080000 BUSD,0.00175691 BNB,Flexible Savings,Success",
-                "2023-08-30 02:40:00,BTC,0.80000000 BUSD,0.00160000 BUSD,0.00002866 BTC,Spot Wallet,Success",
-                "2023-08-30 02:40:00,ETH,0.80000000 BUSD,0.00160000 BUSD,0.00045972 ETH,Spot Wallet,Success"));
+                "2025-05-02 09:00:00,FUN,0.10000000 USDT,--,17 FUN,Flexible Savings,Success",
+                "2025-08-30 02:30:00,BTC,1.00000000 EUR,--,0.00002 BTC,Spot Wallet,Success",
+                "2025-08-30 02:30:00,ETH,1.00000000 EUR,--,0.0005 ETH,Spot Wallet,Success",
+                "2025-08-30 02:40:00,BNB,0.40000000 BUSD,0.00080000 BUSD,0.002 BNB,Flexible Savings,Success",
+                "2025-08-30 02:40:00,BTC,0.80000000 BUSD,0.00160000 BUSD,0.00003 BTC,Spot Wallet,Success",
+                "2025-08-30 02:40:00,ETH,0.80000000 BUSD,0.00160000 BUSD,0.00045 ETH,Spot Wallet,Success"));
 
         assertEquals(1, e.esecuzioniScambioDifferito, e.dettagli.toString());
         assertEquals(1, e.scambiDifferitiSostituiti);
@@ -433,11 +433,11 @@ class Binance_AutoInvestTest {
 
     @Test
     void entrataClassificataAMano_nonSiTocca() throws Exception {
-        String[] u = movimento("2023-05-02 09:02:09", "Auto-Invest Transaction", "USDT", "Crypto", "-0.1", "0.09");
-        String[] en = movimento("2023-05-02 09:13:42", "Auto-Invest Transaction", "FUN", "Crypto", "17.37873739", "0.09");
+        String[] u = movimento("2025-05-02 09:02:09", "Auto-Invest Transaction", "USDT", "Crypto", "-0.1", "0.09");
+        String[] en = movimento("2025-05-02 09:13:42", "Auto-Invest Transaction", "FUN", "Crypto", "17", "0.09");
         en[18] = "DCZ - DEPOSITO A COSTO 0";
         Binance_AutoInvest.Esito e = Binance_AutoInvest.Abbina(PREZZATORE, sottoscrizioni(
-                "2023-05-02 09:00:00,FUN,0.10000000 USDT,--,17.37873739 FUN,Flexible Savings,Success"));
+                "2025-05-02 09:00:00,FUN,0.10000000 USDT,--,17 FUN,Flexible Savings,Success"));
         assertEquals(1, e.esecuzioniNonTrovate);
         assertEquals(0, e.esecuzioniCreate);
         assertTrue(Funzioni.noData(u[18]));
@@ -456,7 +456,7 @@ class Binance_AutoInvestTest {
 
     /**
      * L'utente può rinominare i file di dettaglio: il tipo viene dall'intestazione e il fuso, che Binance scrive nel
-     * nome, si ricava dal contenuto. Due piani a un'ora di distanza con lo stesso importo (forma vista su un dataset reale, valori inventati):
+     * nome, si ricava dal contenuto. Due piani a un'ora di distanza con lo stesso importo (forma di un dataset vero, valori inventati):
      * con gli orari del file spostati di due ore ogni esecuzione cadrebbe più vicina all'uscita dell'altra, e le
      * uscite si abbinerebbero alle monete sbagliate.
      */
@@ -464,14 +464,14 @@ class Binance_AutoInvestTest {
     void fileRinominati_fusoDalContenuto() throws Exception {
         String intestazione = "Time,Holding Coin,Amount Per Period,Trading Fee,Units,From,Status";
         String[] righe = {
-            "2023-09-18 01:00:00,IOTX,1.00000000 FDUSD,0.00200000 FDUSD,50.12345678 IOTX,Spot Wallet,Success",
-            "2023-09-18 02:00:00,ADA,1.00000000 FDUSD,0.00200000 FDUSD,200.87654321 ADA,Spot Wallet,Success"};
+            "2025-09-18 01:00:00,IOTX,1.00000000 FDUSD,0.00200000 FDUSD,50.12345678 IOTX,Spot Wallet,Success",
+            "2025-09-18 02:00:00,ADA,1.00000000 FDUSD,0.00200000 FDUSD,200.87654321 ADA,Spot Wallet,Success"};
         for (boolean conAltroFile : new boolean[]{false, true}) {
             MappaCryptoWallet.clear();
-            String[] u1 = movimento("2023-09-18 01:01:10", "Auto-Invest Transaction", "FDUSD", "Crypto", "-1", "0.94");
-            String[] iotx = movimento("2023-09-18 01:11:20", "Auto-Invest Transaction", "IOTX", "Crypto", "50.12345678", "0.93");
-            String[] u2 = movimento("2023-09-18 02:01:10", "Auto-Invest Transaction", "FDUSD", "Crypto", "-1", "0.94");
-            String[] ada = movimento("2023-09-18 02:10:30", "Auto-Invest Transaction", "ADA", "Crypto", "200.87654321", "0.93");
+            String[] u1 = movimento("2025-09-18 01:01:10", "Auto-Invest Transaction", "FDUSD", "Crypto", "-1", "0.94");
+            String[] iotx = movimento("2025-09-18 01:11:20", "Auto-Invest Transaction", "IOTX", "Crypto", "50.12345678", "0.93");
+            String[] u2 = movimento("2025-09-18 02:01:10", "Auto-Invest Transaction", "FDUSD", "Crypto", "-1", "0.94");
+            String[] ada = movimento("2025-09-18 02:10:30", "Auto-Invest Transaction", "ADA", "Crypto", "200.87654321", "0.93");
 
             File rinominato = file("acquisti.csv", intestazione, righe);
             //Con un altro file col nome di Binance il fuso viene da quello, senza stime né avvisi
@@ -495,7 +495,7 @@ class Binance_AutoInvestTest {
     void fileRinominati_fusoNonRicavabile() throws Exception {
         Binance_AutoInvest.Esito e = Binance_AutoInvest.Abbina(PREZZATORE, file("acquisti.csv",
                 "Time,Holding Coin,Amount Per Period,Trading Fee,Units,From,Status",
-                "2022-11-14 15:00:00,ETH,0.01000000 BUSD,--,0.00000750 ETH,Spot Wallet,Success"));
+                "2024-11-14 15:00:00,ETH,0.01000000 BUSD,--,0.00001 ETH,Spot Wallet,Success"));
         assertTrue(e.avvisi.stream().anyMatch(a -> a.contains("letti come UTC")), e.avvisi.toString());
     }
 

@@ -19,8 +19,7 @@ import org.junit.jupiter.api.io.TempDir;
  * virtuali (16 e 17, oltre l'ultima colonna vera) lette poi come {@code moneta}/{@code monetaUscita}.
  *
  * <p>Dati sintetici scritti nella stessa forma degli export originali (intestazioni comprese):
- * i CSV veri dell'utente non vanno committati. Verificato anche sugli export reali (non committati,
- * 2026-10-01): 127 righe spot, 16 depositi, 11 prelievi.</p>
+ * i CSV veri dell'utente non vanno committati. Verificato anche su export veri (non committati).</p>
  */
 class ImportazioneGenericaKuCoinTest {
 
@@ -96,42 +95,42 @@ class ImportazioneGenericaKuCoinTest {
     @Test
     void spotBuy_baseEntraQuotaEsce_feeNellaMonetaDellaColonna() throws Exception {
         String file = scrivi("Spot1.csv", INTESTAZIONE_SPOT,
-                "1,mainAccount,aaaa0001,KCS-ETH,BUY,MARKET,0.001369,5.98977355,0.00819999998995,4.88,"
-                + "2020-12-06 00:17:29,0.0000163999999799,,TAKER,ETH,CLASSIC");
+                "1,mainAccount,aaaa0001,KCS-ETH,BUY,MARKET,0.001,10,0.01,5,"
+                + "2025-01-10 10:00:00,0.00002,,TAKER,ETH,CLASSIC");
         List<String[]> movs = importa(file, cfg("KuCoin Spot Trades", 18));
         assertEquals(2, movs.size(), "scambio + commissioni");
 
         String[] s = scambio(movs);
         assertEquals("ETH", s[8], "la quota esce");
-        assertEquals("-0.00819999998995", s[10]);
+        assertEquals("-0.01", s[10]);
         assertEquals("KCS", s[11], "la base entra");
-        assertEquals("5.98977355", s[13]);
+        assertEquals("10", s[13]);
 
         String[] f = commissione(movs);
         assertEquals("ETH", f[8]);
-        assertEquals("-0.0000163999999799", f[10]);
+        assertEquals("-0.00002", f[10]);
     }
 
     @Test
     void spotSell_baseEsceQuotaEntra() throws Exception {
         String file = scrivi("Spot2.csv", INTESTAZIONE_SPOT,
-                "1,mainAccount,aaaa0002,ETH-USDT,SELL,MARKET,602.72,0.0008818,0.531478496,0.53,"
-                + "2020-12-06 00:23:12,0.000531478496,,TAKER,USDT,CLASSIC");
+                "1,mainAccount,aaaa0002,ETH-USDT,SELL,MARKET,600,0.001,0.6,0.6,"
+                + "2025-01-10 10:05:00,0.0006,,TAKER,USDT,CLASSIC");
         List<String[]> movs = importa(file, cfg("KuCoin Spot Trades", 18));
         assertEquals(2, movs.size());
 
         String[] s = scambio(movs);
         assertEquals("ETH", s[8], "sulla SELL la base esce");
-        assertEquals("-0.0008818", s[10]);
+        assertEquals("-0.001", s[10]);
         assertEquals("USDT", s[11], "sulla SELL la quota entra");
-        assertEquals("0.531478496", s[13]);
+        assertEquals("0.6", s[13]);
         assertEquals("USDT", commissione(movs)[8]);
     }
 
     @Test
     void spot_righeIdenticheDellOrdineParzialeEntranoTutte() throws Exception {
-        String riga = "1,mainAccount,aaaa0003,TRX-KCS,BUY,LIMIT,0.024802,27.4615,0.681100123,7.36,"
-                + "2025-01-04 13:05:42,0.000681100123,,MAKER,KCS,CLASSIC";
+        String riga = "1,mainAccount,aaaa0003,TRX-KCS,BUY,LIMIT,0.025,30,0.75,8,"
+                + "2025-01-11 10:00:00,0.00075,,MAKER,KCS,CLASSIC";
         List<String[]> movs = importa(scrivi("Spot3.csv", INTESTAZIONE_SPOT, riga, riga, riga),
                 cfg("KuCoin Spot Trades", 18));
         assertEquals(6, movs.size(), "3 scambi + 3 commissioni: nessuna riga persa");
@@ -141,7 +140,7 @@ class ImportazioneGenericaKuCoinTest {
     void spot_coppiaSenzaSeparatoreScartata() throws Exception {
         ConfigurazioneImport c = cfg("KuCoin Spot Trades", 18);
         List<String[]> righe = ImportazioneGenerica.leggiCSV(scrivi("Spot4.csv", INTESTAZIONE_SPOT,
-                "1,mainAccount,aaaa0004,KCSETH,BUY,MARKET,1,1,1,1,2020-12-06 00:17:29,0.1,,TAKER,ETH,CLASSIC"), c);
+                "1,mainAccount,aaaa0004,KCSETH,BUY,MARKET,1,1,1,1,2025-01-10 10:00:00,0.1,,TAKER,ETH,CLASSIC"), c);
         assertEquals(0, righe.size());
     }
 
@@ -149,7 +148,7 @@ class ImportazioneGenericaKuCoinTest {
     void prelievo_amountENettoEFeeInPiu() throws Exception {
         ConfigurazioneImport c = cfg("KuCoin Withdrawals", 11);
         List<String[]> movs = importa(scrivi("Pre.csv", INTESTAZIONE_PRE,
-                "1,mainAccount,2022-05-15 15:45:45,USDT,14,1,beefbeef,TXXXaddr,TRX,SUCCESS,"), c);
+                "1,mainAccount,2025-01-12 10:00:00,USDT,14,1,beefbeef,TXXXaddr,TRX,SUCCESS,"), c);
         assertEquals(2, movs.size(), "prelievo + commissioni");
 
         String[] p = scambio(movs);
@@ -163,7 +162,7 @@ class ImportazioneGenericaKuCoinTest {
     void deposito_quantitaSempreInEntrata() throws Exception {
         ConfigurazioneImport c = cfg("KuCoin Deposits", 11);
         List<String[]> movs = importa(scrivi("Dep.csv", INTESTAZIONE_DEP,
-                "1,mainAccount,2020-12-06 00:06:55,ETH,0.01,0,0xabc,0xaddr,ETH,SUCCESS,Deposit"), c);
+                "1,mainAccount,2025-01-13 10:00:00,ETH,0.01,0,0xabc,0xaddr,ETH,SUCCESS,Deposit"), c);
         assertEquals(1, movs.size(), "nessuna fee nei depositi");
         assertTrue(movs.get(0)[0].endsWith("_DC"), "DEPOSITO CRYPTO: " + movs.get(0)[0]);
         assertEquals("ETH", movs.get(0)[11]);

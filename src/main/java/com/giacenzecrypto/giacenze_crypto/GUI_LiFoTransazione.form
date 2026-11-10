@@ -58,7 +58,7 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="jScrollPane4" min="-2" pref="55" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="Label_Informazioni" pref="163" max="32767" attributes="0"/>
+              <Component id="Label_Informazioni" min="-2" pref="163" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" max="-2" attributes="0">
                   <Component id="Bottone_MU_FrecciaDestra" alignment="1" max="32767" attributes="0"/>
@@ -66,7 +66,7 @@
                   <Component id="LabelLifoMU" alignment="1" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jScrollPane1" min="-2" pref="150" max="-2" attributes="0"/>
+              <Component id="jScrollPane1" min="80" pref="150" max="32767" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                   <Component id="Bottone_ME_FrecciaDestra" alignment="1" max="32767" attributes="0"/>
@@ -74,7 +74,7 @@
                   <Component id="LabelLifoME" alignment="1" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jScrollPane2" min="-2" pref="147" max="-2" attributes="0"/>
+              <Component id="jScrollPane2" min="80" pref="147" max="32767" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>

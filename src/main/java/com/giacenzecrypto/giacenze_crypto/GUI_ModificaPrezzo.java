@@ -803,6 +803,12 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
      * con {@code 0.00} no). Stessa regola di {@code Funzioni.GUIModificaPrezzo(Component, String)}.
      */
     static void ApplicaPrezzoScelto(String[] Movimento, String Prezzo, String Riferimento) {
+        //Una modifica a mano va nello storico (prima di scrivere, che la versione salvata sia quella di prima): è ciò che
+        //permette di riapplicarla dopo una reimportazione. Scegliere lo stesso prezzo che c'è già non è una modifica
+        if (!java.util.Objects.equals(Movimento[15], Prezzo) || !"SI".equals(Movimento[32])
+                || !java.util.Objects.equals(Movimento[40], Riferimento)) {
+            MovimentiStorico.AccodaPrimaDiModificare(Movimento, MovimentiStorico.OP_PREZZO);
+        }
         Movimento[15] = Prezzo;
         Movimento[32] = "SI";
         Movimento[40] = Riferimento;

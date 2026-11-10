@@ -44,7 +44,7 @@ class RimuoviMovimentiTest {
                 + "KEY (timestamp, exchange, symbol, rete, address) VALUES (?, ?, ?, ?, '', '')";
         try (java.sql.PreparedStatement ps = DatabaseH2.connectionPrezzi.prepareStatement(sql)) {
             for (String c : new String[]{"BTC", "USDT"}) {
-                ps.setLong(1, FunzioniDate.ConvertiDatainLongMinuto("2022-05-24 08:33:41"));
+                ps.setLong(1, FunzioniDate.ConvertiDatainLongMinuto("2024-05-24 08:33:41"));
                 ps.setString(2, "binance");
                 ps.setString(3, c);
                 ps.setBigDecimal(4, BigDecimal.ONE);
@@ -76,8 +76,8 @@ class RimuoviMovimentiTest {
 
     /** Uno scambio differito classificato: prelievo e deposito rinominati, tre movimenti generati. */
     private static String[][] scambioDifferito() {
-        String[] p = movimento("20220512062450_Binance_001_001_PC", "USDT", "100", "2022-05-12 06:24:50");
-        String[] s = movimento("20220524083341_Binance_002_001_DC", "BTC", "0.0035", "2022-05-24 08:33:41");
+        String[] p = movimento("20240512062450_Binance_001_001_PC", "USDT", "100", "2024-05-12 06:24:50");
+        String[] s = movimento("20240524083341_Binance_002_001_DC", "BTC", "0.004", "2024-05-24 08:33:41");
         assertTrue(GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(p[0], s[0]));
         assertEquals(5, MappaCryptoWallet.size());
         return new String[][]{p, s};
@@ -138,8 +138,8 @@ class RimuoviMovimentiTest {
     @Test
     void cancellazionePerWallet_rimuoveTuttoLoScambioEContaLeRigheUscite() {
         scambioDifferito();
-        movimento("20220601100000_Kraken_009_001_PC", "BTC", "0.01", "2022-06-01 10:00:00");
-        MappaCryptoWallet.get("20220601100000_Kraken_009_001_PC")[3] = "Kraken";
+        movimento("20240601100000_Kraken_009_001_PC", "BTC", "0.01", "2024-06-01 10:00:00");
+        MappaCryptoWallet.get("20240601100000_Kraken_009_001_PC")[3] = "Kraken";
 
         int cancellati = Funzioni.CancellaMovimentazioniXWallet("Binance", 0, 0);
 

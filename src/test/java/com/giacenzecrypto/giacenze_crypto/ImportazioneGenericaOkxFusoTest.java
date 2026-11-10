@@ -12,7 +12,7 @@ import org.junit.jupiter.api.io.TempDir;
 /**
  * Fuso orario degli export OKX ({@code config/import/OKX_Funding.json} e {@code OKX_Trading.json}): gli export
  * recenti dichiarano nella prima riga il fuso scelto su OKX ({@code Time Zone:UTC+8}), che puo' non essere
- * quello italiano. Visto su un export reale: Funding in UTC+8 accanto a un Trading in UTC+2, e con
+ * quello italiano. Osservato su un export: Funding in UTC+8 accanto a un Trading in UTC+2, e con
  * {@code Europe/Rome} fisso tutto il Funding finiva 6 ore piu' tardi.
  */
 class ImportazioneGenericaOkxFusoTest {
@@ -21,7 +21,7 @@ class ImportazioneGenericaOkxFusoTest {
     static Path tempDir;
 
     private static final String INTESTAZIONE_FUNDING = "id,Time,Type,Amount,Before Balance,After Balance,Symbol,Amount-EUR";
-    private static final String RIGA_DEPOSITO = "1,2026-07-07 17:44:49,Deposit,5,0,5,BNB,2534.07";
+    private static final String RIGA_DEPOSITO = "1,2025-07-07 17:00:00,Deposit,5,0,5,BNB,2500";
 
     private static ConfigurazioneImport leggiFunding(String primaRiga) throws Exception {
         Path f = tempDir.resolve("funding" + System.nanoTime() + ".csv");
@@ -48,32 +48,32 @@ class ImportazioneGenericaOkxFusoTest {
     void unExportInUtc8SiLeggeInUtc8() throws Exception {
         ConfigurazioneImport c = leggiFunding("UID:123,Account Type:Main,Time Zone:UTC+8");
         assertEquals("UTC+08:00", c.fuso);
-        assertEquals(Instant.parse("2026-07-07T09:44:49Z").toEpochMilli(), c.convertiDataInMillis("2026-07-07 17:44:49"));
+        assertEquals(Instant.parse("2025-07-07T09:00:00Z").toEpochMilli(), c.convertiDataInMillis("2025-07-07 17:00:00"));
     }
 
     @Test
     void unExportSenzaFusoDichiaratoTieneQuelloDellaConfigurazione() throws Exception {
         ConfigurazioneImport c = leggiFunding("UID:123,Account Type:Main");
         assertEquals("Europe/Rome", c.fuso);
-        assertEquals(Instant.parse("2026-07-07T15:44:49Z").toEpochMilli(), c.convertiDataInMillis("2026-07-07 17:44:49"));
+        assertEquals(Instant.parse("2025-07-07T15:00:00Z").toEpochMilli(), c.convertiDataInMillis("2025-07-07 17:00:00"));
     }
 
     /**
      * UTC+2 e UTC+1 sono scostamenti FISSI, anche se sono quelli di Europe/Rome: OKX non applica l'ora legale.
-     * Verificato il 2026-11-01 su due export delle stesse 307 operazioni a cavallo del cambio d'ora del 25/10/2026
+     * Verificato su due export delle stesse operazioni a cavallo di un cambio d'ora
      * (UTC+8 e UTC+2): lo scarto e' di 6 ore sia sulle righe estive sia su quelle invernali.
      */
     @Test
     void unoScostamentoDiEuropaRomaVieneUsatoFisso() throws Exception {
         ConfigurazioneImport c = leggiFunding("UID:123,Account Type:Main,Time Zone:UTC+2");
         assertEquals("UTC+02:00", c.fuso);
-        assertEquals(Instant.parse("2026-01-07T15:44:49Z").toEpochMilli(), c.convertiDataInMillis("2026-01-07 17:44:49"));
-        assertEquals(Instant.parse("2026-07-07T15:44:49Z").toEpochMilli(), c.convertiDataInMillis("2026-07-07 17:44:49"));
+        assertEquals(Instant.parse("2025-01-07T15:00:00Z").toEpochMilli(), c.convertiDataInMillis("2025-01-07 17:00:00"));
+        assertEquals(Instant.parse("2025-07-07T15:00:00Z").toEpochMilli(), c.convertiDataInMillis("2025-07-07 17:00:00"));
         c = leggiFunding("UID:123,Account Type:Main,Time Zone:UTC+1");
-        assertEquals(Instant.parse("2026-07-07T16:44:49Z").toEpochMilli(), c.convertiDataInMillis("2026-07-07 17:44:49"));
+        assertEquals(Instant.parse("2025-07-07T16:00:00Z").toEpochMilli(), c.convertiDataInMillis("2025-07-07 17:00:00"));
     }
 
-    /** Lo stesso istante scritto da OKX in UTC+8 e in UTC+2 (righe vere dei due export, 25/10/2026) deve coincidere. */
+    /** Lo stesso istante scritto da OKX in UTC+8 e in UTC+2 (righe di due export) deve coincidere. */
     @Test
     void dueExportDelloStessoIstanteInFusiDiversiCoincidono() throws Exception {
         ConfigurazioneImport utc2 = leggiFunding("UID:123,Account Type:Main,Time Zone:UTC+2");

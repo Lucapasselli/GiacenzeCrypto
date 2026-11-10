@@ -737,7 +737,7 @@ private VoceImport voceSelezionata() {
         });
 
         Bottone_Community.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_FrecciaSotto.png"))); // NOI18N
-        Bottone_Community.setText("Configurazioni della community...");
+        Bottone_Community.setText("Configurazioni della community");
         Bottone_Community.setToolTipText("<html>Configurazioni di importazione scritte da altri utenti e controllate dall'autore del programma:<br>si scaricano da qui e compaiono nelle tendine con il prefisso Community.</html>");
         Bottone_Community.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

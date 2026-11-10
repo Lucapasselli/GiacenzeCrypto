@@ -18,9 +18,9 @@ import org.junit.jupiter.api.io.TempDir;
  * ({@code nexo_pro_trade}) e i suoi depositi/prelievi ({@code DnWHistory}), e l'opzione
  * {@code coppia.importoQuote} che serve ai trade perche' il file non dichiara l'importo della quota.
  *
- * <p>Le righe sono quelle reali del 2023 (solo date e importi). Verificato sui due export completi: la
- * somma degli acquisti, 68,0599 USDT, coincide con gli USDT netti passati dal Savings al Pro, e i
- * 0,0023952 BTC netti (lordo - fee) con i prelievi di BTC verso il Savings.</p>
+ * <p>Le righe sono di esempio, nella forma dell'export. Su due export completi la somma degli acquisti
+ * coincide con gli USDT netti passati dal Savings al Pro, e i BTC netti (lordo - fee) con i prelievi di
+ * BTC verso il Savings.</p>
  */
 class ImportazioneGenericaNexoProTest {
 
@@ -85,10 +85,10 @@ class ImportazioneGenericaNexoProTest {
 
     @Test
     void acquisto_baseEntraQuotaEsce_quotaCalcolataDaPrezzo_feeInBasePerConto() throws Exception {
-        // 2023-04-17: buy 0.0007 BTC a 28550 -> 19.985 USDT, fee 0.0000014 BTC.
+        // buy 0.001 BTC a 30000 -> 30 USDT, fee 0.000002 BTC.
         String file = scrivi("Trade1.csv", INTESTAZIONE_TRADE,
-                "43523577,2023-04-17 13:16:46.611,BTC/USDT,buy,limit,28550.00000000,28550.00000000,,0.00070,0.00070000,"
-                + "0.0000014000000000,BTC,completed,77edf865-b579-4ce3-b80f-2c4a7e99d281");
+                "1001,2025-01-10 10:00:00.611,BTC/USDT,buy,limit,30000.00000000,30000.00000000,,0.00100,0.00100000,"
+                + "0.0000020000000000,BTC,completed,11111111-1111-1111-1111-111111111111");
         List<String[]> movs = importa(file, cfg("Nexo Pro Trades", 17));
 
         assertEquals(2, movs.size(), "scambio + commissione: " + movs.stream().map(m -> m[0]).toList());
@@ -97,12 +97,12 @@ class ImportazioneGenericaNexoProTest {
 
         assertEquals("Nexo Pro", sc[3]);
         assertEquals("USDT", sc[8]);
-        assertEquals(0, q("-19.985").compareTo(q(sc[10])), "la quota e' quantita' x prezzo di esecuzione");
+        assertEquals(0, q("-30").compareTo(q(sc[10])), "la quota e' quantita' x prezzo di esecuzione");
         assertEquals("BTC", sc[11]);
-        assertEquals(0, q("0.0007").compareTo(q(sc[13])), "la base e' la quantita' lorda eseguita");
+        assertEquals(0, q("0.001").compareTo(q(sc[13])), "la base e' la quantita' lorda eseguita");
         assertEquals("BTC", cm[8]);
-        assertEquals(0, q("-0.0000014").compareTo(q(cm[10])));
-        assertEquals(0, q("0.0006986").compareTo(q(sc[13]).add(q(cm[10]))),
+        assertEquals(0, q("-0.000002").compareTo(q(cm[10])));
+        assertEquals(0, q("0.000998").compareTo(q(sc[13]).add(q(cm[10]))),
                 "lordo + commissione = netto, cioe' quanto il Pro ha poi trasferito al Savings");
     }
 
@@ -121,16 +121,16 @@ class ImportazioneGenericaNexoProTest {
     @Test
     void ordineAnnullato_nonProduceMovimenti() throws Exception {
         String file = scrivi("Trade3.csv", INTESTAZIONE_TRADE,
-                "43785429,2023-04-21 21:02:52.311,BTC/USDT,buy,limit,26600.00000000,,,0.00060,,,,cancelled,e1490640");
+                "1002,2025-01-11 10:00:00.311,BTC/USDT,buy,limit,26000.00000000,,,0.00100,,,,cancelled,cccc");
         assertTrue(importa(file, cfg("Nexo Pro Trades", 17)).isEmpty());
     }
 
     @Test
     void depositiEPrelievi_frazioniDiSecondoDaUnaATreCifre() throws Exception {
         String file = scrivi("DnW.csv", INTESTAZIONE_DNW,
-                "2023-04-06 13:11:20.95,10.0000000000000000,USDT,DEPOSIT",
-                "2023-04-20 06:06:59.238,0.0006986000000000,BTC,WITHDRAW",
-                "2023-04-30 06:57:08.7,15.9600000000000000,USDT,WITHDRAW");
+                "2025-01-12 10:00:00.95,10.0000000000000000,USDT,DEPOSIT",
+                "2025-01-13 10:00:00.238,0.0010000000000000,BTC,WITHDRAW",
+                "2025-01-14 10:00:00.7,15.0000000000000000,USDT,WITHDRAW");
         List<String[]> movs = importa(file, cfg("Nexo Pro Depositi e Prelievi", 4));
         assertEquals(3, movs.size());
 
@@ -138,12 +138,12 @@ class ImportazioneGenericaNexoProTest {
         assertEquals("Nexo Pro", dep[3]);
         assertEquals("USDT", dep[11]);
         assertEquals(0, q("10").compareTo(q(dep[13])));
-        // L'ID porta l'ora nel fuso del sistema (UTC+2 ad aprile), non quella UTC del file: conta solo il giorno.
-        assertTrue(dep[0].startsWith("20230406"), dep[0]);
+        // L'ID porta l'ora nel fuso del sistema (UTC+1 a gennaio), non quella UTC del file: conta solo il giorno.
+        assertTrue(dep[0].startsWith("20250112"), dep[0]);
 
         List<String[]> prelievi = movs.stream().filter(m -> categoria(m).equals("PC")).toList();
         assertEquals(2, prelievi.size());
-        assertTrue(prelievi.stream().anyMatch(m -> m[8].equals("BTC") && q(m[10]).compareTo(q("-0.0006986")) == 0));
-        assertTrue(prelievi.stream().anyMatch(m -> m[8].equals("USDT") && q(m[10]).compareTo(q("-15.96")) == 0));
+        assertTrue(prelievi.stream().anyMatch(m -> m[8].equals("BTC") && q(m[10]).compareTo(q("-0.001")) == 0));
+        assertTrue(prelievi.stream().anyMatch(m -> m[8].equals("USDT") && q(m[10]).compareTo(q("-15")) == 0));
     }
 }

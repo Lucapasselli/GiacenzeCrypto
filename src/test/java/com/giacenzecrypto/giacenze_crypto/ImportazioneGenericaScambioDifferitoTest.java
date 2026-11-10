@@ -293,7 +293,7 @@ class ImportazioneGenericaScambioDifferitoTest {
 
         List<String[]> differiti = new ArrayList<>();
         List<String[]> gruppo = new ArrayList<>();
-        gruppo.add(rigaBinance("2022-05-12 06:24:50", "Auto-Invest Transaction", "BTC", "-0.01"));
+        gruppo.add(rigaBinance("2024-05-12 06:24:50", "Auto-Invest Transaction", "BTC", "-0.01"));
 
         List<String[]> risultato = ImportazioneGenerica.consolidaGruppo(gruppo, cfg, differiti);
 
@@ -315,8 +315,8 @@ class ImportazioneGenericaScambioDifferitoTest {
 
         List<String[]> differiti = new ArrayList<>();
         List<String[]> righe = new ArrayList<>(List.of(
-                rigaBinance("2024-05-01 12:51:41", "Auto-Invest - Deduct Asset", "USDT", "-1"),
-                rigaBinance("2024-05-01 12:58:10", "Auto-Invest Transaction", "BTC", "0.0000168")));
+                rigaBinance("2025-01-10 12:50:00", "Auto-Invest - Deduct Asset", "USDT", "-1"),
+                rigaBinance("2025-01-10 12:58:00", "Auto-Invest Transaction", "BTC", "0.00002")));
         List<String[]> movs = new ArrayList<>();
         for (List<String[]> g : ImportazioneGenerica.raggruppaRighe(righe, cfg)) {
             movs.addAll(ImportazioneGenerica.consolidaGruppo(g, cfg, differiti));
@@ -333,7 +333,7 @@ class ImportazioneGenericaScambioDifferitoTest {
         ConfigurazioneImport cfg = cfgBinanceVeloce();
         List<String[]> differiti = new ArrayList<>();
         List<String[]> gruppo = new ArrayList<>();
-        gruppo.add(rigaBinance("2022-05-12 06:24:50", "Staking Rewards", "BTC", "0.001"));
+        gruppo.add(rigaBinance("2024-05-12 06:24:50", "Staking Rewards", "BTC", "0.001"));
 
         ImportazioneGenerica.consolidaGruppo(gruppo, cfg, differiti);
 

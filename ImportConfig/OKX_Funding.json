@@ -1,6 +1,6 @@
 {
   "_commento": "OKX - export 'Funding History' del conto Funding (file 'OKX Funding History_<periodo>~<hash>_N.csv'). Colonne: 0=id 1=Time 2=Type 3=Amount(con segno) 4=Before Balance 5=After Balance 6=Symbol. La prima riga del file contiene UID e tipo di account, l'intestazione vera e' la seconda.",
-  "_commentoFuso": "ATTENZIONE: il nome del file dice 'UTC0' ma gli orari NON sono in UTC. Verificato confrontando le stesse operazioni scaricate via API (bill 'Received' del 28/07/2026: ts API 10:02:03Z, CSV 12:02:03), gli orari sono nel fuso di visualizzazione dell'account, qui Europe/Rome. Se l'export viene fatto con un altro fuso impostato su OKX, cambiare questo campo, altrimenti gli stessi movimenti importati da CSV e da API finiscono su orari diversi. Verificato solo su righe estive (ora legale): Europe/Rome e' preferito a UTC+2 perche' gestisce da solo il cambio d'ora.",
+  "_commentoFuso": "ATTENZIONE: il nome del file dice 'UTC0' ma gli orari NON sono in UTC. Verificato confrontando le stesse operazioni scaricate via API (stesso bill: l'orario API in UTC e quello del CSV differiscono di due ore in estate), gli orari sono nel fuso di visualizzazione dell'account, qui Europe/Rome. Se l'export viene fatto con un altro fuso impostato su OKX, cambiare questo campo, altrimenti gli stessi movimenti importati da CSV e da API finiscono su orari diversi. Verificato solo su righe estive (ora legale): Europe/Rome e' preferito a UTC+2 perche' gestisce da solo il cambio d'ora.",
   "versione": "1.000",
   "nomeExchange": "OKX",
   "nomeWallet": "Principale",
@@ -18,7 +18,7 @@
     "quantita": 3,
     "moneta": 6
   },
-  "_commentoFee": "Nessuna colonna commissione, e non e' una dimenticanza: l'export del Funding ha 7 colonne e nessuna riporta la fee, ne' esiste un 'Type' di sola commissione (verificato sull'export reale 2026-01-01~2026-07-31: gli unici Type presenti sono Deposit, Withdrawal, Received, Simple Earn subscription/redemption e i due giroconti col conto Trading). Anche i bill del Funding scaricati via API non hanno il campo 'fee'. Sulla riga di prelievo l'importo e' quello che ha effettivamente lasciato il conto, quindi la fee di rete e' gia' dentro e non e' separabile da questo file. Diverso il Trading, dove la commissione c'e' e viene scorporata: vedi OKX_Trading.json.",
+  "_commentoFee": "Nessuna colonna commissione, e non e' una dimenticanza: l'export del Funding ha 7 colonne e nessuna riporta la fee, ne' esiste un 'Type' di sola commissione (verificato su un export vero: gli unici Type presenti sono Deposit, Withdrawal, Received, Simple Earn subscription/redemption e i due giroconti col conto Trading). Anche i bill del Funding scaricati via API non hanno il campo 'fee'. Sulla riga di prelievo l'importo e' quello che ha effettivamente lasciato il conto, quindi la fee di rete e' gia' dentro e non e' separabile da questo file. Diverso il Trading, dove la commissione c'e' e viene scorporata: vedi OKX_Trading.json.",
   "_commentoConsolidamento": "Ogni riga del Funding e' un movimento a se': depositi, prelievi e giroconti. Non ci sono scambi da ricomporre, quindi nessun consolidamento per orario.",
   "consolidaRigheStessaData": false,
   "tolleranzaSecondiConsolidamento": 0,

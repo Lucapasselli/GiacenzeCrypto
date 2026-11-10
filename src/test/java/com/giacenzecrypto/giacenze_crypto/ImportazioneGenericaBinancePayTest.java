@@ -76,7 +76,7 @@ class ImportazioneGenericaBinancePayTest {
     @Test
     void pagamentoBinancePay_prelievoDaClassificare() throws Exception {
         List<String[]> movs = importa(List.<String[]>of(
-                riga("2022-10-28 09:50:43", "Spot", "Transfer", "USDT", "-50", "Binance Pay - P_X")));
+                riga("2025-01-10 10:00:00", "Spot", "Transfer", "USDT", "-50", "Binance Pay - P_X")));
         assertEquals(1, movs.size());
         assertTrue(movs.get(0)[0].endsWith("_PC"), "prelievo crypto: " + movs.get(0)[0]);
         assertEquals("USDT", movs.get(0)[8]);
@@ -86,7 +86,7 @@ class ImportazioneGenericaBinancePayTest {
     @Test
     void incassoBinancePay_depositoDaClassificare() throws Exception {
         List<String[]> movs = importa(List.<String[]>of(
-                riga("2024-01-23 19:34:04", "Funding", "Transfer", "USDT", "1.19", "Binance Pay - P_Y")));
+                riga("2025-01-11 10:00:00", "Funding", "Transfer", "USDT", "1", "Binance Pay - P_Y")));
         assertEquals(1, movs.size());
         assertTrue(movs.get(0)[0].endsWith("_DC"), "deposito crypto: " + movs.get(0)[0]);
         assertEquals("USDT", movs.get(0)[11]);
@@ -95,8 +95,8 @@ class ImportazioneGenericaBinancePayTest {
     @Test
     void pagamentoConDueMonete_restanoDuePrelievi() throws Exception {
         List<String[]> movs = importa(List.<String[]>of(
-                riga("2022-10-06 09:59:19", "Spot", "Transfer", "BUSD", "-0.22469707", "Binance Pay - P_Z"),
-                riga("2022-10-06 09:59:19", "Spot", "Transfer", "BNB", "-0.00264863", "Binance Pay - P_Z")));
+                riga("2025-01-12 10:00:00", "Spot", "Transfer", "BUSD", "-0.2", "Binance Pay - P_Z"),
+                riga("2025-01-12 10:00:00", "Spot", "Transfer", "BNB", "-0.003", "Binance Pay - P_Z")));
         assertEquals(2, movs.size(), "TRASFERIMENTO-CRYPTO è chiusa: due prelievi, non uno scambio");
         for (String[] m : movs) {
             assertTrue(m[0].endsWith("_PC"), m[0]);
@@ -106,8 +106,8 @@ class ImportazioneGenericaBinancePayTest {
     @Test
     void preAuthCapture_nonProduceMovimenti() throws Exception {
         List<String[]> movs = importa(List.<String[]>of(
-                riga("2022-08-12 03:59:43", "Spot", "Pre Auth - Capture", "BUSD", "1", ""),
-                riga("2022-08-12 03:59:43", "Funding", "Pre Auth - Capture", "BUSD", "-1", "")));
+                riga("2025-01-13 10:00:00", "Spot", "Pre Auth - Capture", "BUSD", "1", ""),
+                riga("2025-01-13 10:00:00", "Funding", "Pre Auth - Capture", "BUSD", "-1", "")));
         assertEquals(0, movs.size());
     }
 
@@ -123,9 +123,9 @@ class ImportazioneGenericaBinancePayTest {
         assertEquals("TRASFERIMENTO-CRYPTO", c.convertiCausale("Index-Auto-Investment - Redeem Positions"));
         String op = "Index-Auto-Investment - Redeem Positions";
         List<String[]> righe = new ArrayList<>(List.<String[]>of(
-                riga("2024-09-10 05:36:45", "Spot", op, "ETH", "0.02677297", ""),
-                riga("2024-09-10 05:36:45", "Spot", op, "BTC", "0.00114338", ""),
-                riga("2024-09-10 05:36:45", "Spot", op, "SOL", "0.48681743", "")));
+                riga("2025-01-14 10:00:00", "Spot", op, "ETH", "0.03", ""),
+                riga("2025-01-14 10:00:00", "Spot", op, "BTC", "0.001", ""),
+                riga("2025-01-14 10:00:00", "Spot", op, "SOL", "0.5", "")));
         List<String[]> differiti = new ArrayList<>();
         List<String[]> movs = new ArrayList<>();
         for (List<String[]> g : ImportazioneGenerica.raggruppaRighe(righe, c)) {
@@ -142,7 +142,7 @@ class ImportazioneGenericaBinancePayTest {
     @Test
     void nftBurnAndWin_reward() throws Exception {
         List<String[]> movs = importa(List.<String[]>of(
-                riga("2022-06-08 09:31:17", "Spot", "NFT - Burn and Win", "MBOX", "2", "")));
+                riga("2025-01-15 10:00:00", "Spot", "NFT - Burn and Win", "MBOX", "2", "")));
         assertEquals(1, movs.size());
         assertEquals("MBOX", movs.get(0)[11]);
         assertEquals("2", movs.get(0)[13]);

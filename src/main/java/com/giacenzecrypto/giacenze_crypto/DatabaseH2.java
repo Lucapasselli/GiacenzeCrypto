@@ -5,6 +5,7 @@
 package com.giacenzecrypto.giacenze_crypto;
 
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -54,6 +55,11 @@ public class DatabaseH2 {
     //C5: memorizza l'ultima eccezione di connessione, per permettere al chiamante di distinguere
     //il lock da un altro processo (H2 error code 90020) da qualsiasi altro errore (DB corrotto, disco pieno, versione H2 incompatibile...)
     private static SQLException ultimaEccezioneConnessione;
+    //Nome (database, personale, prezzi) del file la cui apertura era in corso quando CreaoCollegaDatabase è
+    //fallita, o null se l'errore è venuto dopo l'apertura (creazione delle tabelle): solo l'errore di apertura
+    //dice quale file è danneggiato, il testo di H2 a volte non nomina il file (codice 50000)
+    private static String fileInApertura;
+    private static String ultimoFileInErrore;
     static Map<String, String> Mappa_Wallet_Gruppo = new TreeMap<>();//memorizzo anche qua l'associazione dei gruppi per rendere più veloce la ricerca
 
     /**
@@ -76,15 +82,21 @@ public class DatabaseH2 {
         Pers_Opzioni_InvalidaCache();
         Mappa_Wallet_Gruppo.clear();
         ultimaEccezioneConnessione = null;
+        fileInApertura = null;
+        ultimoFileInErrore = null;
         try {
             jdbcUrl = VarStatiche.getDBPrincipale();
             jdbcUrl2 = VarStatiche.getDBPersonale();
             jdbcPrezzi = VarStatiche.getDBPrezzi();
+            fileInApertura = RecuperoDatabase.FILE_PRINCIPALE;
             connection = DriverManager.getConnection(jdbcUrl, usernameH2, passwordH2);
+            fileInApertura = RecuperoDatabase.FILE_PERSONALE;
             connectionPersonale = DriverManager.getConnection(jdbcUrl2, usernameH2, passwordH2);
-            
+
             // Versione ottimizzata per bloccare i cicli in background e potenziare le prestazioni:
+            fileInApertura = RecuperoDatabase.FILE_PREZZI;
             connectionPrezzi = DriverManager.getConnection(jdbcPrezzi + OPZIONI_H2_PREZZI, usernameH2, passwordH2);
+            fileInApertura = null;
             //connectionPrezzi = DriverManager.getConnection(jdbcPrezzi, usernameH2, passwordH2);
             // Creazione delle tabelle se non esistono
         /*    String createTableSQL = "CREATE TABLE IF NOT EXISTS Address_Senza_Prezzo  (address_chain VARCHAR(255) PRIMARY KEY, data VARCHAR(255))";
@@ -506,6 +518,8 @@ public class DatabaseH2 {
                 preparedStatement.executeUpdate();*/
         } catch (SQLException ex) {
             ultimaEccezioneConnessione = ex;
+            ultimoFileInErrore = fileInApertura;
+            fileInApertura = null;
             LoggerGC.ScriviErrore(ex);
 
         }
@@ -527,6 +541,43 @@ public class DatabaseH2 {
      */
     public static SQLException getUltimaEccezioneConnessione() {
         return ultimaEccezioneConnessione;
+    }
+
+    /**
+     * @return il file (una delle costanti {@code RecuperoDatabase.FILE_*}) che {@link #CreaoCollegaDatabase()}
+     * stava aprendo quando è fallita, o {@code null} se l'errore è venuto dopo l'apertura dei tre file
+     */
+    public static String getFileDatabaseInErrore() {
+        return ultimoFileInErrore;
+    }
+
+    /**
+     * @return {@code true} se l'ultimo fallimento di {@link #CreaoCollegaDatabase()} è un file H2 danneggiato
+     * (e non un lock, una versione diversa del formato o un errore delle tabelle) e si sa quale file è
+     * @see RecuperoDatabase#eCorruzione(Throwable)
+     */
+    public static boolean isErroreDatabaseCorrotto() {
+        return ultimoFileInErrore != null && RecuperoDatabase.eCorruzione(ultimaEccezioneConnessione);
+    }
+
+    /**
+     * Chiude le connessioni rimaste aperte da un {@link #CreaoCollegaDatabase()} fallito a metà e le azzera:
+     * serve prima di spostare un file, perché su Windows un file aperto non si rinomina.
+     */
+    static void ChiudiConnessioniAperte() {
+        Connection[] aperte = {connection, connectionPersonale, connectionPrezzi};
+        connection = null;
+        connectionPersonale = null;
+        connectionPrezzi = null;
+        for (Connection c : aperte) {
+            if (c != null) {
+                try {
+                    c.close();
+                } catch (SQLException ex) {
+                    LoggerGC.ScriviErrore(ex);
+                }
+            }
+        }
     }
 
     //Esegue una singola istruzione DDL/SQL senza risultato chiudendo subito lo statement (correzione M1: niente leak di risorse JDBC)
@@ -3077,23 +3128,12 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         if (connectionPrezzi == null) {
             return false;
         }
-        boolean compattato = EseguiDefrag(connectionPrezzi);
-        try {
-            connectionPrezzi.close();
-        } catch (SQLException ignorata) {
-            //Il database è già chiuso da SHUTDOWN: la chiusura dell'oggetto è solo pulizia
+        EsitoCompattazione esito = CompattaConCopia(connectionPrezzi, RecuperoDatabase.FILE_PREZZI,
+                VarStatiche.getDBPrezzi() + OPZIONI_H2_PREZZI, Riapri);
+        if (esito.riaperta != null) {
+            connectionPrezzi = esito.riaperta;
         }
-        if (!compattato || !Riapri) {
-            return compattato;
-        }
-        try {
-            connectionPrezzi = DriverManager.getConnection(
-                    VarStatiche.getDBPrezzi() + OPZIONI_H2_PREZZI, usernameH2, passwordH2);
-            return true;
-        } catch (SQLException ex) {
-            LoggerGC.ScriviErrore(ex);
-            return false;
-        }
+        return esito.compattato && (!Riapri || esito.riaperta != null);
     }
 
     /**
@@ -3110,21 +3150,122 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
         if (connection == null) {
             return false;
         }
-        boolean compattato = EseguiDefrag(connection);
+        //Nessuna cache da invalidare dopo la riapertura: la compattazione non cambia il contenuto, solo
+        //come è disposto nel file, quindi quello che è già stato letto resta valido
+        EsitoCompattazione esito = CompattaConCopia(connection, RecuperoDatabase.FILE_PRINCIPALE,
+                VarStatiche.getDBPrincipale(), Riapri);
+        if (esito.riaperta != null) {
+            connection = esito.riaperta;
+        }
+        return esito.compattato && (!Riapri || esito.riaperta != null);
+    }
+
+    /** Esito di {@link #CompattaConCopia}: se ha compattato e la connessione riaperta ({@code null} se non richiesta o fallita). */
+    private static final class EsitoCompattazione {
+
+        final boolean compattato;
+        final Connection riaperta;
+
+        EsitoCompattazione(boolean compattato, Connection riaperta) {
+            this.compattato = compattato;
+            this.riaperta = riaperta;
+        }
+    }
+
+    /**
+     * Compatta un database con una copia di sicurezza davanti: {@code SHUTDOWN} normale (libera il lock del
+     * file, perché un {@code .mv.db} aperto non è copiabile), copia in {@code <nome>.mv.db.precompattazione}
+     * ({@link RecuperoDatabase#creaCopiaPrecompattazione}), riapertura e solo allora {@code SHUTDOWN DEFRAG}.
+     *
+     * <p>Se la copia non riesce (spazio, disco) <b>non si compatta</b>: la compattazione è un'ottimizzazione, la
+     * copia è la rete che la rende sicura. Dopo lo {@code SHUTDOWN} il database è chiuso, quindi con
+     * {@code Riapri} si riapre comunque, compattato o no.
+     *
+     * @param corrente connessione aperta del database
+     * @param file     nome del file senza estensione (costanti di {@link RecuperoDatabase})
+     * @param url      URL JDBC completa di opzioni, la stessa con cui il database è stato aperto
+     */
+    private static EsitoCompattazione CompattaConCopia(Connection corrente, String file, String url, boolean Riapri) {
+        boolean compattato = false;
+        boolean chiuso = EseguiShutdown(corrente);
         try {
-            connection.close();
+            corrente.close();
         } catch (SQLException ignorata) {
-            //Come sopra: SHUTDOWN ha già chiuso il database
+            //Il database è già chiuso da SHUTDOWN: la chiusura dell'oggetto è solo pulizia
         }
-        if (!compattato || !Riapri) {
-            return compattato;
+        if (chiuso) {
+            try {
+                String cartella = VarStatiche.getWorkingDirectory();
+                RecuperoDatabase.creaCopiaPrecompattazione(cartella, file);
+                //Solo database.mv.db (dati dell'utente, meno di un secondo): la copia deve coincidere con l'originale
+                //chiuso prima di compattare, altrimenti la si scarta e non si compatta
+                String improntaCopia = RecuperoDatabase.FILE_PRINCIPALE.equals(file)
+                        ? RecuperoDatabase.improntaCopiaVerificata(cartella, file) : null;
+                Connection daCompattare = DriverManager.getConnection(url, usernameH2, passwordH2);
+                try {
+                    compattato = EseguiDefrag(daCompattare);
+                } finally {
+                    try {
+                        daCompattare.close();
+                    } catch (SQLException ignorata) {
+                        //Come sopra: SHUTDOWN DEFRAG ha già chiuso il database
+                    }
+                }
+                //Il file compattato deve avere lo stesso contenuto della copia, altrimenti si torna alla copia
+                if (compattato && improntaCopia != null && !RecuperoDatabase.confermaCompattazione(cartella, file, improntaCopia)) {
+                    compattato = false;
+                    LoggerGC.ScriviErrore(new IOException("Compattazione di " + file + ".mv.db non confermata, ripristinata la copia di sicurezza"));
+                }
+            } catch (IOException | SQLException ex) {
+                //Un errore dopo il DEFRAG (conferma, ripristino della copia) non lascia dire che sia andata bene
+                compattato = false;
+                LoggerGC.ScriviErrore(ex);
+            }
         }
-        try {
-            connection = DriverManager.getConnection(VarStatiche.getDBPrincipale(), usernameH2, passwordH2);
-            //Nessuna cache da invalidare: la compattazione non cambia il contenuto, solo come è
-            //disposto nel file, quindi quello che è già stato letto resta valido
+        Connection riaperta = null;
+        if (Riapri) {
+            try {
+                riaperta = DriverManager.getConnection(url, usernameH2, passwordH2);
+            } catch (SQLException ex) {
+                LoggerGC.ScriviErrore(ex);
+            }
+        }
+        return new EsitoCompattazione(compattato, riaperta);
+    }
+
+    /**
+     * Una <b>nuova</b> connessione allo stesso database già aperto dall'applicazione, con lo stesso URL e le stesse
+     * opzioni: serve al controllo in background ({@link RecuperoDatabase#VerificaEEliminaCopieInBackground()}), che
+     * non deve bloccare la connessione dell'applicazione per la durata di una scansione. Chiuderla non chiude il
+     * database, perché la connessione dell'applicazione resta aperta.
+     *
+     * @param file una delle costanti {@code RecuperoDatabase.FILE_*}
+     */
+    static Connection NuovaConnessione(String file) throws SQLException {
+        switch (file) {
+            case RecuperoDatabase.FILE_PRINCIPALE:
+                return DriverManager.getConnection(VarStatiche.getDBPrincipale(), usernameH2, passwordH2);
+            case RecuperoDatabase.FILE_PERSONALE:
+                return DriverManager.getConnection(VarStatiche.getDBPersonale(), usernameH2, passwordH2);
+            default:
+                return DriverManager.getConnection(VarStatiche.getDBPrezzi() + OPZIONI_H2_PREZZI, usernameH2, passwordH2);
+        }
+    }
+
+    /**
+     * Esegue {@code SHUTDOWN} (senza compattare) su una connessione: il database si chiude normalmente e il
+     * lock del file viene rilasciato.
+     *
+     * @return {@code true} se il database risulta chiuso
+     */
+    private static boolean EseguiShutdown(Connection Connessione) {
+        try (Statement st = Connessione.createStatement()) {
+            st.execute("SHUTDOWN");
             return true;
         } catch (SQLException ex) {
+            if (ex.getErrorCode() == ERRORE_H2_DATABASE_CHIUSO) {
+                return true;
+            }
             LoggerGC.ScriviErrore(ex);
             return false;
         }
@@ -3206,6 +3347,28 @@ public static boolean InserisciPrezzoPresonalizzato(long Timestamp, String Fonte
                     Righe.add(new String[]{rs.getString(1), String.valueOf(rs.getLong(2)),
                         rs.getString(3), rs.getString(4), rs.getString(5)});
                 }
+            }
+        } catch (SQLException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return Righe;
+    }
+
+    /**
+     * Tutte le voci dello storico, di tutti i lignaggi, dalla più vecchia: serve all'esportazione delle
+     * modifiche manuali, che altrimenti dovrebbe fare una query per movimento.
+     *
+     * @return righe {@code {Lignaggio, IdVecchio, DataModifica, RigaOriginale, Operazione, IdNuovo}}, mai {@code null}
+     */
+    public static List<String[]> StoricoMovimenti_LeggiTutto() {
+        List<String[]> Righe = new ArrayList<>();
+        String sql = "SELECT Lignaggio, IdMovimentoVecchio, DataModifica, RigaOriginale, Operazione, IdMovimentoNuovo "
+                + "FROM MOVIMENTI_STORICO ORDER BY DataModifica ASC";
+        try (PreparedStatement ps = connectionPersonale.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Righe.add(new String[]{rs.getString(1), rs.getString(2), String.valueOf(rs.getLong(3)),
+                    rs.getString(4), rs.getString(5), rs.getString(6)});
             }
         } catch (SQLException ex) {
             LoggerGC.ScriviErrore(ex);

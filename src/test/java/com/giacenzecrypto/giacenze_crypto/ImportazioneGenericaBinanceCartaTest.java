@@ -83,30 +83,30 @@ class ImportazioneGenericaBinanceCartaTest {
     @Test
     void spesaInEuro_prelievoFiat() throws Exception {
         List<String[]> movs = importa(List.<String[]>of(
-                carta("2022-05-13 11:36:59", "Spending", "EUR", "-23.56")));
+                carta("2025-01-10 10:00:00", "Spending", "EUR", "-20")));
         assertEquals(1, movs.size());
         String[] m = movs.get(0);
         assertEquals("PF", categoria(m));
         assertEquals("EUR", m[8]);
-        assertEquals(0, new BigDecimal(m[10]).compareTo(new BigDecimal("-23.56")));
+        assertEquals(0, new BigDecimal(m[10]).compareTo(new BigDecimal("-20")));
     }
 
     @Test
     void rimborsoInEuro_depositoFiat() throws Exception {
         List<String[]> movs = importa(List.<String[]>of(
-                carta("2022-09-25 08:22:09", "Spending", "EUR", "15.78")));
+                carta("2025-01-11 10:00:00", "Spending", "EUR", "15")));
         assertEquals(1, movs.size());
         String[] m = movs.get(0);
         assertEquals("DF", categoria(m));
         assertEquals("EUR", m[11]);
-        assertEquals(0, new BigDecimal(m[13]).compareTo(new BigDecimal("15.78")));
+        assertEquals(0, new BigDecimal(m[13]).compareTo(new BigDecimal("15")));
     }
 
     @Test
     void spesaInDueCryptoNelloStessoSecondo_duePrelieviDaClassificare() throws Exception {
         List<String[]> movs = importa(List.<String[]>of(
-                carta("2023-10-23 16:34:49", "Spending", "BNB", "-0.11116915"),
-                carta("2023-10-23 16:34:49", "Spending", "USDT", "-14.28101835")));
+                carta("2025-01-12 10:00:00", "Spending", "BNB", "-0.1"),
+                carta("2025-01-12 10:00:00", "Spending", "USDT", "-15")));
         assertEquals(2, movs.size(), "PRELIEVO FIAT è chiusa: due prelievi, non uno scambio");
         for (String[] m : movs) {
             assertEquals("PC", categoria(m), m[0]);
@@ -117,8 +117,8 @@ class ImportazioneGenericaBinanceCartaTest {
     @Test
     void spesaInCryptoEdEuroNelloStessoSecondo_unPrelievoPerMoneta() throws Exception {
         List<String[]> movs = importa(List.<String[]>of(
-                carta("2023-11-16 13:01:58", "Spending", "BNB", "-0.00419161"),
-                carta("2023-11-16 13:01:58", "Spending", "EUR", "-0.86370412")));
+                carta("2025-01-13 10:00:00", "Spending", "BNB", "-0.005"),
+                carta("2025-01-13 10:00:00", "Spending", "EUR", "-1")));
         assertEquals(2, movs.size());
         String[] bnb = movs.stream().filter(m -> "BNB".equals(m[8])).findFirst().orElseThrow();
         String[] eur = movs.stream().filter(m -> "EUR".equals(m[8])).findFirst().orElseThrow();
@@ -129,12 +129,12 @@ class ImportazioneGenericaBinanceCartaTest {
     @Test
     void cashback_ricompensa() throws Exception {
         List<String[]> movs = importa(List.<String[]>of(
-                carta("2022-05-16 07:37:11", "Cashback", "BNB", "0.00301069")));
+                carta("2025-01-14 10:00:00", "Cashback", "BNB", "0.003")));
         assertEquals(1, movs.size());
         String[] m = movs.get(0);
         assertEquals("RW", categoria(m));
         assertEquals("CASHBACK", m[5]);
         assertEquals("BNB", m[11]);
-        assertEquals(0, new BigDecimal(m[13]).compareTo(new BigDecimal("0.00301069")));
+        assertEquals(0, new BigDecimal(m[13]).compareTo(new BigDecimal("0.003")));
     }
 }

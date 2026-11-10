@@ -80,14 +80,14 @@ minusvalenza di ognuno.
 
 I pulsanti in basso sono:
 
-- **Nuova procedura...** — blocca le giacenze di una piattaforma alla data della domanda di fallimento.
-- **Registra rimborso...** — registra una tranche pagata dalla procedura selezionata.
-- **Chiudi procedura...** — fa uscire il credito non rimborsato.
-- **Annulla ultima operazione...** — toglie la chiusura o l'ultimo rimborso.
-- **Elimina procedura...** — toglie tutti i movimenti della procedura e i suoi dati.
-- **Risultato parte FIAT...** — mostra la differenza della parte in euro del credito, che il programma non calcola
+- **Nuova procedura** — blocca le giacenze di una piattaforma alla data della domanda di fallimento.
+- **Registra rimborso** — registra una tranche pagata dalla procedura selezionata.
+- **Chiudi procedura** — fa uscire il credito non rimborsato.
+- **Annulla ultima operazione** — toglie la chiusura o l'ultimo rimborso.
+- **Elimina procedura** — toglie tutti i movimenti della procedura e i suoi dati.
+- **Risultato parte FIAT** — mostra la differenza della parte in euro del credito, che il programma non calcola
   (vedi [Il credito in euro](#credito-in-euro)).
-- **Guida...** — apre questa guida.
+- **Guida** — apre questa guida.
 
 Sotto i pulsanti si sceglie il [valore dei crediti](#valore-del-credito) nel quadro W/RW e in *Giacenze a data*.
 
@@ -118,7 +118,7 @@ rimborsato poi in tre tranche.
 
 ### 1. Il blocco alla data della domanda {#blocco}
 
-Con **Nuova procedura...** si sceglie la piattaforma, si scrive la data della domanda e si preme
+Con **Nuova procedura** si sceglie la piattaforma, si scrive la data della domanda e si preme
 **Leggi le giacenze**.
 
 ![Nuova procedura: giacenze di Celsius alla data della domanda](immagini/fallimenti-piattaforme/02.png)
@@ -175,7 +175,7 @@ I BTC arrivano su Coinbase con il loro costo di carico di 3.200 €, senza plusv
 ### 3. Un rimborso in monete diverse arrivato su un altro exchange {#rimborso-in-cripto}
 
 La prima tranche di Celsius ha pagato il 57,65% del credito: 0,25 BTC e 1,9 ETH arrivati su Coinbase il
-15 gennaio 2024. Si seleziona la procedura e si preme **Registra rimborso...**:
+15 gennaio 2024. Si seleziona la procedura e si preme **Registra rimborso**:
 
 - **Data e ora**: il momento del rimborso, prima dei depositi su cui è arrivato. Si scrive
   come *aaaa-mm-gg hh:mm* o *gg/mm/aaaa hh:mm*; senza l'ora vale la mezzanotte. Scegliendo un deposito, il
@@ -185,7 +185,7 @@ La prima tranche di Celsius ha pagato il 57,65% del credito: 0,25 BTC e 1,9 ETH 
   creditore riporta di solito l'importo in dollari.
 - **Recupero atteso (%)**: nell'esempio 60%, la stima del recupero totale fatta a questa data.
 
-Con **Aggiungi da deposito importato...** si sceglie ogni deposito su cui sono arrivate le monete. L'elenco
+Con **Aggiungi da deposito importato** si sceglie ogni deposito su cui sono arrivate le monete. L'elenco
 mostra i depositi non ancora classificati su altre piattaforme dalla data della domanda in poi. Un clic
 sull'intestazione ordina le colonne, il clic destro filtra una colonna per valore e il campo *Cerca* tiene
 solo le righe che contengono il testo scritto. Il deposito si sceglie con **Scegli** o con un doppio clic:
@@ -285,7 +285,7 @@ posizione restituita nella stessa quantità, come un conto Custody, la via è es
 
 ### Chiusura della procedura {#chiusura}
 
-Quando si ritiene che la procedura non pagherà altro, si seleziona e si preme **Chiudi procedura...**. Il
+Quando si ritiene che la procedura non pagherà altro, si seleziona e si preme **Chiudi procedura**. Il
 programma propone come data un minuto dopo l'ultimo movimento della procedura, e la si può cambiare. Nell'esempio
 si chiude alla fine del 2023:
 
@@ -322,7 +322,7 @@ ricevuta, al suo valore, oppure è uno scambio fra valute se arrivano euro. La d
 credito in euro e il credito che consuma **non è una plusvalenza o minusvalenza su cripto-attività** e il programma
 non la calcola: l'anteprima di ogni rimborso lo ricorda.
 
-Per chi vuole conoscerla, il pulsante **Risultato parte FIAT...** la mostra per la procedura selezionata, rimborso
+Per chi vuole conoscerla, il pulsante **Risultato parte FIAT** la mostra per la procedura selezionata, rimborso
 per rimborso e per anno. Nel caso 1 di Celsius:
 
 ![Il risultato della parte FIAT di Celsius](immagini/fallimenti-piattaforme/18.png)
@@ -337,7 +337,7 @@ Il programma non riporta queste differenze in nessun quadro.
 
 ## Annullare un'operazione {#annullare}
 
-**Annulla ultima operazione...** toglie l'ultima operazione della procedura selezionata: la chiusura, se c'è,
+**Annulla ultima operazione** toglie l'ultima operazione della procedura selezionata: la chiusura, se c'è,
 altrimenti l'ultimo rimborso. Si può ripetere per tornare indietro una tranche alla volta.
 
 ![Conferma dell'annullamento](immagini/fallimenti-piattaforme/15.png)
@@ -346,7 +346,7 @@ altrimenti l'ultimo rimborso. Si può ripetere per tornare indietro una tranche 
   registrazione.
 - Dopo uno [spostamento della chiusura](#dopo-la-chiusura), annullando si toglie prima la nuova chiusura e
   poi il rimborso: la chiusura originale non torna e va rifatta con *Chiudi procedura*.
-- Quando resta solo il blocco, la procedura si toglie con **Elimina procedura...**, che toglie tutti i suoi
+- Quando resta solo il blocco, la procedura si toglie con **Elimina procedura**, che toglie tutti i suoi
   movimenti e i dati del piano.
 
 Come ogni modifica ai movimenti, gli annullamenti diventano definitivi quando si salva.

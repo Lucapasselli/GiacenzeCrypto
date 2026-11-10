@@ -58,10 +58,10 @@ class Binance_DualInvestmentFormaTest {
         Principale.Mappa_EMoney.clear();
     }
 
-    private static final String ID_P = "20220512062450_Binance_001_001_PC";
-    private static final String ID_S = "20220524083341_Binance_002_001_DC";
-    private static final String RIGA_STESSA_MONETA = "USDT/USDT,Buy Low,1232611,2022-05-12 08:24:50,Settled,"
-            + "100.00000000 USDT,28500,2022-05-24 10:33:41,29351.32,146.28%,102.00000000 USDT,Settled";
+    private static final String ID_P = "20240512062450_Binance_001_001_PC";
+    private static final String ID_S = "20240524083341_Binance_002_001_DC";
+    private static final String RIGA_STESSA_MONETA = "USDT/USDT,Buy Low,1000001,2024-05-12 08:24:50,Settled,"
+            + "100.00000000 USDT,30000,2024-05-24 10:33:41,31000,150%,102.00000000 USDT,Settled";
 
     private static String[] movimento(String ID, String causale, String moneta, String qta, String data, String valore) {
         String v[] = new String[Importazioni.ColonneTabella];
@@ -87,11 +87,11 @@ class Binance_DualInvestmentFormaTest {
     }
 
     private static String[] purchase() {
-        return movimento(ID_P, "Dual Savings Purchase", "USDT", "100.00000000", "2022-05-12 06:24:50", "100.00");
+        return movimento(ID_P, "Dual Savings Purchase", "USDT", "100.00000000", "2024-05-12 06:24:50", "100.00");
     }
 
     private static String[] settlement() {
-        return movimento(ID_S, "Dual Savings Settlement", "USDT", "102.00000000", "2022-05-24 08:33:41", "102.00");
+        return movimento(ID_S, "Dual Savings Settlement", "USDT", "102.00000000", "2024-05-24 08:33:41", "102.00");
     }
 
     private static String file(String... righe) throws IOException {
@@ -238,11 +238,11 @@ class Binance_DualInvestmentFormaTest {
     @Test
     void stessaMoneta_liquidatoMenoDelSottoscritto_nonAbbinaENonCreaNulla() throws Exception {
         purchase();
-        movimento(ID_S, "Dual Savings Settlement", "USDT", "98.00000000", "2022-05-24 08:33:41", "98.00");
+        movimento(ID_S, "Dual Savings Settlement", "USDT", "98.00000000", "2024-05-24 08:33:41", "98.00");
         Map<String, String> prima = fotografia();
 
-        Binance_DualInvestment.Esito esito = abbina("USDT/USDT,Buy Low,1232611,2022-05-12 08:24:50,Settled,"
-                + "100.00000000 USDT,28500,2022-05-24 10:33:41,29351.32,146.28%,98.00000000 USDT,Settled");
+        Binance_DualInvestment.Esito esito = abbina("USDT/USDT,Buy Low,1000001,2024-05-12 08:24:50,Settled,"
+                + "100.00000000 USDT,30000,2024-05-24 10:33:41,31000,150%,98.00000000 USDT,Settled");
 
         assertEquals(0, esito.abbinati);
         assertEquals(1, esito.nonTrovati);
@@ -287,7 +287,7 @@ class Binance_DualInvestmentFormaTest {
         assertEquals(1, esito.aggiornati);
         assertEquals(5, MappaCryptoWallet.size());
         assertEquals(0, new BigDecimal("102").compareTo(new BigDecimal(s[13])));
-        for (String[] v : MappaCryptoWallet.values()) assertEquals("DUAL-1232611", GruppoOperazione.ChiaveEffettiva(v), v[0]);
+        for (String[] v : MappaCryptoWallet.values()) assertEquals("DUAL-1000001", GruppoOperazione.ChiaveEffettiva(v), v[0]);
 
         Binance_DualInvestment.Esito ancora = abbina(RIGA_STESSA_MONETA);
         assertEquals(0, ancora.migrati);
@@ -309,7 +309,7 @@ class Binance_DualInvestmentFormaTest {
         assertEquals(0, esito.giaAPosto, "un contratto danneggiato non è a posto");
         assertEquals(0, esito.migrati);
         assertEquals(1, esito.nonTrovati);
-        assertTrue(esito.dettagli.toString().contains("1232611"), esito.dettagli.toString());
+        assertTrue(esito.dettagli.toString().contains("1000001"), esito.dettagli.toString());
         assertEquals(prima, fotografia(), "nulla viene toccato, nemmeno il gruppo del contratto");
     }
 
@@ -319,11 +319,11 @@ class Binance_DualInvestmentFormaTest {
         DatabaseH2.Pers_Opzioni_Scrivi("PlusXWallet", "NO");
         DatabaseH2.Pers_Opzioni_Scrivi("PDD_Reward", "SI");
         //Un acquisto prima del contratto e una vendita dopo, per avere un LIFO da confrontare
-        String[] acquisto = movimento("20220501100000_Binance_009_001_AC", "", "", "", "2022-05-01 10:00:00", "100.00");
+        String[] acquisto = movimento("20240501100000_Binance_009_001_AC", "", "", "", "2024-05-01 10:00:00", "100.00");
         acquisto[5] = "ACQUISTO CRYPTO";
         acquisto[8] = "EUR"; acquisto[9] = "FIAT"; acquisto[10] = "-100";
         acquisto[11] = "USDT"; acquisto[12] = "Crypto"; acquisto[13] = "100";
-        String[] vendita = movimento("20220601100000_Binance_010_001_VC", "", "", "", "2022-06-01 10:00:00", "105.00");
+        String[] vendita = movimento("20240601100000_Binance_010_001_VC", "", "", "", "2024-06-01 10:00:00", "105.00");
         vendita[5] = "VENDITA CRYPTO";
         vendita[8] = "USDT"; vendita[9] = "Crypto"; vendita[10] = "-102";
         vendita[11] = "EUR"; vendita[12] = "FIAT"; vendita[13] = "105";
@@ -353,11 +353,11 @@ class Binance_DualInvestmentFormaTest {
     // MONETA DIVERSA: SCAMBIO DIFFERITO SOVRASCRITTO DA UN ALTRO CONTRATTO (bug C17)
     // =============================================================================================
 
-    private static final String DATA_DEPOSITO = "2022-08-26 10:40:36";
-    private static final String RIGA_A = "BUSD/BTC,Buy Low,1005680,2022-04-08 16:19:52,Settled,100.00000000 BUSD,28500,"
-            + "2022-08-26 12:40:36,20000,10%,0.00500000 BTC,Settled";
-    private static final String RIGA_B = "BUSD/BTC,Buy Low,1055026,2022-04-17 14:26:47,Settled,38.40000000 BUSD,28500,"
-            + "2022-08-26 12:40:36,20000,10%,0.00200000 BTC,Settled";
+    private static final String DATA_DEPOSITO = "2024-08-26 10:40:36";
+    private static final String RIGA_A = "BUSD/BTC,Buy Low,1000005,2024-04-08 16:19:52,Settled,100.00000000 BUSD,30000,"
+            + "2024-08-26 12:40:36,20000,10%,0.00500000 BTC,Settled";
+    private static final String RIGA_B = "BUSD/BTC,Buy Low,1000007,2024-04-17 14:26:47,Settled,40.00000000 BUSD,30000,"
+            + "2024-08-26 12:40:36,20000,10%,0.00200000 BTC,Settled";
 
     private static void seedPrezzo(String simbolo, String data) throws Exception {
         long ts = FunzioniDate.ConvertiDatainLongMinuto(data);
@@ -379,10 +379,10 @@ class Binance_DualInvestmentFormaTest {
      * @return {Purchase A, Purchase B, Settlement B}
      */
     private static String[][] collisione(String QuartoSegmentoB) throws Exception {
-        String[] pA = movimento("20220408141952_Binance_001_001_PC", "Dual Savings Purchase", "BUSD", "100.00000000", "2022-04-08 14:19:52", "100.00");
-        String[] pB = movimento("20220417122647_Binance_001_" + QuartoSegmentoB + "_PC", "Dual Savings Purchase", "BUSD", "38.40000000", "2022-04-17 12:26:47", "38.40");
-        movimento("20220826104036_Binance_001_001_DC", "Dual Savings Settlement", "BTC", "0.00500000", DATA_DEPOSITO, "100.00");
-        String[] sB = movimento("20220826104036_Binance_001_002_DC", "Dual Savings Settlement", "BTC", "0.00200000", DATA_DEPOSITO, "40.00");
+        String[] pA = movimento("20240408141952_Binance_001_001_PC", "Dual Savings Purchase", "BUSD", "100.00000000", "2024-04-08 14:19:52", "100.00");
+        String[] pB = movimento("20240417122647_Binance_001_" + QuartoSegmentoB + "_PC", "Dual Savings Purchase", "BUSD", "40.00000000", "2024-04-17 12:26:47", "40.00");
+        movimento("20240826104036_Binance_001_001_DC", "Dual Savings Settlement", "BTC", "0.00500000", DATA_DEPOSITO, "100.00");
+        String[] sB = movimento("20240826104036_Binance_001_002_DC", "Dual Savings Settlement", "BTC", "0.00200000", DATA_DEPOSITO, "40.00");
         seedPrezzo("BTC", DATA_DEPOSITO);
         seedPrezzo("BUSD", DATA_DEPOSITO);
         assertEquals(2, abbina(RIGA_A, RIGA_B).abbinati);
@@ -416,7 +416,7 @@ class Binance_DualInvestmentFormaTest {
         assertEquals(5, b.size());
         for (String[] v : b) assertNotNull(v);
         assertGruppoCompleto(b);
-        for (String[] v : b) assertEquals("DUAL-1055026", GruppoOperazione.ChiaveEffettiva(v), v[0]);
+        for (String[] v : b) assertEquals("DUAL-1000007", GruppoOperazione.ChiaveEffettiva(v), v[0]);
 
         Binance_DualInvestment.Esito ancora = abbina(RIGA_A, RIGA_B);
         assertEquals(0, ancora.riparati);
@@ -436,7 +436,7 @@ class Binance_DualInvestmentFormaTest {
         Binance_DualInvestment.Esito esito = abbina(RIGA_A, RIGA_B);
 
         assertEquals(0, esito.riparati);
-        assertTrue(esito.dettagli.toString().contains("1055026"), esito.dettagli.toString());
+        assertTrue(esito.dettagli.toString().contains("1000007"), esito.dettagli.toString());
         assertEquals(prima, fotografia());
     }
 }

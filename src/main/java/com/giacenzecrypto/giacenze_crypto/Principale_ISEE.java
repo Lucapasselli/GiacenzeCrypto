@@ -131,7 +131,7 @@ public final class Principale_ISEE {
         }
         if (!r.contoCorrente()) {
             out.add(new Object[] {"Giacenza media giornaliera (EUR, informativa)", r.giacenzaMedia == null
-                    ? "non calcolata: pulsante \"Media giornaliera...\""
+                    ? "non calcolata: pulsante \"Media giornaliera\""
                     : euro2(r.giacenzaMedia) + (r.mediaIncompleta ? " (incompleta: " + r.giorniSenzaPrezzo
                     + (r.giorniSenzaPrezzo == 1 ? " giorno" : " giorni") + " con giacenza senza prezzo, vedi \"Prezzi mancanti\")" : "")});
         }

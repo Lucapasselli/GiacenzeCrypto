@@ -66,9 +66,9 @@ class ImportazioneGenericaNexoFeeTest {
 
     @Test
     void exchangeConFeeReale_NEXO_produceScambioNettoPiuCommissioneSeparata() throws Exception {
-        // Riga reale (2025-12-10): Input -10 NEXO, fee 0.99685741 NEXO, Output 0.00009444 BTC.
-        String[] riga = rigaCon("NEXO", "-10", "BTC", "0.00009444",
-                "0.99685741", "NEXO", "2025-12-10 7:36:55");
+        // Esempio: Input -10 NEXO, fee 1 NEXO, Output 0.0001 BTC.
+        String[] riga = rigaCon("NEXO", "-10", "BTC", "0.0001",
+                "1", "NEXO", "2025-01-10 7:00:00");
 
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(riga, null, cfg());
         assertNotNull(movs);
@@ -78,11 +78,11 @@ class ImportazioneGenericaNexoFeeTest {
         BigDecimal nexoCommissione = quantitaCategoria(movs, "CM", "NEXO");
         BigDecimal btcScambio = quantitaCategoria(movs, "SC", "BTC");
 
-        assertEquals(0, new BigDecimal("-9.00314259").compareTo(nexoScambio),
+        assertEquals(0, new BigDecimal("-9").compareTo(nexoScambio),
                 "la gamba di scambio deve essere l'Input al netto della fee");
-        assertEquals(0, new BigDecimal("-0.99685741").compareTo(nexoCommissione),
+        assertEquals(0, new BigDecimal("-1").compareTo(nexoCommissione),
                 "la commissione deve avere l'esatta quantità della colonna Fee");
-        assertEquals(0, new BigDecimal("0.00009444").compareTo(btcScambio));
+        assertEquals(0, new BigDecimal("0.0001").compareTo(btcScambio));
 
         // Invariante fiscale: le due gambe NEXO devono sommare esattamente all'Input Amount
         // originale, altrimenti si perde o duplica cripto nelle rimanenze.
@@ -92,9 +92,9 @@ class ImportazioneGenericaNexoFeeTest {
 
     @Test
     void exchangeConFeeReale_LTC_produceScambioNettoPiuCommissioneSeparata() throws Exception {
-        // Riga reale (2025-02-05): Input -1.03330512 LTC, fee 0.01860711 LTC, Output 0.00107905 BTC.
-        String[] riga = rigaCon("LTC", "-1.03330512", "BTC", "0.00107905",
-                "0.01860711", "LTC", "2025-02-05 15:05:33");
+        // Esempio: Input -1 LTC, fee 0.02 LTC, Output 0.001 BTC.
+        String[] riga = rigaCon("LTC", "-1", "BTC", "0.001",
+                "0.02", "LTC", "2025-01-11 10:00:00");
 
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(riga, null, cfg());
         assertNotNull(movs);
@@ -103,9 +103,9 @@ class ImportazioneGenericaNexoFeeTest {
         BigDecimal ltcScambio = quantitaCategoria(movs, "SC", "LTC");
         BigDecimal ltcCommissione = quantitaCategoria(movs, "CM", "LTC");
 
-        assertEquals(0, new BigDecimal("-1.01469801").compareTo(ltcScambio));
-        assertEquals(0, new BigDecimal("-0.01860711").compareTo(ltcCommissione));
-        assertEquals(0, new BigDecimal("-1.03330512").compareTo(ltcScambio.add(ltcCommissione)),
+        assertEquals(0, new BigDecimal("-0.98").compareTo(ltcScambio));
+        assertEquals(0, new BigDecimal("-0.02").compareTo(ltcCommissione));
+        assertEquals(0, new BigDecimal("-1").compareTo(ltcScambio.add(ltcCommissione)),
                 "scambio + commissione deve tornare all'Input Amount originale");
     }
 
@@ -113,7 +113,7 @@ class ImportazioneGenericaNexoFeeTest {
     void exchangeSenzaFeeReale_restaUnSoloMovimento() throws Exception {
         // Fee "-" (placeholder Nexo per "nessuna commissione"): comportamento invariato, una sola
         // riga di scambio, nessuna commissione emessa.
-        String[] riga = rigaCon("USDT", "-1.8", "BTC", "0.00001806",
+        String[] riga = rigaCon("USDT", "-2", "BTC", "0.00002",
                 "-", "-", "2025-06-01 10:00:00");
 
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(riga, null, cfg());
@@ -124,10 +124,10 @@ class ImportazioneGenericaNexoFeeTest {
 
     @Test
     void prelievoConFee_BTC_prelievoNettoPiuCommissioneTornanoAlTotaleAddebitato() throws Exception {
-        // Riga reale (2026-06-30): Input -0.00579117 BTC (totale addebitato), Output 0.00572711 (netto
-        // inviato), fee 0.00006406 BTC. Output e' gia' al netto: la fee non va sottratta due volte.
-        String[] riga = {"NXTtest", "Withdrawal", "BTC", "-0.00579117", "BTC", "0.00572711",
-            "$339.70", "0.00006406", "BTC", "approved / BTC withdrawal", "2026-06-30 18:51:56"};
+        // Esempio: Input -0.006 BTC (totale addebitato), Output 0.0059 (netto
+        // inviato), fee 0.0001 BTC. Output e' gia' al netto: la fee non va sottratta due volte.
+        String[] riga = {"NXTtest", "Withdrawal", "BTC", "-0.006", "BTC", "0.0059",
+            "$300", "0.0001", "BTC", "approved / BTC withdrawal", "2025-01-12 10:00:00"};
 
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(riga, null, cfg());
         assertNotNull(movs);
@@ -136,28 +136,28 @@ class ImportazioneGenericaNexoFeeTest {
         BigDecimal prelievo = quantitaCategoria(movs, "PC", "BTC");
         BigDecimal commissione = quantitaCategoria(movs, "CM", "BTC");
 
-        assertEquals(0, new BigDecimal("-0.00572711").compareTo(prelievo));
-        assertEquals(0, new BigDecimal("-0.00006406").compareTo(commissione));
-        assertEquals(0, new BigDecimal("-0.00579117").compareTo(prelievo.add(commissione)),
+        assertEquals(0, new BigDecimal("-0.0059").compareTo(prelievo));
+        assertEquals(0, new BigDecimal("-0.0001").compareTo(commissione));
+        assertEquals(0, new BigDecimal("-0.006").compareTo(prelievo.add(commissione)),
                 "prelievo + commissione deve tornare all'Input Amount (il totale addebitato)");
     }
 
     @Test
     void trasferimentiVersoENexoPro_sonoPrelievoEDeposito() throws Exception {
-        // Righe reali (2023): USDT mandati al Nexo Pro e BTC tornati dal Pro. Lo scambio fatto nel Pro non e'
+        // Esempi: USDT mandati al Nexo Pro e BTC tornati dal Pro. Lo scambio fatto nel Pro non e'
         // nell'export, quindi non sono giroconti interni da ignorare.
         String[] verso = {"NXTtest", "Transfer To Pro Wallet", "USDT", "-20", "USDT", "20", "$20",
-            "-", "-", "approved / USDT Transfer from Savings Wallet to Nexo Pro Wallet", "2023-04-21 21:02:16"};
+            "-", "-", "approved / USDT Transfer from Savings Wallet to Nexo Pro Wallet", "2025-01-13 10:00:00"};
         List<String[]> movsVerso = ImportazioneGenerica.costruisciMovimenti(verso, null, cfg());
         assertNotNull(movsVerso);
         assertEquals(1, movsVerso.size());
         assertEquals(0, new BigDecimal("-20").compareTo(quantitaCategoria(movsVerso, "PC", "USDT")));
 
-        String[] dal = {"NXTtest", "Transfer From Pro Wallet", "BTC", "0.000499", "BTC", "0.000499", "$14",
-            "-", "-", "approved / BTC Transfer from Nexo Pro Wallet to Savings Wallet", "2023-03-23 15:03:47"};
+        String[] dal = {"NXTtest", "Transfer From Pro Wallet", "BTC", "0.0005", "BTC", "0.0005", "$15",
+            "-", "-", "approved / BTC Transfer from Nexo Pro Wallet to Savings Wallet", "2025-01-14 10:00:00"};
         List<String[]> movsDal = ImportazioneGenerica.costruisciMovimenti(dal, null, cfg());
         assertNotNull(movsDal);
         assertEquals(1, movsDal.size());
-        assertEquals(0, new BigDecimal("0.000499").compareTo(quantitaCategoria(movsDal, "DC", "BTC")));
+        assertEquals(0, new BigDecimal("0.0005").compareTo(quantitaCategoria(movsDal, "DC", "BTC")));
     }
 }

@@ -21,7 +21,7 @@ class GruppoOperazioneTest {
     private static String[] movimento(String ID) {
         String[] v = new String[Importazioni.ColonneTabella];
         v[0] = ID;
-        v[1] = "2022-05-12 06:24";
+        v[1] = "2024-05-12 06:24";
         v[3] = "Binance";
         v[5] = "PRELIEVO CRYPTO";
         v[8] = "USDT";
@@ -41,19 +41,19 @@ class GruppoOperazioneTest {
 
     @Test
     void migrazione_spostaIlContrattoDalCampoDelleCommissioni() {
-        String[] v = movimento("20220512062450_Binance_001_001_PC");
-        v[CommissioniCollegate.CAMPO] = "DUAL-1232611";
+        String[] v = movimento("20240512062450_Binance_001_001_PC");
+        v[CommissioniCollegate.CAMPO] = "DUAL-1000001";
 
         assertTrue(GruppoOperazione.MigraAllaFormaAttuale(v));
 
-        assertEquals("DUAL-1232611", GruppoOperazione.Chiave(v));
+        assertEquals("DUAL-1000001", GruppoOperazione.Chiave(v));
         assertEquals("", CommissioniCollegate.Chiave(v));
         assertFalse(GruppoOperazione.MigraAllaFormaAttuale(v), "una seconda volta non cambia nulla");
     }
 
     @Test
     void migrazione_lasciaStareLeCommissioni() {
-        String[] v = movimento("20220512062450_Binance_001_001_PC");
+        String[] v = movimento("20240512062450_Binance_001_001_PC");
         v[CommissioniCollegate.CAMPO] = "3f1c2a7e-commissione";
 
         assertFalse(GruppoOperazione.MigraAllaFormaAttuale(v));
@@ -67,7 +67,7 @@ class GruppoOperazioneTest {
         //Come la legge il caricamento: 45 campi, il contratto nel 43
         String[] vecchia = new String[45];
         java.util.Arrays.fill(vecchia, "");
-        vecchia[0] = "20220512062450_Binance_001_001_PC";
+        vecchia[0] = "20240512062450_Binance_001_001_PC";
         vecchia[43] = "DUAL-7";
         String[] v = java.util.Arrays.copyOf(vecchia, Importazioni.ColonneTabella);
         Importazioni.RiempiVuotiArray(v);
@@ -80,7 +80,7 @@ class GruppoOperazioneTest {
 
     @Test
     void ilDuplicato_nonFaParteDellOperazione() {
-        String[] v = movimento("20220512062450_Binance_001_001_PC");
+        String[] v = movimento("20240512062450_Binance_001_001_PC");
         GruppoOperazione.Scrivi(v, "DUAL-7");
 
         assertTrue(Funzioni.DuplicaMovimento(v[0]));
@@ -93,9 +93,9 @@ class GruppoOperazioneTest {
 
     @Test
     void dettaglio_mostraLOperazioneEPoiLeCommissioni() {
-        String[] p = movimento("20220512062450_Binance_001_001_PC");
-        String[] s = movimento("20220524083341_Binance_002_001_DC");
-        String[] fee = movimento("20220512062450_Binance_001_002_CM");
+        String[] p = movimento("20240512062450_Binance_001_001_PC");
+        String[] s = movimento("20240524083341_Binance_002_001_DC");
+        String[] fee = movimento("20240512062450_Binance_001_002_CM");
         GruppoOperazione.Scrivi(p, "DUAL-7");
         GruppoOperazione.Scrivi(s, "DUAL-7");
         p[CommissioniCollegate.CAMPO] = "k";
@@ -114,7 +114,7 @@ class GruppoOperazioneTest {
 
     @Test
     void migrazione_togliendoLaChiaveDaiGenerati() {
-        String[] g = movimento("20220512062450_Binance_001A_001_DC");
+        String[] g = movimento("20240512062450_Binance_001A_001_DC");
         g[22] = "AU";
         GruppoOperazione.Scrivi(g, "DUAL-7");
 
@@ -125,9 +125,9 @@ class GruppoOperazioneTest {
 
     @Test
     void chiaveEffettiva_diUnGenerato_vieneDagliOriginaliDelGruppo() {
-        String[] p = movimento("20220512062450_Binance_001_001_PC");
-        String[] s = movimento("20220524083341_Binance_002_001_DC");
-        String[] g = movimento("20220512062450_Binance_001A_001_DC");
+        String[] p = movimento("20240512062450_Binance_001_001_PC");
+        String[] s = movimento("20240524083341_Binance_002_001_DC");
+        String[] g = movimento("20240512062450_Binance_001A_001_DC");
         g[22] = "AU";
         p[20] = g[0] + "," + s[0];
         s[20] = p[0] + "," + g[0];

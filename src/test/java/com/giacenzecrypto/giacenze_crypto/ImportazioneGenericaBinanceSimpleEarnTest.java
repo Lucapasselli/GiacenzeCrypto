@@ -98,19 +98,19 @@ class ImportazioneGenericaBinanceSimpleEarnTest {
         assertEquals("IGNORA", c.convertiCausale("Bonus Tiered APR Rewards"));
 
         List<String[]> movs = importa(List.<String[]>of(
-                riga("2026-03-16 05:48:00", "USDC", "0.027396", "Bonus Tiered APR Rewards"),
-                riga("2026-03-15", "USDC", "0.02887891", "Real-time APR Rewards"),
-                riga("2026-03-15", "ETH", "0.00000477", "Real-time APR Rewards"),
-                riga("2026-03-15 04:16:00", "USDC", "0.027396", "Bonus Tiered APR Rewards")));
+                riga("2025-01-16 05:00:00", "USDC", "0.03", "Bonus Tiered APR Rewards"),
+                riga("2025-01-15", "USDC", "0.025", "Real-time APR Rewards"),
+                riga("2025-01-15", "ETH", "0.00001", "Real-time APR Rewards"),
+                riga("2025-01-15 04:00:00", "USDC", "0.03", "Bonus Tiered APR Rewards")));
 
         assertEquals(2, movs.size(), "due Real-time di monete diverse nello stesso istante restano due ricompense");
         for (String[] m : movs) {
             assertTrue(m[0].endsWith("_RW"), m[0]);
             assertEquals("Binance", m[3]);
             assertEquals("Principale", m[4]);
-            assertTrue(m[0].startsWith("20260315"), "stesso giorno anche in ora italiana: " + m[0]);
+            assertTrue(m[0].startsWith("20250115"), "stesso giorno anche in ora italiana: " + m[0]);
         }
-        assertEquals("0.02887891", movs.stream().filter(m -> m[11].equals("USDC")).findFirst().orElseThrow()[13]);
+        assertEquals("0.025", movs.stream().filter(m -> m[11].equals("USDC")).findFirst().orElseThrow()[13]);
     }
 
     /**
@@ -127,7 +127,7 @@ class ImportazioneGenericaBinanceSimpleEarnTest {
         List<String[]> movs = importa(List.<String[]>of(
                 riga("2021-06-11 03:00:00", "BNB", "0.00001", "Rewards"),
                 riga("2023-06-14 04:00:00", "VTHO", "0.5", "Airdrop Rewards"),
-                riga("2026-03-15", "USDC", "0.02887891", "Real-time APR Rewards")));
+                riga("2025-01-15", "USDC", "0.025", "Real-time APR Rewards")));
 
         assertEquals(1, movs.size());
         assertEquals("USDC", movs.get(0)[11]);

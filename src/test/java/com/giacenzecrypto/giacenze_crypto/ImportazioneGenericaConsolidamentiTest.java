@@ -60,7 +60,7 @@ class ImportazioneGenericaConsolidamentiTest {
     @Test
     void prelievo_stessaMoneta_conInputNegativo_diventaUnaSolaUscita() {
         String[] mov = ImportazioneGenerica.costruisciMovimenti(
-                rigaNexo("Withdrawal", "LTC", "-0.16522", "LTC", "0.16522"), null, cfgNexo()).get(0);
+                rigaNexo("Withdrawal", "LTC", "-0.2", "LTC", "0.2"), null, cfgNexo()).get(0);
 
         assertNotNull(mov);
         assertEquals("LTC", mov[8], "il verso lo detta il segno dell'Input: e' un'uscita");
@@ -69,17 +69,17 @@ class ImportazioneGenericaConsolidamentiTest {
 
     @Test
     void topUp_stessaMoneta_conInputEOutputLeggermenteDiversi_restaGambaSingola() {
-        // Nexo su 'Top up Crypto' scrive Input 97.87620900 e Output 97.87620937 (differenza = fee di
+        // Nexo su 'Top up Crypto' scrive Input 100.00000000 e Output 100.00000050 (differenza = fee di
         // rete): la coincidenza esatta non c'e', ma la moneta e' la stessa e resta un solo deposito,
         // con l'importo della colonna principale.
         String[] mov = ImportazioneGenerica.costruisciMovimenti(
-                rigaNexo("Top up Crypto", "USDT", "97.87620900", "USDT", "97.87620937"), null,
+                rigaNexo("Top up Crypto", "USDT", "100.00000000", "USDT", "100.00000050"), null,
                 cfgNexoCon("Top up Crypto", "TRASFERIMENTO-CRYPTO")).get(0);
 
         assertNotNull(mov);
         assertEquals("USDT", mov[11]);
         assertEquals("", mov[8], "niente gamba di uscita: non e' uno scambio USDT->USDT");
-        assertEquals("97.87620937", mov[13]);
+        assertEquals("100.0000005", mov[13]);
     }
 
     private static ConfigurazioneImport cfgNexoCon(String causaleCsv, String tipo) {
@@ -90,11 +90,11 @@ class ImportazioneGenericaConsolidamentiTest {
 
     @Test
     void topUp_conOutputAmountZero_prendeLImportoDallInput_nonScartato() {
-        // Bug reale: il 'Top up Crypto' promozionale 'Campaign Rewards' di Nexo (10/07/2024) porta
-        // Input Amount 45.06797732 e Output Amount 0.00000000 (l'unica riga del file cosi'). Prendendo
+        // Bug osservato: il 'Top up Crypto' promozionale 'Campaign Rewards' di Nexo porta
+        // Input Amount 45.00000000 e Output Amount 0.00000000. Prendendo
         // l'importo solo dalla colonna principale (Output = 0) il movimento veniva scartato con "qta=0".
         List<String[]> movs = ImportazioneGenerica.costruisciMovimenti(
-                rigaNexo("Top up Crypto", "NEXO", "45.06797732", "NEXO", "0.00000000"), null,
+                rigaNexo("Top up Crypto", "NEXO", "45.00000000", "NEXO", "0.00000000"), null,
                 cfgNexoCon("Top up Crypto", "TRASFERIMENTO-CRYPTO"));
 
         assertNotNull(movs);
@@ -102,7 +102,7 @@ class ImportazioneGenericaConsolidamentiTest {
         String[] mov = movs.get(0);
         assertEquals("NEXO", mov[11], "Input positivo -> gamba in entrata");
         assertEquals("", mov[8], "nessuna gamba in uscita");
-        assertEquals("45.06797732", mov[13], "l'importo si prende dall'Input quando l'Output e' 0");
+        assertEquals("45", mov[13], "l'importo si prende dall'Input quando l'Output e' 0");
     }
 
     // ----- causalePerNota: 'Top up Crypto' promozionale riclassificato da deposito a premio ---------
@@ -114,8 +114,8 @@ class ImportazioneGenericaConsolidamentiTest {
         cfg.causalePerNota.add(new ConfigurazioneImport.RegolaCausaleNota(
                 "Top up Crypto", "Campaign Rewards", "REWARD"));
 
-        String[] riga = {"NXT1", "Top up Crypto", "NEXO", "45.06797732", "NEXO", "0.00000000",
-                "48.11", "approved / Campaign Rewards", "2024-07-10 14:37:43"};
+        String[] riga = {"NXT1", "Top up Crypto", "NEXO", "45.00000000", "NEXO", "0.00000000",
+                "48", "approved / Campaign Rewards", "2025-01-10 10:00:00"};
 
         String[] mov = ImportazioneGenerica.costruisciMovimenti(riga, null, cfg).get(0);
 
@@ -123,7 +123,7 @@ class ImportazioneGenericaConsolidamentiTest {
         assertEquals("REWARD", mov[5], "campo 5");
         assertEquals("RW", mov[0].split("_")[4], "categoria RW, non DC");
         assertEquals("NEXO", mov[11]);
-        assertEquals("45.06797732", mov[13]);
+        assertEquals("45", mov[13]);
     }
 
     @Test
@@ -133,8 +133,8 @@ class ImportazioneGenericaConsolidamentiTest {
         cfg.causalePerNota.add(new ConfigurazioneImport.RegolaCausaleNota(
                 "Top up Crypto", "Campaign Rewards", "REWARD"));
 
-        String[] riga = {"NXT2", "Top up Crypto", "USDT", "97.87620900", "USDT", "97.87620937",
-                "97.89", "approved / 0x070cdd2b57f593890282a29f6085cca1b96b8dddf0b2d736c82d9587ec523c61",
+        String[] riga = {"NXT2", "Top up Crypto", "USDT", "100.00000000", "USDT", "100.00000050",
+                "100", "approved / 0xabababababababababababababababababababababababababababababababab",
                 "2024-01-01 00:00:00"};
 
         String[] mov = ImportazioneGenerica.costruisciMovimenti(riga, null, cfg).get(0);
@@ -146,7 +146,7 @@ class ImportazioneGenericaConsolidamentiTest {
     @Test
     void exchange_moneteDiverse_restaUnoScambioADueGambe() {
         String[] mov = ImportazioneGenerica.costruisciMovimenti(
-                rigaNexo("Exchange", "USDT", "-1.8", "BTC", "0.00001806"), null, cfgNexo()).get(0);
+                rigaNexo("Exchange", "USDT", "-2", "BTC", "0.00002"), null, cfgNexo()).get(0);
 
         assertNotNull(mov);
         assertEquals("USDT", mov[8], "Input -> gamba in uscita");
@@ -227,7 +227,7 @@ class ImportazioneGenericaConsolidamentiTest {
         cfg.mappaCausali.put("Sell", "SCAMBIO CRYPTO-CRYPTO");
         cfg.mappaCausali.put("Buy", "SCAMBIO CRYPTO-CRYPTO");
 
-        String d = "2025-04-25 08:33:21";
+        String d = "2025-04-25 08:30:00";
         List<String[]> gruppo = List.of(
                 new String[]{"1000000000000000001", d, "USDC", "Sell", "-5.68", "5"},
                 new String[]{"1000000000000000002", d, "BGB", "Buy", "1.26", "5"},

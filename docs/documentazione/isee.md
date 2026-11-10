@@ -46,18 +46,18 @@ calcolo dei quadri RT e W/RW, con un'eccezione voluta: i prezzi scritti dalla fi
 ## Dove si trova {#dove-si-trova}
 
 Nella scheda **Dichiarazioni – ISEE**, fra *RT & Analisi P&L* e *Archivio dichiarazioni*. Finché la funzione è in prova
-la voce si chiama *ISEE (bozza)*. Il pulsante **Guida...** in alto
+la voce si chiama *ISEE (bozza)*. Il pulsante **Guida** in alto
 a destra apre questo manuale.
 
 ![Il tab ISEE con i rapporti del 2024 e il dettaglio del Ledger](immagini/isee/01.png)
 
 Il tab ha tre zone:
 
-- in alto la scelta dell'anno e i pulsanti *Calcola*, *Media giornaliera...*, *Stampa prospetto PDF* e *Crea Excel con i
+- in alto la scelta dell'anno e i pulsanti *Calcola*, *Media giornaliera*, *Stampa prospetto PDF* e *Crea Excel con i
   dettagli*,
 - al centro la **tabella dei rapporti**, con i totali dell'anno sotto, a destra,
 - in basso il **dettaglio** del rapporto selezionato, diviso nelle schede *Rapporto*, *Monete* e *Avvisi*, e i pulsanti
-  *Prezzi mancanti...*, *Modifica dati...* e *Dati senza rapporto*.
+  *Prezzi mancanti*, *Modifica dati* e *Dati senza rapporto*.
 
 ## Calcolare i rapporti di un anno {#calcolare}
 
@@ -79,11 +79,11 @@ rapporti 01 e dei rapporti 99. Nell'esempio: *3 rapporti, valore al 31/12: 01 = 
 | **Gruppo** | il gruppo wallet del rapporto, con il suo alias |
 | **Tipo rapporto** | *01 Conto corrente* oppure *99 Altri strumenti* |
 | **Codice operatore** | il codice dell'intermediario: *E* seguita dall'identificativo fiscale per un intermediario estero, il codice fiscale per uno italiano, *END* quando non c'è un intermediario o il dato manca |
-| **Identificativo** | quello scritto con *Modifica dati...*: l'IBAN, il numero di conto o l'ID utente. Se non è stato scritto compare il nome del gruppo, con un avviso |
+| **Identificativo** | quello scritto con *Modifica dati*: l'IBAN, il numero di conto o l'ID utente. Se non è stato scritto compare il nome del gruppo, con un avviso |
 | **Data inizio** | solo se il rapporto è iniziato nell'anno, vedi [le date](#date) |
 | **Data fine** | solo se il rapporto è finito nell'anno |
 | **Valore al 31/12 (EUR)** | il valore a fine anno, arrotondato all'euro. *(incompleto)* se almeno una moneta non ha prezzo |
-| **Giacenza media (EUR)** | sul 01 la giacenza media annua. Sul 99 la media giornaliera, solo dopo *Media giornaliera...* |
+| **Giacenza media (EUR)** | sul 01 la giacenza media annua. Sul 99 la media giornaliera, solo dopo *Media giornaliera* |
 | **Avvisi** | quanti avvisi ha il rapporto: il testo è nella scheda *Avvisi* del dettaglio |
 
 Gli importi sono arrotondati all'euro: 299,49 diventa 299 e 299,50 diventa 300.
@@ -133,11 +133,11 @@ rapporto divisa per 365. Un esempio: 300 euro dal 01/02/2024 al 31/12/2024 sono 
 
 La data di inizio è, nell'ordine:
 
-1. la data di apertura scritta con *Modifica dati...*,
+1. la data di apertura scritta con *Modifica dati*,
 2. il giorno del cambio di operatore,
 3. il primo movimento del gruppo.
 
-La data di fine è la data di chiusura scritta con *Modifica dati...*, oppure il giorno prima di un cambio di operatore.
+La data di fine è la data di chiusura scritta con *Modifica dati*, oppure il giorno prima di un cambio di operatore.
 Le due date compaiono solo se cadono nell'anno. La data di fine **non** si ricava dai movimenti: un conto a saldo zero
 di solito resta aperto. Se il saldo del gruppo è a zero dal giorno di un movimento dell'anno, un avviso lo segnala.
 
@@ -172,7 +172,7 @@ scritto.
 
 ## Scrivere i dati di un rapporto {#modifica}
 
-Il pulsante **Modifica dati...**, o il doppio clic su una riga, apre questa finestra:
+Il pulsante **Modifica dati**, o il doppio clic su una riga, apre questa finestra:
 
 ![La finestra dei dati di un rapporto](immagini/isee/02.png)
 
@@ -198,7 +198,7 @@ nuovo rapporto lussemburghese ha i suoi dati, da scrivere a parte se servono.
 Per un rapporto 99 la DSU chiede il valore al 31/12. La FAQ n. 13 del Ministero del Lavoro del 13/09/2024 indica per le
 cripto-attività presso un prestatore di servizi il codice 99 con il solo controvalore in euro. La giacenza media
 giornaliera di un rapporto 99 è quindi un dato **informativo**: il tab la calcola solo se la chiedi, con il pulsante
-**Media giornaliera...**.
+**Media giornaliera**.
 
 **Come si calcola.** Per ogni giorno del rapporto si prende la quantità di ogni moneta a fine giornata e la si valuta
 al prezzo di fine giornata. La somma dei valori di tutti i giorni si divide per **365**, anche negli anni bisestili, come
@@ -234,7 +234,7 @@ pochi secondi. Durante lo scaricamento una finestra mostra l'avanzamento:
 ![Lo scaricamento dei prezzi giornalieri](immagini/isee/06.png)
 
 Lo scaricamento si può **interrompere** in qualsiasi momento con *Interrompi Elaborazione*. I prezzi già arrivati
-restano: premendo di nuovo *Media giornaliera...* la stima riparte da quello che manca. Interrotta, la media non compare
+restano: premendo di nuovo *Media giornaliera* la stima riparte da quello che manca. Interrotta, la media non compare
 e la tabella resta com'era. Nella prima fase, quella dei token per indirizzo di contratto, la barra resta ferma: si
 muove nella fase delle quotazioni degli exchange.
 
@@ -260,8 +260,8 @@ Le azioni:
 - **Vale zero**: scrive il prezzo 0 per ogni giorno dei tratti selezionati. Serve per i token che non hanno un valore,
   come gli airdrop di spam. Funziona anche su molti tratti insieme: su un archivio reale 42.358 giorni sono stati
   scritti in circa 5 secondi.
-- **Prezzo per i tratti...**: chiede un prezzo unitario in euro e lo scrive per ogni giorno dei tratti selezionati.
-- **Prezzo per i giorni...**: lo stesso, per i soli giorni selezionati nella tabella in basso.
+- **Prezzo per i tratti**: chiede un prezzo unitario in euro e lo scrive per ogni giorno dei tratti selezionati.
+- **Prezzo per i giorni**: lo stesso, per i soli giorni selezionati nella tabella in basso.
 
 Il prezzo si scrive con la virgola o con il punto: *0,05*, *0.05* e *1.234,56* sono tutti accettati.
 
@@ -325,11 +325,11 @@ stampata con la media.
 
 ## Dati senza rapporto {#dati-senza-rapporto}
 
-I dati scritti con *Modifica dati...* sono legati al periodo FIAT del gruppo da cui nasce il rapporto. Se quel periodo
+I dati scritti con *Modifica dati* sono legati al periodo FIAT del gruppo da cui nasce il rapporto. Se quel periodo
 viene cancellato, o se cambia il suo numero, i dati restano nell'archivio ma il calcolo non li trova più. Il pulsante
 **Dati senza rapporto (N)** si attiva quando ce ne sono e mostra un elenco: per ogni voce il gruppo, il tipo, il periodo
 e i dati. Scegliendo una voce la si elimina, dopo una conferma. Se i dati valgono per un rapporto ancora presente, vanno
-riscritti su quel rapporto con *Modifica dati...*.
+riscritti su quel rapporto con *Modifica dati*.
 
 ## Da dove arrivano i dati {#da-dove}
 
@@ -337,7 +337,7 @@ riscritti su quel rapporto con *Modifica dati...*.
 |---|---|
 | Gruppi wallet e alias | *Opzioni*, gruppi wallet, vedi [Gruppi wallet](opzioni-calcolo-rw.html#gruppi-wallet-preconfigurati-e-bollo) |
 | Stato estero, identificativo fiscale, conto corrente | i periodi FIAT del gruppo, vedi [Periodi di detenzione](opzioni-calcolo-rw.html#periodi-di-detenzione) e [Liquidità presso intermediari esteri](opzioni-calcolo-rw.html#liquidita-presso-intermediari-esteri) |
-| Identificativo, operatore corretto, apertura, chiusura | il tab ISEE, con *Modifica dati...* |
+| Identificativo, operatore corretto, apertura, chiusura | il tab ISEE, con *Modifica dati* |
 | Quantità e prezzi di fine anno | i movimenti e la fotografia del quadro W/RW, vedi [Valori di inizio e fine anno](opzioni-calcolo-rw.html#valori-di-inizio-e-fine-anno) |
 | Prezzi di un giorno che mancano | la finestra dei [prezzi mancanti](#prezzi-mancanti) o le altre schede dei prezzi personalizzati |
 
@@ -345,10 +345,10 @@ riscritti su quel rapporto con *Modifica dati...*.
 
 **Perché il codice operatore è END?** Il gruppo non ha un periodo FIAT, oppure il periodo FIAT non ha l'identificativo
 fiscale. Un avviso nella scheda *Avvisi* dice quale dei due. Per un wallet in autocustodia è il caso normale. Per un exchange si
-completa il periodo FIAT, oppure si scrive il codice con *Modifica dati...*.
+completa il periodo FIAT, oppure si scrive il codice con *Modifica dati*.
 
 **Perché l'identificativo è il nome del gruppo?** Perché non ne è stato scritto uno. Il programma non conosce l'IBAN, il
-numero di conto o l'ID utente: si scrive con *Modifica dati...*, una volta per tutti gli anni.
+numero di conto o l'ID utente: si scrive con *Modifica dati*, una volta per tutti gli anni.
 
 **Il valore al 31/12 è diverso da quello del quadro W/RW.** Il valore delle cripto è quello della fotografia di fine
 anno del quadro W/RW. Nel tab ISEE c'è in più la liquidità del gruppo (nel 99, o nel 01 se c'è il conto corrente),

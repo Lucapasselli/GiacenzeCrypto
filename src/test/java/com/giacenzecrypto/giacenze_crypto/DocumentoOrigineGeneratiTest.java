@@ -68,18 +68,18 @@ class DocumentoOrigineGeneratiTest {
     @Test
     void dualAMonetaUguale_ogniGeneratoPrendeIlDocumentoDelMovimentoDaCuiNasce() throws Exception {
         //Purchase e Settlement da due file diversi
-        String[] p = movimento("20220512062450_Binance_001_001_PC", "Dual Savings Purchase", "USDT", "100.00000000", "2022-05-12 06:24:50", "3");
-        String[] s = movimento("20220524083341_Binance_002_001_DC", "Dual Savings Settlement", "USDT", "102.00000000", "2022-05-24 08:33:41", "5");
+        String[] p = movimento("20240512062450_Binance_001_001_PC", "Dual Savings Purchase", "USDT", "100.00000000", "2024-05-12 06:24:50", "3");
+        String[] s = movimento("20240524083341_Binance_002_001_DC", "Dual Savings Settlement", "USDT", "102.00000000", "2024-05-24 08:33:41", "5");
         Path f = tempDir.resolve("dettaglio_" + System.nanoTime() + "_202609182038UTC+2.csv");
         Files.writeString(f, "Product,Order Type,Product Id,Subscription Date,Type,Subscription Amount,Target Price,"
                 + "Settlement Date,Fixing Price,APY,Settlement Amount,Status\n"
-                + "USDT/USDT,Buy Low,1232611,2022-05-12 08:24:50,Settled,100.00000000 USDT,28500,2022-05-24 10:33:41,"
-                + "29351.32,146.28%,102.00000000 USDT,Settled\n");
+                + "USDT/USDT,Buy Low,1000001,2024-05-12 08:24:50,Settled,100.00000000 USDT,30000,2024-05-24 10:33:41,"
+                + "31000,150%,102.00000000 USDT,Settled\n");
 
         assertEquals(1, Binance_DualInvestment.Abbina(f.toFile()).abbinati);
 
         for (String[] v : MappaCryptoWallet.values()) {
-            String atteso = v[0].startsWith("20220512") ? "3" : "5";
+            String atteso = v[0].startsWith("20240512") ? "3" : "5";
             assertEquals(atteso, v[41], v[0] + " " + v[5]);
         }
         assertEquals(5, MappaCryptoWallet.size());
@@ -99,10 +99,10 @@ class DocumentoOrigineGeneratiTest {
     @Test
     void pregresso_ilGeneratoPrendeIlDocumentoDellOriginaleConLoStessoIstante() {
         Map<String, String[]> m = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        String[] p = movimento("20220512062450_Binance_001_001_PC", "", "USDT", "100", "2022-05-12 06:24:50", "3");
-        String[] s = movimento("20220524083341_Binance_002_001_DC", "", "USDT", "102", "2022-05-24 08:33:41", "5");
-        String[] gp = movimento("20220512062450_Binance_001A_001_DC", "", "USDT", "100", "2022-05-12 06:24:50", "");
-        String[] gs = movimento("20220524083341_Binance_0002_001_PC", "", "USDT", "102", "2022-05-24 08:33:41", "");
+        String[] p = movimento("20240512062450_Binance_001_001_PC", "", "USDT", "100", "2024-05-12 06:24:50", "3");
+        String[] s = movimento("20240524083341_Binance_002_001_DC", "", "USDT", "102", "2024-05-24 08:33:41", "5");
+        String[] gp = movimento("20240512062450_Binance_001A_001_DC", "", "USDT", "100", "2024-05-12 06:24:50", "");
+        String[] gs = movimento("20240524083341_Binance_0002_001_PC", "", "USDT", "102", "2024-05-24 08:33:41", "");
         for (String[] g : new String[][]{gp, gs}) g[22] = "AU";
         String gruppo = p[0] + "," + s[0] + "," + gp[0] + "," + gs[0];
         for (String[] v : new String[][]{p, s, gp, gs}) {
@@ -120,9 +120,9 @@ class DocumentoOrigineGeneratiTest {
     @Test
     void pregresso_senzaOriginaleNelloStessoIstante_soloSeIlDocumentoECondiviso() {
         Map<String, String[]> m = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        String[] p = movimento("20220512062450_Binance_001_001_PC", "", "USDT", "100", "2022-05-12 06:24:50", "3");
-        String[] s = movimento("20220524083341_Binance_002_001_DC", "", "BTC", "0.0035", "2022-05-24 08:33:41", "3");
-        String[] g = movimento("20220520000000_Binance_09_001_SC", "", "USDT", "100", "2022-05-20 00:00:00", "");
+        String[] p = movimento("20240512062450_Binance_001_001_PC", "", "USDT", "100", "2024-05-12 06:24:50", "3");
+        String[] s = movimento("20240524083341_Binance_002_001_DC", "", "BTC", "0.004", "2024-05-24 08:33:41", "3");
+        String[] g = movimento("20240501000000_Binance_09_001_SC", "", "USDT", "100", "2024-05-01 00:00:00", "");
         g[22] = "AU";
         p[20] = s[0] + "," + g[0];
         s[20] = p[0] + "," + g[0];

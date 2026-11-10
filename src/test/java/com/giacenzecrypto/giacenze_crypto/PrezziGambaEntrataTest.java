@@ -289,12 +289,12 @@ class PrezziGambaEntrataTest {
         //Scambio a piu' monete: la moneta con peso zero riceve quantita' zero ma porta ancora l'InfoPrezzo
         //dell'altra parte (un prelievo di SON finiva con la fonte di BIT)
         assertArrayEquals(new int[]{0}, Prezzi.OrdineGambe(new Moneta[]{
-            moneta("SON", "-143.1", "Crypto"), moneta("BIT", "0", "Crypto")}));
+            moneta("SON", "-150", "Crypto"), moneta("BIT", "0", "Crypto")}));
     }
 
     @Test
     void prezzate_gambaAQuantitaZeroConPrezzoNonConta() {
-        Moneta son = moneta("SON", "-143.1", "Crypto");
+        Moneta son = moneta("SON", "-150", "Crypto");
         Moneta bit = prezzata("BIT", "0", "0.00");
         bit.InfoPrezzo = quotazione(DATA, "CoinMarketCap");
         assertNull(MovimentiCrypto.DammiMonetaPrioritaria(son, bit, DATA));
@@ -302,12 +302,12 @@ class PrezziGambaEntrataTest {
 
     @Test
     void prezzate_coinMarketCapTroppoDiversoDallAltraGamba_vinceLAltra() {
-        Moneta usdt = quotata("USDT", "-58.98", "52.06", DATA, "binance");
-        Moneta bit = quotata("BIT", "29.88", "0.00", DATA, "CoinMarketCap");
-        bit.InfoPrezzo.prezzoUnitario = new BigDecimal("0.0000281");
-        bit.Prezzo = "0.00084";
+        Moneta usdt = quotata("USDT", "-60", "50.00", DATA, "binance");
+        Moneta bit = quotata("BIT", "30", "0.00", DATA, "CoinMarketCap");
+        bit.InfoPrezzo.prezzoUnitario = new BigDecimal("0.00003");
+        bit.Prezzo = "0.0009";
         assertSame(usdt, MovimentiCrypto.DammiMonetaPrioritaria(usdt, bit, DATA),
-                "BIT da CoinMarketCap vale 0,00084 contro 52,06 dell'USDT: e' un omonimo");
+                "BIT da CoinMarketCap vale 0,0009 contro 50 dell'USDT: e' un omonimo");
     }
 
     @Test
@@ -322,10 +322,10 @@ class PrezziGambaEntrataTest {
     @Test
     void prezzate_coinMarketCapSuEntrambeLeGambe_nessunConfronto() {
         //Due prezzi della stessa fonte inaffidabile: non si sa quale sia sbagliato, resta l'entrata
-        Moneta ply = quotata("PLY", "-120.9", "0.15", DATA, "CoinMarketCap");
-        ply.InfoPrezzo.prezzoUnitario = new BigDecimal("0.00127");
-        Moneta bit = quotata("BIT", "0.4157", "0.00", DATA, "CoinMarketCap");
-        bit.InfoPrezzo.prezzoUnitario = new BigDecimal("0.0000037675");
+        Moneta ply = quotata("PLY", "-120", "0.15", DATA, "CoinMarketCap");
+        ply.InfoPrezzo.prezzoUnitario = new BigDecimal("0.001");
+        Moneta bit = quotata("BIT", "0.4", "0.00", DATA, "CoinMarketCap");
+        bit.InfoPrezzo.prezzoUnitario = new BigDecimal("0.000004");
         assertSame(bit, MovimentiCrypto.DammiMonetaPrioritaria(ply, bit, DATA));
     }
 
@@ -342,17 +342,17 @@ class PrezziGambaEntrataTest {
     @Test
     void daCercare_coinMarketCapOmonimo_vinceLAltraGamba() throws Exception {
         long istante = DATA_ORA + 20 * 60_000L;
-        scriviCacheFonte("TSTBIT", istante, "0.0000281", "CoinMarketCap");
+        scriviCacheFonte("TSTBIT", istante, "0.00003", "CoinMarketCap");
         scriviCache("TSTUSD", istante, "0.88");
         Prezzi.InfoPrezzo IP = Prezzi.DammiPrezzoInfoTransazione(
-                moneta("TSTUSD", "-59", "Crypto"), moneta("TSTBIT", "29.88", "Crypto"), istante, null, "");
+                moneta("TSTUSD", "-60", "Crypto"), moneta("TSTBIT", "30", "Crypto"), istante, null, "");
         assertNotNull(IP);
         assertEquals("TSTUSD", IP.Moneta);
     }
 
     @Test
     void daCercare_uscitaConVecchioArchivioOrarioMaMinutoInCache_usaIlMinuto() throws Exception {
-        //Il caso USDT -> BIT del 19/01/2022 alle 18:27: USDT ha il vecchio archivio orario (18:00), letto per
+        //Il caso USDT -> BIT alle 18:27: USDT ha il vecchio archivio orario (18:00), letto per
         //primo, ma in cache c'e' il prezzo al minuto; BIT ha solo una quotazione oraria
         long istante = FunzioniDate.ConvertiDatainLongMinuto(FunzioniDate.ConvertiDatadaLongallOra(DATA_ORA) + ":27");
         DatabaseH2.OLD_XXXEUR_Scrivi(FunzioniDate.ConvertiDatadaLongallOra(istante) + " TSTUSDT", "0.90", false);

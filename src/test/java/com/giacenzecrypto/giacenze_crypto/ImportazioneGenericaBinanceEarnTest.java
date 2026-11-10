@@ -67,14 +67,14 @@ class ImportazioneGenericaBinanceEarnTest {
     @Test
     void ilBonusScrittoSuEarnESuSpot_entraUnaVoltaSola() throws Exception {
         List<String[]> movs = importa(List.<String[]>of(
-                riga("2024-03-15 03:16:11", "Earn", "Simple Earn Flexible - Rewards Income", "USDC", "0.027396"),
-                riga("2024-03-15 04:19:06", "Spot", "Simple Earn Flexible Interest", "USDC", "0.027396"),
-                riga("2024-03-15 06:10:00", "Earn", "Simple Earn Locked - Rewards Income", "ETH", "0.0001"),
-                riga("2024-03-15 06:10:00", "Spot", "Simple Earn Locked Rewards", "ETH", "0.0001")));
+                riga("2025-01-15 03:00:00", "Earn", "Simple Earn Flexible - Rewards Income", "USDC", "0.03"),
+                riga("2025-01-15 04:00:00", "Spot", "Simple Earn Flexible Interest", "USDC", "0.03"),
+                riga("2025-01-15 06:00:00", "Earn", "Simple Earn Locked - Rewards Income", "ETH", "0.0001"),
+                riga("2025-01-15 06:00:00", "Spot", "Simple Earn Locked Rewards", "ETH", "0.0001")));
 
         assertEquals(2, movs.size(), "un bonus per moneta, dalla riga Spot");
         for (String[] m : movs) assertTrue(m[0].endsWith("_RW"), m[0]);
         assertEquals("USDC", movs.get(0)[11]);
-        assertTrue(movs.get(0)[0].startsWith("20240315"), movs.get(0)[0]);
+        assertTrue(movs.get(0)[0].startsWith("20250115"), movs.get(0)[0]);
     }
 }

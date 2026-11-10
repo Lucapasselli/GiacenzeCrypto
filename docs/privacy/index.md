@@ -67,7 +67,7 @@ dell'applicazione. Il server di giacenzecrypto.it registra ogni richiesta con l'
 senza la parte che identifica il singolo collegamento (per esempio 203.0.113.0 al posto di 203.0.113.57), e
 conserva questo registro 30 giorni, per sicurezza e per statistiche di traffico aggregate. Se una funzione non ti serve, non usarla: nessuna di queste chiamate parte da sola
 oltre al controllo della versione e all'aggiornamento delle configurazioni. Il controllo della versione si
-può disattivare dalla finestra *Informazioni* (clic sul titolo), pulsante *Aggiornamenti...*. Una nuova
+può disattivare dalla finestra *Informazioni* (clic sul titolo), pulsante *Aggiornamenti*. Una nuova
 versione viene scaricata e installata solo dopo che hai confermato di volerla.
 
 L'applicazione **non contiene pubblicità, sistemi di analisi statistica, telemetria o profilazione**,
@@ -221,7 +221,7 @@ giacenzecrypto.it server logs each request with a shortened IP address, without 
 single connection (for example 203.0.113.0 instead of 203.0.113.57), and keeps this log for 30 days, for security and aggregate traffic
 statistics. If you do not need a feature, do not use it: none of these requests happens on its own, apart from the
 version check and the configuration update. The version check can be turned off from the *Informazioni*
-window (click the title), *Aggiornamenti...* button. A new version is downloaded and installed only after
+window (click the title), *Aggiornamenti* button. A new version is downloaded and installed only after
 you confirm you want it.
 
 The application contains **no advertising, analytics, telemetry or profiling**, and sends no automatic

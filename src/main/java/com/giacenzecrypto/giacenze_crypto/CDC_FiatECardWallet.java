@@ -13,6 +13,7 @@ import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -334,6 +335,51 @@ public static String[] calcolaSaldiEMedia(
     }
 
     /**
+     * Chiave di una riga di un file del Fiat Wallet o della carta, che distingue le righe identiche dello stesso file.
+     * Due movimenti con stessa data al secondo, stessa descrizione e stesso importo (per esempio due rimborsi uguali)
+     * davano la stessa chiave e la mappa ne teneva uno solo, con il saldo più basso dell'importo perso. La prima riga
+     * tiene la chiave di sempre, la n-esima identica prende il suffisso {@code #n}. Il conteggio riparte da zero a ogni
+     * lettura di un file: rileggere un file già caricato ricrea le stesse chiavi e non duplica nulla, e un file che
+     * riporta solo una delle due righe (esportazione tagliata nel mezzo) non aggiunge la seconda.
+     * @param viste quante volte la chiave di base è già comparsa in questo file (si aggiorna da sola)
+     * @param chiaveBase data + descrizione (+ tipo) + importo, come prima
+     */
+    public static String ChiaveRigaRipetuta(Map<String, Integer> viste, String chiaveBase) {
+        int n = viste.merge(chiaveBase.toLowerCase(java.util.Locale.ROOT), 1, Integer::sum);
+        return n == 1 ? chiaveBase : chiaveBase + "#" + n;
+    }
+
+    /**
+     * Legge il CSV (o il file interno) della carta Crypto.com e ne rende le righe, scartando quelle con meno di 9
+     * campi o senza data valida. Chiave: data + descrizione (+ importo in euro), con il suffisso di
+     * {@link #ChiaveRigaRipetuta} per le righe identiche dello stesso file. Il valore e' la riga com'e'.
+     * Un file assente o illeggibile rende una mappa vuota (l'errore e' nel log).
+     * @param percorsoFile percorso del file della carta
+     */
+    public static Map<String, String> LeggiRigheCarta(String percorsoFile) {
+        Map<String, String> righe = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        Map<String, Integer> viste = new HashMap<>();
+        try (FileReader fire = new FileReader(percorsoFile);
+                BufferedReader bure = new BufferedReader(fire)) {
+            String riga;
+            while ((riga = bure.readLine()) != null) {
+                String[] splittata = riga.split(",");
+                if (splittata.length < 9 || !dataValida(splittata[0])) {
+                    continue;
+                }
+                int colonna = ColonnaEuro(riga);
+                String idRiga = colonna == COLONNA_EURO_ASSENTE
+                        ? splittata[0] + splittata[1]
+                        : splittata[0] + splittata[1] + splittata[colonna];
+                righe.put(ChiaveRigaRipetuta(viste, idRiga), riga);
+            }
+        } catch (IOException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        return righe;
+    }
+
+    /**
      * Legge il CSV del Fiat Wallet e ne rende le righe da importare, gia' normalizzate come le vuole
      * {@code CDC_FiatWallet_Mappa}: chiave {@code data + descrizione + tipo (+ importo in euro)},
      * valore la riga riunita con la virgola finale e con la colonna {@code [3]} resa positiva.
@@ -345,6 +391,7 @@ public static String[] calcolaSaldiEMedia(
      */
     public static Map<String, String> LeggiRigheFiatWallet(String percorsoFile) {
         Map<String, String> righe = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        Map<String, Integer> viste = new HashMap<>();
         File f = new File(percorsoFile);
         if (!f.exists()) {
             return righe;
@@ -361,6 +408,7 @@ public static String[] calcolaSaldiEMedia(
                 String idRiga = colonna == COLONNA_EURO_ASSENTE
                         ? splittata[0] + splittata[1] + splittata[9]
                         : splittata[0] + splittata[1] + splittata[9] + splittata[colonna];
+                idRiga = ChiaveRigaRipetuta(viste, idRiga);
                 //la colonna 3 deve essere sempre positiva
                 splittata[3] = splittata[3].replace("-", "");
                 StringBuilder rigasistemata = new StringBuilder();

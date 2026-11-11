@@ -180,6 +180,16 @@ public class Tabelle {
     /** Proprieta' client di una tabella di candidati: insieme degli ID (colonna 0 del modello) il cui valore (colonna 7) va evidenziato in verde. */
     public static final String PROP_VALORI_VICINI = "ValoriVicini";
 
+    /** Proprieta' client di una tabella di candidati: insieme degli ID (colonna 0 del modello) dei candidati piu' probabili, di cui si colora tutta la riga. */
+    public static final String PROP_CANDIDATI_PROBABILI = "CandidatiProbabili";
+
+    private static boolean CandidatoProbabile(JTable table, int modelRow) {
+        Object p = table.getClientProperty(PROP_CANDIDATI_PROBABILI);
+        if (!(p instanceof Set<?> ids)) return false;
+        Object id = table.getModel().getValueAt(modelRow, 0);
+        return id != null && ids.contains(id.toString());
+    }
+
     private static boolean ValoreVicino(JTable table, int modelRow) {
         Object p = table.getClientProperty(PROP_VALORI_VICINI);
         if (!(p instanceof Set<?> ids)) return false;
@@ -227,6 +237,12 @@ public class Tabelle {
         {
             bg= (row % 2 == 0  ? grigioChiaro : bianco);
             fore=Color.BLACK;
+        }
+
+        //Candidato più probabile di un abbinamento (data e valore insieme): tutta la riga in giallo. Si sostituisce
+        //lo sfondo di base, così i colori di direzione e quello dei valori vicini restano dove sono.
+        if (CandidatoProbabile(table, modelRow)) {
+            bg = Principale.tema.equalsIgnoreCase("Scuro") ? new Color(94, 80, 24) : new Color(255, 242, 190);
         }
 
         //Colorazione moneta/qta per direzione. La stessa renderer serve due tabelle con colonne diverse:

@@ -2604,36 +2604,31 @@
                                   </Group>
                                   <Group type="102" alignment="1" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" attributes="0">
-                                              <Component id="GiacenzeaData_Wallet_Label" min="-2" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="GiacenzeaData_Wallet_ComboBox" min="-2" pref="428" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Group type="102" attributes="0">
-                                              <Component id="GiacenzeaData_WalletEsame_Label" min="-2" pref="108" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                                  <Component id="Giacenzeadata_Walleta_Label" pref="496" max="32767" attributes="0"/>
-                                                  <Component id="Giacenzeadata_Walletb_Label" max="32767" attributes="0"/>
-                                              </Group>
-                                          </Group>
+                                          <Component id="GiacenzeaData_Gruppo_Label" min="-2" max="-2" attributes="0"/>
+                                          <Component id="GiacenzeaData_Wallet_Label" min="-2" max="-2" attributes="0"/>
+                                          <Component id="GiacenzeaData_Wallet2_Label" min="-2" max="-2" attributes="0"/>
+                                          <Component id="GiacenzeaData_WalletEsame_Label" min="-2" pref="108" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace min="230" max="32767" attributes="0"/>
-                                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                          <Component id="GiacenzeaData_Data_Label" max="32767" attributes="0"/>
-                                          <Component id="GiacenzeaData_Wallet2_Label" max="32767" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="GiacenzeaData_Gruppo_ComboBox" min="-2" pref="400" max="-2" attributes="0"/>
+                                          <Component id="GiacenzeaData_Wallet_ComboBox" min="-2" pref="400" max="-2" attributes="0"/>
                                           <Group type="102" attributes="0">
-                                              <Component id="GiacenzeaData_Data_DataChooser" min="-2" pref="140" max="-2" attributes="0"/>
-                                              <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
-                                              <Component id="GiacenzeaData_Bottone_GiacenzeExplorer" min="-2" max="-2" attributes="0"/>
+                                              <Component id="GiacenzeaData_Wallet2_ComboBox" min="-2" pref="400" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="GiacenzeaData_Bottone_Calcola" min="-2" pref="142" max="-2" attributes="0"/>
+                                              <Component id="GiacenzeaData_Bottone_AzzeraFiltri" min="-2" max="-2" attributes="0"/>
                                           </Group>
-                                          <Component id="GiacenzeaData_Wallet2_ComboBox" max="32767" attributes="0"/>
+                                          <Component id="Giacenzeadata_Walleta_Label" min="-2" pref="400" max="-2" attributes="0"/>
+                                          <Component id="Giacenzeadata_Walletb_Label" min="-2" pref="400" max="-2" attributes="0"/>
                                       </Group>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                      <Component id="GiacenzeaData_Data_Label" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="GiacenzeaData_Data_DataChooser" min="-2" pref="140" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
+                                      <Component id="GiacenzeaData_Bottone_GiacenzeExplorer" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="GiacenzeaData_Bottone_Calcola" min="-2" pref="142" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -2643,22 +2638,35 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="GiacenzeaData_Wallet_Label" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="GiacenzeaData_Wallet_ComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="GiacenzeaData_Wallet2_Label" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="GiacenzeaData_Wallet2_ComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="GiacenzeaData_Bottone_Calcola" min="-2" pref="56" max="-2" attributes="0"/>
-                                  <Component id="GiacenzeaData_WalletEsame_Label" min="-2" pref="56" max="-2" attributes="0"/>
-                                  <Component id="GiacenzeaData_Bottone_GiacenzeExplorer" alignment="0" min="-2" pref="56" max="-2" attributes="0"/>
                                   <Group type="102" attributes="0">
-                                      <Component id="Giacenzeadata_Walleta_Label" min="-2" pref="25" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="3" attributes="0">
+                                          <Component id="GiacenzeaData_Gruppo_Label" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="GiacenzeaData_Gruppo_ComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      </Group>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="Giacenzeadata_Walletb_Label" min="-2" pref="25" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="3" attributes="0">
+                                          <Component id="GiacenzeaData_Wallet_Label" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="GiacenzeaData_Wallet_ComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="3" attributes="0">
+                                          <Component id="GiacenzeaData_Wallet2_Label" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="GiacenzeaData_Wallet2_ComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="GiacenzeaData_Bottone_AzzeraFiltri" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="GiacenzeaData_WalletEsame_Label" min="-2" pref="56" max="-2" attributes="0"/>
+                                          <Group type="102" attributes="0">
+                                              <Component id="Giacenzeadata_Walleta_Label" min="-2" pref="25" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="Giacenzeadata_Walletb_Label" min="-2" pref="25" max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
                                   </Group>
+                                  <Component id="GiacenzeaData_Bottone_Calcola" min="-2" pref="56" max="-2" attributes="0"/>
+                                  <Component id="GiacenzeaData_Bottone_GiacenzeExplorer" alignment="0" min="-2" pref="56" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_Data_DataChooser" min="-2" pref="56" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_Data_Label" alignment="0" min="-2" pref="56" max="-2" attributes="0"/>
                               </Group>
@@ -2707,6 +2715,32 @@
                     </DimensionLayout>
                   </Layout>
                   <SubComponents>
+                    <Component class="javax.swing.JLabel" name="GiacenzeaData_Gruppo_Label">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Gruppo Wallet : "/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JComboBox" name="GiacenzeaData_Gruppo_ComboBox">
+                      <Properties>
+                        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                          <StringArray count="1">
+                            <StringItem index="0" value="Tutti"/>
+                          </StringArray>
+                        </Property>
+                      </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+                      </AuxValues>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="GiacenzeaData_Bottone_AzzeraFiltri">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Azzera filtri"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Riporta gruppo wallet, wallet e sottowallet su Tutti. Non ricalcola: poi premere Calcola."/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_Bottone_AzzeraFiltriActionPerformed"/>
+                      </Events>
+                    </Component>
                     <Component class="javax.swing.JLabel" name="GiacenzeaData_Wallet_Label">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Wallet : "/>
@@ -2721,7 +2755,6 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="GiacenzeaData_Wallet_ComboBoxItemStateChanged"/>
                         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="GiacenzeaData_Wallet_ComboBoxMouseClicked"/>
                       </Events>
                       <AuxValues>
@@ -3203,11 +3236,12 @@
                     </Component>
                     <Component class="javax.swing.JLabel" name="GiacenzeaData_Wallet2_Label">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Dett.Wallet :"/>
+                        <Property name="text" type="java.lang.String" value="Sottowallet : "/>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JComboBox" name="GiacenzeaData_Wallet2_ComboBox">
                       <Properties>
+                        <Property name="enabled" type="boolean" value="false"/>
                         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
                           <StringArray count="1">
                             <StringItem index="0" value="Tutti"/>

@@ -175,7 +175,7 @@ class RapportiISEETest {
         assertEquals(1, ris.rapporti.size());
         Calcoli_ISEE.Rapporto r = ris.rapporti.get(0);
         assertEquals("Wallet 01|99|P1", r.chiave);
-        assertEquals("KR-777", r.identificativo);
+        assertEquals("Wallet 01 - KR-777", r.identificativo, "alias (qui il nome, senza alias) davanti all'identificativo");
         assertNull(r.dataFine, "chiuso dopo l'anno: la data non si dichiara");
     }
 }

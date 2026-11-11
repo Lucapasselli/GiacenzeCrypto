@@ -5,6 +5,32 @@ programma all'avvio di una beta, ed è la descrizione della beta su GitHub. L'el
 in preparazione è nella sezione "in lavorazione" di docs/documentazione/changelog.md, dove ogni voce di questo file
 compare con lo stesso titolo. Questo file non è una pagina del sito.
 
+## Versione 1.0.66.03
+
+**Nuove implementazioni**
+
+- **Tab ISEE, il patrimonio per la DSU (in prova)**: l'identificativo di ogni rapporto si mostra ora sempre preceduto dall'alias del gruppo (per esempio *Binance - 0123456*), così nel prospetto si capisce di quale operatore si parla.
+
+- **Filtro wallet a tre selettori in Giacenze a data e nei Filtri dei movimenti**: in *Giacenze a data* ci sono ora tre elenchi, *Gruppo Wallet*, *Wallet* e *Sottowallet*, che si influenzano a vicenda, e il nuovo pulsante *Azzera filtri*. Gli stessi tre elenchi sono nella finestra *Filtri* dei movimenti, dove il sottowallet è un criterio in più.
+
+- **Abbinamenti: i movimenti più probabili sono evidenziati**: nella tabella dei movimenti da abbinare, per i trasferimenti tra wallet e per lo scambio cripto differito, il programma colora in giallo la riga dei candidati più probabili (data e valore insieme) e porta la tabella fino al primo. Il valore entro il 5% resta in verde, e la riga non viene mai selezionata da sola.
+
+- **Database danneggiato all'avvio, con ripristino della copia di sicurezza**: se un file dei database risulta danneggiato il programma non si chiude più con un errore, ma dice cosa contiene il file e propone di spostarlo e ripartire con uno nuovo, o di rimettere la copia di sicurezza. Prima di compattare i database ne viene fatta una copia, tolta solo dopo aver riletto il file.
+
+- **Esportazione in CSV delle modifiche manuali dei movimenti**: in *Opzioni – Varie* due nuovi pulsanti, uno scrive in un CSV le modifiche fatte a mano ai movimenti, l'altro le riapplica a un archivio reimportato da zero, lasciando scegliere quali. Un conflitto viene solo segnalato, mai applicato. Anche *Modifica Prezzo* ora registra lo storico del movimento.
+
+- **Pulsanti senza puntini finali e maschera Opzioni – Varie riordinata**: i pulsanti che aprono una finestra non terminano più con «...», e *Opzioni – Varie* è divisa in tre sezioni con titolo.
+
+**Correzione di bug**
+
+- **Carta e Fiat Wallet Crypto.com, movimenti identici nello stesso file**: due righe con stessa data al secondo, descrizione e importo venivano contate una volta sola, e il saldo poteva diventare negativo. Ora ognuna è un movimento a sé. Per recuperare le righe già perse basta caricare di nuovo il file di quel periodo.
+
+- **Annulla in Transazioni Crypto e storico delle modifiche**: premendo *Annulla* dopo una modifica a mano, lo storico di quella modifica restava in attesa e veniva scritto al Salva successivo. Ora *Annulla* lo scarta insieme alle modifiche.
+
+- **OKX dalle API, conversione rapida del conto Trading**: le conversioni rapide (codice 27, per esempio da USDT a USDC) restavano fra i movimenti sconosciuti. Ora diventano scambi cripto/cripto, come quelle del conto Funding.
+
+- **Maschera del LiFo, trasferimenti segnati come rilevanti**: nella finestra del LiFo un trasferimento tra wallet propri già classificato veniva segnato come rilevante anche quando non lo era. Ora conta solo il deposito o prelievo non ancora classificato. Il calcolo delle plusvalenze non cambia.
+
 ## Versione 1.0.66.02
 
 **Nuove implementazioni**

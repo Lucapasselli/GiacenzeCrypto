@@ -585,17 +585,22 @@ questo manuale.
 
 La scheda ha tre zone:
 
-- in alto i **selettori** (wallet, sotto-wallet, data) e il pulsante *Calcola*,
+- in alto i **selettori** (gruppo wallet, wallet, sottowallet, data) e il pulsante *Calcola*,
 - al centro la **tabella dei token**, con le caselle e i pulsanti che lavorano sul token selezionato,
 - in basso il **dettaglio dei movimenti** del token selezionato, in forma di tabella o di grafico.
 
 ## Scegliere cosa guardare
 
-![I selettori: wallet, sotto-wallet, data, Vedi situazione Wallet ad Oggi e Calcola](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/02.png)
+![I selettori: gruppo wallet, wallet, sottowallet, data, Vedi situazione Wallet ad Oggi e Calcola](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/02.png)
 
-- **Wallet**: *Tutti*, un singolo wallet oppure un gruppo di wallet (le voci *Gruppo : ...*). Con *Tutti* si vede la
-  situazione complessiva.
-- **Dett.Wallet**: il sotto-wallet, per esempio *Principale* di un exchange. Si popola quando si sceglie un wallet.
+- **Gruppo Wallet**: *Tutti* oppure un gruppo di wallet. Scegliendo un gruppo, l'elenco dei wallet qui sotto mostra solo
+  quelli che ne fanno parte.
+- **Wallet**: *Tutti* oppure un singolo wallet. Scegliendolo, il gruppo si posiziona su quello che lo contiene. Con
+  *Tutti* in entrambi gli elenchi si vede la situazione complessiva, con un gruppo e *Tutti* nel wallet si vede quella del
+  gruppo.
+- **Sottowallet**: per esempio *Principale* di un exchange. Si può scegliere solo quando è scelto un wallet, altrimenti
+  l'elenco è spento.
+- **Azzera filtri**: riporta gruppo, wallet e sottowallet su *Tutti*. Non ricalcola la tabella, poi si preme *Calcola*.
 - **Data**: il giorno di riferimento. Contano i movimenti fino alla **fine di quel giorno** e il valore è quello alla
   mezzanotte che lo chiude. Scegliendo **oggi**, o una data futura, si vede la situazione fino a questo momento, con i prezzi
   attuali.
@@ -604,7 +609,7 @@ La scheda ha tre zone:
 - **Vedi situazione Wallet ad Oggi**: si abilita solo per i wallet DeFi e apre nel browser la situazione attuale di quel
   wallet sull'explorer della sua rete.
 
-![La tendina dei wallet con Tutti, i tre wallet di fantasia e il gruppo](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/03.png)
+![La tendina dei wallet con Tutti e i tre wallet di fantasia](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/giacenze-a-data/03.png)
 
 Se dopo il calcolo cambia qualcosa che incide sui valori (una classificazione, un prezzo), compare in rosso l'avviso
 *«ATTENZIONE! Sono variate delle informazioni, premere CALCOLA per vedere i valori corretti!»*.
@@ -2418,6 +2423,13 @@ compatibili con un possibile trasferimento tra wallet.
 
 ![Scelta del prelievo da associare](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/classificazioni-movimenti/05.png)
 
+Per trovare più in fretta il movimento giusto, il programma confronta data e valore in euro. Il valore
+dei movimenti che si discosta al massimo del 5% da quello che si sta classificando è scritto in verde.
+I movimenti più probabili, quelli con valore entro il 5% e più vicini nel tempo, hanno l'intera riga in
+giallo e la tabella scorre fino al primo di loro. Se due movimenti sono quasi alla pari si colorano
+entrambi. Per un token senza prezzo il confronto si fa sulla quantità. Il giallo è solo un aiuto: la
+riga non viene selezionata da sola, il movimento da associare va sempre scelto con il clic.
+
 Selezionando il prelievo desiderato e premendo **OK** i due movimenti vengono associati. Eventuali
 differenze di quantità vengono convertite in commissioni.
 
@@ -2464,6 +2476,10 @@ prelievo di TOKEN_OLD e un deposito di TOKEN_NEW.
 Quello che interessa è indicare al programma che deve passare il costo di carico di TOKEN_OLD su
 TOKEN_NEW: per farlo bisogna scegliere il movimento di controparte da associare, come nell'
 [Opzione 3 – Trasferimento tra wallet](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/classificazioni-movimenti.html#opzione-3--trasferimento-tra-wallet-di-proprietà).
+Anche qui i movimenti con valore vicino sono in verde e i più probabili per data e valore hanno la riga
+in giallo, come descritto in quell'opzione. Data e valore contano in proporzione: uno scarto di valore
+pari al 5% pesa quanto una distanza pari alla finestra di ricerca. Un movimento senza valore non viene mai indicato
+come probabile.
 
 Il programma simulerà quindi il caricamento del token su una piattaforma DeFi che si occupa dello
 scambio e del trasferimento sul wallet di destinazione. Scambio e trasferimento avranno la stessa data
@@ -3793,7 +3809,7 @@ rapporti 01 e dei rapporti 99. Nell'esempio: *3 rapporti, valore al 31/12: 01 = 
 | **Gruppo** | il gruppo wallet del rapporto, con il suo alias |
 | **Tipo rapporto** | *01 Conto corrente* oppure *99 Altri strumenti* |
 | **Codice operatore** | il codice dell'intermediario: *E* seguita dall'identificativo fiscale per un intermediario estero, il codice fiscale per uno italiano, *END* quando non c'è un intermediario o il dato manca |
-| **Identificativo** | quello scritto con *Modifica dati*: l'IBAN, il numero di conto o l'ID utente. Se non è stato scritto compare il nome del gruppo, con un avviso |
+| **Identificativo** | l'alias del gruppo seguito da quello scritto con *Modifica dati* (l'IBAN, il numero di conto o l'ID utente), per esempio *Binance - 0123456*, così si capisce di quale operatore si parla. Se non è stato scritto compare il solo nome del gruppo, con un avviso |
 | **Data inizio** | solo se il rapporto è iniziato nell'anno, vedi [le date](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/isee.html#date) |
 | **Data fine** | solo se il rapporto è finito nell'anno |
 | **Valore al 31/12 (EUR)** | il valore a fine anno, arrotondato all'euro. *(incompleto)* se almeno una moneta non ha prezzo |
@@ -3900,7 +3916,7 @@ calcolati in dati scritti a mano, quindi una correzione futura del periodo FIAT 
 
 I dati valgono per **tutti gli anni**: si scrivono una volta, e il calcolo dell'anno dopo li ritrova. Dopo OK il tab
 ricalcola. Nell'esempio l'identificativo *CB-482913*, scritto sul rapporto Coinbase del 2024, compare in tabella e nel
-dettaglio:
+dettaglio preceduto dall'alias del gruppo (*Coinbase - CB-482913*):
 
 ![Il rapporto Coinbase con l'identificativo scritto a mano](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/immagini/isee/03.png)
 
@@ -4060,6 +4076,14 @@ riscritti su quel rapporto con *Modifica dati*.
 **Perché il codice operatore è END?** Il gruppo non ha un periodo FIAT, oppure il periodo FIAT non ha l'identificativo
 fiscale. Un avviso nella scheda *Avvisi* dice quale dei due. Per un wallet in autocustodia è il caso normale. Per un exchange si
 completa il periodo FIAT, oppure si scrive il codice con *Modifica dati*.
+
+**Per un operatore estero il codice è sempre END?** No, *END* è l'ultima possibilità. Le istruzioni della DSU chiedono, per un
+operatore estero senza codice fiscale italiano ma con un altro codice identificativo, la lettera *E* seguita da quel codice, al
+massimo 15 caratteri alfanumerici. *END* ("non disponibile") serve solo quando il codice non c'è, per esempio per operatori
+extra Unione Europea. Il codice può essere la partita IVA estera, o il numero di identificazione fiscale, dell'operatore: il
+programma prende quello scritto nell'identificativo fiscale del periodo FIAT, toglie spazi e simboli e lo scrive dopo la *E*
+(per Coinbase Luxembourg *LU36476644* diventa *ELU36476644*). Un codice più lungo di 15 caratteri dopo la *E* non viene
+accorciato da solo: un avviso chiede di farlo con *Modifica dati*.
 
 **Perché l'identificativo è il nome del gruppo?** Perché non ne è stato scritto uno. Il programma non conosce l'IBAN, il
 numero di conto o l'ID utente: si scrive con *Modifica dati*, una volta per tutti gli anni.

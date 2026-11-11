@@ -628,9 +628,14 @@ private static final long serialVersionUID = 3L;
         this.RW_Label_Definitiva.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         this.RT_Label_Definitiva.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         this.GiacenzeaData_Label_Aggiornare.setVisible(false);
-        //Il dettaglio wallet non ha un listener nel .form: anche cambiarlo lascia la tabella com'era
-        GiacenzeaData_Wallet2_ComboBox.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED) GiacenzeaData_SegnalaFiltriVariati();
+        //Gruppo, wallet e sotto-wallet si influenzano a vicenda (la regola e i listener sono in SelettoriWallet,
+        //la stessa classe della finestra Filtri dei movimenti). Ogni cambio lascia la tabella com'era e lo segnala.
+        GiacenzeaData_Selettori = new SelettoriWallet(GiacenzeaData_Gruppo_ComboBox, GiacenzeaData_Wallet_ComboBox,
+                GiacenzeaData_Wallet2_ComboBox, Mappa_Wallet::keySet,
+                w -> DatabaseH2.Pers_GruppoWallet_Leggi(w, true), Mappa_Wallets_e_Dettagli::get);
+        GiacenzeaData_Selettori.setAlCambio(() -> {
+            GiacenzeaData_AggiornaPulsanteCostiNetti();
+            GiacenzeaData_SegnalaFiltriVariati();
         });
         //Optioni_Export_Wallets_Combobox=GiacenzeaData_Wallet_ComboBox;
     
@@ -860,8 +865,11 @@ private static final long serialVersionUID = 3L;
         jScrollPane3 = new javax.swing.JScrollPane();
         SituazioneImport_Tabella1 = new javax.swing.JTable();
         GiacenzeaData = new javax.swing.JPanel();
+        GiacenzeaData_Gruppo_Label = new javax.swing.JLabel();
+        GiacenzeaData_Gruppo_ComboBox = new javax.swing.JComboBox<>();
         GiacenzeaData_Wallet_Label = new javax.swing.JLabel();
         GiacenzeaData_Wallet_ComboBox = new javax.swing.JComboBox<>();
+        GiacenzeaData_Bottone_AzzeraFiltri = new javax.swing.JButton();
         GiacenzeaData_Data_Label = new javax.swing.JLabel();
         GiacenzeaData_Data_DataChooser = new com.toedter.calendar.JDateChooser();
         GiacenzeaData_ScrollPane = new javax.swing.JScrollPane();
@@ -2743,11 +2751,6 @@ private static final long serialVersionUID = 3L;
         GiacenzeaData_Wallet_Label.setText("Wallet : ");
 
         GiacenzeaData_Wallet_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tutti" }));
-        GiacenzeaData_Wallet_ComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                GiacenzeaData_Wallet_ComboBoxItemStateChanged(evt);
-            }
-        });
         GiacenzeaData_Wallet_ComboBox.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 GiacenzeaData_Wallet_ComboBoxMouseClicked(evt);
@@ -3023,9 +3026,22 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        GiacenzeaData_Wallet2_Label.setText("Dett.Wallet :");
+        GiacenzeaData_Wallet2_Label.setText("Sottowallet : ");
 
         GiacenzeaData_Wallet2_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tutti" }));
+        GiacenzeaData_Wallet2_ComboBox.setEnabled(false);
+
+        GiacenzeaData_Gruppo_Label.setText("Gruppo Wallet : ");
+
+        GiacenzeaData_Gruppo_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tutti" }));
+
+        GiacenzeaData_Bottone_AzzeraFiltri.setText("Azzera filtri");
+        GiacenzeaData_Bottone_AzzeraFiltri.setToolTipText("Riporta gruppo wallet, wallet e sottowallet su Tutti. Non ricalcola: poi premere Calcola.");
+        GiacenzeaData_Bottone_AzzeraFiltri.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GiacenzeaData_Bottone_AzzeraFiltriActionPerformed(evt);
+            }
+        });
 
         GiacenzeaData_CheckBox_NascondiScam.setSelected(true);
         GiacenzeaData_CheckBox_NascondiScam.setText("Nascondi Token Scam");
@@ -3136,48 +3152,57 @@ private static final long serialVersionUID = 3L;
                         .addComponent(GiacenzeaData_Bottone_Guida))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, GiacenzeaDataLayout.createSequentialGroup()
                         .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(GiacenzeaDataLayout.createSequentialGroup()
-                                .addComponent(GiacenzeaData_Wallet_Label)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(GiacenzeaData_Wallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 428, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(GiacenzeaDataLayout.createSequentialGroup()
-                                .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(Giacenzeadata_Walleta_Label, javax.swing.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
-                                    .addComponent(Giacenzeadata_Walletb_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(GiacenzeaData_Data_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(GiacenzeaData_Wallet2_Label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(GiacenzeaData_Gruppo_Label)
+                            .addComponent(GiacenzeaData_Wallet_Label)
+                            .addComponent(GiacenzeaData_Wallet2_Label)
+                            .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(GiacenzeaData_Gruppo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(GiacenzeaData_Wallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(GiacenzeaDataLayout.createSequentialGroup()
-                                .addComponent(GiacenzeaData_Data_DataChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(15, 15, 15)
-                                .addComponent(GiacenzeaData_Bottone_GiacenzeExplorer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(GiacenzeaData_Wallet2_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(GiacenzeaData_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(GiacenzeaData_Wallet2_ComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                                .addComponent(GiacenzeaData_Bottone_AzzeraFiltri))
+                            .addComponent(Giacenzeadata_Walleta_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Giacenzeadata_Walletb_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(GiacenzeaData_Data_Label, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(GiacenzeaData_Data_DataChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(15, 15, 15)
+                        .addComponent(GiacenzeaData_Bottone_GiacenzeExplorer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(GiacenzeaData_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                )
         );
         GiacenzeaDataLayout.setVerticalGroup(
             GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(GiacenzeaDataLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(GiacenzeaData_Wallet_Label)
-                    .addComponent(GiacenzeaData_Wallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(GiacenzeaData_Wallet2_Label)
-                    .addComponent(GiacenzeaData_Wallet2_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(GiacenzeaData_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(GiacenzeaData_Bottone_GiacenzeExplorer, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(GiacenzeaDataLayout.createSequentialGroup()
-                        .addComponent(Giacenzeadata_Walleta_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(GiacenzeaData_Gruppo_Label)
+                            .addComponent(GiacenzeaData_Gruppo_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Giacenzeadata_Walletb_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(GiacenzeaData_Wallet_Label)
+                            .addComponent(GiacenzeaData_Wallet_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(GiacenzeaData_Wallet2_Label)
+                            .addComponent(GiacenzeaData_Wallet2_ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(GiacenzeaData_Bottone_AzzeraFiltri))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(GiacenzeaData_WalletEsame_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(GiacenzeaDataLayout.createSequentialGroup()
+                                .addComponent(Giacenzeadata_Walleta_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(Giacenzeadata_Walletb_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addComponent(GiacenzeaData_Bottone_Calcola, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(GiacenzeaData_Bottone_GiacenzeExplorer, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(GiacenzeaData_Data_DataChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(GiacenzeaData_Data_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(8, 8, 8)
@@ -7658,38 +7683,8 @@ private void SettaIcone(){
          * @param cardwallet percorso del file CSV della carta da importare
          */
         public void CDC_CardWallet_Funzione_ImportaWallet(String cardwallet) {
-        String riga;
-        try (FileReader fire = new FileReader(cardwallet); 
-                BufferedReader bure = new BufferedReader(fire);) 
-        {
-                while((riga=bure.readLine())!=null)
-                {
-                    String splittata[]=riga.split(",");
-                    if (splittata.length>=9)// se non è esattamente uguale a 10 significa che il file non è corretto
-                    {
-                        if(Funzioni_Date_ConvertiDatainLong(splittata[0])!=0)// se la riga riporta una data valida allora proseguo con l'importazione
-                        {
-                            int Colonna=CDC_Funzione_trovaColonnaEuro(riga);
-                            String idRiga;
-                            if (Colonna==999)
-                            {
-                                idRiga=splittata[0]+splittata[1];
-                            }
-                            else
-                            {
-                                idRiga=splittata[0]+splittata[1]+splittata[Colonna];
-                            }
-                            CDC_CardWallet_Mappa.put(idRiga, riga);
-                        }
-                    }
-                }
-     //  bure.close();
-     //  fire.close();
-    }   catch (FileNotFoundException ex) {     
-            LoggerGC.ScriviErrore(ex);
-        } catch (IOException ex) {
-            LoggerGC.ScriviErrore(ex);
-        }
+        //La lettura (chiave di deduplica compresa) sta in CDC_FiatECardWallet, vicino a quella del Fiat Wallet
+        CDC_CardWallet_Mappa.putAll(CDC_FiatECardWallet.LeggiRigheCarta(cardwallet));
         
         CDC_CardWallet_ListaSaldi=CDC_CardWallet_Funzione_CalcolaListaSaldi();  
  
@@ -10918,18 +10913,11 @@ GiacenzeaData_CompilaTabellaToken(true);
         // this.GiacenzeaData_AggiornaComboBoxWallet();
     }//GEN-LAST:event_GiacenzeaData_Wallet_ComboBoxMouseClicked
 
-    private void GiacenzeaData_Wallet_ComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_GiacenzeaData_Wallet_ComboBoxItemStateChanged
-        // TODO add your handling code here:
-         if(evt.getStateChange() == ItemEvent.SELECTED) {
-             GiacenzeaData_AggiornaPulsanteCostiNetti();
-             GiacenzeaData_SegnalaFiltriVariati();
-         }
-         if(evt.getStateChange() == ItemEvent.SELECTED && GiacenzeaData_Wallet_ComboBox.isShowing()) {
-             
-            GiacenzeaData_Funzione_AggiornaComboBoxWallet2();          
-           }
-
-    }//GEN-LAST:event_GiacenzeaData_Wallet_ComboBoxItemStateChanged
+    private void GiacenzeaData_Bottone_AzzeraFiltriActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_AzzeraFiltriActionPerformed
+        //Non ricalcola: la tabella resta quella di prima e l'etichetta rossa dice di premere Calcola
+        String Tutti = Principale_GiacenzeaData_FiltroWallet.TUTTI;
+        GiacenzeaData_Selettori.Applica(Tutti, Tutti, Tutti);
+    }//GEN-LAST:event_GiacenzeaData_Bottone_AzzeraFiltriActionPerformed
 
     private void GiacenzeaData_Bottone_MovimentiDefiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_MovimentiDefiActionPerformed
         // TODO add your handling code here:
@@ -11066,7 +11054,7 @@ GiacenzeaData_CompilaTabellaToken(true);
                 Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
                 
             }
-            String Wallet=GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString();
+            String Wallet=GiacenzeaData_WalletScelto();
              String NuovoNome=GiacenzeaData_Funzione_IdentificaComeScam(mon,Address,Rete,Wallet);
              
              //Adesso sistemo i tasti
@@ -12620,7 +12608,7 @@ if (result.isAction("delete-all")) {
                     //String Alias=DatabaseH2.Pers_GruppoAlias_Leggi(GWallet)[1];
                     GWallet="Wallet "+GWallet;
                     //System.out.println(GWallet);
-                    GiacenzeaData_Wallet_ComboBox.setSelectedItem("Gruppo : "+GWallet);
+                    GiacenzeaData_ImpostaSelezione("Gruppo : "+GWallet);
                     //Punto 2d
                     GiacenzeaData_CompilaTabellaToken(true);
                     //Punto 2e
@@ -12721,7 +12709,7 @@ if (result.isAction("delete-all")) {
             String GWallet=RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 1).toString();
             String Alias=DatabaseH2.Pers_GruppoAlias_Leggi(GWallet)[1];
             GWallet=GWallet+" ( "+Alias+" )";
-            GiacenzeaData_Wallet_ComboBox.setSelectedItem("Gruppo : "+GWallet);
+            GiacenzeaData_ImpostaSelezione("Gruppo : "+GWallet);
             //Punto 2d
             GiacenzeaData_CompilaTabellaToken(true);
             //Punto 2e
@@ -14966,7 +14954,7 @@ if (result != null && !result.isAction("cancel")) {
                                 //contatore sul pulsante va aggiornato di conseguenza, altrimenti un
                                 //filtro si accende e il pulsante continua a dire che non ce n'e' nessuno.
                                 FiltriCorrenti = new Principale_FiltriMovimenti.FiltriMovimenti(
-                                        FiltriCorrenti.Wallet(), FiltriCorrenti.Token(), FiltriCorrenti.Documento(),
+                                        FiltriCorrenti.Wallet(), FiltriCorrenti.SottoWallet(), FiltriCorrenti.Token(), FiltriCorrenti.Documento(),
                                         0, 0,
                                         FiltriCorrenti.NascondiTrasferimentiInterni(), FiltriCorrenti.NascondiTokenScam(),
                                         true, FiltriCorrenti.SoloLifoMancante());
@@ -14983,7 +14971,7 @@ if (result != null && !result.isAction("cancel")) {
                                     FiltriMovimenti_ChiediFuoriPeriodo(NumErroriStackLiFoMancanteFuoriPeriodo, true);
                                     //Stesso schema di 'PrezzoMancante': tutto il periodo e il solo criterio "LiFo mancante"
                                     FiltriCorrenti = new Principale_FiltriMovimenti.FiltriMovimenti(
-                                            FiltriCorrenti.Wallet(), FiltriCorrenti.Token(), FiltriCorrenti.Documento(),
+                                            FiltriCorrenti.Wallet(), FiltriCorrenti.SottoWallet(), FiltriCorrenti.Token(), FiltriCorrenti.Documento(),
                                             0, 0,
                                             FiltriCorrenti.NascondiTrasferimentiInterni(), FiltriCorrenti.NascondiTokenScam(),
                                             FiltriCorrenti.SoloSenzaPrezzo(), true);
@@ -15062,7 +15050,7 @@ if (result != null && !result.isAction("cancel")) {
                     GWallet="Gruppo : "+GWallet+" ( "+DatabaseH2.Pers_GruppoAlias_Leggi(GWallet)[1]+" )";
                     
                     System.out.println(GWallet);
-                    GiacenzeaData_Wallet_ComboBox.setSelectedItem(GWallet);
+                    GiacenzeaData_ImpostaSelezione(GWallet);
                     //Punto 2d
                     GiacenzeaData_CompilaTabellaToken(true);
                     //Punto 2e
@@ -18768,7 +18756,7 @@ if (result != null && result.isAction("rename-wallet-token")) {
                 {
                 Rete = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
                 }
-            String Wallet=GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString();
+            String Wallet=GiacenzeaData_WalletScelto();
             
             NomeMoneta=Funzione_CambiaNomeToken(NomeMoneta, Address, Rete,Wallet);
             GiacenzeaData_Tabella.getModel().setValueAt(NomeMoneta, rigaselezionata, 0);
@@ -19008,9 +18996,8 @@ try {
 
     /** I filtri scelti adesso nei selettori in alto, nella stessa forma di {@link #GiacenzeaData_FiltriCalcolati}. */
     private String GiacenzeaData_FiltriAttuali() {
-        Object Wallet = GiacenzeaData_Wallet_ComboBox.getSelectedItem();
         Object SottoWallet = GiacenzeaData_Wallet2_ComboBox.getSelectedItem();
-        return Principale_GiacenzeaData.ChiaveFiltri(Wallet == null ? "" : Wallet.toString(),
+        return Principale_GiacenzeaData.ChiaveFiltri(GiacenzeaData_WalletScelto(),
                 SottoWallet == null ? "" : SottoWallet.toString(), GiacenzeaData_DataSceltaComeTesto());
     }
 
@@ -19039,8 +19026,7 @@ try {
      * propri non porta con se' nessun costo) e il dialogo non ha un wallet da mostrare.
      */
     private void GiacenzeaData_AggiornaPulsanteCostiNetti() {
-        Object Scelto = GiacenzeaData_Wallet_ComboBox.getSelectedItem();
-        GiacenzeaData_Bottone_CostiNetti.setEnabled(Scelto != null && Scelto.toString().trim().equalsIgnoreCase("Tutti"));
+        GiacenzeaData_Bottone_CostiNetti.setEnabled(Principale_GiacenzeaData_FiltroWallet.IsTutti(GiacenzeaData_WalletScelto()));
     }
 
     /**
@@ -19314,7 +19300,7 @@ try {
                     }
                 }
                 //FASE 2 THREAD : CREO LA NUOVA MAPPA DI APPOGGIO PER L'ANALISI DEI TOKEN
-                String Wallet = GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString().trim();
+                String Wallet = GiacenzeaData_WalletScelto().trim();
                 String SottoWallet = GiacenzeaData_Wallet2_ComboBox.getSelectedItem().toString().trim();
                 final String FiltriDelCalcolo = GiacenzeaData_FiltriAttuali();
                 //La somma e' in Principale_GiacenzeaData.SommaQuantitaAData, la stessa che usano i test
@@ -19605,29 +19591,27 @@ try {
         //Adesso aggiorno i combobox con la lista appena creata
         String VecchioValoreTC=ComboFiltroWallet.getSelectedItem().toString();
         String VecchioValoreDP=DepositiPrelievi_ComboBox_FiltroWallet.getSelectedItem().toString();
-        String VecchioValoreGD=GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString();
-        //Il sotto-wallet va ricordato adesso: svuotando e riempiendo la combo dei wallet passa per un attimo "Tutti",
-        //il suo listener ricostruisce la combo dei sotto-wallet senza quello scelto e il valore andrebbe perso
+        //Giacenze a data ha tre selettori propri (gruppo, wallet, sotto-wallet): si ricordano adesso, perche'
+        //svuotando e riempiendo le combo passano valori intermedi
+        String VecchioGruppoGD=String.valueOf(GiacenzeaData_Gruppo_ComboBox.getSelectedItem());
+        String VecchioValoreGD=String.valueOf(GiacenzeaData_Wallet_ComboBox.getSelectedItem());
         String VecchioValoreGD2=String.valueOf(GiacenzeaData_Wallet2_ComboBox.getSelectedItem());
         ComboFiltroWallet.removeAllItems();
         DepositiPrelievi_ComboBox_FiltroWallet.removeAllItems();
-        GiacenzeaData_Wallet_ComboBox.removeAllItems();
         Opzioni_Export_Wallets_Combobox.removeAllItems();
         for (String s : setUnivocoWallets) {
             ComboFiltroWallet.addItem(s);
             DepositiPrelievi_ComboBox_FiltroWallet.addItem(s);
-            GiacenzeaData_Wallet_ComboBox.addItem(s);
             Opzioni_Export_Wallets_Combobox.addItem(s);      
         }
         Funzione_RiposizionaComboBox(ComboFiltroWallet, VecchioValoreTC);
         Funzione_RiposizionaComboBox(DepositiPrelievi_ComboBox_FiltroWallet, VecchioValoreDP);
-        Funzione_RiposizionaComboBox(GiacenzeaData_Wallet_ComboBox, VecchioValoreGD);
-        GiacenzeaData_AggiornaPulsanteCostiNetti();
-
-       /* if (VecchioTrovato){
-            GiacenzeaData_Wallet_ComboBox.setSelectedItem(VecchioValoreGD);
-        }*/
-        GiacenzeaData_Funzione_AggiornaComboBoxWallet2(VecchioValoreGD2);
+        List<String> VociGruppoGD = new ArrayList<>();
+        for (String v : MappaGruppiWalletUtilizzati.keySet()) {
+            VociGruppoGD.add(Principale_GiacenzeaData_FiltroWallet.VoceGruppo(v, DatabaseH2.Pers_GruppoAlias_Leggi(v)[1]));
+        }
+        GiacenzeaData_Selettori.ImpostaGruppi(VociGruppoGD);
+        GiacenzeaData_Selettori.Applica(VecchioGruppoGD, VecchioValoreGD, VecchioValoreGD2);
         
         });
     }
@@ -19673,32 +19657,25 @@ try {
     }
       
 
-     private void GiacenzeaData_Funzione_AggiornaComboBoxWallet2() {
-         GiacenzeaData_Funzione_AggiornaComboBoxWallet2(String.valueOf(GiacenzeaData_Wallet2_ComboBox.getSelectedItem()));
+     /** Le tre combo di "Giacenze a data" e la loro regola (vedi {@link SelettoriWallet}). */
+     private SelettoriWallet GiacenzeaData_Selettori;
+
+     /**
+      * Il filtro wallet scelto in alto nella forma che il calcolo si aspetta: il wallet, altrimenti
+      * {@code "Gruppo : X ( alias )"}, altrimenti {@code "Tutti"}.
+      */
+     private String GiacenzeaData_WalletScelto() {
+         return GiacenzeaData_Selettori.Effettivo();
      }
 
-     /** Riempie la combo dei sotto-wallet del wallet scelto e riseleziona {@code VecchioValore} se c'e' ancora. */
-     private void GiacenzeaData_Funzione_AggiornaComboBoxWallet2(String VecchioValore) {
-         boolean VecchioTrovato=false;
-           List<String> Lista=Mappa_Wallets_e_Dettagli.get(GiacenzeaData_Wallet_ComboBox.getSelectedItem().toString());
-           GiacenzeaData_Wallet2_ComboBox.removeAllItems();
-           GiacenzeaData_Wallet2_ComboBox.addItem("Tutti");
-           if (Lista!=null){
-               for (String SottoWallet:Lista){
-                   GiacenzeaData_Wallet2_ComboBox.addItem(SottoWallet);
-               if (SottoWallet.equals(VecchioValore)) {
-                VecchioTrovato=true;
-            }
-               }
-                       if (VecchioTrovato)
-            GiacenzeaData_Wallet2_ComboBox.setSelectedItem(VecchioValore);
-           }
+     /**
+      * Imposta i selettori dall'esterno (per esempio dal dettaglio dei quadri RW e RT).
+      * @param Scelta {@code "Tutti"}, {@code "Gruppo : X ( alias )"} o il nome di un wallet
+      */
+     private void GiacenzeaData_ImpostaSelezione(String Scelta) {
+         GiacenzeaData_Selettori.ImpostaDaFiltro(Scelta, Principale_GiacenzeaData_FiltroWallet.TUTTI);
      }
 
- 
-
-    
-    
         /**
          * Popola la tabella di dettaglio della scheda "Transazioni Crypto" con i dati del movimento
          * attualmente selezionato nella tabella principale (data, wallet, rete, causale, monete di
@@ -20673,7 +20650,7 @@ try {
      */
     private Principale_FiltriMovimenti.FiltriMovimenti FiltriMovimenti_Correnti(long dataInizio, long dataFine) {
         return new Principale_FiltriMovimenti.FiltriMovimenti(
-                FiltriCorrenti.Wallet(), FiltriCorrenti.Token(), FiltriCorrenti.Documento(),
+                FiltriCorrenti.Wallet(), FiltriCorrenti.SottoWallet(), FiltriCorrenti.Token(), FiltriCorrenti.Documento(),
                 dataInizio, dataFine,
                 FiltriCorrenti.NascondiTrasferimentiInterni(), FiltriCorrenti.NascondiTokenScam(),
                 FiltriCorrenti.SoloSenzaPrezzo(), FiltriCorrenti.SoloLifoMancante());
@@ -21455,6 +21432,7 @@ try {
     private javax.swing.JTable GestioneTokenScam_Tabella;
     private javax.swing.JTable GestioneTokenScam_TabellaMovimenti;
     private javax.swing.JPanel GiacenzeaData;
+    private javax.swing.JButton GiacenzeaData_Bottone_AzzeraFiltri;
     private javax.swing.JButton GiacenzeaData_Bottone_Calcola;
     private javax.swing.JButton GiacenzeaData_Bottone_CambiaNomeToken;
     private javax.swing.JButton GiacenzeaData_Bottone_ColonneDettaglio;
@@ -21481,6 +21459,8 @@ try {
     private javax.swing.JTable GiacenzeaData_TabellaDettaglioMovimenti;
     private javax.swing.JLabel GiacenzeaData_Totali_Label;
     private javax.swing.JTextField GiacenzeaData_Totali_TextField;
+    private javax.swing.JComboBox<String> GiacenzeaData_Gruppo_ComboBox;
+    private javax.swing.JLabel GiacenzeaData_Gruppo_Label;
     private javax.swing.JComboBox<String> GiacenzeaData_Wallet2_ComboBox;
     private javax.swing.JLabel GiacenzeaData_Wallet2_Label;
     private javax.swing.JLabel GiacenzeaData_WalletEsame_Label;

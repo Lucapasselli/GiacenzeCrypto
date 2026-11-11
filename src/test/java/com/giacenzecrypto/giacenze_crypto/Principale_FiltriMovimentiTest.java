@@ -335,4 +335,62 @@ class Principale_FiltriMovimentiTest {
         assertEquals(java.util.Set.of("ADA", "EUR"), MoneteFiltrabili(m, f.ConPeriodo(20250101L, 20251231L)));
         assertTrue(MoneteFiltrabili(null, f).isEmpty());
     }
+
+    // ==================== sotto-wallet (tre selettori) ====================
+
+    private static String[] movSotto(String wallet, String sotto) {
+        String[] v = mov(wallet, "SCAMBIO CRYPTO", "BTC", "", "");
+        v[4] = sotto;
+        return v;
+    }
+
+    @Test
+    void ilSottoWalletFiltraSulCampo4() {
+        FiltriMovimenti f = new FiltriMovimenti("Binance", "Earn", TUTTI, DOC_TUTTI, 0, 99999999L,
+                false, false, false, false);
+        assertTrue(f.Passa(movSotto("Binance", "Earn"), 20240315L, "Exchange", true, false));
+        assertTrue(f.Passa(movSotto("Binance", " earn "), 20240315L, "Exchange", true, false),
+                "maiuscole e spazi attorno non contano");
+        assertFalse(f.Passa(movSotto("Binance", "Spot"), 20240315L, "Exchange", true, false));
+        assertFalse(f.Passa(movSotto("OKX", "Earn"), 20240315L, "Exchange", true, false),
+                "un altro wallet con lo stesso sotto-wallet resta fuori");
+    }
+
+    @Test
+    void ilSottoWalletSenzaWalletOConUnGruppoNonEsiste() {
+        assertEquals(TUTTI, new FiltriMovimenti(TUTTI, "Earn", TUTTI, DOC_TUTTI, 0, 1, false, false, false, false).SottoWallet());
+        assertEquals(TUTTI, new FiltriMovimenti("Gruppo : Wallet 1 ( uno )", "Earn", TUTTI, DOC_TUTTI, 0, 1,
+                false, false, false, false).SottoWallet());
+        assertEquals("Earn", new FiltriMovimenti("Binance", "Earn", TUTTI, DOC_TUTTI, 0, 1,
+                false, false, false, false).SottoWallet());
+    }
+
+    @Test
+    void ilSottoWalletEUnCriterioASeEIlWalletLoPortaDietro() {
+        FiltriMovimenti f = new FiltriMovimenti("Binance", "Earn", TUTTI, DOC_TUTTI, GEN, DIC, false, false, false, false);
+        assertEquals(2, f.Attivi());
+        assertEquals(f.Attivi(), f.Criteri(null).size());
+        assertTrue(f.Descrizione().contains("Sottowallet : Earn"));
+
+        FiltriMovimenti senzaSotto = f.Criteri(null).get(1).SenzaQuesto();
+        assertEquals("Binance", senzaSotto.Wallet());
+        assertEquals(TUTTI, senzaSotto.SottoWallet());
+
+        FiltriMovimenti senzaWallet = f.Criteri(null).get(0).SenzaQuesto();
+        assertEquals(TUTTI, senzaWallet.Wallet());
+        assertEquals(TUTTI, senzaWallet.SottoWallet(), "senza wallet non resta nemmeno il sotto-wallet");
+    }
+
+    @Test
+    void lAltraCopiaDelRecordNonPerdeIlSottoWallet() {
+        FiltriMovimenti f = new FiltriMovimenti("Binance", "Earn", "BTC", DOC_TUTTI, GEN, DIC, true, false, false, true);
+        assertEquals("Earn", f.ConDocumento("3").SottoWallet());
+        assertEquals("Earn", f.ConToken(TUTTI).SottoWallet());
+        assertEquals("Earn", f.ConPeriodo(0, 1).SottoWallet());
+        for (FiltriMovimenti.Criterio c : f.Criteri(null)) {
+            if (!c.Nome().equals("Wallet") && !c.Nome().equals("Sottowallet")) {
+                assertEquals("Earn", c.SenzaQuesto().SottoWallet(), c.Nome());
+            }
+        }
+    }
 }

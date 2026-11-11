@@ -36,6 +36,8 @@ public class Principale_FiltriMovimenti {
      *
      * @param Wallet voce scelta nella combo dei wallet: {@link #TUTTI}, un nome di wallet, oppure la
      *               forma {@code "Wallet : Gruppo (n)"} che seleziona l'intero gruppo
+     * @param SottoWallet sotto-wallet (campo {@code [4]}) oppure {@link #TUTTI}; ha senso solo con un wallet
+     *                    scelto, quindi con "Tutti" o con un gruppo viene riportato a {@link #TUTTI}
      * @param Token simbolo della moneta, oppure {@link #TUTTI}; combacia sia in entrata sia in uscita
      * @param Documento {@link #DOC_TUTTI}, {@link #DOC_CON}, {@link #DOC_SENZA} oppure l'id di un
      *                  documento di origine ({@code "3"}), confrontato con il campo {@code [41]}
@@ -48,6 +50,7 @@ public class Principale_FiltriMovimenti {
      */
     public record FiltriMovimenti(
             String Wallet,
+            String SottoWallet,
             String Token,
             String Documento,
             long DataInizio,
@@ -60,8 +63,19 @@ public class Principale_FiltriMovimenti {
         /** Costruttore compatto: normalizza i {@code null} così che {@link #Passa} non debba difendersene. */
         public FiltriMovimenti {
             if (Wallet == null || Wallet.isBlank()) Wallet = TUTTI;
+            //Il sotto-wallet appartiene a un wallet: senza, o con un gruppo intero, non esiste
+            if (SottoWallet == null || SottoWallet.isBlank() || Wallet.equalsIgnoreCase(TUTTI)
+                    || !GruppoDaVoceWallet(Wallet).isEmpty()) SottoWallet = TUTTI;
             if (Token == null || Token.isBlank()) Token = TUTTI;
             if (Documento == null) Documento = DOC_TUTTI;
+        }
+
+        /** Senza sotto-wallet: la forma che il record aveva prima dei tre selettori. */
+        public FiltriMovimenti(String Wallet, String Token, String Documento, long DataInizio, long DataFine,
+                boolean NascondiTrasferimentiInterni, boolean NascondiTokenScam,
+                boolean SoloSenzaPrezzo, boolean SoloLifoMancante) {
+            this(Wallet, TUTTI, Token, Documento, DataInizio, DataFine, NascondiTrasferimentiInterni,
+                    NascondiTokenScam, SoloSenzaPrezzo, SoloLifoMancante);
         }
 
         /**
@@ -90,6 +104,8 @@ public class Principale_FiltriMovimenti {
                 if (!v[3].equalsIgnoreCase(Wallet) && !gruppoWallet.equalsIgnoreCase(gruppoVoluto)) return false;
             }
 
+            if (!SottoWallet.equalsIgnoreCase(TUTTI) && !v[4].trim().equalsIgnoreCase(SottoWallet.trim())) return false;
+
             if (!Token.equalsIgnoreCase(TUTTI) && !v[11].equals(Token) && !v[8].equals(Token)) return false;
 
             //Un movimento è scartato come SCAM solo quando il token marcato è l'unico che muove: uno
@@ -111,11 +127,12 @@ public class Principale_FiltriMovimenti {
          * <p>Le date <b>non</b> contano come criterio: sono sempre valorizzate (le imposta la scheda
          * Crypto.com) e conteggiarle mostrerebbe un filtro attivo anche quando non si è filtrato nulla.
          *
-         * @return il numero di criteri attivi, da 0 a 7
+         * @return il numero di criteri attivi, da 0 a 8
          */
         public int Attivi() {
             int n = 0;
             if (!Wallet.equalsIgnoreCase(TUTTI)) n++;
+            if (!SottoWallet.equalsIgnoreCase(TUTTI)) n++;
             if (!Token.equalsIgnoreCase(TUTTI)) n++;
             if (!Documento.equals(DOC_TUTTI)) n++;
             if (NascondiTrasferimentiInterni) n++;
@@ -184,11 +201,16 @@ public class Principale_FiltriMovimenti {
                 String gruppo = GruppoDaVoceWallet(Wallet);
                 String nome = gruppo.isEmpty() ? "Wallet" : "Gruppo di wallet";
                 String valore = gruppo.isEmpty() ? Wallet : gruppo;
-                r.add(new Criterio(nome, valore, nome + " : " + valore, new FiltriMovimenti(TUTTI, Token, Documento,
+                r.add(new Criterio(nome, valore, nome + " : " + valore, new FiltriMovimenti(TUTTI, TUTTI, Token, Documento,
                         DataInizio, DataFine, NascondiTrasferimentiInterni, NascondiTokenScam, SoloSenzaPrezzo, SoloLifoMancante)));
             }
+            if (!SottoWallet.equalsIgnoreCase(TUTTI)) {
+                r.add(new Criterio("Sottowallet", SottoWallet, "Sottowallet : " + SottoWallet,
+                        new FiltriMovimenti(Wallet, TUTTI, Token, Documento, DataInizio, DataFine,
+                                NascondiTrasferimentiInterni, NascondiTokenScam, SoloSenzaPrezzo, SoloLifoMancante)));
+            }
             if (!Token.equalsIgnoreCase(TUTTI)) {
-                r.add(new Criterio("Moneta", Token, "Moneta : " + Token, new FiltriMovimenti(Wallet, TUTTI, Documento,
+                r.add(new Criterio("Moneta", Token, "Moneta : " + Token, new FiltriMovimenti(Wallet, SottoWallet, TUTTI, Documento,
                         DataInizio, DataFine, NascondiTrasferimentiInterni, NascondiTokenScam, SoloSenzaPrezzo, SoloLifoMancante)));
             }
             if (!Documento.equals(DOC_TUTTI)) {
@@ -198,22 +220,22 @@ public class Principale_FiltriMovimenti {
             }
             if (NascondiTrasferimentiInterni) {
                 r.add(new Criterio("Trasferimenti interni", "nascosti", "Trasferimenti interni nascosti",
-                        new FiltriMovimenti(Wallet, Token, Documento, DataInizio, DataFine, false,
+                        new FiltriMovimenti(Wallet, SottoWallet, Token, Documento, DataInizio, DataFine, false,
                                 NascondiTokenScam, SoloSenzaPrezzo, SoloLifoMancante)));
             }
             if (NascondiTokenScam) {
                 r.add(new Criterio("Token SCAM", "nascosti", "Token SCAM nascosti",
-                        new FiltriMovimenti(Wallet, Token, Documento, DataInizio, DataFine,
+                        new FiltriMovimenti(Wallet, SottoWallet, Token, Documento, DataInizio, DataFine,
                                 NascondiTrasferimentiInterni, false, SoloSenzaPrezzo, SoloLifoMancante)));
             }
             if (SoloSenzaPrezzo) {
                 r.add(new Criterio("Movimenti senza prezzo", "solo quelli", "Solo i movimenti senza prezzo",
-                        new FiltriMovimenti(Wallet, Token, Documento, DataInizio, DataFine,
+                        new FiltriMovimenti(Wallet, SottoWallet, Token, Documento, DataInizio, DataFine,
                                 NascondiTrasferimentiInterni, NascondiTokenScam, false, SoloLifoMancante)));
             }
             if (SoloLifoMancante) {
                 r.add(new Criterio("LiFo mancante", "solo quelli", "Solo i movimenti con LiFo mancante",
-                        new FiltriMovimenti(Wallet, Token, Documento, DataInizio, DataFine,
+                        new FiltriMovimenti(Wallet, SottoWallet, Token, Documento, DataInizio, DataFine,
                                 NascondiTrasferimentiInterni, NascondiTokenScam, SoloSenzaPrezzo, false)));
             }
             return r;
@@ -221,19 +243,19 @@ public class Principale_FiltriMovimenti {
 
         /** @return lo stesso record con un altro criterio sul documento di origine */
         public FiltriMovimenti ConDocumento(String NuovoDocumento) {
-            return new FiltriMovimenti(Wallet, Token, NuovoDocumento, DataInizio, DataFine,
+            return new FiltriMovimenti(Wallet, SottoWallet, Token, NuovoDocumento, DataInizio, DataFine,
                     NascondiTrasferimentiInterni, NascondiTokenScam, SoloSenzaPrezzo, SoloLifoMancante);
         }
 
         /** @return lo stesso record con un altro criterio sulla moneta */
         public FiltriMovimenti ConToken(String NuovoToken) {
-            return new FiltriMovimenti(Wallet, NuovoToken, Documento, DataInizio, DataFine,
+            return new FiltriMovimenti(Wallet, SottoWallet, NuovoToken, Documento, DataInizio, DataFine,
                     NascondiTrasferimentiInterni, NascondiTokenScam, SoloSenzaPrezzo, SoloLifoMancante);
         }
 
         /** @return lo stesso record con un altro intervallo di date */
         public FiltriMovimenti ConPeriodo(long NuovaDataInizio, long NuovaDataFine) {
-            return new FiltriMovimenti(Wallet, Token, Documento, NuovaDataInizio, NuovaDataFine,
+            return new FiltriMovimenti(Wallet, SottoWallet, Token, Documento, NuovaDataInizio, NuovaDataFine,
                     NascondiTrasferimentiInterni, NascondiTokenScam, SoloSenzaPrezzo, SoloLifoMancante);
         }
 

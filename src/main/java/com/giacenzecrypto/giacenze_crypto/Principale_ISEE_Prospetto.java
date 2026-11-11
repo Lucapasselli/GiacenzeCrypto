@@ -236,7 +236,7 @@ public final class Principale_ISEE_Prospetto {
             sez1.add(new String[] {"Totale dei rapporti del prospetto", "", "", "",
                 Principale_ISEE.euro(new BigDecimal(bozza.Totali.get(TOT_SEZ_I_SALDI))),
                 Principale_ISEE.euro(new BigDecimal(bozza.Totali.get(TOT_SEZ_I_MEDIE))), "", ""});
-            stampa.AggiungiTabellaReport(COLONNE_SEZ_I, new float[] {13, 10, 15, 15, 11, 11, 10, 10},
+            stampa.AggiungiTabellaReport(COLONNE_SEZ_I, new float[] {12, 9, 22, 14, 10, 10, 9, 9},
                     new boolean[] {false, false, false, false, true, true, false, false}, sez1, Set.of(sez1.size() - 1));
         }
 
@@ -249,7 +249,7 @@ public final class Principale_ISEE_Prospetto {
         } else {
             sez2.add(new String[] {"Totale", "", "", "",
                 Principale_ISEE.euro(new BigDecimal(bozza.Totali.get(TOT_SEZ_II))), "", "", ""});
-            stampa.AggiungiTabellaReport(COLONNE_SEZ_II, new float[] {13, 10, 15, 15, 11, 10, 10, 11},
+            stampa.AggiungiTabellaReport(COLONNE_SEZ_II, new float[] {12, 9, 22, 13, 10, 9, 9, 11},
                     new boolean[] {false, false, false, false, true, false, false, true}, sez2, Set.of(sez2.size() - 1));
         }
         if (!bozza.Errori.isBlank()) {

@@ -93,6 +93,13 @@ compatibili con un possibile trasferimento tra wallet.
 
 ![Scelta del prelievo da associare](immagini/classificazioni-movimenti/05.png)
 
+Per trovare più in fretta il movimento giusto, il programma confronta data e valore in euro. Il valore
+dei movimenti che si discosta al massimo del 5% da quello che si sta classificando è scritto in verde.
+I movimenti più probabili, quelli con valore entro il 5% e più vicini nel tempo, hanno l'intera riga in
+giallo e la tabella scorre fino al primo di loro. Se due movimenti sono quasi alla pari si colorano
+entrambi. Per un token senza prezzo il confronto si fa sulla quantità. Il giallo è solo un aiuto: la
+riga non viene selezionata da sola, il movimento da associare va sempre scelto con il clic.
+
 Selezionando il prelievo desiderato e premendo **OK** i due movimenti vengono associati. Eventuali
 differenze di quantità vengono convertite in commissioni.
 
@@ -139,6 +146,10 @@ prelievo di TOKEN_OLD e un deposito di TOKEN_NEW.
 Quello che interessa è indicare al programma che deve passare il costo di carico di TOKEN_OLD su
 TOKEN_NEW: per farlo bisogna scegliere il movimento di controparte da associare, come nell'
 [Opzione 3 – Trasferimento tra wallet](#opzione-3--trasferimento-tra-wallet-di-proprietà).
+Anche qui i movimenti con valore vicino sono in verde e i più probabili per data e valore hanno la riga
+in giallo, come descritto in quell'opzione. Data e valore contano in proporzione: uno scarto di valore
+pari al 5% pesa quanto una distanza pari alla finestra di ricerca. Un movimento senza valore non viene mai indicato
+come probabile.
 
 Il programma simulerà quindi il caricamento del token su una piattaforma DeFi che si occupa dello
 scambio e del trasferimento sul wallet di destinazione. Scambio e trasferimento avranno la stessa data

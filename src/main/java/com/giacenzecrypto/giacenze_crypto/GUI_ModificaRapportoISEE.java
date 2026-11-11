@@ -33,7 +33,7 @@ public class GUI_ModificaRapportoISEE extends javax.swing.JDialog {
 
         RwDialoghi.configura(Data_Apertura);
         RwDialoghi.configura(Data_Chiusura);
-        Nota_Ident.setText("Vuoto = il nome del gruppo (" + nomeGruppo + "), con un avviso");
+        Nota_Ident.setText("Compare dopo il nome del gruppo (" + nomeGruppo + " - ...). Vuoto = solo il nome, con un avviso");
         Nota_Operatore.setText("Vuoto = quello del periodo FIAT: " + operatorePeriodo);
         if (salvati != null) {
             Campo_Ident.setText(salvati.identificativo);

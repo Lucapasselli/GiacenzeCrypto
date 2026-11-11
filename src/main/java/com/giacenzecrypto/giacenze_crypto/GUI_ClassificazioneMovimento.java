@@ -15,6 +15,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.Cursor;
 import java.awt.event.ItemEvent;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -3098,6 +3099,115 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
         }
     }
 
+    /** Finestra di confronto della data per un trasferimento tra wallet: 24 ore, la stessa in cui si cercano i candidati. */
+    static final long FINESTRA_TRASFERIMENTO_MS = 86400000L;
+    /** Peso aggiunto al punteggio di un candidato che sta dalla parte "sbagliata" nel tempo (deposito prima del prelievo o viceversa). */
+    static final BigDecimal PENALITA_ORDINE_TEMPORALE = new BigDecimal("0.5");
+    /** Quanto può superare il punteggio del migliore un altro candidato per essere evidenziato anch'esso (pari merito). */
+    static final BigDecimal MARGINE_PARI_MERITO = new BigDecimal("0.25");
+
+    /**
+     * Esito della valutazione dei candidati di un abbinamento.
+     * @param valoriVicini ID dei candidati il cui valore in euro è entro la tolleranza da quello del movimento
+     * @param probabili ID dei candidati più probabili: valore entro la tolleranza e, fra questi, il punteggio migliore
+     *                  (con data e valore insieme) più gli eventuali pari merito
+     */
+    record EvidenziatiAbbinamento(Set<String> valoriVicini, Set<String> probabili) { }
+
+    /** Quantità della gamba che interessa di un movimento: quella uscita per un prelievo, quella entrata per un deposito. */
+    private static String QtaGamba(String[] v) {
+        return isPrelievo(v[0]) ? v[10] : v[13];
+    }
+
+    /**
+     * Sceglie i candidati da evidenziare per un abbinamento, usando insieme data e ora e valore in euro. Il valore è
+     * quello che il programma ha calcolato ({@link #ValoreOriginale}), non quello eventualmente scelto a mano.
+     * <p>Un candidato può essere "più probabile" solo se il suo valore è entro {@link #TOLLERANZA_VALORE_DIFFERITO}
+     * dal movimento attuale. Fra questi il punteggio è la somma di due termini, ciascuno riportato alla propria scala
+     * perché nessuno pesi più dell'altro: lo scarto di valore diviso la tolleranza e la distanza nel tempo divisa
+     * {@code finestraMs}. A questo si aggiunge {@link #PENALITA_ORDINE_TEMPORALE} se il candidato sta dalla parte
+     * sbagliata (il deposito deve seguire il prelievo). Vince il punteggio più basso, e sono evidenziati anche i
+     * candidati che lo superano di meno di {@link #MARGINE_PARI_MERITO}, perché due quasi uguali vanno visti
+     * entrambi.</p>
+     * <p>Per un trasferimento fra wallet la moneta è la stessa: se il valore manca (token senza prezzo) al suo posto
+     * si usa lo scarto di quantità. Per lo scambio differito, con monete diverse, senza valore un candidato non è
+     * valutabile.</p>
+     * @param attuale il movimento che si sta classificando
+     * @param candidati i movimenti proposti come controparte
+     * @param trasferimento vero per un trasferimento fra wallet, falso per uno scambio differito
+     * @param finestraMs ampiezza della finestra temporale di ricerca, in millisecondi
+     */
+    static EvidenziatiAbbinamento ValutaCandidati(String[] attuale, List<String[]> candidati, boolean trasferimento, long finestraMs) {
+        Set<String> Vicini = new HashSet<>();
+        Map<String, BigDecimal> Punteggi = new HashMap<>();
+        String ValoreAttuale = ValoreOriginale(attuale);
+        BigDecimal QtaAttuale = NumeroAssoluto(QtaGamba(attuale));
+        long DataAttuale = FunzioniDate.ConvertiDatainLongMinuto(attuale[1]);
+        boolean AttualePrelievo = isPrelievo(attuale[0]);
+        BigDecimal Finestra = new BigDecimal(Math.max(1L, finestraMs));
+        for (String[] v : candidati) {
+            String ValoreCandidato = ValoreOriginale(v);
+            BigDecimal Scarto;
+            if (ValoriVicini(ValoreAttuale, ValoreCandidato, TOLLERANZA_VALORE_DIFFERITO)) {
+                Vicini.add(v[0]);
+            }
+            BigDecimal ValoreA = NumeroAssoluto(ValoreAttuale);
+            BigDecimal ValoreC = NumeroAssoluto(ValoreCandidato);
+            if (ValoreA.signum() != 0 && ValoreC.signum() != 0) {
+                Scarto = ValoreC.subtract(ValoreA).abs().divide(ValoreA, 10, RoundingMode.HALF_UP);
+            } else if (trasferimento && QtaAttuale.signum() != 0 && NumeroAssoluto(QtaGamba(v)).signum() != 0) {
+                Scarto = NumeroAssoluto(QtaGamba(v)).subtract(QtaAttuale).abs().divide(QtaAttuale, 10, RoundingMode.HALF_UP);
+            } else {
+                continue;
+            }
+            BigDecimal Tolleranza = TOLLERANZA_VALORE_DIFFERITO.divide(new BigDecimal(100));
+            if (Scarto.compareTo(Tolleranza) > 0) continue;
+            long Distanza = FunzioniDate.ConvertiDatainLongMinuto(v[1]) - DataAttuale;
+            BigDecimal Punteggio = Scarto.divide(Tolleranza, 10, RoundingMode.HALF_UP)
+                    .add(new BigDecimal(Math.abs(Distanza)).divide(Finestra, 10, RoundingMode.HALF_UP));
+            //Il deposito segue il prelievo: la controparte dalla parte opposta pesa di più, ma non esclude (gli orari
+            //di exchange diversi possono non coincidere)
+            if (AttualePrelievo ? Distanza < 0 : Distanza > 0) Punteggio = Punteggio.add(PENALITA_ORDINE_TEMPORALE);
+            Punteggi.put(v[0], Punteggio);
+        }
+        Set<String> Probabili = new HashSet<>();
+        if (!Punteggi.isEmpty()) {
+            BigDecimal Migliore = Collections.min(Punteggi.values());
+            BigDecimal Limite = Migliore.add(MARGINE_PARI_MERITO);
+            for (Map.Entry<String, BigDecimal> e : Punteggi.entrySet()) {
+                if (e.getValue().compareTo(Limite) <= 0) Probabili.add(e.getKey());
+            }
+        }
+        return new EvidenziatiAbbinamento(Vicini, Probabili);
+    }
+
+    /**
+     * Mette nella tabella dei candidati le righe, segna quelle da evidenziare e porta in vista la prima delle
+     * più probabili (senza selezionarla: l'abbinamento agisce sulla riga selezionata, e un OK distratto su una riga già
+     * scelta dal programma sarebbe una classificazione fiscale sbagliata).
+     * @param righe righe del modello, nello stesso ordine di {@code movimenti}
+     * @param movimenti i movimenti candidati, da cui {@link #ValutaCandidati} ricava i punteggi
+     */
+    private void MostraCandidati(DefaultTableModel modello, List<String[]> righe, List<String[]> movimenti,
+            String[] attuale, boolean trasferimento, long finestraMs) {
+        for (String[] riga : righe) modello.addRow(riga);
+        EvidenziatiAbbinamento ev = ValutaCandidati(attuale, movimenti, trasferimento, finestraMs);
+        Tabella_MovimentiAbbinati.putClientProperty(Tabelle.PROP_VALORI_VICINI, ev.valoriVicini());
+        Tabella_MovimentiAbbinati.putClientProperty(Tabelle.PROP_CANDIDATI_PROBABILI, ev.probabili());
+        for (int i = 0; i < righe.size(); i++) {
+            if (ev.probabili().contains(righe.get(i)[0])) {
+                final int modelRow = i;
+                SwingUtilities.invokeLater(() -> {
+                    int view = Tabella_MovimentiAbbinati.convertRowIndexToView(modelRow);
+                    if (view >= 0) {
+                        Tabella_MovimentiAbbinati.scrollRectToVisible(Tabella_MovimentiAbbinati.getCellRect(view, 0, true));
+                    }
+                });
+                break;
+            }
+        }
+    }
+
     /**
      * Popola la tabella dei movimenti potenzialmente associabili al movimento {@code ID}, in base al
      * tipo di classificazione selezionata in {@code ComboBox_TipoMovimento} ("trasferimento tra
@@ -3112,6 +3222,7 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
         DefaultTableModel ModelloTabellaDepositiPrelievi = (DefaultTableModel) this.Tabella_MovimentiAbbinati.getModel();
         Tabelle.Funzioni_PulisciTabella(ModelloTabellaDepositiPrelievi);
         Tabella_MovimentiAbbinati.putClientProperty(Tabelle.PROP_VALORI_VICINI, null);
+        Tabella_MovimentiAbbinati.putClientProperty(Tabelle.PROP_CANDIDATI_PROBABILI, null);
         //Tabelle.ColoraRigheTabellaCrypto(jTable2);
         Map<String, String[]> MappaAlias = DatabaseH2.Pers_GruppoAlias_LeggiTabella();
         String attuale[] = MappaCryptoWallet.get(ID);
@@ -3160,6 +3271,8 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
             //5 - La qta uscita non deve essere mai inferiore alla qta ricevuta
             //6 - Exchange+Wallet non deve essere lo stesso (DA FARE!!!!!!!!!!!!!!!!)
             
+            List<String[]> RigheCandidati = new ArrayList<>();
+            List<String[]> MovimentiCandidati = new ArrayList<>();
             for (String[] v : MappaCryptoWallet.values()) {
                 String TipoMovimento = v[0].split("_")[4].trim();
                 if (v[22]!=null&&!v[22].equalsIgnoreCase("AU")&&TipoMovimento.equalsIgnoreCase(TipoMovimentoRichiesto)) {
@@ -3211,13 +3324,16 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
                         riga[7] = v[15];
                         riga[8] = AliasGruppoWallet(v[3], MappaAlias);
                         
-                        ModelloTabellaDepositiPrelievi.addRow(riga);
+                        RigheCandidati.add(riga);
+                        MovimentiCandidati.add(v);
 
                     }
 
                     //   ModelloTabellaDepositiPrelievi.addRow(riga); 
                 }
             }
+            //Data e valore dicono quali candidati sono i più probabili, vedi ValutaCandidati
+            MostraCandidati(ModelloTabellaDepositiPrelievi, RigheCandidati, MovimentiCandidati, attuale, true, FINESTRA_TRASFERIMENTO_MS);
 
             
             //PARTE RELATIVA ASCAMBIO DIFFERITO
@@ -3237,9 +3353,10 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
             long[] Finestra = FinestraScambioDifferito(TipoMovimentoAttuale.equalsIgnoreCase("PC"), DataOraAttuale, Giorni);
             FinestraMin = Finestra[0];
             FinestraMax = Finestra[1];
-            //I candidati il cui valore in euro e' entro il 5% da quello del movimento attuale si evidenziano in verde
-            String ValoreAttuale = ValoreOriginale(attuale);
-            Set<String> IDValoriVicini = new HashSet<>();
+            //I candidati il cui valore in euro e' entro il 5% da quello del movimento attuale si evidenziano in verde,
+            //i più probabili per data e valore insieme (ValutaCandidati) colorano tutta la riga
+            List<String[]> RigheCandidati = new ArrayList<>();
+            List<String[]> MovimentiCandidati = new ArrayList<>();
             //In questo caso i movimenti per essere accettati bisogna che abbiano le seguenti carattaristiche
             //1 - Devono essere del tipo movimento opposto a quello del movimento evidenziato
             //2 - Devono essere di una moneta con nome differente (questo limite lo tolgo)
@@ -3283,12 +3400,12 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
                         riga[6] = v[18];
                         riga[7] = v[15];
                         riga[8] = AliasGruppoWallet(v[3], MappaAlias);
-                        ModelloTabellaDepositiPrelievi.addRow(riga);                 
-                        if (ValoriVicini(ValoreAttuale, v[15], TOLLERANZA_VALORE_DIFFERITO)) IDValoriVicini.add(v[0]);
+                        RigheCandidati.add(riga);
+                        MovimentiCandidati.add(v);
                     
                     }
                 }}
-            Tabella_MovimentiAbbinati.putClientProperty(Tabelle.PROP_VALORI_VICINI, IDValoriVicini);
+            MostraCandidati(ModelloTabellaDepositiPrelievi, RigheCandidati, MovimentiCandidati, attuale, false, Math.max(Giorni, FINESTRA_TRASFERIMENTO_MS));
             
         }else if (ComboBox_TipoMovimento.getSelectedItem()!=null&&ComboBox_TipoMovimento.getSelectedItem().toString().equals(CB_DC_ANNULLOSPESA)) {
             //ANNULLO SPESA CARTA : i pagamenti che il rimborso può annullare, dal più recente

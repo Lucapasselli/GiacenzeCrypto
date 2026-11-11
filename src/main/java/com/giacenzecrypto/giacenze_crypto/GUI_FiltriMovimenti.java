@@ -16,14 +16,21 @@ import javax.swing.JComboBox;
  * <p>Due cose che non sono ovvie:
  *
  * <ul>
- *   <li><b>Il dialogo non costruisce da s&eacute; gli elenchi.</b> Le voci Wallet le copia dalla combo che
- *       {@code Principale.Funzione_AggiornaComboBox()} riempie durante il caricamento della tabella. Le
+ *   <li><b>Il dialogo non costruisce da s&eacute; gli elenchi.</b> Le voci Gruppo e Wallet le ricava dalla combo
+ *       che {@code Principale.Funzione_AggiornaComboBox()} riempie durante il caricamento della tabella (i wallet
+ *       e le voci {@code "Gruppo : ..."}), i sotto-wallet da {@code Principale.Mappa_Wallets_e_Dettagli}. Le
  *       voci Token le chiede a {@code Principale} con i criteri impostati qui, all'apertura e di nuovo a ogni
  *       criterio cambiato: sono solo le monete dei movimenti che gli altri criteri lasciano vedere.</li>
  *   <li><b>Il dialogo non applica nulla da s&eacute;.</b> Restituisce un {@link FiltriMovimenti} e chi lo ha
  *       aperto decide cosa farne: &egrave; ci&ograve; che permette a {@code Principale} di ricaricare la
  *       tabella <b>una volta sola</b>, mentre oggi ogni casella toccata nella barra ne fa ripartire una.</li>
  * </ul>
+ *
+ * <p><b>Gruppo, Wallet e Sottowallet</b> sono tre combo che si influenzano come in "Giacenze a data": scelto un gruppo
+ * i wallet si restringono ai suoi, scelto un wallet il gruppo si sposta su quello che lo contiene, il sottowallet si
+ * sceglie solo con un wallet. Il record resta con un solo campo {@code Wallet} (il wallet, altrimenti
+ * {@code "Gruppo : X ( alias )"}, altrimenti "Tutti") pi&ugrave; il sotto-wallet; la logica pura sta in
+ * {@link SelettoriWallet} (la stessa classe di "Giacenze a data").
  *
  * <p>Le date non stanno nel record {@link FiltriMovimenti}: non sono nella barra dei movimenti nemmeno
  * adesso, arrivano dai due selettori della scheda Crypto.com e sono condivise con quella. La combo
@@ -65,6 +72,9 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
     /** Dati i criteri del dialogo e l'anno della combo Periodo ({@code null} = date invariate), le voci Token. */
     private final java.util.function.BiFunction<FiltriMovimenti, Integer, List<String>> VociToken;
 
+    /** Le tre combo gruppo, wallet e sotto-wallet con la loro regola (la stessa di "Giacenze a data"). */
+    private SelettoriWallet Selettori;
+
     /** Id del documento corrispondente a ciascuna voce della combo; {@code null} per le prime tre. */
     private final java.util.List<String> DocumentiPerVoce = new java.util.ArrayList<>();
 
@@ -96,12 +106,12 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         DataFine = (Correnti == null) ? 0 : Correnti.DataFine();
         initComponents();
 
-        CopiaVoci(ComboWallet, ComboBox_Wallet);
+        PreparaSelettori(ComboWallet);
         RiempiDocumenti();
         RiempiPeriodo();
 
         if (Correnti != null) {
-            SelezionaOTieni(ComboBox_Wallet, Correnti.Wallet());
+            Selettori.ImpostaDaFiltro(Correnti.Wallet(), Correnti.SottoWallet());
             SelezionaDocumento(Correnti.Documento());
             CheckBox_TrasferimentiInterni.setSelected(Correnti.NascondiTrasferimentiInterni());
             CheckBox_TokenScam.setSelected(Correnti.NascondiTokenScam());
@@ -115,8 +125,10 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
                 e -> AggiornaVociToken(String.valueOf(ComboBox_Token.getSelectedItem()));
         for (javax.swing.AbstractButton b : new javax.swing.AbstractButton[]{CheckBox_TrasferimentiInterni,
                 CheckBox_TokenScam, CheckBox_SenzaPrezzo, CheckBox_LifoMancante}) b.addActionListener(ricalcola);
-        for (JComboBox<?> c : new JComboBox<?>[]{ComboBox_Wallet, ComboBox_Documento, ComboBox_Periodo})
+        for (JComboBox<?> c : new JComboBox<?>[]{ComboBox_Documento, ComboBox_Periodo})
             c.addActionListener(ricalcola);
+        //Dopo lo stato di partenza, per lo stesso motivo degli altri ascoltatori
+        Selettori.setAlCambio(() -> AggiornaVociToken(String.valueOf(ComboBox_Token.getSelectedItem())));
 
         Icone.AdattaIconeAlTema(this);
         getRootPane().setDefaultButton(Bottone_Ok);
@@ -134,14 +146,30 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         SelezionaOTieni(ComboBox_Token, TokenSelezionato);
     }
 
-    /** Copia le voci e la selezione da una combo della barra a quella del dialogo. */
-    private static void CopiaVoci(JComboBox<String> Da, JComboBox<String> A) {
-        DefaultComboBoxModel<String> m = new DefaultComboBoxModel<>();
+    /**
+     * Crea i tre selettori con gli elenchi ricavati dalla combo della barra: le voci {@code "Gruppo : X ( alias )"}
+     * sono i gruppi, tutte le altre (tranne "Tutti") i wallet. Poi li porta su "Tutti".
+     */
+    @SuppressWarnings("unchecked")
+    private void PreparaSelettori(JComboBox<String> Da) {
+        List<String> wallets = new java.util.ArrayList<>();
+        List<String> gruppi = new java.util.ArrayList<>();
         if (Da != null) {
-            for (int i = 0; i < Da.getItemCount(); i++) m.addElement(String.valueOf(Da.getItemAt(i)));
+            for (int i = 0; i < Da.getItemCount(); i++) {
+                String v = String.valueOf(Da.getItemAt(i));
+                if (Principale_GiacenzeaData_FiltroWallet.IsTutti(v)) continue;
+                if (v.startsWith(Principale_GiacenzeaData_FiltroWallet.PREFISSO_GRUPPO)) {
+                    gruppi.add(v.substring(Principale_GiacenzeaData_FiltroWallet.PREFISSO_GRUPPO.length()));
+                } else {
+                    wallets.add(v);
+                }
+            }
         }
-        if (m.getSize() == 0) m.addElement(Principale_FiltriMovimenti.TUTTI);
-        A.setModel(m);
+        Selettori = new SelettoriWallet(ComboBox_Gruppo, ComboBox_Wallet, ComboBox_SottoWallet,
+                () -> wallets, w -> DatabaseH2.Pers_GruppoWallet_Leggi(w, true), Principale.Mappa_Wallets_e_Dettagli::get);
+        Selettori.ImpostaGruppi(gruppi);
+        String tutti = Principale_FiltriMovimenti.TUTTI;
+        Selettori.Applica(tutti, tutti, tutti);
     }
 
     /**
@@ -263,7 +291,8 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
      */
     private FiltriMovimenti Leggi(long DataInizio, long DataFine) {
         return new FiltriMovimenti(
-                String.valueOf(ComboBox_Wallet.getSelectedItem()),
+                Selettori.Effettivo(),
+                Selettori.SottoWalletScelto(),
                 String.valueOf(ComboBox_Token.getSelectedItem()),
                 DocumentoScelto(),
                 DataInizio, DataFine,
@@ -286,8 +315,12 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         Pannello_Criteri = new javax.swing.JPanel();
         Label_Periodo = new javax.swing.JLabel();
         ComboBox_Periodo = new javax.swing.JComboBox();
+        Label_Gruppo = new javax.swing.JLabel();
+        ComboBox_Gruppo = new javax.swing.JComboBox();
         Label_Wallet = new javax.swing.JLabel();
         ComboBox_Wallet = new javax.swing.JComboBox();
+        Label_SottoWallet = new javax.swing.JLabel();
+        ComboBox_SottoWallet = new javax.swing.JComboBox();
         Label_Token = new javax.swing.JLabel();
         ComboBox_Token = new javax.swing.JComboBox();
         Label_Documento = new javax.swing.JLabel();
@@ -325,31 +358,61 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         Pannello_Criteri.add(ComboBox_Periodo, gridBagConstraints);
 
-        Label_Wallet.setText("Wallet / Gruppo :");
+        Label_Gruppo.setText("Gruppo Wallet :");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
-        Pannello_Criteri.add(Label_Wallet, gridBagConstraints);
+        Pannello_Criteri.add(Label_Gruppo, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        Pannello_Criteri.add(ComboBox_Wallet, gridBagConstraints);
-
-        Label_Token.setText("Token :");
+        Pannello_Criteri.add(ComboBox_Gruppo, gridBagConstraints);
+        Label_Wallet.setText("Wallet :");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
-        Pannello_Criteri.add(Label_Token, gridBagConstraints);
+        Pannello_Criteri.add(Label_Wallet, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        Pannello_Criteri.add(ComboBox_Wallet, gridBagConstraints);
+        Label_SottoWallet.setText("Sottowallet :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
+        Pannello_Criteri.add(Label_SottoWallet, gridBagConstraints);
+        ComboBox_SottoWallet.setEnabled(false);
+        ComboBox_SottoWallet.setToolTipText("Si sceglie solo dopo aver scelto un wallet");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        Pannello_Criteri.add(ComboBox_SottoWallet, gridBagConstraints);
+
+        Label_Token.setText("Token :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
+        Pannello_Criteri.add(Label_Token, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
@@ -358,20 +421,20 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         Label_Documento.setText("Documento di origine :");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 10);
         Pannello_Criteri.add(Label_Documento, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         Pannello_Criteri.add(ComboBox_Documento, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -381,7 +444,7 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         CheckBox_TrasferimentiInterni.setText("Nascondi Trasferimenti Interni");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
@@ -390,7 +453,7 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         CheckBox_TokenScam.setText("Nascondi Token SCAM");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
@@ -399,7 +462,7 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         CheckBox_SenzaPrezzo.setText("Mostra solo i movimenti senza prezzo");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
@@ -408,7 +471,7 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         CheckBox_LifoMancante.setText("Mostra solo i movimenti con LiFo mancante");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         Pannello_Criteri.add(CheckBox_LifoMancante, gridBagConstraints);
@@ -452,7 +515,7 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void Bottone_AzzeraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AzzeraActionPerformed
-        SelezionaOTieni(ComboBox_Wallet, Principale_FiltriMovimenti.TUTTI);
+        Selettori.Applica(Principale_FiltriMovimenti.TUTTI, Principale_FiltriMovimenti.TUTTI, Principale_FiltriMovimenti.TUTTI);
         SelezionaOTieni(ComboBox_Token, Principale_FiltriMovimenti.TUTTI);
         ComboBox_Documento.setSelectedIndex(0);
         ComboBox_Periodo.setSelectedIndex(0);
@@ -460,6 +523,7 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
         CheckBox_TokenScam.setSelected(false);
         CheckBox_SenzaPrezzo.setSelected(false);
         CheckBox_LifoMancante.setSelected(false);
+        AggiornaVociToken(Principale_FiltriMovimenti.TUTTI);
     }//GEN-LAST:event_Bottone_AzzeraActionPerformed
 
     private void Bottone_AnnullaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AnnullaActionPerformed
@@ -484,11 +548,15 @@ public class GUI_FiltriMovimenti extends javax.swing.JDialog {
     private javax.swing.JCheckBox CheckBox_TokenScam;
     private javax.swing.JCheckBox CheckBox_TrasferimentiInterni;
     private javax.swing.JComboBox ComboBox_Documento;
+    private javax.swing.JComboBox ComboBox_Gruppo;
     private javax.swing.JComboBox ComboBox_Periodo;
+    private javax.swing.JComboBox ComboBox_SottoWallet;
     private javax.swing.JComboBox ComboBox_Token;
     private javax.swing.JComboBox ComboBox_Wallet;
     private javax.swing.JLabel Label_Documento;
+    private javax.swing.JLabel Label_Gruppo;
     private javax.swing.JLabel Label_Periodo;
+    private javax.swing.JLabel Label_SottoWallet;
     private javax.swing.JLabel Label_Token;
     private javax.swing.JLabel Label_Wallet;
     private javax.swing.JPanel Pannello_Criteri;

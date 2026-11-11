@@ -693,7 +693,8 @@ public final class Calcoli_ISEE {
             r.identificativo = alias;
             r.note.add("identificativo del rapporto da completare (IBAN o numero di conto): indicato il nome del gruppo");
         } else {
-            r.identificativo = identUtente;
+            // Il solo codice cliente non dice di quale operatore si parla: davanti sta sempre l'alias del gruppo.
+            r.identificativo = alias + " - " + identUtente;
         }
 
         // Inizio: data dell'utente, altrimenti cambio di operatore, altrimenti primo movimento.

@@ -55,17 +55,22 @@ questo manuale.
 
 La scheda ha tre zone:
 
-- in alto i **selettori** (wallet, sotto-wallet, data) e il pulsante *Calcola*,
+- in alto i **selettori** (gruppo wallet, wallet, sottowallet, data) e il pulsante *Calcola*,
 - al centro la **tabella dei token**, con le caselle e i pulsanti che lavorano sul token selezionato,
 - in basso il **dettaglio dei movimenti** del token selezionato, in forma di tabella o di grafico.
 
 ## Scegliere cosa guardare {#scegliere}
 
-![I selettori: wallet, sotto-wallet, data, Vedi situazione Wallet ad Oggi e Calcola](immagini/giacenze-a-data/02.png)
+![I selettori: gruppo wallet, wallet, sottowallet, data, Vedi situazione Wallet ad Oggi e Calcola](immagini/giacenze-a-data/02.png)
 
-- **Wallet**: *Tutti*, un singolo wallet oppure un gruppo di wallet (le voci *Gruppo : ...*). Con *Tutti* si vede la
-  situazione complessiva.
-- **Dett.Wallet**: il sotto-wallet, per esempio *Principale* di un exchange. Si popola quando si sceglie un wallet.
+- **Gruppo Wallet**: *Tutti* oppure un gruppo di wallet. Scegliendo un gruppo, l'elenco dei wallet qui sotto mostra solo
+  quelli che ne fanno parte.
+- **Wallet**: *Tutti* oppure un singolo wallet. Scegliendolo, il gruppo si posiziona su quello che lo contiene. Con
+  *Tutti* in entrambi gli elenchi si vede la situazione complessiva, con un gruppo e *Tutti* nel wallet si vede quella del
+  gruppo.
+- **Sottowallet**: per esempio *Principale* di un exchange. Si può scegliere solo quando è scelto un wallet, altrimenti
+  l'elenco è spento.
+- **Azzera filtri**: riporta gruppo, wallet e sottowallet su *Tutti*. Non ricalcola la tabella, poi si preme *Calcola*.
 - **Data**: il giorno di riferimento. Contano i movimenti fino alla **fine di quel giorno** e il valore è quello alla
   mezzanotte che lo chiude. Scegliendo **oggi**, o una data futura, si vede la situazione fino a questo momento, con i prezzi
   attuali.
@@ -74,7 +79,7 @@ La scheda ha tre zone:
 - **Vedi situazione Wallet ad Oggi**: si abilita solo per i wallet DeFi e apre nel browser la situazione attuale di quel
   wallet sull'explorer della sua rete.
 
-![La tendina dei wallet con Tutti, i tre wallet di fantasia e il gruppo](immagini/giacenze-a-data/03.png)
+![La tendina dei wallet con Tutti e i tre wallet di fantasia](immagini/giacenze-a-data/03.png)
 
 Se dopo il calcolo cambia qualcosa che incide sui valori (una classificazione, un prezzo), compare in rosso l'avviso
 *«ATTENZIONE! Sono variate delle informazioni, premere CALCOLA per vedere i valori corretti!»*.

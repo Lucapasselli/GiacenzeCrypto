@@ -310,7 +310,7 @@ class Calcoli_ISEETest {
         List<Calcoli_ISEE.Rapporto> r = calcola(2025).rapporti;
 
         assertEquals(1, r.size());
-        assertEquals("KR-123", r.get(0).identificativo);
+        assertEquals("Kraken - KR-123", r.get(0).identificativo);
         assertEquals("Kraken|99|P1", r.get(0).chiave);
     }
 
@@ -325,7 +325,7 @@ class Calcoli_ISEETest {
 
         Calcoli_ISEE.Rapporto r = calcola(2025).rapporti.get(0);
 
-        assertEquals("KR-123", r.identificativo);
+        assertEquals("Kraken - KR-123", r.identificativo);
         assertEquals("Kraken|99|NESSUN_PERIODO", r.chiave);
     }
 
@@ -385,7 +385,7 @@ class Calcoli_ISEETest {
 
         Calcoli_ISEE.Rapporto r = calcola(2025).rapporti.get(0);
 
-        assertEquals("AA1234", r.identificativo);
+        assertEquals("Kraken - AA1234", r.identificativo, "alias del gruppo davanti all'identificativo");
         assertEquals("E999", r.operatore);
         assertEquals("END", r.operatorePeriodo);
         assertEquals(LocalDate.of(2025, 10, 1), r.dataFine);

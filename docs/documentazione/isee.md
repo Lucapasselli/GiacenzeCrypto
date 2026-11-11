@@ -79,7 +79,7 @@ rapporti 01 e dei rapporti 99. Nell'esempio: *3 rapporti, valore al 31/12: 01 = 
 | **Gruppo** | il gruppo wallet del rapporto, con il suo alias |
 | **Tipo rapporto** | *01 Conto corrente* oppure *99 Altri strumenti* |
 | **Codice operatore** | il codice dell'intermediario: *E* seguita dall'identificativo fiscale per un intermediario estero, il codice fiscale per uno italiano, *END* quando non c'è un intermediario o il dato manca |
-| **Identificativo** | quello scritto con *Modifica dati*: l'IBAN, il numero di conto o l'ID utente. Se non è stato scritto compare il nome del gruppo, con un avviso |
+| **Identificativo** | l'alias del gruppo seguito da quello scritto con *Modifica dati* (l'IBAN, il numero di conto o l'ID utente), per esempio *Binance - 0123456*, così si capisce di quale operatore si parla. Se non è stato scritto compare il solo nome del gruppo, con un avviso |
 | **Data inizio** | solo se il rapporto è iniziato nell'anno, vedi [le date](#date) |
 | **Data fine** | solo se il rapporto è finito nell'anno |
 | **Valore al 31/12 (EUR)** | il valore a fine anno, arrotondato all'euro. *(incompleto)* se almeno una moneta non ha prezzo |
@@ -186,7 +186,7 @@ calcolati in dati scritti a mano, quindi una correzione futura del periodo FIAT 
 
 I dati valgono per **tutti gli anni**: si scrivono una volta, e il calcolo dell'anno dopo li ritrova. Dopo OK il tab
 ricalcola. Nell'esempio l'identificativo *CB-482913*, scritto sul rapporto Coinbase del 2024, compare in tabella e nel
-dettaglio:
+dettaglio preceduto dall'alias del gruppo (*Coinbase - CB-482913*):
 
 ![Il rapporto Coinbase con l'identificativo scritto a mano](immagini/isee/03.png)
 
@@ -346,6 +346,14 @@ riscritti su quel rapporto con *Modifica dati*.
 **Perché il codice operatore è END?** Il gruppo non ha un periodo FIAT, oppure il periodo FIAT non ha l'identificativo
 fiscale. Un avviso nella scheda *Avvisi* dice quale dei due. Per un wallet in autocustodia è il caso normale. Per un exchange si
 completa il periodo FIAT, oppure si scrive il codice con *Modifica dati*.
+
+**Per un operatore estero il codice è sempre END?** No, *END* è l'ultima possibilità. Le istruzioni della DSU chiedono, per un
+operatore estero senza codice fiscale italiano ma con un altro codice identificativo, la lettera *E* seguita da quel codice, al
+massimo 15 caratteri alfanumerici. *END* ("non disponibile") serve solo quando il codice non c'è, per esempio per operatori
+extra Unione Europea. Il codice può essere la partita IVA estera, o il numero di identificazione fiscale, dell'operatore: il
+programma prende quello scritto nell'identificativo fiscale del periodo FIAT, toglie spazi e simboli e lo scrive dopo la *E*
+(per Coinbase Luxembourg *LU36476644* diventa *ELU36476644*). Un codice più lungo di 15 caratteri dopo la *E* non viene
+accorciato da solo: un avviso chiede di farlo con *Modifica dati*.
 
 **Perché l'identificativo è il nome del gruppo?** Perché non ne è stato scritto uno. Il programma non conosce l'IBAN, il
 numero di conto o l'ID utente: si scrive con *Modifica dati*, una volta per tutti gli anni.

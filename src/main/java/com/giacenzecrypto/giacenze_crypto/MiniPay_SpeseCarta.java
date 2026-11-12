@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
  * nell'elenco dei non abbinati. Il comportamento reale del ponte (un trasferimento per pagamento o raggruppati) si è
  * verificato solo sul CSV di prova, quindi questo è il punto da rivedere sui dati veri.</p>
  *
- * <p><b>Stato dei pagamenti.</b> Solo gli {@code approved} contano: un {@code pending} può cambiare importo (la
+ * <p><b>Stato dei pagamenti.</b> Solo i {@code settled} (o {@code approved}) contano: un {@code pending} può cambiare importo (la
  * preautorizzazione PayPal è a zero) e non è ancora sulla catena. Una riga già abbinata si riconosce dal suo UUID
  * ({@code Reference}) scritto nelle note, quindi rileggere lo stesso file, o uno più recente che lo contiene, non
  * duplica niente.</p>
@@ -50,13 +50,22 @@ public class MiniPay_SpeseCarta {
     private static final Pattern RIFERIMENTO = Pattern.compile("rif\\. ([0-9a-fA-F-]{36})");
     private static final Pattern PREFISSO_INDIRIZZO = Pattern.compile("0x[0-9a-fA-F]{6,}");
 
+    /**
+     * Lo stato di una riga conclusa: {@code settled} per i pagamenti, {@code approved} per i depositi. Il primo è quello
+     * che l'app MiniPay scrive davvero (verificato sul file del 11/11/2026): il codice iniziale conosceva solo
+     * {@code approved} e scartava tutti i pagamenti.
+     */
+    static boolean isStatoCompletato(String stato) {
+        return "settled".equalsIgnoreCase(stato) || "approved".equalsIgnoreCase(stato);
+    }
+
     /** Una riga del CSV. */
     record Riga(long istanteMs, String tipo, String stato, String descrizione, String commerciante, String citta,
             String paese, String mcc, BigDecimal importo, String valuta, String direzione, BigDecimal importoOriginale,
             String valutaOriginale, String hash, String riferimento) {
 
         boolean isPagamentoApprovato() {
-            return "payment".equalsIgnoreCase(tipo) && "approved".equalsIgnoreCase(stato)
+            return "payment".equalsIgnoreCase(tipo) && isStatoCompletato(stato)
                     && "debit".equalsIgnoreCase(direzione) && importo != null && importo.signum() > 0;
         }
 
@@ -217,7 +226,7 @@ public class MiniPay_SpeseCarta {
     static long UltimoApprovatoMs(List<Riga> righe) {
         long massimo = 0;
         for (Riga r : righe) {
-            if ("approved".equalsIgnoreCase(r.stato())) massimo = Math.max(massimo, r.istanteMs());
+            if (isStatoCompletato(r.stato())) massimo = Math.max(massimo, r.istanteMs());
         }
         return massimo;
     }

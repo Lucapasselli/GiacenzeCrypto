@@ -5281,7 +5281,7 @@
                                   <Component id="RT_CheckBox_EscludiAnnoCorrente" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="jScrollPane11" min="-2" pref="140" max="-2" attributes="0"/>
+                              <Component id="jScrollPane11" min="-2" pref="210" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jTabbedPane1" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -5403,6 +5403,8 @@
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Component id="RT_Bottone_ModificaPrezzo" min="-2" pref="262" max="-2" attributes="0"/>
                                           <Component id="RT_Bottone_ModificaGiacenza" min="-2" pref="262" max="-2" attributes="0"/>
+                                          <Component id="RT_Bottone_PrezziSoglia" min="-2" pref="262" max="-2" attributes="0"/>
+                                          <Component id="RT_Bottone_DettaglioSoglia" min="-2" pref="262" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -5423,6 +5425,10 @@
                                               <Component id="RT_Bottone_ModificaPrezzo" min="-2" pref="49" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
                                               <Component id="RT_Bottone_ModificaGiacenza" min="-2" pref="49" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="RT_Bottone_PrezziSoglia" min="-2" pref="49" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="RT_Bottone_DettaglioSoglia" min="-2" pref="49" max="-2" attributes="0"/>
                                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                           </Group>
                                       </Group>
@@ -5674,6 +5680,50 @@
                               </Properties>
                               <Events>
                                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RT_Bottone_ModificaGiacenzaActionPerformed"/>
+                              </Events>
+                            </Component>
+                            <Component class="javax.swing.JButton" name="RT_Bottone_PrezziSoglia">
+                              <Properties>
+                                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                                  <Image iconType="3" name="/Images/24_Prezzo.png"/>
+                                </Property>
+                                <Property name="text" type="java.lang.String" value="Prezzi del 1&#xb0; gennaio"/>
+                                <Property name="toolTipText" type="java.lang.String" value="Assegna il prezzo ai token e agli NFT senza prezzo al 1&#xb0; gennaio, per la verifica della soglia dei 51.645,69 euro"/>
+                                <Property name="enabled" type="boolean" value="false"/>
+                                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                                  <Dimension value="[152, 27]"/>
+                                </Property>
+                                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                                  <Dimension value="[152, 27]"/>
+                                </Property>
+                                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                                  <Dimension value="[152, 27]"/>
+                                </Property>
+                              </Properties>
+                              <Events>
+                                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RT_Bottone_PrezziSogliaActionPerformed"/>
+                              </Events>
+                            </Component>
+                            <Component class="javax.swing.JButton" name="RT_Bottone_DettaglioSoglia">
+                              <Properties>
+                                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                                  <Image iconType="3" name="/Images/24_Numeri.png"/>
+                                </Property>
+                                <Property name="text" type="java.lang.String" value="Dettaglio soglia"/>
+                                <Property name="toolTipText" type="java.lang.String" value="Mostra la giacenza di ogni giorno lavorativo dell&apos;anno rispetto alla soglia dei 51.645,69 euro"/>
+                                <Property name="enabled" type="boolean" value="false"/>
+                                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                                  <Dimension value="[152, 27]"/>
+                                </Property>
+                                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                                  <Dimension value="[152, 27]"/>
+                                </Property>
+                                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                                  <Dimension value="[152, 27]"/>
+                                </Property>
+                              </Properties>
+                              <Events>
+                                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RT_Bottone_DettaglioSogliaActionPerformed"/>
                               </Events>
                             </Component>
                           </SubComponents>
@@ -6811,6 +6861,7 @@
                                                   <Component id="Opzioni_GruppoWallet_CheckBox_PlusXWallet" alignment="0" min="-2" pref="1088" max="-2" attributes="0"/>
                                                   <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" alignment="0" min="-2" max="-2" attributes="0"/>
                                                   <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023Soglia" alignment="0" min="-2" max="-2" attributes="0"/>
                                               </Group>
                                               <EmptySpace min="32" pref="244" max="32767" attributes="0"/>
                                           </Group>
@@ -6859,6 +6910,8 @@
                               <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023Soglia" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="Plusvalenze_Opzioni_NonConsiderareMovimentiNC" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -6886,6 +6939,15 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevantiActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="Plusvalenze_Opzioni_CheckBox_Pre2023Soglia">
+                      <Properties>
+                        <Property name="selected" type="boolean" value="true"/>
+                        <Property name="text" type="java.lang.String" value="Fino al 31-12-2022 verifica la soglia dei 51.645,69 euro (sette giorni lavorativi continui) nel quadro RT: se non superata, plusvalenze e minusvalenze dell&apos;anno non concorrono al reddito"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Plusvalenze_Opzioni_CheckBox_Pre2023SogliaActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="Opzioni_GruppoWallet_CheckBox_PlusXWallet">

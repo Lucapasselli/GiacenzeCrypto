@@ -214,4 +214,22 @@ class MiniPay_SpeseCartaTest {
         assertTrue(html.contains("Pagamenti in attesa, ignorati: <b>1</b>"), html);
         assertFalse(html.contains("Non abbinati"), html);
     }
+
+    /** Nel file vero dell'app i pagamenti conclusi sono {@code settled}, non {@code approved} (dati inventati, forma reale). */
+    @Test
+    void ipagamentiSettledContanoEUnTrasferimentoPuoRaccoglierneDue() {
+        String csv = """
+                Date,Type,Status,Description,Merchant,Merchant city,Merchant country,MCC,Amount,Currency,Direction,Original amount,Original currency,Transaction hash,Reference
+                2030-01-15T14:45:00Z,Payment,settled,NEGOZIO,Negozio,CITTA,IT,5411,7.00,USD,Debit,6.30,EUR,,bbbbbbbb-0000-0000-0000-000000000001
+                2030-01-15T14:26:00Z,Payment,settled,PK000,Parcheggio,CITTA,IT,7523,2.00,USD,Debit,1.80,EUR,,bbbbbbbb-0000-0000-0000-000000000002
+                2030-01-15T16:00:00Z,Payment,pending,PAYPAL,PayPal,US,US,4899,0.00,USD,Debit,0.00,EUR,,bbbbbbbb-0000-0000-0000-000000000003
+                """;
+        Map<String, String[]> a = archivio(spesa("A", "2030-01-15 19:02:00", "9.00", "7.50"));
+        MiniPay_SpeseCarta.Piano p = MiniPay_SpeseCarta.Pianifica(MiniPay_SpeseCarta.Leggi(csv), a, NOMI, CAMBIO);
+        assertEquals(1, p.abbinamenti.size(), p.nonAbbinati.toString());
+        assertEquals(2, p.abbinamenti.get(0).pagamenti.size());
+        assertEquals(new BigDecimal("8.10"), p.abbinamenti.get(0).reale);
+        assertEquals(java.time.Instant.parse("2030-01-15T14:45:00Z").toEpochMilli(),
+                MiniPay_SpeseCarta.UltimoApprovatoMs(MiniPay_SpeseCarta.Leggi(csv)));
+    }
 }

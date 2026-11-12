@@ -5,6 +5,16 @@ programma all'avvio di una beta, ed è la descrizione della beta su GitHub. L'el
 in preparazione è nella sezione "in lavorazione" di docs/documentazione/changelog.md, dove ogni voce di questo file
 compare con lo stesso titolo. Questo file non è una pagina del sito.
 
+## Versione 1.0.66.04
+
+**Nuove implementazioni**
+
+- **Quadro RT, verifica della soglia dei 51.645,69 euro per gli anni fino al 2022**: per ogni anno ante 2023 il programma controlla se la giacenza di tutti i wallet ha superato la soglia per almeno sette giorni lavorativi continui. Se non è superata, la riga dell'anno nel quadro RT, nella stampa e nell'archivio mostra a zero costi, corrispettivi e plusvalenze, con una nota che riporta i valori calcolati. Se qualche token non ha il prezzo del 1° gennaio, il nuovo pulsante *Prezzi del 1° gennaio* permette di assegnarlo, e *Dettaglio soglia* mostra la giacenza di ogni giorno lavorativo. Si disattiva con la casella in *Opzioni – Opzioni di calcolo*.
+
+**Correzione di bug**
+
+- **Spese della carta MiniPay da CSV, pagamenti conclusi**: i pagamenti conclusi del file hanno lo stato *settled* e venivano scartati tutti, senza abbinare nessuna spesa. Ora sono riconosciuti, e un trasferimento della catena può raccogliere più pagamenti dello stesso giorno.
+
 ## Versione 1.0.66.03
 
 **Nuove implementazioni**

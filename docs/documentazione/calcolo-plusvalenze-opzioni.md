@@ -387,8 +387,8 @@ di calcolo.
 - la **cessione a termine** si riferisce, ad esempio, a operazioni con futures e derivati.
 
 Questo significa che la tassazione sulle plusvalenze derivanti dallo scambio o dalla vendita a pronti di
-criptovalute era applicata **solo se** la giacenza media, valorizzata al prezzo di inizio anno, superava
-la soglia di 51.645,69 € per sette giorni consecutivi nell'arco dell'anno fiscale. Gli scambi sotto
+criptovalute era applicata **solo se** la giacenza complessiva di tutti i wallet, valorizzata al cambio del
+1° gennaio, superava la soglia di 51.645,69 € per almeno sette giorni lavorativi continui nel periodo d'imposta. Gli scambi sotto
 soglia generavano comunque plusvalenza, che semplicemente non concorreva alla formazione del reddito
 imponibile.
 
@@ -408,6 +408,84 @@ rilevante tutti gli altri scambi effettuati in tutti i wallet del contribuente n
 riferimento"*. Dalle ricerche svolte sembrerebbe invece che diventino rilevanti i guadagni derivanti da
 questi scambi, non gli scambi stessi. Chi ritiene che gli scambi cripto-cripto non vadano considerati
 rilevanti neanche ante Legge di bilancio può quindi togliere la spunta.
+
+### La soglia dei 51.645,69 euro nel quadro RT {#soglia-51645}
+
+Fino al 2022 le plusvalenze da cessione a pronti e da prelievo di cripto concorrevano al reddito solo se
+la giacenza complessiva superava 51.645,69 euro per almeno **sette giorni lavorativi continui** nel periodo
+d'imposta (art. 67, comma 1-ter, TUIR, richiamato dalla circolare 30/E). Il programma può verificarlo per ogni
+anno fino al 2022 nel quadro T/RT, con la casella *Fino al 31-12-2022 verifica la soglia dei 51.645,69 euro*
+di **Opzioni – Opzioni di calcolo** (attiva di default).
+
+![Opzioni di calcolo con la casella della soglia](immagini/calcolo-plusvalenze-opzioni/08.png)
+
+Come viene calcolata la giacenza:
+
+- **Tutti i wallet insieme.** Si sommano tutti i movimenti di tutti i gruppi wallet. Un trasferimento fra
+  wallet propri non cambia la somma, purché i due lati cadano nello stesso giorno.
+- **Saldo a fine giornata**, non il massimo raggiunto durante il giorno.
+- **Solo i giorni lavorativi**: lunedì-venerdì senza le festività nazionali italiane. Sabato, domenica e
+  festivi non contano e non interrompono la serie: sette giorni lavorativi di fila con un fine settimana in
+  mezzo sono continui.
+- **Cosa conta**: cripto, stablecoin, NFT e dollari. Non contano l'euro, le altre valute e i token
+  marcati SCAM. Un saldo negativo (movimento mancante) vale zero.
+- **Valore al 1° gennaio**: ogni token è valorizzato per tutto l'anno al prezzo delle 00:00 del 1° gennaio, mai
+  al prezzo del giorno, anche se quel giorno non lo avevi in portafoglio. I dollari sono convertiti col cambio
+  della Banca d'Italia di quel giorno (o dell'ultimo giorno utile prima).
+- **Token senza prezzo del 1° gennaio**: la circolare 30/E ammette il cambio rilevato sul sito dove si è
+  acquistata la cripto-valuta, ma non dice nulla per un token che quel giorno non esisteva o non era quotato.
+  Il programma, per scelta propria, usa in quel caso il **prezzo di acquisto**, cioè il valore in euro del primo
+  movimento di ingresso diviso la quantità. Il token resta identificabile: compare nell'elenco di
+  *Prezzi del 1° gennaio* con la dicitura «Prezzo di acquisto» e la data del movimento, e la nota lo dichiara.
+  Un prezzo del 1° gennaio assegnato a mano, o trovato su una fonte, ha sempre la precedenza.
+- La soglia è superata solo se il valore è **strettamente maggiore** di 51.645,69 euro.
+
+L'effetto sul quadro RT, anno per anno:
+
+- **Soglia non superata**: la riga dell'anno mostra a zero i *Totali dei costi*, i *Corrispettivi* e le
+  *Plusvalenze realizzate*, nella tabella, nella stampa e nell'archivio della dichiarazione. Le plusvalenze
+  latenti e il valore di fine anno non cambiano. Plusvalenze e minusvalenze di quell'anno non concorrono al
+  reddito, e i valori calcolati sono riportati nella nota in fondo alla colonna *Errori*.
+- **Soglia superata**: la riga non cambia e la nota dice in quali giorni è stata superata.
+- **Soglia non verificabile**: se uno o più token o NFT erano in giacenza ma non hanno né un prezzo al 1° gennaio
+  né un movimento di ingresso con un valore, valgono zero e l'anno **non viene azzerato**, perché con il loro
+  valore la soglia potrebbe risultare superata. La nota li elenca.
+- **Prezzi del 1° gennaio**: il pulsante (scheda *Dettagli x Token*, con l'anno selezionato) elenca sia i token
+  senza alcun prezzo sia quelli valorizzati al prezzo di acquisto, e permette di assegnare il prezzo del
+  1° gennaio a ciascuno: *Assegna prezzo* (un token alla volta) propone le quotazioni trovate o permette di
+  inserirne una, *Valore zero* è per i token tecnici o senza valore e vale per tutte le righe selezionate
+  (Ctrl+A le seleziona tutte). Il prezzo è salvato come prezzo
+  personalizzato delle 00:00 del 1° gennaio, nel database personale (*personale.mv.db*), e vale anche per gli altri
+  calcoli che lo usano: il valore iniziale di quell'anno e il valore di fine anno del precedente nei quadri
+  RW e RT, le giacenze a quella data e i movimenti prezzati entro un'ora da quell'istante. Dopo averlo assegnato
+  il programma ricalcola l'anno.
+- **Dettaglio soglia**: il pulsante con lo stesso nome, nella stessa scheda, apre la giacenza di ogni giorno
+  lavorativo dell'anno con il valore, se sta sopra soglia e da quanti giorni lo è di fila. I giorni della serie
+  che ha fatto scattare la condizione sono evidenziati.
+
+Un esempio con dati inventati. Nel 2021 un token senza alcun prezzo (ZZDEMO) rende l'anno non verificabile,
+mentre un secondo (ZZNUOVO) è calcolato al prezzo di acquisto, come dice l'ultima riga della nota. Il 2022 ha la soglia superata:
+
+![Riga del 2021 con soglia non verificabile](immagini/calcolo-plusvalenze-opzioni/09.png)
+
+Il pulsante *Prezzi del 1° gennaio* li elenca entrambi, con il prezzo che il calcolo sta usando:
+
+![Finestra Prezzi del 1° gennaio](immagini/calcolo-plusvalenze-opzioni/10.png)
+
+Dopo aver assegnato il valore zero a ZZDEMO l'anno è verificabile, la soglia risulta non superata e la riga
+viene azzerata, mentre latente e valore di fine anno restano:
+
+![Riga del 2021 azzerata](immagini/calcolo-plusvalenze-opzioni/11.png)
+
+Nel 2022 due BTC restano in giacenza per oltre due mesi e la soglia è superata. *Dettaglio soglia* mostra
+la giacenza di ogni giorno lavorativo e evidenzia i sette giorni che hanno fatto scattare la condizione:
+
+![Finestra Dettaglio soglia](immagini/calcolo-plusvalenze-opzioni/12.png)
+
+La soglia agisce solo sulla riga mostrata e stampata. Il LIFO e i costi di carico non cambiano, quindi gli
+anni successivi partono dagli stessi costi di prima. Il programma non riporta le minusvalenze da un anno
+all'altro. Dopo aver cambiato la casella va premuto di nuovo *Calcola* (compare l'avviso rosso). Gli scambi
+cripto-cripto restano regolati dall'opzione descritta sopra, indipendente dalla soglia.
 
 ### Staking e altre rendite passive {#staking-e-altre-rendite-passive}
 

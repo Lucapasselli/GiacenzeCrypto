@@ -69,9 +69,11 @@ avvertenze sul corretto utilizzo del programma.
   risultato dei calcoli sarà errato. Vedi
   [Classificazione dei movimenti](classificazioni-movimenti.html).
 
-- Il programma è nato per la **normativa in vigore dal 2023**. Manca quindi, ad esempio, il controllo
-  sulla soglia dei 51.645,69 euro per sette giorni consecutivi, che rendeva fiscalmente rilevanti le
-  operazioni antecedenti al 2023.
+- Il programma è nato per la **normativa in vigore dal 2023**. Per gli anni precedenti verifica la soglia dei
+  51.645,69 euro per almeno sette giorni lavorativi continui, che rendeva fiscalmente rilevanti le operazioni
+  antecedenti al 2023, solo nel quadro T/RT e con le regole descritte in
+  [La soglia dei 51.645,69 euro nel quadro RT](calcolo-plusvalenze-opzioni.html#soglia-51645). Il resto dei
+  calcoli segue le regole in vigore dal 2023.
 
 - Il programma parte con una serie di **preimpostazioni** che potrebbero non essere quelle corrette o
   desiderate per la propria dichiarazione: è opportuno rivedere le opzioni in base alle proprie

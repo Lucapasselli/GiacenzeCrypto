@@ -247,6 +247,10 @@ private static final long serialVersionUID = 3L;
     static public volatile Map<String, String> Mappa_MoneteStessoPrezzo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);//Sostituita in blocco da AliasPrezziToken.Applica
     
     public transient Calcoli_RT.AnalisiPlus APlus;
+    /** Esito della soglia dei 51.645,69 euro per anno (fino al 2022), calcolato una volta con {@link #APlus}. */
+    private transient Map<String, SogliaGiacenzaAnte2023.Esito> RT_EsitiSoglia = new java.util.LinkedHashMap<>();
+    /** Cosa ne ha fatto la tabella RT, per anno: la bozza, la stampa e l'avviso leggono questo e non ricalcolano. */
+    private transient Map<String, Principale_RT_Soglia.Risultato> RT_RisultatiSoglia = new java.util.LinkedHashMap<>();
     //true se l'ultimo RW_CalcolaRW e' arrivato in fondo; false se interrotto dall'utente col
     //pulsante "Interrompi" della finestra di progresso (vedi RW_CalcolaRW).
     private transient boolean RW_ElaborazioneCompletata = true;
@@ -1015,6 +1019,8 @@ private static final long serialVersionUID = 3L;
         jLabel17 = new javax.swing.JLabel();
         RT_Bottone_ModificaPrezzo = new javax.swing.JButton();
         RT_Bottone_ModificaGiacenza = new javax.swing.JButton();
+        RT_Bottone_PrezziSoglia = new javax.swing.JButton();
+        RT_Bottone_DettaglioSoglia = new javax.swing.JButton();
         RT_PannelloTipologie = new javax.swing.JPanel();
         jScrollPaneTipologie = new javax.swing.JScrollPane();
         RT_Tabella_Tipologie = new javax.swing.JTable();
@@ -1074,6 +1080,7 @@ private static final long serialVersionUID = 3L;
         Opzioni_Calcolo_Pannello = new javax.swing.JPanel();
         Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero = new javax.swing.JCheckBox();
         Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti = new javax.swing.JCheckBox();
+        Plusvalenze_Opzioni_CheckBox_Pre2023Soglia = new javax.swing.JCheckBox();
         Opzioni_GruppoWallet_CheckBox_PlusXWallet = new javax.swing.JCheckBox();
         jScrollPane6 = new javax.swing.JScrollPane();
         jTextArea2 = new javax.swing.JTextArea();
@@ -4583,6 +4590,32 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        RT_Bottone_PrezziSoglia.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Prezzo.png"))); // NOI18N
+        RT_Bottone_PrezziSoglia.setText("Prezzi del 1° gennaio");
+        RT_Bottone_PrezziSoglia.setToolTipText("Assegna il prezzo ai token e agli NFT senza prezzo al 1° gennaio, per la verifica della soglia dei 51.645,69 euro");
+        RT_Bottone_PrezziSoglia.setEnabled(false);
+        RT_Bottone_PrezziSoglia.setMaximumSize(new java.awt.Dimension(152, 27));
+        RT_Bottone_PrezziSoglia.setMinimumSize(new java.awt.Dimension(152, 27));
+        RT_Bottone_PrezziSoglia.setPreferredSize(new java.awt.Dimension(152, 27));
+        RT_Bottone_PrezziSoglia.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RT_Bottone_PrezziSogliaActionPerformed(evt);
+            }
+        });
+
+        RT_Bottone_DettaglioSoglia.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Numeri.png"))); // NOI18N
+        RT_Bottone_DettaglioSoglia.setText("Dettaglio soglia");
+        RT_Bottone_DettaglioSoglia.setToolTipText("Mostra la giacenza di ogni giorno lavorativo dell'anno rispetto alla soglia dei 51.645,69 euro");
+        RT_Bottone_DettaglioSoglia.setEnabled(false);
+        RT_Bottone_DettaglioSoglia.setMaximumSize(new java.awt.Dimension(152, 27));
+        RT_Bottone_DettaglioSoglia.setMinimumSize(new java.awt.Dimension(152, 27));
+        RT_Bottone_DettaglioSoglia.setPreferredSize(new java.awt.Dimension(152, 27));
+        RT_Bottone_DettaglioSoglia.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RT_Bottone_DettaglioSogliaActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout RT_PannelloTokenLayout = new javax.swing.GroupLayout(RT_PannelloToken);
         RT_PannelloToken.setLayout(RT_PannelloTokenLayout);
         RT_PannelloTokenLayout.setHorizontalGroup(
@@ -4599,7 +4632,9 @@ private static final long serialVersionUID = 3L;
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                 .addGroup(RT_PannelloTokenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(RT_Bottone_ModificaPrezzo, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(RT_Bottone_ModificaGiacenza, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(RT_Bottone_ModificaGiacenza, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(RT_Bottone_PrezziSoglia, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(RT_Bottone_DettaglioSoglia, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
         RT_PannelloTokenLayout.setVerticalGroup(
             RT_PannelloTokenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4616,6 +4651,10 @@ private static final long serialVersionUID = 3L;
                         .addComponent(RT_Bottone_ModificaPrezzo, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(RT_Bottone_ModificaGiacenza, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(RT_Bottone_PrezziSoglia, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(RT_Bottone_DettaglioSoglia, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -4852,7 +4891,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(RT_Bottone_CorreggiErrori)
                     .addComponent(RT_CheckBox_EscludiAnnoCorrente))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jTabbedPane1)
                 .addContainerGap())
@@ -5374,6 +5413,14 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Plusvalenze_Opzioni_CheckBox_Pre2023Soglia.setSelected(true);
+        Plusvalenze_Opzioni_CheckBox_Pre2023Soglia.setText("Fino al 31-12-2022 verifica la soglia dei 51.645,69 euro (sette giorni lavorativi continui) nel quadro RT: se non superata, plusvalenze e minusvalenze dell'anno non concorrono al reddito");
+        Plusvalenze_Opzioni_CheckBox_Pre2023Soglia.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Plusvalenze_Opzioni_CheckBox_Pre2023SogliaActionPerformed(evt);
+            }
+        });
+
         Opzioni_GruppoWallet_CheckBox_PlusXWallet.setText("<html><b>Plusvalenze : </b>Abilita Calcolo Plusvalenze per Gruppo Wallet </html>");
         Opzioni_GruppoWallet_CheckBox_PlusXWallet.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -5463,7 +5510,8 @@ private static final long serialVersionUID = 3L;
                                 .addGroup(Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(Opzioni_GruppoWallet_CheckBox_PlusXWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 1088, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero)
-                                    .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti))
+                                    .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti)
+                                    .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023Soglia))
                                 .addGap(32, 244, Short.MAX_VALUE))
                             .addGroup(Opzioni_Calcolo_PannelloLayout.createSequentialGroup()
                                 .addGroup(Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -5502,6 +5550,8 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023Soglia)
                 .addGap(18, 18, 18)
                 .addComponent(Plusvalenze_Opzioni_NonConsiderareMovimentiNC)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -7297,6 +7347,9 @@ private void SettaIcone(){
             Plusvalenze_Pre2023ScambiRilevanti="SI";
         }
         Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti.setSelected("SI".equalsIgnoreCase(Plusvalenze_Pre2023ScambiRilevanti));
+
+        //Verifica della soglia dei 51.645,69 euro nel quadro RT (anni fino al 2022): manca = attiva
+        Plusvalenze_Opzioni_CheckBox_Pre2023Soglia.setSelected(Principale_RT_Soglia.attiva());
 
         //Default "NO": senza questa opzione il comportamento resta quello di sempre (lo scambio fra
         //cripto con le medesime caratteristiche e funzioni non genera plusvalenza).
@@ -12772,6 +12825,13 @@ if (result.isAction("delete-all")) {
        // Calcoli_Plusvalenze.AggiornaPlusvalenze();
     }//GEN-LAST:event_Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevantiActionPerformed
 
+    private void Plusvalenze_Opzioni_CheckBox_Pre2023SogliaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Plusvalenze_Opzioni_CheckBox_Pre2023SogliaActionPerformed
+        //Agisce solo sulla riga mostrata e stampata del quadro RT, non sul motore: basta salvarla e segnalare che i
+        //dati a video non sono più aggiornati (come RT_CheckBox_EscludiAnnoCorrente)
+        DatabaseH2.Pers_Opzioni_Scrivi(Principale_RT_Soglia.OPZIONE, Plusvalenze_Opzioni_CheckBox_Pre2023Soglia.isSelected() ? "SI" : "NO");
+        if (RT_Tabella_Principale.getRowCount() > 0) RT_Label_Avviso.setVisible(true);
+    }//GEN-LAST:event_Plusvalenze_Opzioni_CheckBox_Pre2023SogliaActionPerformed
+
     private void Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevantiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevantiActionPerformed
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         //Scrivo nelle Opzioni del DB se ogni scambio cripto-cripto e' fiscalmente rilevante,
@@ -14505,8 +14565,12 @@ if (result.isAction("delete-all")) {
         
         RT_Bottone_ModificaPrezzo.setEnabled(false);
         RT_Bottone_ModificaGiacenza.setEnabled(false);
+        RT_Bottone_PrezziSoglia.setEnabled(false);
+        RT_Bottone_DettaglioSoglia.setEnabled(false);
         this.RT_Label_Avviso.setVisible(false);
         APlus=null;
+        RT_EsitiSoglia = new java.util.LinkedHashMap<>();
+        RT_RisultatiSoglia = new java.util.LinkedHashMap<>();
         RT_AliasGruppi = DatabaseH2.Pers_GruppoAlias_LeggiTabella();
         DefaultTableModel ModelloTabellaRT = (DefaultTableModel) RT_Tabella_Principale.getModel();
         Tabelle.Funzioni_PulisciTabella(ModelloTabellaRT);
@@ -14539,6 +14603,21 @@ if (result.isAction("delete-all")) {
                 // progress.NascondiInterrompi(); 
 //progress.RipristinaStdout();
                 APlus = Calcoli_RT.CalcoliPlusvalenzeXAnno(progress);//A Questo bisognerà chiedergli in ritorno una tabella o altro di analogo
+                if (APlus != null && Principale_RT_Soglia.attiva()) {
+                    //Soglia dei 51.645,69 euro per gli anni fino al 2022: qui, fuori dal thread grafico, perché i prezzi
+                    //del 1° gennaio possono richiedere la rete. Un annullamento a metà lascerebbe anni senza esito
+                    //mostrati a valori pieni, quindi vale come annullamento dell'intero calcolo.
+                    progress.SetLabel("Verifica della soglia dei 51.645,69 euro (anni fino al 2022).... Attendere");
+                    try {
+                        RT_EsitiSoglia = Principale_RT_Soglia.CalcolaEsiti(APlus.Get_TabellaPlusXAnno().keySet(), progress::FineThread);
+                    } catch (RuntimeException ex) {
+                        LoggerGC.ScriviErrore("Verifica della soglia dei 51.645,69 euro non riuscita: " + ex);
+                        RT_EsitiSoglia = new java.util.LinkedHashMap<>();
+                    }
+                    if (progress.FineThread()) {
+                        APlus = null;
+                    }
+                }
                 progress.ChiudiFinestra();
             }
         };
@@ -14575,6 +14654,11 @@ if (result.isAction("delete-all")) {
                 if (!gia.isEmpty() && !gia.endsWith("<br>")) gia = gia + "<br>";
                 Val[6] = "<html>" + gia + RT_ERRORE_DERIVATI + "</html>";
             }
+            //Anni fino al 2022: se la soglia dei 51.645,69 euro non e' superata la riga va a zero. La nota sta in coda
+            //alla colonna "Errori" ma non e' un errore: chi la legge per decidere se ce ne sono la toglie (SenzaNota)
+            Principale_RT_Soglia.Risultato soglia = Principale_RT_Soglia.Applica(Val, RT_EsitiSoglia.get(Val[0]));
+            RT_RisultatiSoglia.put(Val[0], soglia);
+            Val[6] = Principale_RT_Soglia.ConNota(Val[6], soglia.notaBreve);
             ModelloTabellaRT.addRow(Val);
         }
         Tabelle.updateRowHeights(RT_Tabella_Principale);
@@ -14614,6 +14698,8 @@ if (result.isAction("delete-all")) {
         RT_AliasGruppi = DatabaseH2.Pers_GruppoAlias_LeggiTabella();
         RT_Bottone_ModificaPrezzo.setEnabled(false);
         RT_Bottone_ModificaGiacenza.setEnabled(false);
+        RT_Bottone_PrezziSoglia.setEnabled(false);
+        RT_Bottone_DettaglioSoglia.setEnabled(false);
         DefaultTableModel ModelloTabella3 = (DefaultTableModel) RT_Tabella_LiFo.getModel();
         Tabelle.Funzioni_PulisciTabella(ModelloTabella3);
         Tabelle.ColoraTabellaSemplice(RT_Tabella_LiFo);
@@ -14625,6 +14711,11 @@ if (result.isAction("delete-all")) {
             Tabelle.Funzioni_PulisciTabella(ModelloTabella);
            int rigaselezionata = RT_Tabella_Principale.getSelectedRow();
            String Anno = RT_Tabella_Principale.getModel().getValueAt(rigaselezionata, 0).toString();
+           //Prezzi del 1° gennaio per la soglia: acceso appena si sceglie l'anno (non serve selezionare un token), ma
+           //solo se l'anno ha token senza prezzo o valorizzati al prezzo di acquisto
+           SogliaGiacenzaAnte2023.Esito esitoSoglia = RT_EsitiSoglia.get(Anno);
+           RT_Bottone_PrezziSoglia.setEnabled(esitoSoglia != null && esitoSoglia.haPrezziDaAssegnare());
+           RT_Bottone_DettaglioSoglia.setEnabled(esitoSoglia != null);
            List<Object[]> tab=APlus.RitornaTabellaAnno(Anno);
            Iterator<Object[]> it=tab.iterator();
            while (it.hasNext()){
@@ -15021,6 +15112,44 @@ if (result != null && !result.isAction("cancel")) {
     
     
     
+    private void RT_Bottone_PrezziSogliaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RT_Bottone_PrezziSogliaActionPerformed
+        int riga = Tabelle.Funzioni_getRigaSelezionata(RT_Tabella_Principale);
+        if (riga < 0) {
+            return;
+        }
+        String Anno = RT_Tabella_Principale.getModel().getValueAt(riga, 0).toString();
+        SogliaGiacenzaAnte2023.Esito esito = RT_EsitiSoglia.get(Anno);
+        if (esito == null || !esito.haPrezziDaAssegnare()) {
+            return;
+        }
+        if (GUI_PrezziSoglia.Mostra(this, Integer.parseInt(Anno), esito)) {
+            //I prezzi sono già salvati: si ricalcola, e si torna sull'anno di prima (la riga si ritrova per anno)
+            SwingUtilities.invokeLater(() -> {
+                RT_CalcolaRT();
+                for (int i = 0; i < RT_Tabella_Principale.getRowCount(); i++) {
+                    if (Anno.equals(RT_Tabella_Principale.getModel().getValueAt(RT_Tabella_Principale.convertRowIndexToModel(i), 0).toString())) {
+                        RT_Tabella_Principale.setRowSelectionInterval(i, i);
+                        RT_CompilaTabellaDettagli();
+                        RT_CompilaTabellaLiFo();
+                        break;
+                    }
+                }
+            });
+        }
+    }//GEN-LAST:event_RT_Bottone_PrezziSogliaActionPerformed
+
+    private void RT_Bottone_DettaglioSogliaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RT_Bottone_DettaglioSogliaActionPerformed
+        int riga = Tabelle.Funzioni_getRigaSelezionata(RT_Tabella_Principale);
+        if (riga < 0) {
+            return;
+        }
+        String Anno = RT_Tabella_Principale.getModel().getValueAt(riga, 0).toString();
+        SogliaGiacenzaAnte2023.Esito esito = RT_EsitiSoglia.get(Anno);
+        if (esito != null) {
+            GUI_DettaglioSoglia.Mostra(this, esito, RT_RisultatiSoglia.get(Anno));
+        }
+    }//GEN-LAST:event_RT_Bottone_DettaglioSogliaActionPerformed
+
     private void RT_Bottone_ModificaGiacenzaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RT_Bottone_ModificaGiacenzaActionPerformed
         // TODO add your handling code here:
         try {
@@ -17745,6 +17874,18 @@ if (result != null && !result.isAction("cancel")) {
      *
      * @param ApriExcel {@code true} per aprire alla fine l'Excel, {@code false} il PDF del quadro RT
      */
+    /**
+     * Le righe dell'avviso "anno pre 2023" sulla soglia dei 51.645,69 euro, in HTML, o stringa vuota se per
+     * l'anno non c'e' nulla da dire (opzione spenta o anno non calcolato con la soglia).
+     */
+    private String RT_AvvisoSoglia(String Anno) {
+        Principale_RT_Soglia.Risultato r = RT_RisultatiSoglia.get(Anno);
+        if (r == null || r.stato == Principale_RT_Soglia.Stato.NON_APPLICABILE) {
+            return "";
+        }
+        return "<br>" + Principale_RT_Soglia.Html(r.nota) + "<br><br>";
+    }
+
     private void RT_GeneraDichiarazione(boolean ApriExcel) {
         javax.swing.table.TableModel m = RT_Tabella_Principale.getModel();
         int rigoVista = RT_Tabella_Principale.getSelectedRow();
@@ -17792,7 +17933,7 @@ if (result != null && !result.isAction("cancel")) {
             String Errori=m.getValueAt(rigo, 6).toString();
             //La colonna porta anche "Movimenti su derivati", che non e' un errore da correggere: conta solo
             //il resto (movimenti non classificati o senza prezzo)
-            String ErroriVeri = Errori.replace(RT_ERRORE_DERIVATI, "").replace("<br>", " ").replaceAll("<[^>]*>", "").trim();
+            String ErroriVeri = Principale_RT_Soglia.SenzaNota(Errori).replace(RT_ERRORE_DERIVATI, "").replace("<br>", " ").replaceAll("<[^>]*>", "").trim();
             boolean err=false;
             if (!ErroriVeri.isBlank())
             {
@@ -17807,6 +17948,7 @@ if (result != null && !result.isAction("cancel")) {
             String Testo = "<b>Attenzione</b><br><br>"
                         +"E' stato scelto un anno inferiore al 2023.<br>"
                         +"In quegli anni <b>vigevano regole diverse</b> il report potrebbe non essere corretto.<br>"
+                        +RT_AvvisoSoglia(AnnoS)
                         +"La stampa proseguirà ugualmente.<br>";
             Messaggi.WarningMessage("Anno scelto pre 2023",Testo,this);
             }
@@ -17891,7 +18033,7 @@ if (result != null && !result.isAction("cancel")) {
         if (Errori.contains(RT_ERRORE_DERIVATI)) {
             bozza.Totali.put("Avviso", "Movimenti su derivati trattati come cripto-attività");
         }
-        bozza.Errori = Errori.replace(RT_ERRORE_DERIVATI, "").replace("<br>", " ").replaceAll("<[^>]*>", "").trim();
+        bozza.Errori = Principale_RT_Soglia.SenzaNota(Errori).replace(RT_ERRORE_DERIVATI, "").replace("<br>", " ").replaceAll("<[^>]*>", "").trim();
         for (Map.Entry<String, BigDecimal[]> e : Tipologie.perTipologia.entrySet()) {
             Map<String, String> r = new java.util.LinkedHashMap<>();
             r.put("Tipologia", e.getKey());
@@ -17899,6 +18041,14 @@ if (result != null && !result.isAction("cancel")) {
             bozza.Righi.add(r);
         }
         Map<String, String> o = bozza.Opzioni;
+        //La soglia entra nell'archivio solo per un anno azzerato: negli altri casi i valori non cambiano e scriverla
+        //farebbe risultare diversa ogni dichiarazione già archiviata
+        Principale_RT_Soglia.Risultato soglia = RT_RisultatiSoglia.get(bozza.Anno);
+        if (soglia != null && soglia.azzerato()) {
+            bozza.Totali.put(Principale_RT_Soglia.TOTALE_NOTA, soglia.nota);
+            bozza.Totali.put(Principale_RT_Soglia.TOTALE_PLUS_CALCOLATA, soglia.plusvalenzaCalcolata);
+            o.put(Principale_RT_Soglia.NOME_OPZIONE, "attiva");
+        }
         o.put("LiFo", Opzioni_GruppoWallet_CheckBox_PlusXWallet.isSelected() ? "per gruppo wallet" : "sulla totalità dei wallet");
         o.put("Scambi fra cripto-attività con medesime caratteristiche", Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti.isSelected()
                 ? "fiscalmente rilevanti" : "non rilevanti");
@@ -18109,6 +18259,15 @@ if (result != null && !result.isAction("cancel")) {
                                     (non generano plusvalenza e il costo di carico della cripto-attività ceduta viene trasferito a quella ricevuta)<br>
                                     <br>
                                                     """;
+                            }
+                            if (Anno < 2023) {
+                                Principale_RT_Soglia.Risultato sogliaAnno = RT_RisultatiSoglia.get(String.valueOf(Anno));
+                                if (sogliaAnno != null && sogliaAnno.stato != Principale_RT_Soglia.Stato.NON_APPLICABILE) {
+                                    testo = testo + "\u2022 " + Principale_RT_Soglia.Html(sogliaAnno.nota) + "<br><br>";
+                                } else {
+                                    testo = testo + "\u2022 La verifica della soglia dei 51.645,69 euro (sette giorni lavorativi continui) non è stata applicata: "
+                                            + "tutte le plusvalenze e minusvalenze dell'anno sono riportate come calcolate<br><br>";
+                                }
                             }
                             if(FallimentiPiattaforme.RimborsiComePermutaNelAnno(String.valueOf(Anno))){
                                     testo = testo + "\u2022 I rimborsi da fallimento di una piattaforma sono " + FallimentiPiattaforme.DESCRIZIONE_RIMBORSO_PERMUTA
@@ -21602,6 +21761,7 @@ try {
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti;
+    private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023Soglia;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_NonConsiderareMovimentiNC;
@@ -21614,6 +21774,8 @@ try {
     private javax.swing.JButton RT_Bottone_Documentazione;
     private javax.swing.JButton RT_Bottone_Documentazione1;
     private javax.swing.JButton RT_Bottone_ModificaGiacenza;
+    private javax.swing.JButton RT_Bottone_PrezziSoglia;
+    private javax.swing.JButton RT_Bottone_DettaglioSoglia;
     private javax.swing.JButton RT_Bottone_ModificaPrezzo;
     private javax.swing.JButton RT_Bottone_Excel;
     private javax.swing.JButton RT_Bottone_Stampa;

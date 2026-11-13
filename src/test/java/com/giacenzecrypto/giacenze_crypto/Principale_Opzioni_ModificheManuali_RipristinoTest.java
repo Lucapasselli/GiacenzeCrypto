@@ -805,4 +805,20 @@ class Principale_Opzioni_ModificheManuali_RipristinoTest {
         assertEquals(1, r.saltate().size());
         assertTrue(archivio.isEmpty());
     }
+
+    @Test
+    void unaDivisioneDellaCartaMiniPayNonSiRipristinaESiRimandaAlCsv() throws Exception {
+        //Un movimento della catena diviso per pagamento: una riga di partenza e N finali con lo stesso lignaggio
+        String[] prima = mov("C_1", "2025/01/01 18:00", "USDT", "9", "8.00");
+        String[] p1 = mov("C_1a", "2025/01/01 15:26", "USDT", "2", "1.80");
+        String[] p2 = mov("C_1b", "2025/01/01 15:45", "USDT", "7", "6.30");
+        p1[42] = L;
+        p2[42] = L;
+        Contenuto c = file(mappa(p1, p2), Map.of(L, catena(versione("C_1", 1000, prima, MiniPay_SpeseCarta.OP_DIVISIONE, "C_1a"))));
+        Anteprima a = Principale_Opzioni_ModificheManuali_Ripristino.Analizza(c, mappa(prima));
+        assertEquals(0, a.conta(Esito.APPLICABILE), "non si applica niente: ne' i pezzi ne' la riga della catena");
+        Voce v = a.voci().stream().filter(x -> x.tipo().equals("Separazione")).findFirst().orElseThrow();
+        assertEquals(Esito.MANUALE, v.esito());
+        assertTrue(v.dettaglio().contains("CSV"), v.dettaglio());
+    }
 }

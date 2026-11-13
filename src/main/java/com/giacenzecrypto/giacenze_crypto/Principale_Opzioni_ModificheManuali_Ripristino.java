@@ -572,8 +572,14 @@ public class Principale_Opzioni_ModificheManuali_Ripristino {
             return;
         }
         if (finali.size() > 1) {
-            piano.aggiungi(new Voce("Separazione", idIniz, Esito.MANUALE,
-                    "il movimento è stato separato in " + finali.size() + " dopo la modifica: la separazione va rifatta a mano"), null);
+            boolean carta = false;
+            for (String[] f : finali) {
+                carta |= f[C_OPERAZIONE] != null && f[C_OPERAZIONE].contains(MiniPay_SpeseCarta.OP_DIVISIONE);
+            }
+            piano.aggiungi(new Voce("Separazione", idIniz, Esito.MANUALE, carta
+                    ? "il movimento della catena è stato diviso in " + finali.size() + " per pagamento con la carta MiniPay: si rifà"
+                    + " importando di nuovo il CSV della carta"
+                    : "il movimento è stato separato in " + finali.size() + " dopo la modifica: la separazione va rifatta a mano"), null);
             return;
         }
         String[] fin = Campi(finali.get(0));

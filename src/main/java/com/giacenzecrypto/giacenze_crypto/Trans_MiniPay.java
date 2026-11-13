@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -381,15 +382,31 @@ final class Trans_MiniPay {
                     + " (commissioni in CELO, invii di solo CELO) non si leggono dai log.");
         }
 
+        List<Transazione> nuove = NuoveTransazioni(tutte, ultimoBlocco,
+                MiniPay_SpeseCarta.HashAbbinati(Principale.MappaCryptoWallet.values()));
+        System.out.println("Celo " + wallet + ": " + tutte.size() + " transazioni con movimenti"
+                + (safe != null ? " (carta MiniPay compresa)" : "") + ", " + nuove.size() + " da importare.");
+        return new Esito(nuove, avvisi, true, safe, safeNuova);
+    }
+
+    /**
+     * Le transazioni da importare: oltre l'ultimo blocco gia' importato del loro wallet e non gia' abbinate a un pagamento della
+     * carta. Una spesa abbinata puo' essere stata divisa o spostata nel tempo ({@link MiniPay_SpeseCarta}): non si ricrea mai,
+     * nemmeno se un nuovo scaricamento riparte da piu' indietro del blocco salvato.
+     * @param giaAbbinate {@link MiniPay_SpeseCarta#HashAbbinati}
+     */
+    static List<Transazione> NuoveTransazioni(List<Transazione> tutte, ToLongFunction<String> ultimoBlocco, Set<String> giaAbbinate) {
         List<Transazione> nuove = new ArrayList<>();
         Map<String, Long> daBlocco = new HashMap<>();
         for (Transazione t : tutte) {
             long da = daBlocco.computeIfAbsent(t.wallet(), x -> ultimoBlocco.applyAsLong(x) + 1);
-            if (t.blocco() >= da) nuove.add(t);
+            if (t.blocco() < da) continue;
+            String chiave = (t.wallet() + " (" + RETE + ")").trim().toLowerCase(Locale.ROOT) + "|"
+                    + String.valueOf(t.hash()).trim().toLowerCase(Locale.ROOT);
+            if (giaAbbinate.contains(chiave)) continue;
+            nuove.add(t);
         }
-        System.out.println("Celo " + wallet + ": " + tutte.size() + " transazioni con movimenti"
-                + (safe != null ? " (carta MiniPay compresa)" : "") + ", " + nuove.size() + " da importare.");
-        return new Esito(nuove, avvisi, true, safe, safeNuova);
+        return nuove;
     }
 
     private static void Stato(Consumer<String> avanzamento, String testo) {

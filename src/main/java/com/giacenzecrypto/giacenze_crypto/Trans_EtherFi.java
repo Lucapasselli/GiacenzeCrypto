@@ -468,15 +468,6 @@ final class Trans_EtherFi {
                 + "gruppo wallet di ether.fi, se non ne aveva già uno.";
     }
 
-    /** Testo dell'avviso quando il TradingSafe di un Safe viene scoperto la prima volta. */
-    static String TestoTradingSafe(String safe, String tradingSafe) {
-        return "Il conto ether.fi " + safe + " manda fondi a un secondo conto di ether.fi su Ethereum (TradingSafe):\n"
-                + tradingSafe + "\n\n"
-                + "Non va inserito fra i wallet: si importa insieme al Safe, nello stesso gruppo wallet, dai nodi pubblici di\n"
-                + "Ethereum e senza nessuna chiave. Gli swap fra i due conti\n"
-                + "(per esempio USDC in WBTC) non restano a meta'.";
-    }
-
     /** I movimenti già in archivio del wallet, cioè quelli scritti prima del riconoscimento dalla strada generica. */
     static List<String> MovimentiPrecedenti(Map<String, String[]> archivio, String wallet) {
         String nome = wallet.trim() + " (" + RETE + ")";

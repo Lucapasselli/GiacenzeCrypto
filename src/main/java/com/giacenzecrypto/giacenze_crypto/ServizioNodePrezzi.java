@@ -362,6 +362,23 @@ final class ServizioNodePrezzi {
         ist.processo.destroyForcibly();
     }
 
+    /** Nome dello script che corregge la connessione di ccxt (vedi il commento in testa al file). */
+    static final String SCRIPT_RETE_CCXT = "Ccxt_Rete.js";
+
+    /**
+     * Le opzioni di Node (da mettere <b>prima</b> dello script, gli argomenti dello script restano
+     * posizionali) che caricano {@code Scripts/Ccxt_Rete.js}, nella stessa cartella di {@code script}:
+     * senza, ccxt 4.5.77 chiude per timeout ogni connessione a un exchange con ping sopra ~10 ms
+     * ("fetch failed:" senza altro). Vuota se il file non c'e', cosi' una cartella {@code Scripts/} non
+     * aggiornata lavora come prima.
+     */
+    static List<String> OpzioniPreload(Path script) {
+        Path preload = script.toAbsolutePath().getParent().resolve(SCRIPT_RETE_CCXT);
+        return java.nio.file.Files.isRegularFile(preload)
+                ? List.of("--require", preload.toString())
+                : List.of();
+    }
+
     /**
      * Il {@link ProcessBuilder} per lanciare {@code Historical_Multi_Eur.js} con {@code argomenti}: cartella
      * dello script e {@code NODE_PATH} verso i moduli installati da {@link CcxtInterop}. Condiviso dal
@@ -370,6 +387,7 @@ final class ServizioNodePrezzi {
     static ProcessBuilder ProcessoScript(Path nodePath, Path scriptPath, List<String> argomenti) {
         List<String> comando = new java.util.ArrayList<>();
         comando.add(nodePath.toString());
+        comando.addAll(OpzioniPreload(scriptPath));
         comando.add(scriptPath.toAbsolutePath().toString());
         comando.addAll(argomenti);
         ProcessBuilder pb = new ProcessBuilder(comando);

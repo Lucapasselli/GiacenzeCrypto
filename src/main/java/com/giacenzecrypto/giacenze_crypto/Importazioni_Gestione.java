@@ -1330,7 +1330,7 @@ private VoceImport voceSelezionata() {
             MiniPay_SpeseCarta.Piano piano = MiniPay_SpeseCarta.Pianifica(righe, Principale.MappaCryptoWallet, nomi,
                     Prezzi::CambioUSDEUR);
             this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            if (piano.abbinamenti.isEmpty()) {
+            if (piano.abbinamenti.isEmpty() && piano.conferme.isEmpty()) {
                 Messaggi.InfoMessage("Carta MiniPay", "Nessuna spesa da correggere.",
                         MiniPay_SpeseCarta.RiepilogoHtml(piano, 15), this);
                 return;
@@ -1341,7 +1341,13 @@ private VoceImport voceSelezionata() {
                     .showTitleInBody(true)
                     .theme()
                     .type(AppDialog.DialogType.INFO)
-                    .message("Movimenti che verranno corretti: <b>" + piano.abbinamenti.size() + "</b>.")
+                    .message("Movimenti che verranno corretti: <b>" + piano.abbinamenti.size() + "</b>."
+                            + (piano.movimentiDaDividere() + piano.movimentiDaRiorare() == 0 ? ""
+                                    : "<br>Con l'orario del pagamento con la carta: <b>" + piano.movimentiDaDividere()
+                                    + "</b> divisi (in <b>" + piano.pezziDaCreare() + "</b> movimenti) e <b>"
+                                    + piano.movimentiDaRiorare() + "</b> spostati.")
+                            + (piano.conferme.isEmpty() ? "" : "<br>Movimenti con pagamento in attesa ora confermato: <b>"
+                                    + piano.conferme.size() + "</b>."))
                     .details(MiniPay_SpeseCarta.RiepilogoHtml(piano, 15))
                     .action(AppDialog.DialogAction.builder("annulla", "Annulla")
                             .role(AppDialog.ActionRole.SECONDARY).build())
@@ -1359,7 +1365,9 @@ private VoceImport voceSelezionata() {
                 DocumentiFonte.Annulla(documento.Id);
             }
             Principale.TabellaCryptodaAggiornare = true;
-            Messaggi.SuccessMessage("Carta MiniPay", "Movimenti corretti: <b>" + corretti + "</b>.<br>"
+            Messaggi.SuccessMessage("Carta MiniPay", "Movimenti corretti: <b>" + corretti + "</b>"
+                    + (piano.movimentiDaDividere() + piano.movimentiDaRiorare() == 0 ? "" : " (divisi: <b>" + piano.movimentiDaDividere()
+                            + "</b>, orario spostato: <b>" + piano.movimentiDaRiorare() + "</b>)") + ".<br>"
                     + "Spread complessivo: <b>" + MiniPay_SpeseCarta.Segno(piano.totaleSalvato().subtract(piano.totaleReale()))
                     + " EUR (" + MiniPay_SpeseCarta.Segno(piano.spreadPercentuale()) + "%)</b>.<br><br>"
                     + "Il valore in euro dei movimenti &egrave; cambiato: le plusvalenze e le giacenze degli anni interessati"

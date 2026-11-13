@@ -58,6 +58,45 @@ class EmoneyTokenTest {
     }
 
     @Test
+    void nelFileSoloITokenAncoratiAllEuroSonoDenominatiInEuro() throws Exception {
+        EmoneyToken.Elenco e = elencoDelFile();
+        assertNotNull(e);
+        for (String s : List.of("EURC", "EUROe", "EURQ", "EURCV", "EURI", "EURR", "EURe")) {
+            assertTrue(e.denominatoInEuro(s), s + " e' ancorato all'euro");
+        }
+        //EMT secondo MiCA, ma non in euro: restano nell'elenco E-Money e non entrano fra quelli in euro
+        for (String s : List.of("USDC", "USDQ", "USDR", "USDG")) {
+            assertTrue(e.simboli().contains(s));
+            assertFalse(e.denominatoInEuro(s), s + " non e' in euro");
+        }
+        assertEquals(11, e.simboli().size(), "il campo non cambia l'elenco");
+    }
+
+    @Test
+    void denominatoInEuroSiLeggeSenzaBadareAlleMaiuscoleEUnaVoceSenzaCampoNonELo() {
+        String json = "{\"decorrenza\":\"2023-01-01\",\"emoneyToken\":["
+                + "{\"simbolo\":\"EURe\",\"denominatoInEuro\":true},"
+                + "{\"simbolo\":\"USDC\",\"denominatoInEuro\":false},"
+                + "{\"simbolo\":\"EURX\"},"
+                + "{\"simbolo\":\"EURY\",\"denominatoInEuro\":\"si\"}]}";
+        EmoneyToken.Elenco e = EmoneyToken.Interpreta(json, "prova");
+        assertNotNull(e);
+        assertTrue(e.denominatoInEuro("EURE"), "maiuscole e minuscole non contano");
+        assertTrue(e.denominatoInEuro(" eure "));
+        assertFalse(e.denominatoInEuro("USDC"));
+        assertFalse(e.denominatoInEuro("EURX"), "senza la proprieta' non e' in euro, anche se il nome dice EUR");
+        assertFalse(e.denominatoInEuro("EURY"), "un valore che non e' un booleano non vale");
+        assertFalse(e.denominatoInEuro("SCONOSCIUTO"));
+        assertFalse(e.denominatoInEuro(null));
+        assertEquals(4, e.simboli().size());
+    }
+
+    @Test
+    void unElencoCostruitoSenzaInEuroNonHaNessunTokenInEuro() {
+        assertFalse(new EmoneyToken.Elenco(List.of("EURe"), "2023-01-01").denominatoInEuro("EURe"));
+    }
+
+    @Test
     void unContenutoSenzaTokenOConDataSbagliataNonEValido() {
         assertNull(EmoneyToken.Interpreta("{\"decorrenza\":\"2023-01-01\",\"emoneyToken\":[]}", "prova"));
         assertNull(EmoneyToken.Interpreta("{\"decorrenza\":\"01/01/2023\",\"emoneyToken\":[{\"simbolo\":\"USDC\"}]}", "prova"));

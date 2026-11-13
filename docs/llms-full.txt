@@ -307,6 +307,56 @@ Al punto **3**: 200 € − 300 € = **−100 €**.
 
 La plusvalenza totale di fine anno è quindi **200 €**.
 
+## Plusvalenze per aliquota: 26% e 33%
+
+Fino al 31/12/2025 l'imposta sostitutiva sulle plusvalenze da cripto-attività è al **26%**. Dal **1° gennaio 2026** l'aliquota
+ordinaria è del **33%** (Legge di bilancio 2025, art. 1 comma 24). Resta al **26%** il reddito che deriva da operazioni di
+detenzione, cessione o impiego di **token di moneta elettronica denominati in euro** (Legge di bilancio 2026, art. 1 comma 28).
+
+Il programma non calcola l'imposta, ma divide le plusvalenze mostrate nella tabella dei movimenti in tre gruppi:
+
+| Gruppo | Aliquota |
+|---|---|
+| Movimenti fino al 31/12/2025 | 26% |
+| Dal 01/01/2026, plusvalenza che nasce da un token di moneta elettronica in euro | 26% |
+| Dal 01/01/2026, tutte le altre | 33% |
+
+Per aprire il dettaglio si **clicca il riquadro della plusvalenza** nella scheda *Transazioni Crypto* ("Plusvalenze del
+periodo selezionato"). Il dialogo riguarda le righe mostrate in quel momento, quindi segue il periodo e tutti i filtri scelti, anche il campo di ricerca e i
+filtri di colonna, e in testa dice quali sono. Anche i tre riquadri della tabella seguono le stesse righe. Per ogni
+gruppo, e poi per anno, mostra il numero di movimenti, la somma delle **vendite**, la somma dei **costi di carico** e la
+**plusvalenza**. Vendite e costi si contano come nei riquadri della tabella e il totale coincide con loro. In fondo elenca i token di
+moneta elettronica che hanno prodotto plusvalenza dal 2026, divisi fra quelli in euro (26%) e quelli che non lo sono (33%).
+
+**Come il programma attribuisce un movimento.** La plusvalenza di un movimento nasce da una gamba: quella **uscita** se c'è e non è
+FIAT (una cessione, anche in permuta), altrimenti quella **entrata** (un provento, per esempio una reward). Il movimento va al 26% se
+quella gamba è un token di moneta elettronica in euro, altrimenti al 33%. Quindi:
+
+- la cessione di EURC contro BTC e la reward in EURC sono al 26%
+- la vendita di BTC contro EURC è al 33%, perché il reddito nasce dal BTC
+- la reward in USDC è al 33%, perché USDC è un token di moneta elettronica ma non è in euro
+
+La norma non dice nulla sugli scambi: questa è una lettura del programma, e conviene tenerne conto quando si usano questi totali.
+
+**La neutralità fra euro e token in euro.** La legge dice che la «mera conversione» fra euro e token di moneta elettronica in euro, e il
+rimborso in euro del relativo valore nominale, non sono realizzo. Il programma legge questa frase come **parità di valore**: un token in
+euro vale un euro anche se il suo prezzo di mercato si scosta, quindi lo scostamento dall'ancoraggio non produce da solo plusvalenza né
+minusvalenza. Non la legge come un'esenzione dal realizzo: se il token porta con sé un costo di carico diverso da un euro, per esempio
+perché è arrivato da uno scambio che non ha realizzato nulla o da una reward, la differenza fra quel costo e il valore nominale resta
+plusvalenza o minusvalenza e il motore la calcola quando il token esce, anche contro euro. Quella plusvalenza nasce da un token in euro e
+il dialogo la mette al 26%. Anche questa è una lettura: la norma non dice come si tratta il costo di carico e, al momento della
+stesura, non risulta una risposta ufficiale dell'Agenzia delle entrate che la confermi o la smentisca.
+
+**Quando un token conta come "in euro".** Servono due cose insieme. Il token deve essere un *E-Money Token* nelle opzioni
+(**Opzioni – E-Money Token**) alla data del movimento, e deve essere dichiarato denominato in euro nell'elenco dei token di moneta
+elettronica che il programma aggiorna da solo. Il nome del token non basta: un token con "EUR" nel simbolo ma fuori dall'elenco conta
+come una cripto-attività qualsiasi. La legge chiede anche che le riserve siano interamente in euro presso soggetti autorizzati
+nell'Unione europea. Per i token con licenza MiCA il requisito è quasi sempre soddisfatto, ma l'elenco dice solo che il token è
+ancorato all'euro.
+
+Le plusvalenze di cui si parla sono quelle del calcolo generale: il dialogo non tiene conto di compensazioni fra minusvalenze e
+plusvalenze né di altri elementi della dichiarazione.
+
 ## Plusvalenze globali o per gruppo wallet
 
 ### Calcoli globali
@@ -3698,7 +3748,27 @@ in Gestione Wallet. Se i movimenti non sono scaricati fino all'ultima riga del f
 - **Lo spread**: nelle note di ogni movimento, e in totale nell'anteprima, c'è la differenza fra il valore che il movimento aveva
   e quello reale. Positiva vuol dire che il movimento era valorizzato più della spesa.
 - **L'anteprima**: prima di scrivere si vede cosa verrà corretto. Niente cambia finché non si conferma.
-- **I pagamenti in attesa** (*pending*) si ignorano: possono ancora cambiare importo e non sono ancora sulla blockchain.
+- **I pagamenti in attesa** (*pending*) con un importo si abbinano come gli altri. Il ponte della carta trasferisce dalla Safe due volte al
+  giorno (verso le 06:00 e le 18:00 UTC) e lo stato *settled* del file arriva dopo, quindi un pagamento ancora in attesa può essere già
+  uscito dalla blockchain. L'abbinamento resta per importo esatto: se il trasferimento non c'è ancora, il pagamento non trova il suo
+  movimento e non si tocca niente. Un movimento abbinato a un pagamento in attesa riporta nelle note «pagamento in attesa di conferma».
+  Rileggendo un file più recente in cui quel pagamento è concluso con gli stessi importi la nota si toglie, il valore non cambia. Se
+  l'importo è cambiato il movimento resta com'è e viene segnalato. Le preautorizzazioni a importo zero (PayPal, Amazon Prime) si ignorano.
+- **La data è quella del pagamento con la carta.** Il movimento della blockchain porta l'ora del giro del ponte (06:00 o 18:00 UTC),
+  non quella in cui hai pagato. Quando i pagamenti di un movimento sono tutti conclusi (*settled*) e la somma torna, il movimento
+  unico si **divide** in uno per pagamento, ognuno con l'ora del suo pagamento e il suo valore reale, oppure, se il pagamento è uno
+  solo, si **sposta** all'ora del pagamento. Ogni pezzo porta nelle note il suo pagamento, la quota di valore salvato e da quale
+  movimento della blockchain viene, e resta nello storico delle modifiche (da lì si vede com'era il movimento della blockchain).
+  Se la somma non torna non si abbina e non si divide niente.
+- **Quando il movimento resta all'orario della blockchain.** Il valore reale e le note si scrivono comunque, ma l'orario no se un
+  pagamento è ancora in attesa (la divisione si fa alla prima importazione in cui il file li dà tutti conclusi), se il movimento è
+  legato ad altri (classificato, con una commissione) o se anticipare l'orario renderebbe negativo il saldo di quel token nel wallet,
+  per esempio perché una ricarica è arrivata fra il pagamento e il giro del ponte. Il riepilogo dice il motivo di ogni caso.
+- **Rileggere lo stesso file o riscaricare i dati non duplica niente.** Ogni pezzo ha il suo riferimento nelle note, quindi un secondo
+  passaggio non rifà nulla. I movimenti già abbinati con la regola precedente, che raccolgono più pagamenti, si dividono alla prima
+  importazione dopo l'aggiornamento. Un nuovo scaricamento della blockchain non ricrea il movimento originale: riparte dopo l'ultimo
+  blocco, che i pezzi conservano, e salta comunque le transazioni già abbinate. Data e ora della spesa sono quelle del pagamento con la
+  carta, e le plusvalenze e le giacenze si calcolano a quell'istante.
 - **L'abbinamento è per importo esatto**: i pagamenti non hanno l'hash della transazione. Se un importo non coincide, il
   movimento resta com'è ed è elencato fra i non abbinati.
 - **Rileggere il file** è sicuro, anche se più recente: i pagamenti già abbinati si riconoscono dalle note e non si duplicano.

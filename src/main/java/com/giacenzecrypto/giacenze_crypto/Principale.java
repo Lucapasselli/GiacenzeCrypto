@@ -251,6 +251,8 @@ private static final long serialVersionUID = 3L;
     private transient Map<String, SogliaGiacenzaAnte2023.Esito> RT_EsitiSoglia = new java.util.LinkedHashMap<>();
     /** Cosa ne ha fatto la tabella RT, per anno: la bozza, la stampa e l'avviso leggono questo e non ricalcolano. */
     private transient Map<String, Principale_RT_Soglia.Risultato> RT_RisultatiSoglia = new java.util.LinkedHashMap<>();
+    /** Le righe mostrate nella tabella dei movimenti all'ultimo caricamento (periodo e filtri compresi): le legge il dialogo delle plusvalenze per aliquota. */
+    private transient volatile java.util.List<String[]> TransazioniCrypto_MovimentiVisibili = new java.util.ArrayList<>();
     //true se l'ultimo RW_CalcolaRW e' arrivato in fondo; false se interrotto dall'utente col
     //pulsante "Interrompi" della finestra di progresso (vedi RW_CalcolaRW).
     private transient boolean RW_ElaborazioneCompletata = true;
@@ -426,6 +428,16 @@ private static final long serialVersionUID = 3L;
         //resta ferma per tutta la sua durata. Il peso della fase serve a farla ripartire nel punto giusto.
         SplashAvvio.fase(SplashAvvio.Fase.INTERFACCIA);
         initComponents();
+        //Il riquadro della plusvalenza si clicca: apre il dialogo con le plusvalenze divise per aliquota (26% e 33%)
+        //e le somme di vendite e costi di ciascun gruppo. Dopo initComponents, quindi non lo tocca il generatore.
+        TransazioniCrypto_Text_Plusvalenza.setToolTipText("Clicca per vedere le plusvalenze divise per aliquota (26% e 33%)");
+        TransazioniCrypto_Text_Plusvalenza.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        TransazioniCrypto_Text_Plusvalenza.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                TransazioniCrypto_ApriDettaglioAliquote();
+            }
+        });
         //Le ApiKey delle Opzioni a pallini, in chiaro solo con l'occhio dentro la casella
         CampiSegreti.AggiungiOcchio(Opzioni_ApiKey_Helius_TextField, Opzioni_ApiKey_Etherscan_TextField,
                 Opzioni_ApiKey_Coingecko_TextField, Opzioni_ApiKey_Moralis_TextField, Opzioni_ApiKey_Cronos_TextField,
@@ -17721,6 +17733,56 @@ if (result != null && !result.isAction("cancel")) {
         // TODO add your handling code here:
     }//GEN-LAST:event_TransazioniCrypto_Text_PlusvalenzaActionPerformed
 
+    /**
+     * Apre il dialogo delle plusvalenze divise per aliquota (26% e 33%) sulle righe oggi mostrate nella tabella dei
+     * movimenti. Il calcolo è in {@link Principale_PlusvalenzeAliquote}, qui solo la delega.
+     */
+    private void TransazioniCrypto_ApriDettaglioAliquote() {
+        Principale_PlusvalenzeAliquote.Risultato risultato = Principale_PlusvalenzeAliquote.Calcola(
+                TransazioniCrypto_MovimentiMostrati(), EmoneyToken.Carica());
+        String periodo = (CDC_DataIniziale == null || CDC_DataIniziale.isBlank()) ? ""
+                : CDC_DataIniziale + "  »  " + CDC_DataFinale;
+        GUI_PlusvalenzeAliquote.Mostra(this, risultato, periodo,
+                FiltriCorrenti.Descrizione(this::FiltriMovimenti_NomeDocumento), FiltriMovimenti_AltriFiltriAttivi());
+    }
+
+    /**
+     * I movimenti che la tabella mostra <b>adesso</b>: quelli che passano i filtri di caricamento
+     * ({@link #TransazioniCrypto_MovimentiVisibili}) e, se ce ne sono, anche i filtri di riga (campo di ricerca e
+     * filtri per colonna), letti dalla vista del {@code RowSorter}. Con la tabella non costruita (scheda non a video)
+     * non ci sono righe da leggere e valgono i soli filtri di caricamento. Senza filtri di riga restituisce la lista
+     * del caricamento così com'è. Da qui prendono i totali i tre riquadri e il dialogo delle plusvalenze per aliquota,
+     * così coincidono fra loro e con la somma dell'intestazione della colonna.
+     */
+    private java.util.List<String[]> TransazioniCrypto_MovimentiMostrati() {
+        java.util.List<String[]> caricati = TransazioniCrypto_MovimentiVisibili;
+        javax.swing.RowSorter<?> rs = TransazioniCryptoTabella.getRowSorter();
+        if (rs == null || TabellaMovimentiDaRicostruire || FiltriMovimenti_AltriFiltriAttivi().isEmpty()) {
+            return caricati;
+        }
+        java.util.List<String> idInVista = new java.util.ArrayList<>(rs.getViewRowCount());
+        TableModel modello = TransazioniCryptoTabella.getModel();
+        for (int i = 0; i < rs.getViewRowCount(); i++) {
+            idInVista.add(String.valueOf(modello.getValueAt(rs.convertRowIndexToModel(i), 0)));
+        }
+        return Principale_PlusvalenzeAliquote.InOrdineDiVista(caricati, idInVista);
+    }
+
+    /**
+     * Scrive i riquadri plusvalenza, costi di carico e vendite sulle righe mostrate dalla tabella
+     * ({@link #TransazioniCrypto_MovimentiMostrati()}), quindi con periodo, filtri di caricamento <b>e</b> filtri di
+     * riga. La chiama {@link #FiltriMovimenti_AggiornaIndicatori()}, da dove passa ogni cambio di filtro (anche un
+     * tasto nel campo di ricerca o un filtro di colonna dal popup). La regola di somma è
+     * {@link Principale_PlusvalenzeAliquote#Totali}, la stessa del dialogo.
+     */
+    private void TransazioniCrypto_AggiornaRiquadriTotali() {
+        Principale_PlusvalenzeAliquote.Riga t = Principale_PlusvalenzeAliquote.Totali(TransazioniCrypto_MovimentiMostrati());
+        TransazioniCrypto_Text_Plusvalenza.setText("€ " + Funzioni.formattaBigDecimal(t.plusvalenza, true));
+        TransazioniCrypto_Text_CostiCarico.setText("€ " + Funzioni.formattaBigDecimal(t.costi, true));
+        TransazioniCrypto_Text_Vendite.setText("€ " + Funzioni.formattaBigDecimal(t.vendite, true));
+        TransazioniCrypto_Text_Plusvalenza.setForeground(t.plusvalenza.signum() < 0 ? Tabelle.rosso : Tabelle.verde);
+    }
+
     private void TransazioniCrypto_Bottone_AnnullaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_AnnullaActionPerformed
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         TransazioniCrypto_DaSalvare=false;
@@ -20453,6 +20515,7 @@ try {
         TransazioniCrypto_RigheTabella_Label.revalidate();
         TransazioniCrypto_RigheTabella_Label.repaint();
         FiltriMovimenti_AggiornaSchedaFiltri();
+        TransazioniCrypto_AggiornaRiquadriTotali();
     }
 
     /**
@@ -20921,10 +20984,10 @@ try {
 
         DefaultTableModel ModelloTabellaCrypto = (DefaultTableModel) TransazioniCryptoTabella.getModel();
         Tabelle.Funzioni_PulisciTabella(ModelloTabellaCrypto);
-        BigDecimal Plusvalenza = new BigDecimal("0");
-        BigDecimal CostiCarico = new BigDecimal("0");
-        BigDecimal Vendite = new BigDecimal("0");
-        
+        //Le righe che passano i filtri di caricamento: da qui si ricavano i tre riquadri dei totali e il dialogo delle
+        //plusvalenze per aliquota (TransazioniCrypto_MovimentiMostrati), che seguono anche i filtri di riga
+        java.util.List<String[]> MovimentiVisibili = new java.util.ArrayList<>();
+
         Mappa_Wallet.clear();
         Mappa_Wallets_e_Dettagli.clear();
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -21031,37 +21094,20 @@ try {
             }
 
             String gruppoWallet = DatabaseH2.Pers_GruppoWallet_Leggi(v[3],true);
-            String valorePlusvalenza = v[19];
 
             //haPrezzo e lifomancante sono gia' stati calcolati sopra, nella sezione conteggio errori:
             //Passa() non li ricalcola per conto proprio, altrimenti ogni movimento costerebbe una
             //lettura del gruppo wallet e una scansione dei prezzi in piu'.
-            boolean haPlusvalenza = "S".equals(v[33]);
-
             //Qui, dopo i nomi personalizzati: sono quelli che Passa() confronta
             MovimentiFiltrabili.add(new Principale_FiltriMovimenti.MovimentoFiltrabile(
                     v, dataMovLong, gruppoWallet, haPrezzo, lifomancante));
 
             if (Filtri.Passa(v, dataMovLong, gruppoWallet, haPrezzo, lifomancante)) {
                 MovimentiPassati++;
+                MovimentiVisibili.add(v);
 
-                // Plusvalenza
-                if (Funzioni_isNumeric(valorePlusvalenza, false)) {
-                    Plusvalenza = Plusvalenza.add(new BigDecimal(valorePlusvalenza));
-                }
-
-                // Vendite e Costi Carico
-                if (haPlusvalenza) {
-                    if (!v[15].isEmpty()) {
-                        Vendite = Vendite.add(new BigDecimal(v[15]));
-                    }
-                    if (!v[16].isEmpty()) {
-                        CostiCarico = CostiCarico.add(new BigDecimal(v[16]));
-                    }
-                }
-
-                //I totali qui sopra si calcolano sempre (finiscono nelle etichette di riepilogo);
-                //la riga vera e propria solo se la tabella è a video
+                //La riga vera e propria solo se la tabella è a video; i totali dei riquadri non si sommano qui:
+                //li ricava TransazioniCrypto_AggiornaRiquadriTotali dalle righe che la tabella mostra davvero
                 if (costruisciRighe) {
                     Object[] z = Funzioni.Converti_String_Object(v);
                     //z ha tanti elementi quanti v[] (45), ma il model ne ha 43: il resto viene
@@ -21092,20 +21138,12 @@ try {
 
         }
         FiltriMovimenti_Movimenti = MovimentiFiltrabili;
+        TransazioniCrypto_MovimentiVisibili = MovimentiVisibili;
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
-        TransazioniCrypto_Text_Plusvalenza.setText("€ " + Funzioni.formattaBigDecimal(Plusvalenza, true));
-        TransazioniCrypto_Text_CostiCarico.setText("€ " + Funzioni.formattaBigDecimal(CostiCarico, true));
-        TransazioniCrypto_Text_Vendite.setText("€ " + Funzioni.formattaBigDecimal(Vendite, true));
-        //Color verde = new Color(45, 155, 103);
-      //  Color rosso = new Color(166, 16, 34);
-        if (!TransazioniCrypto_Text_Plusvalenza.getText().contains("-")) {
-            TransazioniCrypto_Text_Plusvalenza.setForeground(Tabelle.verde);
-        } else {
-            TransazioniCrypto_Text_Plusvalenza.setForeground(Tabelle.rosso);
-        }
-        
-        
+        TransazioniCrypto_AggiornaRiquadriTotali();
+        //Il colore della plusvalenza lo dà TransazioniCrypto_AggiornaRiquadriTotali
+
         //Questo attiva il tasto degli errori qualora ve ne trovassimo
         Errori_AggiornaPulsante();
       //  Funzioni_Tabelle_FiltraTabella(TransazioniCryptoTabella, TransazioniCryptoFiltro_Text.getText(), 999);

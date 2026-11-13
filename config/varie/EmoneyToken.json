@@ -1,18 +1,18 @@
 {
-  "descrizione": "Token di moneta elettronica (EMT, regolamento MiCA) noti al programma. Servono a due cose: il pulsante che imposta i token standard nella sezione E-Money delle opzioni, e l'avviso che al calcolo dei quadri W/RW e T/RT propone di aggiungere alla sezione E-Money i token di questo elenco che compaiono nei movimenti e non ci sono. Distribuito col programma e riallineato a ogni avvio dal repository: un EMT nuovo si aggiunge qui, senza una nuova versione. Vedi EmoneyToken.java.",
+  "descrizione": "Token di moneta elettronica (EMT, regolamento MiCA) noti al programma. Servono a due cose: il pulsante che imposta i token standard nella sezione E-Money delle opzioni, e l'avviso che al calcolo dei quadri W/RW e T/RT propone di aggiungere alla sezione E-Money i token di questo elenco che compaiono nei movimenti e non ci sono. Distribuito col programma e riallineato a ogni avvio dal repository: un EMT nuovo si aggiunge qui, senza una nuova versione. Vedi EmoneyToken.java. Il campo denominatoInEuro dice se il token e' ancorato all'euro: serve all'aliquota del 26% dei redditi da token di moneta elettronica in euro (legge 199/2025, art. 1, comma 28), che chiede anche riserve interamente in euro presso soggetti autorizzati nell'Unione europea. Il regolamento MiCA (articoli 48 e 54) ne copre gran parte: emittente autorizzato nell'Unione, almeno il 30% dei fondi in conti presso enti creditizi e il resto in attivita' nella valuta di riferimento. Non dice pero' che anche quel 30% sia in euro ne' che la banca sia dell'Unione, quindi per un token con licenza MiCA il requisito e' quasi sempre soddisfatto ma non e' implicito. Non cambia nessun calcolo e non e' un giudizio sul trattamento dei token in dollari, che restano E-Money. Un token senza il campo non e' in euro.",
   "decorrenza": "2023-01-01",
   "nota_decorrenza": "Data da cui i token aggiunti dal pulsante o dall'avviso sono trattati come E-Money nei calcoli: l'inizio del regime delle cripto-attivita' (legge 197/2022). Cambiarla cambia i risultati di tutti gli anni da quella data in poi.",
   "emoneyToken": [
-    { "simbolo": "EURC", "emittente": "Circle" },
-    { "simbolo": "EUROe", "emittente": "Membrane Finance" },
-    { "simbolo": "EURQ", "emittente": "Quantoz" },
-    { "simbolo": "USDQ", "emittente": "Quantoz" },
-    { "simbolo": "EURCV", "emittente": "SG-Forge" },
-    { "simbolo": "EURI", "emittente": "Banking Circle" },
-    { "simbolo": "EURR", "emittente": "StablR" },
-    { "simbolo": "EURe", "emittente": "Monerium" },
-    { "simbolo": "USDC", "emittente": "Circle" },
-    { "simbolo": "USDR", "emittente": "StablR" },
-    { "simbolo": "USDG", "emittente": "Paxos", "aggiunto": "2026-10-09" }
+    { "simbolo": "EURC", "emittente": "Circle", "denominatoInEuro": true },
+    { "simbolo": "EUROe", "emittente": "Membrane Finance", "denominatoInEuro": true },
+    { "simbolo": "EURQ", "emittente": "Quantoz", "denominatoInEuro": true },
+    { "simbolo": "USDQ", "emittente": "Quantoz", "denominatoInEuro": false },
+    { "simbolo": "EURCV", "emittente": "SG-Forge", "denominatoInEuro": true },
+    { "simbolo": "EURI", "emittente": "Banking Circle", "denominatoInEuro": true },
+    { "simbolo": "EURR", "emittente": "StablR", "denominatoInEuro": true },
+    { "simbolo": "EURe", "emittente": "Monerium", "denominatoInEuro": true },
+    { "simbolo": "USDC", "emittente": "Circle", "denominatoInEuro": false },
+    { "simbolo": "USDR", "emittente": "StablR", "denominatoInEuro": false },
+    { "simbolo": "USDG", "emittente": "Paxos", "aggiunto": "2026-10-09", "denominatoInEuro": false }
   ]
 }

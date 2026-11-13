@@ -2,8 +2,11 @@ package com.giacenzecrypto.giacenze_crypto;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -28,8 +31,27 @@ final class EmoneyToken {
     /** Nome del file in {@code config/varie/}, senza estensione. */
     static final String NOME = "EmoneyToken";
 
-    /** Il contenuto del file: simboli in ordine e data da cui valgono come E-Money quando li si aggiunge. */
-    record Elenco(List<String> simboli, String decorrenza) {}
+    /**
+     * Il contenuto del file: simboli in ordine, data da cui valgono come E-Money quando li si aggiunge e quali
+     * sono "denominati in euro" ({@code denominatoInEuro} di ogni voce, in ordine di simbolo senza badare alle
+     * maiuscole). Il secondo dato non è ancora usato nei calcoli: serve all'aliquota del 26% dei redditi da token di
+     * moneta elettronica in euro (L. 199/2025 art. 1 c. 28), non al riconoscimento E-Money, che resta quello di sempre.
+     */
+    record Elenco(List<String> simboli, String decorrenza, Set<String> inEuro) {
+
+        Elenco(List<String> simboli, String decorrenza) {
+            this(simboli, decorrenza, Set.of());
+        }
+
+        /**
+         * @return {@code true} se la voce dell'elenco dichiara il token denominato in euro. Un token assente
+         *         dall'elenco o senza la proprietà <b>non</b> è in euro: il nome non basta a dirlo (USDC è un EMT,
+         *         ma non in euro) e non si decide dal simbolo.
+         */
+        boolean denominatoInEuro(String simbolo) {
+            return simbolo != null && inEuro.contains(simbolo.trim().toLowerCase(Locale.ROOT));
+        }
+    }
 
     /** @return l'elenco (disco, poi copia nel jar), oppure {@code null} se non è disponibile da nessuna parte */
     static Elenco Carica() {
@@ -47,12 +69,17 @@ final class EmoneyToken {
                 return null;
             }
             List<String> simboli = new ArrayList<>();
+            Set<String> inEuro = new HashSet<>();
             JSONArray voci = radice.getJSONArray("emoneyToken");
             for (int i = 0; i < voci.length(); i++) {
-                String s = voci.getJSONObject(i).optString("simbolo", "").trim();
-                if (!s.isEmpty()) simboli.add(s);
+                JSONObject voce = voci.getJSONObject(i);
+                String s = voce.optString("simbolo", "").trim();
+                if (s.isEmpty()) continue;
+                simboli.add(s);
+                if (voce.optBoolean("denominatoInEuro", false)) inEuro.add(s.toLowerCase(Locale.ROOT));
             }
-            return simboli.isEmpty() ? null : new Elenco(Collections.unmodifiableList(simboli), decorrenza);
+            return simboli.isEmpty() ? null
+                    : new Elenco(Collections.unmodifiableList(simboli), decorrenza, Collections.unmodifiableSet(inEuro));
         } catch (Exception e) {
             LoggerGC.ScriviErrore("EmoneyToken: " + nome + ".json non interpretabile : " + e);
             return null;

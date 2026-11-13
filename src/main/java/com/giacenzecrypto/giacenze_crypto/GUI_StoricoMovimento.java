@@ -130,6 +130,10 @@ public class GUI_StoricoMovimento extends javax.swing.JDialog {
                 "Modifica del movimento (ID ricalcolato)";
             case "TraslaOrario" ->
                 "Traslazione dell'orario";
+            case MiniPay_SpeseCarta.OP_DIVISIONE ->
+                "Movimento della catena diviso per pagamento con la carta (riga di partenza)";
+            case MiniPay_SpeseCarta.OP_ORARIO ->
+                "Orario spostato a quello del pagamento con la carta";
             case Principale_Movimenti_SeparaUnisci.OP_UNIONE ->
                 "Unione con altri movimenti (riga di partenza)";
             case Principale_TipologiaReward.OP_REWARD_IN_DEPOSITO ->

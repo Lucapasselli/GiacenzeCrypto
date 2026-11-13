@@ -140,7 +140,10 @@ jobs:
           # il revisore trova aprendo il .msix (rilievo 10.2.6 del 20/08/2026, vedi
           # nocommit/Documentazione/Pubblicazione_MicrosoftStore.md Parte 4).
           # Historical_Multi_Eur.js  -> quotazioni storiche (Prezzi.RecuperaPrezziStoriciMultiEUR)
-          $scriptStore = @('Historical_Multi_Eur.js')
+          # Ccxt_Rete.js             -> correzione della connessione di ccxt, caricata con node --require da
+          #                             ServizioNodePrezzi.OpzioniPreload: senza, con una rete senza IPv6 e un ping sopra
+          #                             ~10 ms i prezzi falliscono con "fetch failed" (non e' uno script che interroga un exchange)
+          $scriptStore = @('Historical_Multi_Eur.js', 'Ccxt_Rete.js')
           foreach ($s in $scriptStore) {
             if (-not (Test-Path "Scripts\$s")) { Write-Error "Script atteso mancante: $s"; exit 1 }
             copy "Scripts\$s" build\Scripts\

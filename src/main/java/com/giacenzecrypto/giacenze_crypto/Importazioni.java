@@ -6636,8 +6636,8 @@ public static String DeFi_GiacenzeL1_Sistema(String Wallet, String Rete, Compone
                             Trans_EtherFi.CandidatiTradingSafe(MappaCryptoWallet, walletAddress, esito.transazioni()), progressb::FineThread);
                     for (String ts : tradingSafeNuovi) {
                         ElencoWallet.add(Trans_EtherFi.VoceTradingSafe(ts, MappaCryptoWallet));
-                        if (ccc != null) JOptionPane.showConfirmDialog(ccc, Trans_EtherFi.TestoTradingSafe(walletAddress, ts), "ether.fi",
-                                JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                        //Nessun avviso all'utente (13/11): il TradingSafe si importa da solo insieme al Safe, non c'e' niente da decidere
+                        LoggerGC.logInfo("ether.fi: scoperto il TradingSafe " + ts + " del conto " + walletAddress + ", importato insieme al Safe");
                     }
                     if (ccc != null && !esito.avvisi().isEmpty()) JOptionPane.showConfirmDialog(ccc,
                             "Conto ether.fi " + walletAddress + ":\n" + String.join("\n", esito.avvisi())

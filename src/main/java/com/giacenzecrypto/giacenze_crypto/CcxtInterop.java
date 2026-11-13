@@ -3268,6 +3268,8 @@ public static Path getNodeExePath() {
                 exchangeId.toLowerCase(), apiKey, secret, String.valueOf(startDate),Tokens,passphrase,hostname,ripresa
         );
         builder.directory(scriptPath.getParent().toFile());
+        // Correzione della connessione di ccxt (Scripts/Ccxt_Rete.js): le opzioni di Node vanno prima dello script
+        builder.command().addAll(1, ServizioNodePrezzi.OpzioniPreload(scriptPath));
         // Non reindirizziamo stderr su stdout
         // builder.redirectErrorStream(true);
         // Calcola la cartella base di Node in modo multipiattaforma

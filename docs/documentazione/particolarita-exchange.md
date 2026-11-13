@@ -735,7 +735,27 @@ in Gestione Wallet. Se i movimenti non sono scaricati fino all'ultima riga del f
 - **Lo spread**: nelle note di ogni movimento, e in totale nell'anteprima, c'è la differenza fra il valore che il movimento aveva
   e quello reale. Positiva vuol dire che il movimento era valorizzato più della spesa.
 - **L'anteprima**: prima di scrivere si vede cosa verrà corretto. Niente cambia finché non si conferma.
-- **I pagamenti in attesa** (*pending*) si ignorano: possono ancora cambiare importo e non sono ancora sulla blockchain.
+- **I pagamenti in attesa** (*pending*) con un importo si abbinano come gli altri. Il ponte della carta trasferisce dalla Safe due volte al
+  giorno (verso le 06:00 e le 18:00 UTC) e lo stato *settled* del file arriva dopo, quindi un pagamento ancora in attesa può essere già
+  uscito dalla blockchain. L'abbinamento resta per importo esatto: se il trasferimento non c'è ancora, il pagamento non trova il suo
+  movimento e non si tocca niente. Un movimento abbinato a un pagamento in attesa riporta nelle note «pagamento in attesa di conferma».
+  Rileggendo un file più recente in cui quel pagamento è concluso con gli stessi importi la nota si toglie, il valore non cambia. Se
+  l'importo è cambiato il movimento resta com'è e viene segnalato. Le preautorizzazioni a importo zero (PayPal, Amazon Prime) si ignorano.
+- **La data è quella del pagamento con la carta.** Il movimento della blockchain porta l'ora del giro del ponte (06:00 o 18:00 UTC),
+  non quella in cui hai pagato. Quando i pagamenti di un movimento sono tutti conclusi (*settled*) e la somma torna, il movimento
+  unico si **divide** in uno per pagamento, ognuno con l'ora del suo pagamento e il suo valore reale, oppure, se il pagamento è uno
+  solo, si **sposta** all'ora del pagamento. Ogni pezzo porta nelle note il suo pagamento, la quota di valore salvato e da quale
+  movimento della blockchain viene, e resta nello storico delle modifiche (da lì si vede com'era il movimento della blockchain).
+  Se la somma non torna non si abbina e non si divide niente.
+- **Quando il movimento resta all'orario della blockchain.** Il valore reale e le note si scrivono comunque, ma l'orario no se un
+  pagamento è ancora in attesa (la divisione si fa alla prima importazione in cui il file li dà tutti conclusi), se il movimento è
+  legato ad altri (classificato, con una commissione) o se anticipare l'orario renderebbe negativo il saldo di quel token nel wallet,
+  per esempio perché una ricarica è arrivata fra il pagamento e il giro del ponte. Il riepilogo dice il motivo di ogni caso.
+- **Rileggere lo stesso file o riscaricare i dati non duplica niente.** Ogni pezzo ha il suo riferimento nelle note, quindi un secondo
+  passaggio non rifà nulla. I movimenti già abbinati con la regola precedente, che raccolgono più pagamenti, si dividono alla prima
+  importazione dopo l'aggiornamento. Un nuovo scaricamento della blockchain non ricrea il movimento originale: riparte dopo l'ultimo
+  blocco, che i pezzi conservano, e salta comunque le transazioni già abbinate. Data e ora della spesa sono quelle del pagamento con la
+  carta, e le plusvalenze e le giacenze si calcolano a quell'istante.
 - **L'abbinamento è per importo esatto**: i pagamenti non hanno l'hash della transazione. Se un importo non coincide, il
   movimento resta com'è ed è elencato fra i non abbinati.
 - **Rileggere il file** è sicuro, anche se più recente: i pagamenti già abbinati si riconoscono dalle note e non si duplicano.

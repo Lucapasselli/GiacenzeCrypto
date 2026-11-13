@@ -5,6 +5,22 @@ programma all'avvio di una beta, ed è la descrizione della beta su GitHub. L'el
 in preparazione è nella sezione "in lavorazione" di docs/documentazione/changelog.md, dove ogni voce di questo file
 compare con lo stesso titolo. Questo file non è una pagina del sito.
 
+## Versione 1.0.66.05
+
+**Nuove implementazioni**
+
+- **Plusvalenze divise per aliquota (26% e 33%)**: cliccando il riquadro della plusvalenza nella scheda *Transazioni Crypto* si apre un dialogo che divide le plusvalenze delle righe mostrate in tre gruppi: fino al 31/12/2025, dal 01/01/2026 se nascono da un token di moneta elettronica in euro, dal 01/01/2026 per tutto il resto. Per ogni gruppo e per anno mostra movimenti, vendite, costi di carico e plusvalenza, e il totale coincide con i riquadri della tabella. Segue il periodo, i filtri e il campo di ricerca della tabella. Il programma non calcola l'imposta.
+
+**Correzione di bug**
+
+- **Connessione agli exchange con errore «fetch failed»**: su alcuni computer lo scaricamento via API di OKX, Binance, KuCoin, Coinbase e Crypto.com e la ricerca dei prezzi sugli exchange fallivano con un errore di rete senza altre spiegazioni, anche con i servizi raggiungibili. Succedeva con reti Wi-Fi senza IPv6 e con un ping sopra una decina di millisecondi. Ora il tempo concesso a ogni tentativo di connessione è quello standard di Node.js. Non cambia nessun dato già importato.
+
+- **Spese della carta MiniPay da CSV, pagamenti in attesa**: un pagamento ancora *pending* che era già uscito dalla Safe restava senza abbinamento per giorni. Ora si abbina per importo esatto come gli altri e il movimento riporta nelle note «pagamento in attesa di conferma», che si toglie alla prossima importazione se il file lo dà concluso con gli stessi importi.
+
+- **Spese della carta MiniPay da CSV, data del pagamento**: il movimento della blockchain portava l'ora del giro del ponte e, con più pagamenti, restava un movimento solo. Ora, se i pagamenti sono tutti conclusi e la somma torna esatta, si divide in uno per pagamento, ognuno con l'ora e il valore reali del pagamento con la carta, oppure prende l'ora del pagamento se ce n'è uno solo. Rileggere lo stesso file non duplica nulla.
+
+- **ether.fi, conto TradingSafe**: quando l'importazione scopre il secondo conto di ether.fi su Ethereum non mostra più il messaggio informativo. Il conto si importa da solo insieme al Safe, e resta traccia nel registro.
+
 ## Versione 1.0.66.04
 
 **Nuove implementazioni**

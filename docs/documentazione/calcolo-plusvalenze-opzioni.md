@@ -303,6 +303,56 @@ Al punto **3**: 200 € − 300 € = **−100 €**.
 
 La plusvalenza totale di fine anno è quindi **200 €**.
 
+## Plusvalenze per aliquota: 26% e 33% {#plusvalenze-per-aliquota}
+
+Fino al 31/12/2025 l'imposta sostitutiva sulle plusvalenze da cripto-attività è al **26%**. Dal **1° gennaio 2026** l'aliquota
+ordinaria è del **33%** (Legge di bilancio 2025, art. 1 comma 24). Resta al **26%** il reddito che deriva da operazioni di
+detenzione, cessione o impiego di **token di moneta elettronica denominati in euro** (Legge di bilancio 2026, art. 1 comma 28).
+
+Il programma non calcola l'imposta, ma divide le plusvalenze mostrate nella tabella dei movimenti in tre gruppi:
+
+| Gruppo | Aliquota |
+|---|---|
+| Movimenti fino al 31/12/2025 | 26% |
+| Dal 01/01/2026, plusvalenza che nasce da un token di moneta elettronica in euro | 26% |
+| Dal 01/01/2026, tutte le altre | 33% |
+
+Per aprire il dettaglio si **clicca il riquadro della plusvalenza** nella scheda *Transazioni Crypto* ("Plusvalenze del
+periodo selezionato"). Il dialogo riguarda le righe mostrate in quel momento, quindi segue il periodo e tutti i filtri scelti, anche il campo di ricerca e i
+filtri di colonna, e in testa dice quali sono. Anche i tre riquadri della tabella seguono le stesse righe. Per ogni
+gruppo, e poi per anno, mostra il numero di movimenti, la somma delle **vendite**, la somma dei **costi di carico** e la
+**plusvalenza**. Vendite e costi si contano come nei riquadri della tabella e il totale coincide con loro. In fondo elenca i token di
+moneta elettronica che hanno prodotto plusvalenza dal 2026, divisi fra quelli in euro (26%) e quelli che non lo sono (33%).
+
+**Come il programma attribuisce un movimento.** La plusvalenza di un movimento nasce da una gamba: quella **uscita** se c'è e non è
+FIAT (una cessione, anche in permuta), altrimenti quella **entrata** (un provento, per esempio una reward). Il movimento va al 26% se
+quella gamba è un token di moneta elettronica in euro, altrimenti al 33%. Quindi:
+
+- la cessione di EURC contro BTC e la reward in EURC sono al 26%
+- la vendita di BTC contro EURC è al 33%, perché il reddito nasce dal BTC
+- la reward in USDC è al 33%, perché USDC è un token di moneta elettronica ma non è in euro
+
+La norma non dice nulla sugli scambi: questa è una lettura del programma, e conviene tenerne conto quando si usano questi totali.
+
+**La neutralità fra euro e token in euro.** La legge dice che la «mera conversione» fra euro e token di moneta elettronica in euro, e il
+rimborso in euro del relativo valore nominale, non sono realizzo. Il programma legge questa frase come **parità di valore**: un token in
+euro vale un euro anche se il suo prezzo di mercato si scosta, quindi lo scostamento dall'ancoraggio non produce da solo plusvalenza né
+minusvalenza. Non la legge come un'esenzione dal realizzo: se il token porta con sé un costo di carico diverso da un euro, per esempio
+perché è arrivato da uno scambio che non ha realizzato nulla o da una reward, la differenza fra quel costo e il valore nominale resta
+plusvalenza o minusvalenza e il motore la calcola quando il token esce, anche contro euro. Quella plusvalenza nasce da un token in euro e
+il dialogo la mette al 26%. Anche questa è una lettura: la norma non dice come si tratta il costo di carico e, al momento della
+stesura, non risulta una risposta ufficiale dell'Agenzia delle entrate che la confermi o la smentisca.
+
+**Quando un token conta come "in euro".** Servono due cose insieme. Il token deve essere un *E-Money Token* nelle opzioni
+(**Opzioni – E-Money Token**) alla data del movimento, e deve essere dichiarato denominato in euro nell'elenco dei token di moneta
+elettronica che il programma aggiorna da solo. Il nome del token non basta: un token con "EUR" nel simbolo ma fuori dall'elenco conta
+come una cripto-attività qualsiasi. La legge chiede anche che le riserve siano interamente in euro presso soggetti autorizzati
+nell'Unione europea. Per i token con licenza MiCA il requisito è quasi sempre soddisfatto, ma l'elenco dice solo che il token è
+ancorato all'euro.
+
+Le plusvalenze di cui si parla sono quelle del calcolo generale: il dialogo non tiene conto di compensazioni fra minusvalenze e
+plusvalenze né di altri elementi della dichiarazione.
+
 ## Plusvalenze globali o per gruppo wallet {#plusvalenze-globali-o-per-gruppo-wallet}
 
 ### Calcoli globali {#calcoli-globali}

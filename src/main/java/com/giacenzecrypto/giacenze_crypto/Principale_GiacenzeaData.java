@@ -717,6 +717,12 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                 && !v[18].contains("PTW") && (Simboli == null || Simboli.contains(v[8]));
         boolean Entrata = !v[12].isBlank() && !v[12].equalsIgnoreCase("FIAT") && !v[17].isBlank();
         if (!Uscita && !Entrata) {
+            //Deposito da un wallet proprio dello STESSO gruppo : il motore non scrive nessun costo sul
+            //movimento (un'unica pila per simbolo), ma qui le pile sono per riga della tabella
+            if (v[18].contains("DTW") && !v[12].isBlank() && !v[12].equalsIgnoreCase("FIAT")
+                    && (Simboli == null || Simboli.contains(v[11]))) {
+                SpostaLottiTraRigheStessoGruppo(Costi, v);
+            }
             return;
         }
         String IDTS[] = v[0].split("_");
@@ -779,6 +785,36 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Trasferimento fra due wallet dello stesso gruppo che nella tabella finiscono su righe diverse
+     * (tipicamente un exchange, senza rete né address, e il wallet on-chain dello stesso token): il motore
+     * delle plusvalenze ha una pila per simbolo e il costo "segue" da solo, qui le pile sono per riga
+     * ({@code Moneta;Tipo;Address;Rete}) e senza questo passaggio i lotti resterebbero sulla riga di
+     * partenza, lasciando a costo zero la quantità arrivata. Si sposta, a parità di gruppo, la quantità
+     * uscita dal PTW collegato (la stessa del deposito, commissioni escluse) dalla pila della riga di partenza a
+     * quella di arrivo, mantenendo costo, ID di origine e ordine dei lotti. Con lo stesso gruppo non c'è
+     * nessun effetto sul costo complessivo: se il gruppo è diverso ci pensa il ramo del DTW con costo scritto.
+     */
+    private static void SpostaLottiTraRigheStessoGruppo(CostiCaricoRimanenze Costi, String[] v) {
+        String Gruppo = Costi.GruppoDelMovimento(v[3]);
+        String Rete = Funzioni.TrovaReteDaIMovimento(v);
+        String ChiaveA = ChiaveRiga(v[11], v[12], v[28], Rete);
+        for (String IdC : v[20].split(",")) {
+            String C[] = IdC.isBlank() ? null : MappaCryptoWallet.get(IdC);
+            if (C == null || !C[18].contains("PTW") || !C[8].equals(v[11]) || !C[9].equalsIgnoreCase(v[12])) {
+                continue;
+            }
+            if (!java.util.Objects.equals(Gruppo, Costi.GruppoDelMovimento(C[3]))) {
+                continue;
+            }
+            String ChiaveDa = ChiaveRiga(C[8], C[9], C[26], Funzioni.TrovaReteDaIMovimento(C));
+            if (!ChiaveDa.equals(ChiaveA)) {
+                Costi.SpostaLotti(Gruppo, ChiaveDa, ChiaveA, C[10]);
+            }
+            return;
         }
     }
 
@@ -1529,6 +1565,53 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
         }
 
         /**
+         * Sposta, dalla pila di una riga a quella di un'altra dello stesso gruppo, i lotti che coprono la
+         * quantità indicata (dall'ultimo entrato, come uno scarico). Costo, ID di origine e ordine restano:
+         * un lotto più capiente del necessario si divide col costo proporzionato. Se la pila di partenza
+         * finisce prima non si segnala nulla, come in {@link #TogliLotti}.
+         */
+        private void SpostaLotti(String Gruppo, String ChiaveDa, String ChiaveA, String Qta) {
+            if (Gruppo == null || Qta == null || Qta.isBlank()) {
+                return;
+            }
+            Map<String, ArrayDeque<String[]>> PerChiave = Pile.get(Gruppo);
+            ArrayDeque<String[]> Da = PerChiave == null ? null : PerChiave.get(ChiaveDa);
+            if (Da == null) {
+                return;
+            }
+            BigDecimal Rimanente;
+            try {
+                Rimanente = new BigDecimal(Qta.trim()).abs();
+            } catch (NumberFormatException ex) {
+                return;
+            }
+            List<String[]> Mossi = new ArrayList<>();
+            while (Rimanente.signum() > 0 && !Da.isEmpty()) {
+                String Lotto[] = PrendiLotto(Da);
+                BigDecimal[] Numeri = NumeriDelLotto(Lotto);
+                if (Numeri[0].compareTo(Rimanente) <= 0) {
+                    Rimanente = Rimanente.subtract(Numeri[0]);
+                    Mossi.add(Lotto);
+                } else {
+                    BigDecimal QtaResidua = Numeri[0].subtract(Rimanente);
+                    BigDecimal CostoResiduo = Numeri[1]
+                            .divide(Numeri[0], VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP)
+                            .multiply(QtaResidua)
+                            .setScale(VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP);
+                    MettiLotto(Da, new String[]{QtaResidua.toPlainString(), CostoResiduo.toPlainString(), Lotto[2]});
+                    Mossi.add(new String[]{Rimanente.toPlainString(),
+                        Numeri[1].subtract(CostoResiduo).toPlainString(), Lotto[2]});
+                    Rimanente = BigDecimal.ZERO;
+                }
+            }
+            //Rimessi dal più vecchio al più recente : in cima alla pila di arrivo resta il lotto più recente
+            ArrayDeque<String[]> A = Pile.get(Gruppo).computeIfAbsent(ChiaveA, k -> new ArrayDeque<>());
+            for (int i = Mossi.size() - 1; i >= 0; i--) {
+                MettiLotto(A, Mossi.get(i));
+            }
+        }
+
+        /**
          * Costo di carico dei lotti che coprono la giacenza mostrata su una riga della tabella.
          * <p>
          * I lotti dei gruppi wallet in gioco vengono uniti e riordinati per ID del movimento di origine —
@@ -1920,6 +2003,8 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
         if (Riga[Inizio + 19].isBlank()) {
             Riga[Inizio + 19] = "0";
         }
+        //Come nella tabella dei movimenti, la data al secondo (i secondi dall'ID, il movimento non cambia)
+        Riga[Inizio + 1] = FunzioniDate.DataOraAlSecondo(v);
         Riga[Inizio + 40] = FontePrezzi(v.length > 40 ? v[40] : null);
         Riga[Inizio + 41] = AliasGruppoWallet(DatabaseH2.Pers_GruppoWallet_Leggi(v[3], true), AliasGruppi);
         Riga[Inizio + 42] = Operazioni == null ? "" : Operazioni.getOrDefault(v[0], "");

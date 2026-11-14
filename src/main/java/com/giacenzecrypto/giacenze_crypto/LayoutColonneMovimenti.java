@@ -166,7 +166,7 @@ public final class LayoutColonneMovimenti {
             List.of(0), List.of(1, 3, 4, 5),
             List.of(1, 2, 10, 3, 4, 5, 6, 7, 8, 9, 11), 11,
             cm -> {
-                preferita(cm, 1, 120);   // Data e Ora
+                preferita(cm, 1, 140);   // Data e Ora (yyyy-MM-dd HH:mm:ss)
                 preferita(cm, 2, 300);   // Exchange / Wallet
                 preferita(cm, 3, 160);   // Tipo Transazione
                 preferita(cm, 4, 70);    // Moneta
@@ -385,7 +385,7 @@ public final class LayoutColonneMovimenti {
 
     /** Le larghezze preferite della tabella movimenti, con le colonne a partire dall'indice di model {@code inizio}. */
     private static void impostaLarghezzeBase(TableColumnModel cm, int inizio) {
-        preferita(cm, inizio + 1, 120);    // Data e Ora
+        preferita(cm, inizio + 1, 140);    // Data e Ora (yyyy-MM-dd HH:mm:ss)
         preferita(cm, inizio + 4, 90);     // Dettaglio Wallet
         preferita(cm, inizio + 8, 80);     // Moneta Ven./Trasf.
         preferita(cm, inizio + 11, 80);    // Moneta Acq./Ric.

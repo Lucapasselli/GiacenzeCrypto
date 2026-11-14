@@ -645,7 +645,7 @@
                           <Editor/>
                           <Renderer/>
                         </Column>
-                        <Column maxWidth="120" minWidth="120" prefWidth="120" resizable="true">
+                        <Column maxWidth="140" minWidth="140" prefWidth="140" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>
@@ -960,7 +960,7 @@
                   <Font name="Noto Sans" size="14" style="1"/>
                 </Property>
                 <Property name="horizontalAlignment" type="int" value="0"/>
-                <Property name="text" type="java.lang.String" value="Plusvalenze del periodo selezionato : "/>
+                <Property name="text" type="java.lang.String" value="Plusvalenze della tabella : "/>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="TransazioniCrypto_Text_Plusvalenza">
@@ -1590,7 +1590,7 @@
                                   <Editor/>
                                   <Renderer/>
                                 </Column>
-                                <Column maxWidth="140" minWidth="120" prefWidth="120" resizable="true">
+                                <Column maxWidth="160" minWidth="140" prefWidth="140" resizable="true">
                                   <Title/>
                                   <Editor/>
                                   <Renderer/>
@@ -1928,7 +1928,7 @@
                                   <Editor/>
                                   <Renderer/>
                                 </Column>
-                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                <Column maxWidth="-1" minWidth="-1" prefWidth="140" resizable="true">
                                   <Title/>
                                   <Editor/>
                                   <Renderer/>
@@ -7478,6 +7478,7 @@
                             <Component id="Opzioni_Varie_Checkbox_LogJsonDefi" alignment="0" min="-2" max="-2" attributes="0"/>
                             <Component id="Opzioni_Varie_Checkbox_LogJsonPrezzi" alignment="0" min="-2" max="-2" attributes="0"/>
                             <Component id="Opzioni_Varie_Bottone_InviaLog" alignment="0" min="-2" pref="340" max="-2" attributes="0"/>
+                            <Component id="Opzioni_Varie_Bottone_VerificaServizi" alignment="0" min="-2" pref="340" max="-2" attributes="0"/>
                             <Component id="Opzioni_Varie_Titolo_ModificheManuali" alignment="0" min="-2" max="-2" attributes="0"/>
                             <Component id="Opzioni_Varie_Separatore_ModificheManuali" alignment="0" min="-2" pref="560" max="-2" attributes="0"/>
                             <Component id="Opzioni_Varie_Etichetta_ModificheManuali" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -7509,6 +7510,8 @@
                           <Component id="Opzioni_Varie_Checkbox_LogJsonPrezzi" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="Opzioni_Varie_Bottone_InviaLog" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="Opzioni_Varie_Bottone_VerificaServizi" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
                           <Component id="Opzioni_Varie_Titolo_ModificheManuali" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
@@ -7590,6 +7593,15 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_Bottone_InviaLogActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="Opzioni_Varie_Bottone_VerificaServizi">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Verifica la disponibilit&#xe0; dei servizi"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Controlla la raggiungibilit&#xe0; e i tempi di risposta dei servizi esterni che usa il programma (prezzi, tassi di cambio, blockchain, exchange, aggiornamenti) e di Node.js, e dice cosa non va."/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_Bottone_VerificaServiziActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JLabel" name="Opzioni_Varie_Titolo_ModificheManuali">

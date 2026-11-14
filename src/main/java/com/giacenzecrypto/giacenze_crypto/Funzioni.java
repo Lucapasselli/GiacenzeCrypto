@@ -83,7 +83,7 @@ public class Funzioni {
 
     /** Repository e ramo da cui si allineano le configurazioni distribuite (vedi {@link #AggiornamentoConfigDaRepositoryUnicaChiamata}). */
     static final String REPO_GITHUB = "Lucapasselli/GiacenzeCrypto";
-    private static final String BRANCH_GITHUB = "master";
+    static final String BRANCH_GITHUB = "master";
     /** Cartella radice delle configurazioni nel repository: è l'albero chiesto con la chiamata unica. */
     private static final String RADICE_CONFIG_REPO = "config";
 

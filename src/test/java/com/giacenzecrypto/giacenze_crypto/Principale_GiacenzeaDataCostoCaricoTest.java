@@ -110,6 +110,31 @@ class Principale_GiacenzeaDataCostoCaricoTest {
     // ------------------------------------------------------------------
 
     @Test
+    void untrasferimentoDaExchangeAWalletOnChainPortaIlCostoSullaRigaDiArrivo() {
+        //Stesso gruppo (PlusXWallet spenta), ma righe diverse della tabella : USDT dell'exchange senza
+        //rete né address, USDT del wallet on-chain con address e rete. Il motore ha una pila per simbolo
+        //e il costo segue da solo : la tabella, che ha una pila per riga, deve spostarlo con la quantita'
+        acquisto("2024-01-01 10:00", "Exchange", "USDT", "100", "90");
+        String[] pt = movimento("2024-02-01 10:00", "Exchange", "PC", "PTW - Trasferimento tra Wallet di proprietà (no plusvalenza)",
+                "TRASFERIMENTO TRA WALLET", "USDT", "Crypto", "-40", "", "", "", "36");
+        String[] dt = movimento("2024-02-01 10:00", "0xWallet", "DC", "DTW - Trasferimento tra Wallet di proprietà (no plusvalenza)",
+                "TRASFERIMENTO TRA WALLET", "", "", "", "USDT", "Crypto", "40", "36");
+        dt[28] = "0xtoken";
+        dt[34] = "CELO";
+        pt[20] = dt[0];
+        dt[20] = pt[0];
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        Principale_GiacenzeaData.CostiCaricoRimanenze costi =
+                Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(fineGiornata("2024-12-31"));
+        String chiaveOnChain = Principale_GiacenzeaData.ChiaveRiga("USDT", "Crypto", "0xtoken", "CELO");
+        String chiaveExchange = Principale_GiacenzeaData.ChiaveRiga("USDT", "Crypto", "", "");
+        assertEquals("36.00", costi.CostoDelleRimanenze("Tutti", chiaveOnChain, "40"));
+        assertEquals("54.00", costi.CostoDelleRimanenze("Tutti", chiaveExchange, "60"));
+    }
+
+    @Test
     void dopoUnaVenditaParzialeRestaIlCostoDelLottoPiuVecchio() {
         acquisto("2024-01-01 10:00", "BTC", "1", "1000");
         acquisto("2024-02-01 10:00", "BTC", "1", "2000");

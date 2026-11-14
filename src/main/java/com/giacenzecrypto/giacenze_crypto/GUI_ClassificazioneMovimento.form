@@ -189,7 +189,7 @@
                   <Editor/>
                   <Renderer/>
                 </Column>
-                <Column maxWidth="120" minWidth="120" prefWidth="120" resizable="true">
+                <Column maxWidth="140" minWidth="140" prefWidth="140" resizable="true">
                   <Title/>
                   <Editor/>
                   <Renderer/>
@@ -270,7 +270,7 @@
                   <Editor/>
                   <Renderer/>
                 </Column>
-                <Column maxWidth="120" minWidth="120" prefWidth="120" resizable="true">
+                <Column maxWidth="140" minWidth="140" prefWidth="140" resizable="true">
                   <Title/>
                   <Editor/>
                   <Renderer/>

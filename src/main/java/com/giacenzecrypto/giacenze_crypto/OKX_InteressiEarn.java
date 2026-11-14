@@ -70,8 +70,12 @@ final class OKX_InteressiEarn {
     /** Primo giorno registrato anche con l'opzione spenta: il taglio vale solo per gli anni fino al 2025. */
     static final String PRIMO_GIORNO_SEMPRE_REGISTRATO = "2026-01-01";
 
-    /** Firma dell'ultimo avviso mostrato (personale.mv.db): lo stesso avviso non si ripete a ogni scaricamento. */
-    static final String OPZIONE_ULTIMO_AVVISO = "OKX_InteressiEarn_UltimoAvviso";
+    /**
+     * Firma ({@link #FirmaRipetibile}) della parte ripetuta dell'avviso (anni fino al 2025 non registrati e anomalie) che
+     * l'utente ha chiesto di non vedere più (personale.mv.db). Se l'elenco cambia, la firma non coincide più e l'avviso
+     * ricompare. Chiave nuova: la vecchia {@code OKX_InteressiEarn_UltimoAvviso} (ultimo avviso mostrato) non è più letta.
+     */
+    static final String OPZIONE_AVVISO_NASCOSTO = "OKX_InteressiEarn_AvvisoNascosto";
 
     /** ID dei rendimenti Simple Earn, scaricati ({@code convertOKXEarn}) o ricostruiti. */
     static final Pattern CHIAVE_EARN = Pattern.compile("^EARN-(.+)-(\\d{8})(" + Pattern.quote(SUFFISSO) + ")?$");
@@ -128,29 +132,63 @@ final class OKX_InteressiEarn {
      * @return il numero di righe tolte
      */
     static int ScartaPrimoGiornoTroncato(List<String[]> righeEarn, long inizioRichiesto, java.util.Set<String> moneteRicostruibili) {
+        return ScartaPrimoGiornoTroncato(righeEarn, inizioRichiesto, moneteRicostruibili, null);
+    }
+
+    /**
+     * Come sopra, ma con il primo istante restituito dallo storico interessi <b>per qualsiasi moneta</b>
+     * ({@link #PrimoRecordLending}), che dice se la finestra e' davvero tagliata. Il giorno si scarta solo quando e' il
+     * primo di tutta la finestra: il primo giorno di interessi di <b>una</b> moneta no, perche' e' semplicemente il giorno
+     * in cui il prodotto ha cominciato a maturare (sottoscrizione recente, o riacquisto dopo un riscatto totale). Scartarlo
+     * vorrebbe dire sostituire un dato reale con una stima: e' successo con una moneta sottoscritta da poco, il cui primo
+     * giorno di interessi e' stato tolto e poi ricostruito spalmandolo anche sul giorno precedente, che non ha avuto interessi.
+     *
+     * @param primoRecordMs primo istante dello storico interessi di tutte le monete (anche i record a zero), oppure
+     *        {@code null} se non noto: allora vale il primo giorno fra le righe passate, di tutte le monete insieme
+     */
+    static int ScartaPrimoGiornoTroncato(List<String[]> righeEarn, long inizioRichiesto, java.util.Set<String> moneteRicostruibili,
+            Long primoRecordMs) {
         if (righeEarn == null || righeEarn.isEmpty()) return 0;
         String giornoRichiesto = Giorno(inizioRichiesto);
-        Map<String, String> primoGiorno = new HashMap<>();
-        for (String[] r : righeEarn) {
-            Matcher m = CHIAVE_EARN.matcher(r[14]);
-            if (!m.matches()) continue;
-            String g = GiornoDaChiave(m.group(2));
-            primoGiorno.merge(m.group(1), g, (a, b) -> a.compareTo(b) <= 0 ? a : b);
+        String primoGiornoFinestra = primoRecordMs != null ? Giorno(primoRecordMs) : null;
+        if (primoGiornoFinestra == null) {
+            for (String[] r : righeEarn) {
+                Matcher m = CHIAVE_EARN.matcher(r[14]);
+                if (!m.matches()) continue;
+                String g = GiornoDaChiave(m.group(2));
+                if (primoGiornoFinestra == null || g.compareTo(primoGiornoFinestra) < 0) primoGiornoFinestra = g;
+            }
         }
+        //Finestra non tagliata: comincia nel giorno richiesto o prima
+        if (primoGiornoFinestra == null || primoGiornoFinestra.compareTo(giornoRichiesto) <= 0) return 0;
         int tolte = 0;
         for (var it = righeEarn.iterator(); it.hasNext();) {
             String[] r = it.next();
             Matcher m = CHIAVE_EARN.matcher(r[14]);
             if (!m.matches()) continue;
             String g = GiornoDaChiave(m.group(2));
-            if (g.equals(primoGiorno.get(m.group(1))) && g.compareTo(giornoRichiesto) > 0
-                    && moneteRicostruibili.contains(m.group(1).toUpperCase())) {
+            if (g.equals(primoGiornoFinestra) && moneteRicostruibili.contains(m.group(1).toUpperCase())) {
                 System.out.println("OKX Earn: " + r[5] + " del " + g + " scartato, giorno troncato dal limite di un mese dello storico interessi");
                 it.remove();
                 tolte++;
             }
         }
         return tolte;
+    }
+
+    /**
+     * @return il primo istante dello storico interessi restituito da OKX, per qualsiasi moneta e anche per i record a
+     *         zero, oppure {@code null} se non ce ne sono
+     */
+    static Long PrimoRecordLending(JsonObject jsonEarn) {
+        if (jsonEarn == null || !jsonEarn.has("savings_lending") || !jsonEarn.get("savings_lending").isJsonArray()) return null;
+        long primo = Long.MAX_VALUE;
+        for (JsonElement el : jsonEarn.getAsJsonArray("savings_lending")) {
+            if (!el.isJsonObject()) continue;
+            String ts = Testo(el.getAsJsonObject(), "ts");
+            if (Funzioni.isNumeric(ts, false)) primo = Math.min(primo, Long.parseLong(ts));
+        }
+        return primo == Long.MAX_VALUE ? null : primo;
     }
 
     /**
@@ -495,6 +533,14 @@ final class OKX_InteressiEarn {
      * Testo dell'avviso di fine calcolo, oppure stringa vuota se non c'e' nulla da dire.
      */
     static String TestoAvviso(Esito esito) {
+        return TestoAvviso(esito, true);
+    }
+
+    /**
+     * Come {@link #TestoAvviso(Esito)}, ma con la parte ripetuta (anni fino al 2025 non registrati e anomalie) solo se
+     * {@code conParteRipetibile}: l'utente può averla nascosta ({@link #OPZIONE_AVVISO_NASCOSTO}).
+     */
+    static String TestoAvviso(Esito esito, boolean conParteRipetibile) {
         if (esito == null || esito.vuoto()) return "";
         StringBuilder sb = new StringBuilder();
         if (!esito.ricostruiti.isEmpty()) {
@@ -505,7 +551,7 @@ final class OKX_InteressiEarn {
               .append("la divisione per giorno è una stima in proporzione al capitale.\n")
               .append("Causale \"").append(CAUSALE).append("\".\n");
         }
-        if (!esito.anniPassati.isEmpty()) {
+        if (conParteRipetibile && !esito.anniPassati.isEmpty()) {
             if (sb.length() > 0) sb.append("\n");
             sb.append("Non registrati perché negli anni fino al 2025:\n\n");
             for (Periodo p : esito.anniPassati) sb.append(RigaPeriodo(p));
@@ -513,7 +559,7 @@ final class OKX_InteressiEarn {
               .append("negli anni fino al 2025\" in Exchange API, scheda Particolarità OKX,\n")
               .append("e scarica di nuovo.\n");
         }
-        if (!esito.anomalie.isEmpty()) {
+        if (conParteRipetibile && !esito.anomalie.isEmpty()) {
             if (sb.length() > 0) sb.append("\n");
             sb.append("Non ricostruiti:\n\n");
             for (String a : esito.anomalie) sb.append("   ").append(a).append("\n");
@@ -548,10 +594,16 @@ final class OKX_InteressiEarn {
                 + "scheda Particolarità OKX.";
     }
 
+    /** @return {@code true} se l'avviso ha una parte che si ripete identica a ogni scaricamento (si può nascondere) */
+    static boolean HaParteRipetibile(Esito esito) {
+        return esito != null && (!esito.anniPassati.isEmpty() || !esito.anomalie.isEmpty());
+    }
+
     /**
      * Firma della parte dell'avviso che si ripete identica a ogni scaricamento (anni fino al 2025 non registrati e
-     * anomalie): mostrata una volta, non si ripropone finche' non cambia. Le righe ricostruite invece si mostrano
-     * sempre, tanto compaiono una volta sola.
+     * anomalie): l'utente può chiedere di non rivederla ({@link #OPZIONE_AVVISO_NASCOSTO}) e ricompare solo se la firma
+     * cambia, cioè se saltano fuori periodi nuovi o diversi. Le righe ricostruite invece si mostrano sempre: compaiono
+     * una volta sola, e dicono che sono stati scritti movimenti.
      */
     static String FirmaRipetibile(Esito esito) {
         StringBuilder sb = new StringBuilder();

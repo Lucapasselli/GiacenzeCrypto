@@ -310,6 +310,13 @@ private static final long serialVersionUID = 3L;
      */
     public int NumErroriMovimentiCollegati=0;
 
+    /**
+     * Trasferimenti classificati ({@code PTW}/{@code DTW}) senza nessun collegamento {@code [20]}
+     * ({@link MovimentiCollegati.Esito#SenzaCollegamento}). Sesto contatore del pulsante Errori, calcolato dal thread delle tabelle
+     * secondarie insieme a {@link #NumErroriMovimentiCollegati} e per lo stesso motivo non azzerato a inizio caricamento.
+     */
+    public int NumErroriTrasferimentiSenzaCollegamento=0;
+
     /** Operazione di ogni movimento (ID → chiave), calcolata a ogni caricamento della tabella movimenti. */
     private Map<String, String> OperazioneDi = new HashMap<>();
 
@@ -1142,6 +1149,7 @@ private static final long serialVersionUID = 3L;
         Opzioni_Varie_Checkbox_LogJsonDefi = new javax.swing.JCheckBox();
         Opzioni_Varie_Checkbox_LogJsonPrezzi = new javax.swing.JCheckBox();
         Opzioni_Varie_Bottone_InviaLog = new javax.swing.JButton();
+        Opzioni_Varie_Bottone_VerificaServizi = new javax.swing.JButton();
         Opzioni_Varie_Titolo_ModificheManuali = new javax.swing.JLabel();
         Opzioni_Varie_Separatore_ModificheManuali = new javax.swing.JSeparator();
         Opzioni_Varie_Etichetta_ModificheManuali = new javax.swing.JLabel();
@@ -1525,9 +1533,9 @@ private static final long serialVersionUID = 3L;
             TransazioniCryptoTabella.getColumnModel().getColumn(0).setMinWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(0).setPreferredWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(0).setMaxWidth(0);
-            TransazioniCryptoTabella.getColumnModel().getColumn(1).setMinWidth(120);
-            TransazioniCryptoTabella.getColumnModel().getColumn(1).setPreferredWidth(120);
-            TransazioniCryptoTabella.getColumnModel().getColumn(1).setMaxWidth(120);
+            TransazioniCryptoTabella.getColumnModel().getColumn(1).setMinWidth(140);
+            TransazioniCryptoTabella.getColumnModel().getColumn(1).setPreferredWidth(140);
+            TransazioniCryptoTabella.getColumnModel().getColumn(1).setMaxWidth(140);
             TransazioniCryptoTabella.getColumnModel().getColumn(2).setMinWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(2).setPreferredWidth(0);
             TransazioniCryptoTabella.getColumnModel().getColumn(2).setMaxWidth(0);
@@ -1671,7 +1679,7 @@ private static final long serialVersionUID = 3L;
 
         TransazioniCrypto_Label_Plusvalenza.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
         TransazioniCrypto_Label_Plusvalenza.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        TransazioniCrypto_Label_Plusvalenza.setText("Plusvalenze del periodo selezionato : ");
+        TransazioniCrypto_Label_Plusvalenza.setText("Plusvalenze della tabella : ");
 
         TransazioniCrypto_Text_Plusvalenza.setEditable(false);
         TransazioniCrypto_Text_Plusvalenza.setBackground(new java.awt.Color(51, 51, 51));
@@ -2121,9 +2129,9 @@ private static final long serialVersionUID = 3L;
             DepositiPrelievi_Tabella.getColumnModel().getColumn(0).setMinWidth(1);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(0).setPreferredWidth(1);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(0).setMaxWidth(1);
-            DepositiPrelievi_Tabella.getColumnModel().getColumn(1).setMinWidth(120);
-            DepositiPrelievi_Tabella.getColumnModel().getColumn(1).setPreferredWidth(120);
-            DepositiPrelievi_Tabella.getColumnModel().getColumn(1).setMaxWidth(140);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(1).setMinWidth(140);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(1).setPreferredWidth(140);
+            DepositiPrelievi_Tabella.getColumnModel().getColumn(1).setMaxWidth(160);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(2).setMinWidth(140);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(2).setPreferredWidth(370);
             DepositiPrelievi_Tabella.getColumnModel().getColumn(2).setMaxWidth(500);
@@ -2319,6 +2327,7 @@ private static final long serialVersionUID = 3L;
             DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(0).setMinWidth(0);
             DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(0).setPreferredWidth(0);
             DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(0).setMaxWidth(0);
+            DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(1).setPreferredWidth(140);
             DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(2).setMinWidth(0);
             DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(2).setPreferredWidth(0);
             DepositiPrelievi_TabellaCorrelati.getColumnModel().getColumn(2).setMaxWidth(0);
@@ -5928,6 +5937,14 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Opzioni_Varie_Bottone_VerificaServizi.setText("Verifica la disponibilità dei servizi");
+        Opzioni_Varie_Bottone_VerificaServizi.setToolTipText("Controlla la raggiungibilità e i tempi di risposta dei servizi esterni che usa il programma (prezzi, tassi di cambio, blockchain, exchange, aggiornamenti) e di Node.js, e dice cosa non va.");
+        Opzioni_Varie_Bottone_VerificaServizi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Varie_Bottone_VerificaServiziActionPerformed(evt);
+            }
+        });
+
         Opzioni_Varie_Titolo_ModificheManuali.setFont(Opzioni_Varie_Titolo_ModificheManuali.getFont().deriveFont(Opzioni_Varie_Titolo_ModificheManuali.getFont().getStyle() | java.awt.Font.BOLD));
         Opzioni_Varie_Titolo_ModificheManuali.setText("Modifiche manuali dei movimenti");
 
@@ -5965,6 +5982,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Opzioni_Varie_Checkbox_LogJsonDefi)
                     .addComponent(Opzioni_Varie_Checkbox_LogJsonPrezzi)
                     .addComponent(Opzioni_Varie_Bottone_InviaLog, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_Varie_Bottone_VerificaServizi, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_Varie_Titolo_ModificheManuali)
                     .addComponent(Opzioni_Varie_Separatore_ModificheManuali, javax.swing.GroupLayout.PREFERRED_SIZE, 560, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_Varie_Etichetta_ModificheManuali)
@@ -5993,6 +6011,8 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Opzioni_Varie_Checkbox_LogJsonPrezzi)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_Varie_Bottone_InviaLog)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_Varie_Bottone_VerificaServizi)
                 .addGap(26, 26, 26)
                 .addComponent(Opzioni_Varie_Titolo_ModificheManuali)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -7085,8 +7105,15 @@ private void SettaIcone(){
 
     }
     
+    /** I sei contatori degli errori come li legge il pulsante e il dialogo, con l'opzione delle plusvalenze per wallet. */
+    private Principale_Errori.Contatori ContatoriErrori() {
+        return new Principale_Errori.Contatori(NumErroriMovSconosciuti, NumErroriMovNoPrezzo, NumErroriStackLiFoMancante,
+                NumErroriGiacenzeNegative, NumErroriMovimentiCollegati, NumErroriTrasferimentiSenzaCollegamento,
+                "SI".equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi("PlusXWallet")));
+    }
+
     /**
-     * Scrive testo, abilitazione e suggerimento del pulsante degli errori sommando i cinque contatori.
+     * Scrive testo, abilitazione e suggerimento del pulsante degli errori sommando i sei contatori.
      *
      * <p>Sta in un metodo a sé perché i contatori <b>non nascono tutti nello stesso momento</b>: tre
      * sono calcolati dal ciclo di {@link #TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa}, il
@@ -7096,8 +7123,7 @@ private void SettaIcone(){
      * <p>Tocca Swing: va chiamato sull'EDT.
      */
     private void Errori_AggiornaPulsante(){
-        int err = NumErroriMovNoPrezzo + NumErroriMovSconosciuti
-                + NumErroriStackLiFoMancante + NumErroriGiacenzeNegative + NumErroriMovimentiCollegati;
+        int err = ContatoriErrori().totale();
         if (err == 0) {
             Bottone_Errori.setEnabled(false);
             Bottone_Errori.setText("Errori (0)");
@@ -7167,6 +7193,7 @@ private void SettaIcone(){
                             .filter(s -> !Funzioni.isSCAM(s.split(";")[2]))
                             .count();
                     NumErroriMovimentiCollegati = collegati.Totale();
+                    NumErroriTrasferimentiSenzaCollegamento = collegati.SenzaCollegamento.size();
                     Errori_AggiornaPulsante();
                 });
             }, "TabelleSecondarie").start();
@@ -9725,6 +9752,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         TransazioniCrypto_DaSalvare = true;
         TransazioniCrypto_Funzioni_AbilitaBottoneSalva(TransazioniCrypto_DaSalvare);
         long tempoOperazione=System.currentTimeMillis();
+        //Trasferimenti appena abbinati con il deposito prima del prelievo nello stesso secondo: qui nessun ciclo di
+        //classificazione è in corso, quindi si può cambiare l'ID del deposito, e il motore vede già l'ordine giusto
+        OrdineTrasferimenti.Riordina();
         //Aggiorno le Plusvalenze automaticamente solo se non ho selezionato il calcolo manuale delle plusvalenze
         if (!Opzioni_GruppoWallet_CheckBox_PlusManuali.isSelected())Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
         //I movimenti sono cambiati: il registro dei token credito delle piattaforme fallite va ricostruito, dopo il
@@ -9783,7 +9813,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
 
                             String riga[] = new String[12];
                             riga[0] = v[0];
-                            riga[1] = v[1];
+                            //Data al secondo (i secondi dall'ID, solo visualizzazione). Chi legge la colonna per ragionare
+                            //sulle date (l'abbinamento automatico) usa v[1] dalla mappa, non questo testo
+                            riga[1] = FunzioniDate.DataOraAlSecondo(v);
                             riga[2] = v[3];
                             riga[3] = v[5];
                             if (TipoMovimento.equalsIgnoreCase("PC")||TipoMovimento.equalsIgnoreCase("PF")) {
@@ -9929,11 +9961,26 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
      *        movimenti collegati al contratto e non si presta a un sottoinsieme.
      */
     private void DepositiPrelievi_AssegnazioneAutomatica(Set<String> soloSelezionati){
-                // TODO add your handling code here:
-        //qua devo fare le verifiche sui numeri e assegnare le unioni correttamente
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-       // Importazioni.ConvertiScambiLPinDepositiPrelievi();
+        Principale_DepositiPrelievi.Esito esito = new Principale_DepositiPrelievi.Esito();
+        try {
+            DepositiPrelievi_AssegnazioneAutomaticaFasi(soloSelezionati, esito);
+        } finally {
+            //Sempre, anche se una fase è andata male: ricalcolo se qualcosa è cambiato, messaggi e puntatore normale
+            DepositiPrelievi_AssegnazioneAutomaticaChiusura(soloSelezionati, esito);
+        }
+    }
+
+    /**
+     * Le fasi della classificazione automatica. Ogni iterazione dei cicli è isolata (un movimento che dà errore viene saltato e
+     * annotato in {@code esito}, gli altri proseguono), e ogni classificazione che tocca più righe è tutta o niente
+     * ({@link Principale_DepositiPrelievi.Esito#atomico}). I cicli partono da {@link #DaCategorizzareOra()}: lo scambio differito
+     * toglie ID dalla mappa mentre la lista condivisa li conserva.
+     */
+    private void DepositiPrelievi_AssegnazioneAutomaticaFasi(Set<String> soloSelezionati, Principale_DepositiPrelievi.Esito esito){
+        //qua devo fare le verifiche sui numeri e assegnare le unioni correttamente
         int numeromodifiche=0;
+        try {
         //Le tolleranze della fase 1 (finestra, differenza massima, tolleranza inversa) stanno in config/varie/Parametri.json
         //(ParametriAbbinamento), lette a ogni pressione del pulsante. Se non sono disponibili la fase 1 si salta: nessun
         //abbinamento automatico e' meglio di uno con tolleranze inventate
@@ -9943,10 +9990,13 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         int numeroRighe=ModelloTabella1DepositiPrelievi.getRowCount();
         //int numeroRighe=Principale.DepositiPrelieviDaCategorizzare.size();
         for (int i=0;ParAbb!=null&&i<numeroRighe;i++){
+            try {
             //System.out.println(ModelloTabella1DepositiPrelievi.getValueAt(i, 1));
             String id=ModelloTabella1DepositiPrelievi.getValueAt(i, 0).toString();
             //String id=Principale.DepositiPrelieviDaCategorizzare.get(i);
-            String data=ModelloTabella1DepositiPrelievi.getValueAt(i, 1).toString();
+            //La data per l'abbinamento e' v[1] del movimento (al minuto, come sempre), non il testo della colonna,
+            //che mostra anche i secondi: la classificazione automatica non deve dipendere da come si disegna la tabella
+            String data=MappaCryptoWallet.get(id)[1];
             String moneta=ModelloTabella1DepositiPrelievi.getValueAt(i, 4).toString();
             String qta=ModelloTabella1DepositiPrelievi.getValueAt(i, 5).toString();
             //String wallet=ModelloTabella1DepositiPrelievi.getValueAt(i, 2).toString();
@@ -9964,7 +10014,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 if (soloSelezionati!=null && !(soloSelezionati.contains(id) && soloSelezionati.contains(id2))){
                     continue;
                 }
-                String data2=ModelloTabella1DepositiPrelievi.getValueAt(k, 1).toString();
+                String data2=MappaCryptoWallet.get(id2)[1];
                 String moneta2=ModelloTabella1DepositiPrelievi.getValueAt(k, 4).toString();
                 String qta2=ModelloTabella1DepositiPrelievi.getValueAt(k, 5).toString();
                 //String wallet2=ModelloTabella1DepositiPrelievi.getValueAt(k, 2).toString();
@@ -10035,18 +10085,27 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     if (DepositiPrelievi_EccezioneCoinbaseSentTo(IDPrelievo,IDDeposito)){
                         continue;
                     }
-                    GUI_ClassificazioneMovimento.CreaMovimentiTrasferimentosuWalletProprio(IDPrelievo,IDDeposito);
-                    numeromodifiche++;
+                    final String idPrelievoF=IDPrelievo, idDepositoF=IDDeposito;
+                    //Tutto o niente: un errore a metà (valore mancante, commissione non calcolabile) lasciava un PTW e un DTW non collegati
+                    if (esito.atomico("FASE 1, trasferimento "+idPrelievoF+" -> "+idDepositoF,
+                            () -> { GUI_ClassificazioneMovimento.CreaMovimentiTrasferimentosuWalletProprio(idPrelievoF,idDepositoF); return true; }, false)) {
+                        numeromodifiche++;
+                    }
                     break;
                     }
                 }
+            }
+            } catch (RuntimeException e) {
+                esito.segnala("FASE 1, riga "+i+" della tabella: saltata", e);
             }
         }
 
         
         //FASE 2 : Adesso gestisco tutta la parte delle reward da Defi
-        for (String IDnc:Principale.DepositiPrelieviDaCategorizzare){
+        for (String IDnc:DaCategorizzareOra()){
+            try {
             String Movimento[]=MappaCryptoWallet.get(IDnc);
+            if (Movimento==null) continue;
             String Rete=Funzioni.TrovaReteDaIMovimento(Movimento);
             if(Movimento[18].equalsIgnoreCase("")&&
                   Rete!=null&&
@@ -10058,6 +10117,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     Movimento[18] = "DAI - Airdrop,Cashback,Rewards etc.. (plusvalenza)";
                     numeromodifiche++;
             }
+            } catch (RuntimeException e) {
+                esito.segnala("FASE 2, movimento "+IDnc+": saltato", e);
+            }
         }
 
         //FASE 3 : Cerco di Classificare i movimenti che entrano ed escono dalle piattaforme DEFI e le categorizzo
@@ -10066,9 +10128,11 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         //e non si presta a un sottoinsieme scelto dall'utente.
         if (soloSelezionati==null) {
         //Se è un prelievo di un token LP lo classifico come mandato in un vault e poi di conseguenza vado a classificare anche tutti i rientri, calcolo le reward etc...
-        for (String IDnc:Principale.DepositiPrelieviDaCategorizzare){
+        for (String IDnc:DaCategorizzareOra()){
+            try {
             //ad uno ad uno controllo tutti i movimenti non ancora categorizzati
             String Movimento[]=MappaCryptoWallet.get(IDnc);
+            if (Movimento==null) continue;
             String Rete=Funzioni.TrovaReteDaIMovimento(Movimento);
             if (Rete!=null&&Movimento[18].equalsIgnoreCase("")&&//Verifico che il movimento sia in defi e non sia già classificato
                     Movimento[0].split("_")[4].equals("PC")&&//che sia un movimento di prelievo
@@ -10076,9 +10140,13 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             {
                 //la funzione si occupa di trovare tutti i movimenti analoghi e classificarli
                 //nonchè classifica tutti i movimenti di rientro
-                numeromodifiche=numeromodifiche+GUI_ClassificazioneMovimento.CreaMovimentiTrasferimentoAVaultNonPresidiati(IDnc);
+                //Tutto o niente: la funzione classifica un gruppo di movimenti, non si lascia a metà
+                numeromodifiche=numeromodifiche+esito.atomico("FASE 3, trasferimenti verso la piattaforma di "+IDnc,
+                        () -> GUI_ClassificazioneMovimento.CreaMovimentiTrasferimentoAVaultNonPresidiati(IDnc), 0);
             }
-
+            } catch (RuntimeException e) {
+                esito.segnala("FASE 3, movimento "+IDnc+": saltato", e);
+            }
 
         }
         }
@@ -10090,17 +10158,20 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //-Movimento eseguito nello stesso secondo
             //-almeno uno dei due movimenti contine swap nella sua causale
             //-movimento non ancora categorizzato
-        for (String IDnc : Principale.DepositiPrelieviDaCategorizzare) {
-
+        for (String IDnc : DaCategorizzareOra()) {
+            try {
             String Movimento[] = MappaCryptoWallet.get(IDnc);
+            //Un ID che uno scambio differito appena creato in questo ciclo ha tolto dalla mappa
+            if (Movimento == null) continue;
             String Rete=Funzioni.TrovaReteDaIMovimento(Movimento);
             //Se non è un movimento in defi non gestisco nulla perchè non ho le basi per farlo e devo gestirlo a mano
             if (Rete!=null && Movimento[18].equalsIgnoreCase("")) {
 
                 String DataConfronto1 = IDnc.split("_")[0];
-                for (String IDnc2 : Principale.DepositiPrelieviDaCategorizzare) {
+                for (String IDnc2 : DaCategorizzareOra()) {
 
                     String Movimento2[] = MappaCryptoWallet.get(IDnc2);
+                    if (Movimento2 == null) continue;
                     String Rete2=Funzioni.TrovaReteDaIMovimento(Movimento2);
                     String DataConfronto2 = IDnc2.split("_")[0];
                     if (DataConfronto1.equals(DataConfronto2)&&
@@ -10111,21 +10182,28 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                             (soloSelezionati==null || (soloSelezionati.contains(IDnc) && soloSelezionati.contains(IDnc2)))) {
                         //Se arrivo qua ho i due dovimenti di cui devo creare lo scambio
                         //mando avanti di 2 le modifiche perchè ne ho classificati 2
-                        if (GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(IDnc,IDnc2)) {
+                        if (esito.atomico("FASE 5, scambio differito "+IDnc+" / "+IDnc2,
+                                () -> GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(IDnc,IDnc2), false)) {
                             numeromodifiche++;
                             numeromodifiche++;
+                            //Il prelievo è stato consumato e il suo ID non esiste più: non si cerca un altro deposito
+                            break;
                         }
                         
                     }
                 }
             }
+            } catch (RuntimeException e) {
+                esito.segnala("FASE 5, movimento "+IDnc+": saltato", e);
+            }
         }
         
         //FASE 6: Trasforma i movimenti di deposito di CRO che arrivano da un certo indirizzo in scambio tra WCRO e CRO
         
-            for (String IDnc : Principale.DepositiPrelieviDaCategorizzare) {
-
+            for (String IDnc : DaCategorizzareOra()) {
+            try {
             String Movimento[] = MappaCryptoWallet.get(IDnc);
+            if (Movimento == null) continue;
             
             //Se non è un movimento in defi non gestisco nulla perchè non ho le bsi per farlo e devo gestirlo a mano
             if (Movimento[18].equalsIgnoreCase("")
@@ -10164,14 +10242,23 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 //Documento di origine: il prelievo di WCRO è ricavato dal deposito di CRO
                 MT[41] = DocumentiFonte.SoloOrigine(Movimento[41]);
                 Importazioni.RiempiVuotiArray(MT);
-                MappaCryptoWallet.put(IDNuovoMov, MT);
-                if (GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(IDNuovoMov,IDnc)) {
-                   // System.out.println("Trovato scambio con WCRO");
-                    numeromodifiche++;
-                } else {
+                final String idNuovoMov = IDNuovoMov;
+                final String[] rigaWCRO = MT;
+                //Tutto o niente: il prelievo di WCRO inventato e lo scambio nascono insieme, oppure non nasce nessuno dei due
+                if (esito.atomico("FASE 6, scambio WCRO " + IDnc, () -> {
+                    MappaCryptoWallet.put(idNuovoMov, rigaWCRO);
+                    if (GUI_ClassificazioneMovimento.CreaMovimentiScambioCryptoDifferito(idNuovoMov, IDnc)) {
+                        return true;
+                    }
                     //Scambio non creato: il prelievo di WCRO appena inventato non resta orfano
-                    MappaCryptoWallet.remove(IDNuovoMov);
+                    MappaCryptoWallet.remove(idNuovoMov);
+                    return false;
+                }, false)) {
+                    numeromodifiche++;
                 }
+            }
+            } catch (RuntimeException e) {
+                esito.segnala("FASE 6, movimento " + IDnc + ": saltato", e);
             }
         }
 
@@ -10179,13 +10266,30 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
             //NON DEVO FAR NULLA MA SEMPLICEMENTE GESTIRE LA CRONOS POS CHAIN CON IL WALLET CORRETTO NELLE IMPORTAZIONI
 
         //FASE 8 : Sistemo i token di debito AAVE (variableDebt) che non hanno prezzo di mercato
-        numeromodifiche = numeromodifiche + AAVE_SistemaTokenDiDebito(soloSelezionati);
+        numeromodifiche = numeromodifiche + esito.protetto("FASE 8, token di debito AAVE", () -> AAVE_SistemaTokenDiDebito(soloSelezionati), 0);
+        } finally {
+            //Anche se un errore esce da una fase, la chiusura sa quante modifiche sono state fatte
+            esito.modifiche = numeromodifiche;
+        }
+    }
 
+    /**
+     * Chiusura della classificazione automatica, eseguita sempre: ricalcolo se qualcosa è cambiato (le classificazioni riuscite
+     * restano, quelle fallite sono state annullate), messaggio, avviso dei problemi e puntatore di attesa tolto.
+     */
+    private void DepositiPrelievi_AssegnazioneAutomaticaChiusura(Set<String> soloSelezionati, Principale_DepositiPrelievi.Esito esito){
+        int numeromodifiche = esito.modifiche;
+        try {
         if (numeromodifiche>0){
 
             //Prima il ricalcolo (con il puntatore di attesa già attivo da inizio metodo), poi il messaggio:
-            //annunciandolo prima, l'utente riceveva la conferma con il lavoro ancora da fare
-            Funzioni_AggiornaTutto();
+            //annunciandolo prima, l'utente riceveva la conferma con il lavoro ancora da fare.
+            //Se il ricalcolo dà errore lo si annota e si arriva comunque ai messaggi: l'utente deve sapere anche cosa è stato annullato
+            try {
+                Funzioni_AggiornaTutto();
+            } catch (RuntimeException e) {
+                esito.segnala("ricalcolo e aggiornamento delle tabelle dopo la classificazione", e);
+            }
             Messaggi.SuccessMessage("Movimenti accoppiati",
                     "Sono stati individuati e aggiornati " + numeromodifiche
                     + " coppie di transazioni, ricordarsi di salvare le modifiche!!", this);
@@ -10198,7 +10302,21 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                     + " \"Mostra depositi/prelievi FIAT\": senza, quei movimenti non sono in tabella.";
             Messaggi.InfoMessage("Nessuna coppia trovata", "Non sono state trovare nuove coppie di transazioni da abbinare automaticamente."+suggerimento, this);
         }
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        if (!esito.problemi.isEmpty()) {
+            Messaggi.WarningMessage("Classificazione non completata", esito.testoProblemi(), this);
+        }
+        } finally {
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+    }
+
+    /**
+     * Gli ID di {@code DepositiPrelieviDaCategorizzare} che hanno ancora un movimento in mappa, in una copia. La lista condivisa viene
+     * riempita una volta sola, ma lo scambio differito toglie dalla mappa gli ID di prelievo e deposito e ne crea altri: ogni fase
+     * della classificazione automatica riparte da qui.
+     */
+    private static List<String> DaCategorizzareOra() {
+        return Principale_DepositiPrelievi.IDPresenti(DepositiPrelieviDaCategorizzare, MappaCryptoWallet);
     }
 
     /**
@@ -10233,9 +10351,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
      */
     private int AAVE_SistemaTokenDiDebito(Set<String> soloSelezionati){
         int modifiche=0;
-        for (String IDnc : Principale.DepositiPrelieviDaCategorizzare){
+        for (String IDnc : DaCategorizzareOra()){
             if (soloSelezionati!=null && !soloSelezionati.contains(IDnc)) continue;
             String Movimento[]=MappaCryptoWallet.get(IDnc);
+            if (Movimento==null) continue;
             if (Movimento[18].equalsIgnoreCase("")){
                 String categoria=IDnc.split("_")[4];
                 if (categoria.equalsIgnoreCase("DC")
@@ -15028,12 +15147,14 @@ if (result.isAction("delete-all")) {
     }
     private void Funzioni_CorrezioneErroriPrincipali(){
 
-AppDialog.DialogResult result = Messaggi.Personalizzati_Multi_ScegliErrori(NumErroriMovSconosciuti, NumErroriMovNoPrezzo, NumErroriStackLiFoMancante, NumErroriGiacenzeNegative, NumErroriMovimentiCollegati,
-        NumErroriMovNoPrezzoFuoriPeriodo, NumErroriStackLiFoMancanteFuoriPeriodo, this);
+//Un elenco con una riga per tipo di errore presente (GUI_Errori): un tipo nuovo e' una voce in piu' in Principale_Errori
+Principale_Errori.Contatori contatori = ContatoriErrori();
+String erroreScelto = GUI_Errori.Mostra(this, Principale_Errori.Voci(contatori), Principale_Errori.TitoliSenzaProblemi(contatori),
+        Messaggi.TestoFuoriPeriodo(NumErroriMovNoPrezzoFuoriPeriodo, NumErroriStackLiFoMancanteFuoriPeriodo));
 
-if (result != null && !result.isAction("cancel")) {
+if (erroreScelto != null) {
 
-                        if (result.isAction("nonClassificati")) {
+                        if (Principale_Errori.ID_NON_CLASSIFICATI.equals(erroreScelto)) {
                                 String t="Si verrà ora reindirizzati alla maschera per la correzione dei movimenti non classificati.<br><br>"
                                         + "<b>NB: E' molto importante classificare tutti i movimenti di deposito e prelievo affinchè il calcolo delle plusvalenze sia esatto!</b><br><br>"
                                         + "Dalla versione 1.29, ai fini del calcolo della plusvalenza, tutti i movimenti di deposito non classificati verranno considerati <br>"
@@ -15044,7 +15165,7 @@ if (result != null && !result.isAction("cancel")) {
                              DepositiPrelievi.requestFocus();
                                 
                             }
-                            else if (result.isAction("PrezzoMancante")) {
+                            else if (Principale_Errori.ID_SENZA_PREZZO.equals(erroreScelto)) {
                                 //Il contatore degli errori conta anche fuori dalle date in alto, il filtro no: si chiede se allargarle
                                 boolean periodoAllargato = FiltriMovimenti_ChiediFuoriPeriodo(NumErroriMovNoPrezzoFuoriPeriodo, false);
                                 String t="Verranno ora mostrati tutti i prodotti senza prezzo dei token non SCAM del periodo selezionato.<br><br>"
@@ -15066,7 +15187,7 @@ if (result != null && !result.isAction("cancel")) {
                                 CDC.setSelectedIndex(0);
                              
                             }
-                            else if (result.isAction("LifoMancante")) {
+                            else if (Principale_Errori.ID_LIFO_MANCANTE.equals(erroreScelto)) {
                                 //Spiegazione delle cause e conteggio di quelle riconoscibili in Principale_LifoMancante:
                                 //qui resta solo la navigazione verso la scheda scelta
                                 Principale_LifoMancante.Scelta scelta = Principale_LifoMancante.Gestisci(this, NumErroriMovSconosciuti);
@@ -15092,7 +15213,7 @@ if (result != null && !result.isAction("cancel")) {
                                 }
 
                             }
-                            else if (result.isAction("GiacenzeNegative")) {
+                            else if (Principale_Errori.ID_GIACENZE_NEGATIVE.equals(erroreScelto)) {
                                 //Stessa scheda di 'LifoMancante', ma il conteggio è un altro: qui si
                                 //contano i singoli sotto-wallet andati sotto zero, non i movimenti a cui
                                 //manca il costo di carico. Un giroconto interno azzera la marcatura del
@@ -15110,7 +15231,18 @@ if (result != null && !result.isAction("cancel")) {
                                 SaldiNegativi.requestFocus();
 
                             }
-                            else if (result.isAction("MovimentiCollegati")) {
+                            else if (Principale_Errori.ID_TRASFERIMENTI_SENZA_COLLEGAMENTO.equals(erroreScelto)) {
+                                //Annullare la classificazione cambia i calcoli: un solo ricalcolo alla fine, e poi alla scheda dove
+                                //i movimenti riappaiono per essere abbinati di nuovo
+                                if (Principale_TrasferimentiSenzaCollegamento.Gestisci(this)) {
+                                    Funzioni_AggiornaTutto();
+                                    TabellaCryptodaAggiornare = false;
+                                    CDC.setSelectedIndex(1);
+                                    AnalisiCrypto.setSelectedComponent(DepositiPrelievi);
+                                    DepositiPrelievi.requestFocus();
+                                }
+                            }
+                            else if (Principale_Errori.ID_MOVIMENTI_COLLEGATI.equals(erroreScelto)) {
                                 //Ricostruire uno scambio cambia i calcoli: un solo ricalcolo alla fine, e nessun
                                 //secondo ricalcolo al ritorno del focus sulla finestra
                                 if (Principale_MovimentiCollegati.Gestisci(this)) {
@@ -15252,6 +15384,10 @@ if (result != null && !result.isAction("cancel")) {
     private void Opzioni_Varie_Bottone_InviaLogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Bottone_InviaLogActionPerformed
         GUI_InviaLog.Mostra(this);
     }//GEN-LAST:event_Opzioni_Varie_Bottone_InviaLogActionPerformed
+
+    private void Opzioni_Varie_Bottone_VerificaServiziActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Bottone_VerificaServiziActionPerformed
+        GUI_VerificaServizi.Mostra(this);
+    }//GEN-LAST:event_Opzioni_Varie_Bottone_VerificaServiziActionPerformed
 
     private void Opzioni_Varie_Bottone_ModificheManualiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Bottone_ModificheManualiActionPerformed
         Principale_Opzioni_ModificheManuali.Esporta(this);
@@ -17924,7 +18060,14 @@ if (result != null && !result.isAction("cancel")) {
             lista.add(ID);
             Collections.sort(lista);
             for(String id:lista){
-                ModelloTabella.addRow(MappaCryptoWallet.get(id));
+                //Un [20] puo' citare un movimento non piu' in mappa (e' il caso che il pulsante Errori segnala come
+                //"movimenti collegati incoerenti"): lo si salta, la tabella mostra gli altri
+                String[] orig = MappaCryptoWallet.get(id);
+                if (orig == null) continue;
+                //Copia: la riga e' il movimento vero e la data al secondo e' solo per la vista
+                String[] r = orig.clone();
+                r[1] = FunzioniDate.DataOraAlSecondo(r);
+                ModelloTabella.addRow(r);
             }
         }
     }
@@ -21120,6 +21263,9 @@ try {
                     //(Prezzi.InfoPrezzo.Ritorna40()) - qui si mostra solo la Fonte.
                     //Le stesse funzioni riempiono queste colonne nel dettaglio di "Giacenze a data"
                     z[40] = Principale_GiacenzeaData.FontePrezzi(v[40]);
+                    //[1] "Data e Ora": v[1] e' al minuto, i secondi si leggono dall'ID (solo visualizzazione, il movimento
+                    //non cambia). Righe senza secondi attendibili (ID con 99/60 di vecchie rettifiche) restano al minuto
+                    z[1] = FunzioniDate.DataOraAlSecondo(v);
 
                     //[41] "Alias Gruppo Wallet": derivata da gruppoWallet (già calcolato sopra per i
                     //filtri) via la mappa gruppo->alias caricata una volta sola prima del ciclo.
@@ -21790,6 +21936,7 @@ try {
     private javax.swing.JPanel Opzioni_Varie;
     private javax.swing.JButton Opzioni_Varie_Bottone_Disclaimer;
     private javax.swing.JButton Opzioni_Varie_Bottone_InviaLog;
+    private javax.swing.JButton Opzioni_Varie_Bottone_VerificaServizi;
     private javax.swing.JButton Opzioni_Varie_Bottone_ModificheManuali;
     private javax.swing.JButton Opzioni_Varie_Bottone_RipristinoModificheManuali;
     private javax.swing.JButton Opzioni_Varie_Bottone_ProblemiNoti;

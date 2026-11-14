@@ -54,6 +54,12 @@ public final class MovimentiCollegati {
         public final Set<String> DualFormaPrecedente = new LinkedHashSet<>();
         /** Altri movimenti con un {@code [20]} incoerente. */
         public final Set<String> Altri = new LinkedHashSet<>();
+        /**
+         * Trasferimenti classificati ({@code PTW}/{@code DTW}) senza nessun collegamento: non citano nessun movimento e nessuno li
+         * cita. È <b>un contatore a sé</b> (voce "Trasferimenti senza collegamento" del pulsante Errori) e non entra in
+         * {@link #Totale()}, che alimenta quello dei movimenti collegati incoerenti. In ordine di ID.
+         */
+        public final Set<String> SenzaCollegamento = new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
         public int Totale() {
             return ScambiSovrascritti.size() + DualFormaPrecedente.size() + Altri.size();
@@ -154,6 +160,16 @@ public final class MovimentiCollegati {
                 E.Altri.add(v[0]);
                 break;
             }
+        }
+
+        //4. Trasferimento classificato che non è collegato a nulla. Chi è citato da un altro movimento non conta (le gambe del
+        //Dual a moneta uguale nella forma precedente stanno nei versi unici del punto 2 e si risolvono ripassando il file)
+        for (String[] v : Movimenti) {
+            if (v == null || v.length <= 20 || v[0] == null || v[18] == null) continue;
+            if (!(v[18].startsWith("PTW") || v[18].startsWith("DTW"))) continue;
+            if (v[20] != null && !v[20].isBlank()) continue;
+            if (CitatiDaQualcuno.contains(Chiave(v[0]))) continue;
+            E.SenzaCollegamento.add(v[0]);
         }
         return E;
     }

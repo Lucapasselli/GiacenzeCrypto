@@ -82,6 +82,7 @@
     "referral_gift": "REWARD",
     "reimbursement": "REWARD",
     "reimbursement_reverted": "REWARD",
+    "reward.level_up.subscription.google_pay": "IGNORA",
     "reward.loyalty_program.trading_rebate.crypto_wallet": "REWARD",
     "rewards_platform_deposit_credited": "REWARD",
     "staking_reward": "STAKING REWARD",

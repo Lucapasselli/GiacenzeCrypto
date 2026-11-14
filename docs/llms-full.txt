@@ -313,7 +313,7 @@ Fino al 31/12/2025 l'imposta sostitutiva sulle plusvalenze da cripto-attività �
 ordinaria è del **33%** (Legge di bilancio 2025, art. 1 comma 24). Resta al **26%** il reddito che deriva da operazioni di
 detenzione, cessione o impiego di **token di moneta elettronica denominati in euro** (Legge di bilancio 2026, art. 1 comma 28).
 
-Il programma non calcola l'imposta, ma divide le plusvalenze mostrate nella tabella dei movimenti in tre gruppi:
+Il programma divide le plusvalenze mostrate nella tabella dei movimenti in tre gruppi, che nel dialogo si raccolgono in due aliquote:
 
 | Gruppo | Aliquota |
 |---|---|
@@ -321,12 +321,18 @@ Il programma non calcola l'imposta, ma divide le plusvalenze mostrate nella tabe
 | Dal 01/01/2026, plusvalenza che nasce da un token di moneta elettronica in euro | 26% |
 | Dal 01/01/2026, tutte le altre | 33% |
 
-Per aprire il dettaglio si **clicca il riquadro della plusvalenza** nella scheda *Transazioni Crypto* ("Plusvalenze del
-periodo selezionato"). Il dialogo riguarda le righe mostrate in quel momento, quindi segue il periodo e tutti i filtri scelti, anche il campo di ricerca e i
-filtri di colonna, e in testa dice quali sono. Anche i tre riquadri della tabella seguono le stesse righe. Per ogni
-gruppo, e poi per anno, mostra il numero di movimenti, la somma delle **vendite**, la somma dei **costi di carico** e la
-**plusvalenza**. Vendite e costi si contano come nei riquadri della tabella e il totale coincide con loro. In fondo elenca i token di
-moneta elettronica che hanno prodotto plusvalenza dal 2026, divisi fra quelli in euro (26%) e quelli che non lo sono (33%).
+Per aprire il dettaglio si **clicca il riquadro della plusvalenza** nella scheda *Transazioni Crypto* ("Plusvalenze della
+tabella"). Il dialogo riguarda le righe mostrate in quel momento, quindi segue il periodo e tutti i filtri scelti, anche il campo di ricerca e i
+filtri di colonna, e in testa dice quali sono. Anche i tre riquadri della tabella seguono le stesse righe. In alto una tabella con una
+riga per aliquota (26% e 33%, senza divisione per anno) e il totale mostra il numero di movimenti, la somma delle **vendite**, la somma dei **costi di
+carico**, la **plusvalenza** e l'**imposta**. Vendite e costi si contano come nei riquadri della tabella e il totale coincide con loro.
+Scegliendo una riga, la tabella sotto elenca i **movimenti che hanno determinato quel calcolo**, con la data al secondo, le monete, le quantità,
+il corrispettivo, il costo di carico, la plusvalenza e il gruppo (le righe al 26% comprendono sia il periodo fino al 2025 sia i token in euro).
+In fondo si elencano i token di moneta elettronica che hanno prodotto plusvalenza dal 2026, divisi fra quelli in euro (26%) e quelli che non lo sono (33%).
+
+L'imposta è un'**indicazione**: è la plusvalenza di ogni aliquota per l'aliquota stessa, con tutti gli anni insieme, e vale zero dove la somma
+è negativa. Non tiene conto di compensazioni fra le due aliquote o con minusvalenze di altri anni, né delle regole del quadro RT dei singoli
+anni, per esempio la soglia dei 51.645,69 euro per gli anni fino al 2022.
 
 **Come il programma attribuisce un movimento.** La plusvalenza di un movimento nasce da una gamba: quella **uscita** se c'è e non è
 FIAT (una cessione, anche in permuta), altrimenti quella **entrata** (un provento, per esempio una reward). Il movimento va al 26% se

@@ -429,6 +429,8 @@ static String normalizzaNome(String nome) {
     return nome.trim()
                .replaceAll("[;,_]", "")
                .replaceAll("\\s+", " ")  // Opzionale: normalizza spazi multipli
+               //Un "~" iniziale e' il marcatore di OrdineTrasferimenti sul segmento 1 dell'ID: un nome non puo' iniziare cosi'
+               .replaceAll("^~+", "")
                ;
 }
 static String normalizzaMoneta(String nome) {

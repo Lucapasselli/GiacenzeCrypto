@@ -227,6 +227,53 @@ public class FunzioniDate {
     } 
         
     /**
+     * La data e l'ora di un movimento <b>al secondo</b>, solo per la visualizzazione: il campo {@code [1]} resta al
+     * minuto ({@code yyyy-MM-dd HH:mm}) e i secondi si leggono dall'ID, che li ha sempre ({@code yyyyMMddHHmmss_...}) ed e'
+     * la chiave con cui i movimenti sono ordinati. Non si usa {@code [29]}: e' vuoto nelle righe generate e in alcune e'
+     * rimasto indietro rispetto all'ID.
+     *
+     * <p>I secondi dell'ID si usano solo se sono veri: 14 cifre, secondi 00-59 e minuto uguale a quello di {@code [1]}.
+     * Le rettifiche di giacenza di una versione vecchia hanno nell'ID secondi {@code 99} e {@code 60}, che servivano a
+     * ordinarle e non sono un orario: per quelle righe (e per ogni ID che non ha la forma attesa) si restituisce la
+     * data al minuto, senza inventare un {@code :00}. Nessun parsing di date, solo confronti su stringhe.
+     *
+     * @param id campo {@code [0]} del movimento
+     * @param dataMinuto campo {@code [1]} del movimento, {@code yyyy-MM-dd HH:mm}
+     * @return {@code yyyy-MM-dd HH:mm:ss}, oppure {@code dataMinuto} cosi' com'e' se i secondi dell'ID non sono attendibili
+     * ({@code ""} se {@code dataMinuto} e' {@code null})
+     */
+    public static String DataOraAlSecondo(String id, String dataMinuto) {
+        if (dataMinuto == null) {
+            return "";
+        }
+        if (id == null || id.length() < 14 || dataMinuto.length() != 16) {
+            return dataMinuto;
+        }
+        for (int i = 0; i < 14; i++) {
+            char c = id.charAt(i);
+            if (c < '0' || c > '9') {
+                return dataMinuto;
+            }
+        }
+        int secondi = (id.charAt(12) - '0') * 10 + (id.charAt(13) - '0');
+        if (secondi > 59) {
+            return dataMinuto;
+        }
+        //yyyyMMddHHmm dell'ID contro yyyy-MM-dd HH:mm di [1]
+        if (!id.regionMatches(0, dataMinuto, 0, 4) || !id.regionMatches(4, dataMinuto, 5, 2)
+                || !id.regionMatches(6, dataMinuto, 8, 2) || !id.regionMatches(8, dataMinuto, 11, 2)
+                || !id.regionMatches(10, dataMinuto, 14, 2)) {
+            return dataMinuto;
+        }
+        return dataMinuto + ":" + id.substring(12, 14);
+    }
+
+    /** @see #DataOraAlSecondo(String, String) */
+    public static String DataOraAlSecondo(String[] v) {
+        return v == null || v.length < 2 ? "" : DataOraAlSecondo(v[0], v[1]);
+    }
+
+    /**
      * Converte una data/ora al secondo in millisecondi epoch (fuso orario Europe/Rome), normalizzando anche
      * anni a 2 cifre (es. {@code "25-..."} → {@code "2025-..."}) e gestendo automaticamente le ore inesistenti
      * per effetto del cambio ora legale/solare (spostate in avanti).

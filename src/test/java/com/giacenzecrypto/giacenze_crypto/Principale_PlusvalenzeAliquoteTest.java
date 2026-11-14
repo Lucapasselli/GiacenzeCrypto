@@ -151,15 +151,34 @@ class Principale_PlusvalenzeAliquoteTest {
     }
 
     @Test
-    void perAnnoSiVedonoSoloIGruppiCheCiSono() {
+    void perAliquotaSiSommanoGliAnniEIlGruppoEmtEuroVaCol26() {
+        String[] a = mov("2025-06-01", "BTC", "EUR", "100", "60", "40", "S");
+        String[] b = mov("2026-02-01", "BTC", "ETH", "200", "150", "50", "S");
+        String[] c = mov("2026-03-01", "", "EURe", "5", "0", "5", "S");
+        Principale_PlusvalenzeAliquote.Risultato r = calcola(a, b, c);
+        assertEquals(List.of(26, 33), new ArrayList<>(r.perAliquota.keySet()));
+        //26%: il 2025 e l'EMT in euro del 2026, senza distinzione per anno
+        assertEquals(2, r.rigaAliquota(26).movimenti);
+        assertEquals(0, new BigDecimal("45").compareTo(r.rigaAliquota(26).plusvalenza));
+        assertEquals(1, r.rigaAliquota(33).movimenti);
+        //i movimenti dietro ogni riga sono quelli che l'hanno determinata, e il gruppo resta quello vero
+        assertEquals(List.of(a, c), r.voci(26).stream().map(Principale_PlusvalenzeAliquote.Voce::movimento).toList());
+        assertEquals(Principale_PlusvalenzeAliquote.Categoria.EMT_EURO, r.voci(26).get(1).categoria());
+        assertEquals(3, r.voci(0).size(), "aliquota 0 = tutti i movimenti");
+        assertTrue(Principale_PlusvalenzeAliquote.Calcola(List.of(), ELENCO).voci(33).isEmpty());
+    }
+
+    @Test
+    void lImpostaESoloSuLePlusvalenzeEUnaMinusvalenzaDaZero() {
+        assertEquals(0, new BigDecimal("10.40").compareTo(Principale_PlusvalenzeAliquote.Imposta(new BigDecimal("40"), 26)));
+        assertEquals(0, new BigDecimal("16.50").compareTo(Principale_PlusvalenzeAliquote.Imposta(new BigDecimal("50"), 33)));
+        assertEquals(0, new BigDecimal("0.33").compareTo(Principale_PlusvalenzeAliquote.Imposta(new BigDecimal("1.005"), 33)));
+        assertEquals(0, BigDecimal.ZERO.compareTo(Principale_PlusvalenzeAliquote.Imposta(new BigDecimal("-50"), 33)));
+        //nessuna compensazione fra aliquote: +40 al 26% e -50 al 33% pagano solo i 10,40
         Principale_PlusvalenzeAliquote.Risultato r = calcola(
                 mov("2025-06-01", "BTC", "EUR", "100", "60", "40", "S"),
-                mov("2026-02-01", "BTC", "ETH", "200", "150", "50", "S"),
-                mov("2026-03-01", "", "EURe", "5", "0", "5", "S"));
-        assertEquals(List.of("2025", "2026"), new ArrayList<>(r.perAnno.keySet()));
-        assertEquals(Set.of(Principale_PlusvalenzeAliquote.Categoria.FINO_2025), r.perAnno.get("2025").keySet());
-        assertEquals(Set.of(Principale_PlusvalenzeAliquote.Categoria.ALTRE, Principale_PlusvalenzeAliquote.Categoria.EMT_EURO),
-                r.perAnno.get("2026").keySet());
+                mov("2026-02-01", "BTC", "ETH", "200", "250", "-50", "S"));
+        assertEquals(0, new BigDecimal("10.40").compareTo(r.impostaTotale()));
     }
 
     @Test

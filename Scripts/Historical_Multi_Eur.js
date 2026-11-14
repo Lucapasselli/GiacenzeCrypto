@@ -8,6 +8,77 @@ function logError(message) { console.error(`[ERROR] ${message}`); }
 function logInfo(message) { console.error(`[INFO] ${message}`); }
 function logDebug(message) { console.error(`[DEBUG] ${message}`); }
 
+// DIAGNOSTICA DEI BLOCCHI (2026-11-13). Un lotto che non risponde per 300 s veniva chiuso da Java senza
+// lasciare nel log nulla su COSA stesse aspettando: gli errori veri (PREZZI-ERRORE) si scrivono solo quando
+// una chiamata fallisce, e una chiamata appesa non fallisce mai. Qui si tiene l'elenco delle chiamate di
+// rete di ccxt in corso (`conAttesa`) e, mentre un lotto gira, ogni 15 s si scrive quelle in attesa da piu'
+// di 15 s (`avviaBattito`). Un lotto sano scrive poco o niente (le chiamate durano in genere meno di un secondo).
+// Se invece nel log non compare nessuna riga di battito durante un blocco, e' il processo Node a essere
+// fermo (event loop bloccato), non la rete. Solo log su stderr: nessun effetto sul risultato.
+const chiamateInAttesa = new Map();
+let prossimaChiamata = 0;
+let chiamateCompletate = 0;
+const SOGLIA_ATTESA_LOG_MS = 15000;
+
+async function conAttesa(descrizione, promessa) {
+    const chiave = ++prossimaChiamata;
+    chiamateInAttesa.set(chiave, { descrizione, da: Date.now() });
+    try {
+        return await promessa;
+    } finally {
+        chiamateInAttesa.delete(chiave);
+        chiamateCompletate++;
+    }
+}
+
+/** Avvia il battito del lotto; restituisce la funzione che lo ferma. `stato` descrive l'avanzamento. */
+function avviaBattito(stato) {
+    const inizio = Date.now();
+    let statoPrecedente = null;
+    const timer = setInterval(() => {
+        try {
+            const adesso = Date.now();
+            const lente = [...chiamateInAttesa.values()]
+                    .filter(c => adesso - c.da >= SOGLIA_ATTESA_LOG_MS)
+                    .sort((a, b) => a.da - b.da)
+                    .map(c => `${c.descrizione} (${Math.round((adesso - c.da) / 1000)} s)`);
+            const statoAttuale = `${stato()}, chiamate di rete completate ${chiamateCompletate}`;
+            const durata = Math.round((adesso - inizio) / 1000);
+            if (lente.length) {
+                const mostrate = lente.slice(0, 10).join(', ') + (lente.length > 10 ? ` e altre ${lente.length - 10}` : '');
+                logInfo(`Lotto in corso da ${durata} s (${statoAttuale}), in attesa da oltre ${SOGLIA_ATTESA_LOG_MS / 1000} s: ${mostrate}`);
+            } else if (statoAttuale === statoPrecedente) {
+                logInfo(`Lotto in corso da ${durata} s (${statoAttuale}): nessuna chiamata di rete in attesa e nessuna completata dall'ultimo controllo`);
+            }
+            statoPrecedente = statoAttuale;
+        } catch (e) { /* la diagnostica non deve mai disturbare il lotto */ }
+    }, SOGLIA_ATTESA_LOG_MS);
+    timer.unref();
+    return () => clearInterval(timer);
+}
+
+let ambienteLoggato = false;
+/** Una riga per processo con cio' che serve a capire un problema di rete da remoto. Mai valori di proxy. */
+function logAmbiente(ccxtLib) {
+    if (ambienteLoggato) return;
+    ambienteLoggato = true;
+    try {
+        let ipv6 = false;
+        const schede = os.networkInterfaces();
+        for (const nome in schede) {
+            for (const a of schede[nome] || []) {
+                if ((a.family === 'IPv6' || a.family === 6) && !a.internal && !a.address.toLowerCase().startsWith('fe80')) ipv6 = true;
+            }
+        }
+        const proto = ccxtLib && ccxtLib.Exchange && ccxtLib.Exchange.prototype;
+        const correzione = !!(proto && proto.getDispatcherOptions && proto.getDispatcherOptions.__giacenzeRete);
+        const proxy = ['HTTPS_PROXY', 'HTTP_PROXY', 'ALL_PROXY'].some(n => process.env[n] || process.env[n.toLowerCase()]);
+        logInfo(`Ambiente Node ${process.version} ${process.platform}-${process.arch}, ccxt ${(ccxtLib && ccxtLib.version) || '?'}, `
+                + `IPv6 globale: ${ipv6 ? 'si' : 'no'}, variabili proxy: ${proxy ? 'si' : 'no'}, `
+                + `correzione rete (Ccxt_Rete.js): ${correzione ? 'attiva' : 'assente'}`);
+    } catch (e) { /* solo diagnostica */ }
+}
+
 // In Node.js v15+ unhandled rejections terminate the process by default.
 // CCXT 4.x creates Coinbase FUTURE/PERPETUAL promises before awaiting them; if the
 // endpoint is unreachable, Node.js sees a brief "unhandled" rejection and crashes
@@ -186,7 +257,7 @@ async function caricaMarkets(exchange) {
         // libera. Misurato nel processo persistente (--servizio): 535 MB dopo un ricarico contro 233
         // leggendo il file. Cosi' `exchange` finisce nello stesso stato del ramo che legge il file.
         const usaEGetta = new exchange.constructor();
-        markets = snellisciMarkets(JSON.parse(JSON.stringify(await usaEGetta.loadMarkets())));
+        markets = snellisciMarkets(JSON.parse(JSON.stringify(await conAttesa(`${exchange.id} loadMarkets`, usaEGetta.loadMarkets()))));
         // Scrittura su file temporaneo + rename: un processo parallelo (richiesta singola dalla GUI
         // mentre gira un lotto) non puo' leggere un file scritto a meta'.
         // Un errore qui (su Windows il rename fallisce se un altro processo ha il file aperto) non deve
@@ -283,7 +354,7 @@ async function fetchHistorical(ex, symbol, timeframe, since, until, limit = 60) 
 
     while (current_since < until) {
       //  logInfo(`scarico dati per ${ex.id} , ${symbol}`);
-        const ohlcv = await ex.fetchOHLCV(symbol, timeframe, current_since, limit);
+        const ohlcv = await conAttesa(`${ex.id} fetchOHLCV ${symbol}`, ex.fetchOHLCV(symbol, timeframe, current_since, limit));
        // logInfo(`i dati sono ${ohlcv}`);
         if (!ohlcv.length) break;
         all_ohlcv.push(...ohlcv);
@@ -645,7 +716,13 @@ async function cercaPrezziStoriciLotto({ ccxtLib, exchangeIds, timeframe, richie
         }
     }
 
-    await Promise.all(Array.from({ length: inVolo }, () => lavoratore()));
+    logAmbiente(ccxtLib);
+    const fermaBattito = avviaBattito(() => `richieste avviate ${Math.min(prossima, richieste.length)} di ${richieste.length}`);
+    try {
+        await Promise.all(Array.from({ length: inVolo }, () => lavoratore()));
+    } finally {
+        fermaBattito();
+    }
     return esiti;
 }
 

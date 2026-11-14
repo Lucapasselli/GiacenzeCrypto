@@ -1349,6 +1349,7 @@ private VoceImport voceSelezionata() {
                             + (piano.conferme.isEmpty() ? "" : "<br>Movimenti con pagamento in attesa ora confermato: <b>"
                                     + piano.conferme.size() + "</b>."))
                     .details(MiniPay_SpeseCarta.RiepilogoHtml(piano, 15))
+                    .detailsScrollable()
                     .action(AppDialog.DialogAction.builder("annulla", "Annulla")
                             .role(AppDialog.ActionRole.SECONDARY).build())
                     .action(AppDialog.DialogAction.builder("applica", "Applica")
@@ -1476,6 +1477,7 @@ private VoceImport voceSelezionata() {
                     .type(AppDialog.DialogType.INFO)
                     .message("Movimenti che verranno corretti: <b>" + piano.abbinamenti.size() + "</b>.")
                     .details(EtherFi_SpeseCarta.RiepilogoHtml(piano, 15))
+                    .detailsScrollable()
                     .action(AppDialog.DialogAction.builder("annulla", "Annulla")
                             .role(AppDialog.ActionRole.SECONDARY).build())
                     .action(AppDialog.DialogAction.builder("applica", "Applica")

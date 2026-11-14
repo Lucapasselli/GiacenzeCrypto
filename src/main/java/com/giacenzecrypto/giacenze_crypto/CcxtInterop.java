@@ -80,6 +80,11 @@ public class CcxtInterop {
      */
     private static final Path NODE_ESTERNO = LeggiNodeEsterno();
 
+    /** {@code true} se Node e ccxt vengono dal pacchetto (flatpak, MSIX) invece di essere scaricati dall'app. */
+    static boolean nodeFornitoDalPacchetto() {
+        return NODE_ESTERNO != null;
+    }
+
     /**
      * Individua un Node fornito dal pacchetto, per nome di variabile d'ambiente oppure per posizione.
      *
@@ -710,7 +715,7 @@ public class CcxtInterop {
         return scaduto;
     }
 
-    private static String versioneCcxtInstallata(Path ccxtDir) {
+    static String versioneCcxtInstallata(Path ccxtDir) {
         Path packageJson = ccxtDir.resolve("package.json");
         if (!Files.exists(packageJson)) return null;
         try {
@@ -1489,6 +1494,19 @@ public static Path getNodeExePath() {
         }
     }
 
+    /**
+     * Un testo a righe già impaginate come HTML per {@link AppDialog}: caratteri speciali neutralizzati e spazi multipli
+     * (rientri e colonne dell'elenco) mantenuti, che l'HTML altrimenti ridurrebbe a uno.
+     */
+    static String TestoAvvisoComeHtml(String testo) {
+        String esc = testo.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+        java.util.regex.Matcher mt = java.util.regex.Pattern.compile(" {2,}").matcher(esc);
+        StringBuilder sb = new StringBuilder();
+        while (mt.find()) mt.appendReplacement(sb, "&nbsp;".repeat(mt.group().length()));
+        mt.appendTail(sb);
+        return sb.toString();
+    }
+
     /** Opzione personale: impronta dell'ultimo avviso dopo l'import Binance che l'utente ha chiesto di non rivedere. */
     static final String OPZIONE_AVVISO_BINANCE_IGNORATO = "Binance_AvvisoDopoImport_Ignorato";
 
@@ -1890,7 +1908,8 @@ public static Path getNodeExePath() {
                 //Il giorno piu' vecchio di una finestra tagliata dal limite di un mese arriva a meta': lo
                 //completa la ricostruzione qui sotto, se e' attiva. Senza, si tiene il dato ufficiale com'e'.
                 if (interessiCalcolati) {
-                    OKX_InteressiEarn.ScartaPrimoGiornoTroncato(re, inizioGiornata, OKX_InteressiEarn.MoneteRicostruibili(jsonEarn));
+                    OKX_InteressiEarn.ScartaPrimoGiornoTroncato(re, inizioGiornata, OKX_InteressiEarn.MoneteRicostruibili(jsonEarn),
+                            OKX_InteressiEarn.PrimoRecordLending(jsonEarn));
                 } else {
                     String avvisoStorico = OKX_InteressiEarn.TestoAvvisoStoricoCorto(jsonEarn, inizioGiornata);
                     if (!avvisoStorico.isEmpty()) {
@@ -1922,17 +1941,43 @@ public static Path getNodeExePath() {
                             interessiAncheAnniPassati, inizioGiornata, System.currentTimeMillis())
                     : new OKX_InteressiEarn.Esito();
             righe.addAll(interessiRicostruiti.righe);
+            //Nel log va sempre l'avviso intero. A video la parte che si ripete identica a ogni scaricamento (anni fino
+            //al 2025 non registrati, anomalie) si puo' nascondere con "Non mostrare piu'": ricompare se l'elenco cambia.
+            //Le righe ricostruite si dichiarano sempre, perche' hanno scritto movimenti.
             String avvisoInteressi = OKX_InteressiEarn.TestoAvviso(interessiRicostruiti);
             if (!avvisoInteressi.isEmpty()) {
                 System.out.println(avvisoInteressi);
-                //Gli anni chiusi non registrati e le anomalie si ripresenterebbero a ogni scaricamento: si
-                //mostrano una volta sola, a meno che ci siano anche delle righe ricostruite da dichiarare
                 String firma = OKX_InteressiEarn.FirmaRipetibile(interessiRicostruiti);
-                if (!interessiRicostruiti.ricostruiti.isEmpty()
-                        || !firma.equals(DatabaseH2.Pers_Opzioni_Leggi(OKX_InteressiEarn.OPZIONE_ULTIMO_AVVISO))) {
-                    DatabaseH2.Pers_Opzioni_Scrivi(OKX_InteressiEarn.OPZIONE_ULTIMO_AVVISO, firma);
-                    JOptionPane.showConfirmDialog(null, avvisoInteressi, "Interessi Simple Earn",
-                            JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+                boolean parteRipetibile = OKX_InteressiEarn.HaParteRipetibile(interessiRicostruiti)
+                        && !firma.equals(DatabaseH2.Pers_Opzioni_Leggi(OKX_InteressiEarn.OPZIONE_AVVISO_NASCOSTO));
+                String avvisoVideo = OKX_InteressiEarn.TestoAvviso(interessiRicostruiti, parteRipetibile);
+                if (!avvisoVideo.isEmpty()) {
+                    final boolean conCasella = parteRipetibile;
+                    try {
+                        Runnable mostra = () -> {
+                            AppDialog.Builder dialogo = AppDialog.builder(null)
+                                    .windowTitle("Interessi Simple Earn")
+                                    .bodyTitle("Interessi Simple Earn")
+                                    .theme()
+                                    .type(AppDialog.DialogType.INFO)
+                                    .bodyWidth(640)
+                                    .message(TestoAvvisoComeHtml(avvisoVideo))
+                                    .primaryAction("ok", "OK");
+                            if (conCasella) {
+                                dialogo.checkBoxField("Non mostrare più questo elenco finché non cambia");
+                            }
+                            AppDialog.DialogResult risultato = dialogo.showDialog();
+                            if (conCasella && risultato.isChecked()) {
+                                DatabaseH2.Pers_Opzioni_Scrivi(OKX_InteressiEarn.OPZIONE_AVVISO_NASCOSTO, firma);
+                            }
+                        };
+                        //Di norma l'import gira su un thread proprio; sull'EDT invokeAndWait lancerebbe un errore
+                        if (SwingUtilities.isEventDispatchThread()) mostra.run(); else SwingUtilities.invokeAndWait(mostra);
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    } catch (java.lang.reflect.InvocationTargetException ex) {
+                        LoggerGC.ScriviErrore(ex);
+                    }
                 }
             }
 

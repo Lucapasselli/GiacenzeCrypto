@@ -197,6 +197,79 @@ class OKX_InteressiEarnTest {
         assertEquals("EARN-USDC-20260908", righe.get(0)[14]);
     }
 
+    private static List<String[]> righeEarn(String moneta, String... giorni) {
+        List<String[]> righe = new ArrayList<>();
+        for (String g : giorni) {
+            String[] r = new String[19];
+            java.util.Arrays.fill(r, "");
+            r[5] = moneta;
+            r[6] = "0.006";
+            r[14] = "EARN-" + moneta + "-" + g;
+            righe.add(r);
+        }
+        return righe;
+    }
+
+    /**
+     * Moneta sottoscritta da poco (primi interessi il giorno dopo la sottoscrizione): la finestra dello storico parte nel giorno
+     * richiesto, quindi non e' tagliata e il primo giorno di UNA moneta e' un dato vero, non da scartare.
+     */
+    @Test
+    void ilPrimoGiornoDiInteressiDiUnaMonetaNuovaNonSiScartaSeLaFinestraNonETagliata() {
+        List<String[]> righe = righeEarn("BTC", "20261025", "20261026");
+        righe.addAll(righeEarn("USDC", "20261104", "20261105"));
+        long richiesto = FunzioniDate.ConvertiDatainLongSecondo("2026-10-25 00:00:00");
+        long primoRecord = FunzioniDate.ConvertiDatainLongSecondo("2026-10-25 00:01:15");
+        assertEquals(0, OKX_InteressiEarn.ScartaPrimoGiornoTroncato(righe, richiesto, java.util.Set.of("USDC", "BTC"), primoRecord));
+        assertEquals(4, righe.size());
+        //senza il primo record noto vale il primo giorno fra le righe di tutte le monete: stesso esito
+        assertEquals(0, OKX_InteressiEarn.ScartaPrimoGiornoTroncato(righe, richiesto, java.util.Set.of("USDC", "BTC")));
+        assertEquals(4, righe.size());
+    }
+
+    /** Finestra davvero tagliata: il primo giorno di tutte le monete si scarta, i giorni successivi no. */
+    @Test
+    void conLaFinestraTagliataSiScartaIlPrimoGiornoDiTutteLeMonete() {
+        List<String[]> righe = righeEarn("BTC", "20260907", "20260908");
+        righe.addAll(righeEarn("USDC", "20260907", "20260908"));
+        long richiesto = FunzioniDate.ConvertiDatainLongSecondo("2026-08-20 00:00:00");
+        long primoRecord = FunzioniDate.ConvertiDatainLongSecondo("2026-09-07 09:00:00");
+        assertEquals(2, OKX_InteressiEarn.ScartaPrimoGiornoTroncato(righe, richiesto, java.util.Set.of("USDC", "BTC"), primoRecord));
+        assertEquals(2, righe.size());
+        assertTrue(righe.stream().allMatch(r -> r[14].endsWith("20260908")));
+    }
+
+    /** La parte che si ripete a ogni scaricamento si puo' togliere dall'avviso: le righe ricostruite restano. */
+    @Test
+    void laParteRipetibileDellAvvisoSiPuoTogliere() {
+        var esito = new OKX_InteressiEarn.Esito();
+        esito.ricostruiti.add(new OKX_InteressiEarn.Periodo("USDC", "2026-01-10", "2026-01-11", new BigDecimal("0.01"), 2));
+        esito.anniPassati.add(new OKX_InteressiEarn.Periodo("BTC", "2023-01-01", "2024-01-01", new BigDecimal("0.0005"), 365));
+        esito.anomalie.add("ETH: saldo Earn senza sottoscrizioni.");
+        assertTrue(OKX_InteressiEarn.HaParteRipetibile(esito));
+
+        String completo = OKX_InteressiEarn.TestoAvviso(esito, true);
+        assertTrue(completo.contains("Non registrati perché negli anni fino al 2025"));
+        assertTrue(completo.contains("Non ricostruiti"));
+        String ridotto = OKX_InteressiEarn.TestoAvviso(esito, false);
+        assertTrue(ridotto.contains("USDC"), "le righe ricostruite si dichiarano sempre");
+        assertFalse(ridotto.contains("anni fino al 2025"));
+        assertFalse(ridotto.contains("Non ricostruiti"));
+        assertEquals(completo, OKX_InteressiEarn.TestoAvviso(esito));
+
+        //solo la parte ripetibile e nascosta: nessun avviso a video
+        var soloVecchi = new OKX_InteressiEarn.Esito();
+        soloVecchi.anniPassati.add(esito.anniPassati.get(0));
+        assertEquals("", OKX_InteressiEarn.TestoAvviso(soloVecchi, false));
+
+        //la firma cambia se salta fuori un periodo nuovo: l'avviso ricompare
+        String firma = OKX_InteressiEarn.FirmaRipetibile(esito);
+        assertEquals(firma, OKX_InteressiEarn.FirmaRipetibile(esito));
+        esito.anniPassati.add(new OKX_InteressiEarn.Periodo("ETH", "2023-01-01", "2024-01-01", new BigDecimal("0.007"), 365));
+        assertNotEquals(firma, OKX_InteressiEarn.FirmaRipetibile(esito));
+        assertFalse(OKX_InteressiEarn.HaParteRipetibile(new OKX_InteressiEarn.Esito()));
+    }
+
     /**
      * Giorni dentro la finestra appena scaricata senza interessi (BTC dal 28/09 al 07/10: record a zero) li hanno
      * avuti davvero a zero: niente quote, e il totale resta esatto sugli altri giorni scoperti.

@@ -375,6 +375,8 @@ public class AppDialog extends JDialog {
 
         private String message = "";
         private String details;
+        private boolean detailsScrollable = false;
+        private int bodyWidth = 380;
 
         private DialogType type = DialogType.INFO;
         private UiTheme theme = UiTheme.of(ThemeMode.LIGHT);
@@ -553,6 +555,26 @@ public class AppDialog extends JDialog {
         /** @param details testo di dettaglio, mostrato sotto il messaggio principale @return questo builder, per il chaining */
         public Builder details(String details) {
             this.details = details;
+            return this;
+        }
+
+        /**
+         * Larghezza in pixel a cui va a capo il testo del messaggio (e, di 20 in più, quello del dettaglio). Predefinita 380:
+         * si allarga per un testo già impaginato a righe lunghe.
+         * @return questo builder, per il chaining
+         */
+        public Builder bodyWidth(int pixel) {
+            this.bodyWidth = Math.max(200, pixel);
+            return this;
+        }
+
+        /**
+         * Mette il testo di dettaglio in un'area a scorrimento verticale alta al massimo metà schermo, così un dettaglio
+         * lungo (una tabella con molte righe) non spinge i pulsanti fuori dallo schermo.
+         * @return questo builder, per il chaining
+         */
+        public Builder detailsScrollable() {
+            this.detailsScrollable = true;
             return this;
         }
 
@@ -765,17 +787,35 @@ public class AppDialog extends JDialog {
             panel.add(Box.createVerticalStrut(10));
         }
 
-        JLabel messageLabel = new JLabel(toHtml(config.message, theme.textPrimary, 13, true, 380));
+        JLabel messageLabel = new JLabel(toHtml(config.message, theme.textPrimary, 13, true, config.bodyWidth));
         messageLabel.setFont(theme.messageFont);
         messageLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.add(messageLabel);
 
         if (config.details != null && !config.details.isBlank()) {
-            JLabel detailsLabel = new JLabel(toHtml(config.details, theme.textSecondary, 12, false, 400));
+            JLabel detailsLabel = new JLabel(toHtml(config.details, theme.textSecondary, 12, false, config.bodyWidth + 20));
             detailsLabel.setFont(theme.detailsFont);
             detailsLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
             panel.add(Box.createVerticalStrut(10));
-            panel.add(detailsLabel);
+            if (config.detailsScrollable) {
+                JScrollPane detailsScroll = new JScrollPane(detailsLabel,
+                        ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                detailsScroll.setBorder(BorderFactory.createLineBorder(theme.border));
+                detailsScroll.setOpaque(false);
+                detailsScroll.getViewport().setOpaque(false);
+                detailsScroll.getVerticalScrollBar().setUnitIncrement(16);
+                detailsScroll.setAlignmentX(Component.LEFT_ALIGNMENT);
+                //Altezza: quella del testo, ma mai oltre metà schermo (il resto del dialog e i pulsanti restano a vista)
+                Rectangle schermo = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+                Dimension voluta = detailsLabel.getPreferredSize();
+                int scrollBar = UIManager.getInt("ScrollBar.width") > 0 ? UIManager.getInt("ScrollBar.width") : 16;
+                int altezza = Math.min(voluta.height + 4, schermo.height / 2);
+                int larghezza = Math.min(voluta.width + scrollBar + 4, schermo.width - 160);
+                detailsScroll.setPreferredSize(new Dimension(larghezza, altezza));
+                panel.add(detailsScroll);
+            } else {
+                panel.add(detailsLabel);
+            }
         }
         
         if (config.inputEnabled) {

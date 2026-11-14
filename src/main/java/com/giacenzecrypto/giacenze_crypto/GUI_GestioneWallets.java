@@ -446,20 +446,31 @@ public class GUI_GestioneWallets extends javax.swing.JDialog {
                 String splittata[] = riga.split(";");
                 String rigaTabella[]=new String[5];
                 String w=splittata[0]+" ("+splittata[1]+")";
-                rigaTabella[0]=DatabaseH2.Pers_GruppoWallet_Leggi(w,true);
-                rigaTabella[0]=DatabaseH2.Pers_GruppoAlias_Leggi(rigaTabella[0])[1];
+                //Alcune reti (MiniPay su Celo) salvano movimenti e gruppo con l'indirizzo in minuscolo: la chiave scritta
+                //come l'ha digitata l'utente non la trova e, con ritornaWallet1seNull, cadrebbe su Wallet 99
+                String gruppoW=DatabaseH2.Pers_GruppoWallet_Leggi(w,false);
+                String wMinuscolo=w.toLowerCase();
+                //"Wallet 99" puo' essere stato scritto da una lettura precedente di questa stessa chiave: vale la minuscola
+                if ((gruppoW==null || "Wallet 99".equals(gruppoW)) && !wMinuscolo.equals(w)) {
+                    String gruppoMinuscolo=DatabaseH2.Pers_GruppoWallet_Leggi(wMinuscolo,false);
+                    if (gruppoMinuscolo!=null) gruppoW=gruppoMinuscolo;
+                }
+                if (gruppoW==null) gruppoW=DatabaseH2.Pers_GruppoWallet_Leggi(w,true);
+                rigaTabella[0]=DatabaseH2.Pers_GruppoAlias_Leggi(gruppoW)[1];
                 rigaTabella[1]=splittata[0];
                 rigaTabella[2]=splittata[1];
            //     System.out.println(w);
-                if (Mappa_Wallet.get(w)==null){
+                String ultimoW=Mappa_Wallet.get(w);
+                if (ultimoW==null) ultimoW=Mappa_Wallet.get(wMinuscolo);
+                if (ultimoW==null){
                     rigaTabella[3]="0";
                     rigaTabella[4]="0";
                 }
                 else{
-                    if (Mappa_Wallet.get(w).split(";").length>1)
+                    if (ultimoW.split(";").length>1)
                     {
-                    rigaTabella[3]=Mappa_Wallet.get(w).split(";")[0];
-                    rigaTabella[4]=Mappa_Wallet.get(w).split(";")[1];
+                    rigaTabella[3]=ultimoW.split(";")[0];
+                    rigaTabella[4]=ultimoW.split(";")[1];
                     }
                 }
                     

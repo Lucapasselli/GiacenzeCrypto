@@ -5,6 +5,36 @@ programma all'avvio di una beta, ed è la descrizione della beta su GitHub. L'el
 in preparazione è nella sezione "in lavorazione" di docs/documentazione/changelog.md, dove ogni voce di questo file
 compare con lo stesso titolo. Questo file non è una pagina del sito.
 
+## Versione 1.0.66.06
+
+**Nuove implementazioni**
+
+- **Secondi nella data dei movimenti**: la colonna *Data e Ora* delle schede *Transazioni Crypto*, *Giacenze a data* e *Classificazione Depositi/Prelievi* e la finestra *Classificazione Movimento* mostrano ora anche i secondi, utili per l'ordine dei movimenti dentro lo stesso minuto. Il dato salvato non cambia. La colonna è un po' più larga.
+
+- **Verifica della disponibilità dei servizi**: il nuovo pulsante in *Opzioni – Varie* controlla che prezzi, exchange, explorer, nodi pubblici, GitHub e Node.js con ccxt rispondano e quanto ci mettono, e alla fine una diagnosi dice cosa non va. Il rapporto si copia per le segnalazioni e non contiene chiavi.
+
+- **Plusvalenze divise per aliquota (26% e 33%)**: il dialogo ha ora una tabella sola con una riga per aliquota (26% e 33%) e il totale, con una colonna *Imposta* che è un'indicazione senza compensazioni. Scegliendo una riga, la tabella sotto elenca i movimenti che hanno determinato il calcolo. Il riquadro nella scheda *Transazioni Crypto* si chiama ora *Plusvalenze della tabella*.
+
+- **Pulsante Errori, nuovo dialogo e nuovo controllo**: il dialogo è ora un elenco con una riga per ogni tipo di errore presente e la spiegazione sotto. Il nuovo controllo *Trasferimenti senza collegamento* segnala i trasferimenti fra wallet senza controparte e permette di annullarne la classificazione.
+
+**Correzione di bug**
+
+- **OKX Earn, primo giorno di interessi di una moneta appena sottoscritta**: il primo giorno di interessi di una moneta sottoscritta da poco non viene più scartato e sostituito da una stima.
+
+- **OKX Earn, avviso sugli interessi**: l'avviso ha la casella *Non mostrare più questo elenco finché non cambia* e non compare a ogni importazione.
+
+- **Spese della carta ether.fi e MiniPay da CSV, riepilogo troppo lungo**: il riepilogo prima dell'applicazione sta in un'area a scorrimento e i pulsanti *Annulla* e *Applica* restano raggiungibili.
+
+- **Giacenze a data, costo di carico a zero su un token arrivato da un exchange**: il costo di carico si sposta ora con il token, invece di restare sulla riga dell'exchange. Solo visualizzazione.
+
+- **Gestione Wallet, wallet MiniPay nel gruppo «Wallet da Classificare»**: un wallet MiniPay già assegnato al gruppo giusto non compare più fra quelli da classificare.
+
+- **Trasferimenti fra wallet, deposito mostrato prima del prelievo**: nei nuovi abbinamenti il deposito segue sempre il prelievo anche con lo stesso secondo. Nessun valore fiscale cambia.
+
+- **Classificazione automatica dei depositi e dei prelievi, errori a metà**: ogni classificazione è tutta o niente, un movimento che dà errore viene saltato e segnalato e il ricalcolo si fa sempre.
+
+- **Importazione dall'app Crypto.com, abbonamento Level Up con Google Pay**: la riga del pagamento dell'abbonamento, solo in euro, viene ignorata e non finisce più fra i movimenti sconosciuti.
+
 ## Versione 1.0.66.05
 
 **Nuove implementazioni**

@@ -469,7 +469,7 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
 
             String riga[]=new String[9];
             riga[0]=v[0];
-            riga[1]=v[1];
+            riga[1]=FunzioniDate.DataOraAlSecondo(v);//data al secondo (secondi dall'ID, solo vista)
             riga[2]=v[3];
             riga[3]=v[5];
             if (isPrelievo(v[0]))
@@ -571,9 +571,9 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
             jTable1.getColumnModel().getColumn(0).setMinWidth(1);
             jTable1.getColumnModel().getColumn(0).setPreferredWidth(1);
             jTable1.getColumnModel().getColumn(0).setMaxWidth(1);
-            jTable1.getColumnModel().getColumn(1).setMinWidth(120);
-            jTable1.getColumnModel().getColumn(1).setPreferredWidth(120);
-            jTable1.getColumnModel().getColumn(1).setMaxWidth(120);
+            jTable1.getColumnModel().getColumn(1).setMinWidth(140);
+            jTable1.getColumnModel().getColumn(1).setPreferredWidth(140);
+            jTable1.getColumnModel().getColumn(1).setMaxWidth(140);
             jTable1.getColumnModel().getColumn(2).setMinWidth(200);
             jTable1.getColumnModel().getColumn(2).setPreferredWidth(200);
             jTable1.getColumnModel().getColumn(2).setMaxWidth(200);
@@ -609,9 +609,9 @@ public class GUI_ClassificazioneMovimento extends javax.swing.JDialog {
             Tabella_MovimentiAbbinati.getColumnModel().getColumn(0).setMinWidth(1);
             Tabella_MovimentiAbbinati.getColumnModel().getColumn(0).setPreferredWidth(1);
             Tabella_MovimentiAbbinati.getColumnModel().getColumn(0).setMaxWidth(1);
-            Tabella_MovimentiAbbinati.getColumnModel().getColumn(1).setMinWidth(120);
-            Tabella_MovimentiAbbinati.getColumnModel().getColumn(1).setPreferredWidth(120);
-            Tabella_MovimentiAbbinati.getColumnModel().getColumn(1).setMaxWidth(120);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(1).setMinWidth(140);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(1).setPreferredWidth(140);
+            Tabella_MovimentiAbbinati.getColumnModel().getColumn(1).setMaxWidth(140);
             Tabella_MovimentiAbbinati.getColumnModel().getColumn(2).setMinWidth(200);
             Tabella_MovimentiAbbinati.getColumnModel().getColumn(2).setPreferredWidth(200);
             Tabella_MovimentiAbbinati.getColumnModel().getColumn(2).setMaxWidth(200);
@@ -988,7 +988,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
             ArrayList<String> ListaIDMovimentiUguali = new ArrayList<>();
             //for (String[] v : MappaCryptoWallet.values()) {
-            for (String IDnc : Principale.DepositiPrelieviDaCategorizzare) {
+            for (String IDnc : Principale_DepositiPrelievi.IDPresenti(Principale.DepositiPrelieviDaCategorizzare, MappaCryptoWallet)) {
                 String v[] = MappaCryptoWallet.get(IDnc);
                 //considero solo i movimenti che hanno l'address del contratto in memoria
                 //perchè a me interessa trovare i movimenti dello stesso tipo e l'unica è basarsi sul contratto
@@ -1121,7 +1121,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         && AddressControparte != null && !AddressControparte.isBlank()) {
 
                     ArrayList<String> ListaIDMovimentiUguali = new ArrayList<>();
-                    for (String IDnc : Principale.DepositiPrelieviDaCategorizzare) {
+                    for (String IDnc : Principale_DepositiPrelievi.IDPresenti(Principale.DepositiPrelieviDaCategorizzare, MappaCryptoWallet)) {
                         String v[] = MappaCryptoWallet.get(IDnc);
                         if (v == null || v.length <= 34) continue;
                         if (!v[0].equals(IDSingolo)
@@ -1779,6 +1779,10 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     MovimentoDeposito[20]=IDPrelievo+","+IDReward;
                 }
             }
+            //Se i due movimenti sono nello stesso secondo e il deposito ordina prima del prelievo la coppia viene annotata:
+            //lo spostamento si fa a inizio Funzioni_AggiornaTutto, mai qui, perché i cicli di classificazione automatica
+            //scorrono ID raccolti prima e un deposito rinominato a metà darebbe null al get (OrdineTrasferimenti)
+            OrdineTrasferimenti.Registra(MovimentoPrelievo, MovimentoDeposito);
             //Parte che modifica i movimenti preesistenti
               
        //  }
@@ -1808,7 +1812,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             if (Movimento.length>30)AddressContratto=Movimento[30];
             ArrayList<String> ListaIDMovimentiUguali = new ArrayList<>();
             //for (String[] v : MappaCryptoWallet.values()) {
-            for (String IDnc:Principale.DepositiPrelieviDaCategorizzare){
+            for (String IDnc : Principale_DepositiPrelievi.IDPresenti(Principale.DepositiPrelieviDaCategorizzare, MappaCryptoWallet)){
                 String v[]=MappaCryptoWallet.get(IDnc);
                 //considero solo i movimenti che hanno l'address del contratto in memoria
                 //perchè a me interessa trovare i movimenti dello stesso tipo e l'unica è basarsi sul contratto
@@ -1903,7 +1907,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         if (TuttiiMovimenti) {
             //Verifico se trovo movimenti di rientro e eventualmente avviso se si vuole classificarli in automatico
             // for (String[] v : MappaCryptoWallet.values()) {
-            for (String IDnc : Principale.DepositiPrelieviDaCategorizzare) {
+            for (String IDnc : Principale_DepositiPrelievi.IDPresenti(Principale.DepositiPrelieviDaCategorizzare, MappaCryptoWallet)) {
                 String v[] = MappaCryptoWallet.get(IDnc);
 
                 String AddContratto = v[30];
@@ -1986,7 +1990,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             String AddressContratto=null;
             if (Movimento.length>30)AddressContratto=Movimento[30];
             ArrayList<String> ListaIDMovimentiUguali = new ArrayList<>();
-            for (String IDnc:Principale.DepositiPrelieviDaCategorizzare){
+            for (String IDnc : Principale_DepositiPrelievi.IDPresenti(Principale.DepositiPrelieviDaCategorizzare, MappaCryptoWallet)){
             String v[]=MappaCryptoWallet.get(IDnc);
             //for (String[] v : MappaCryptoWallet.values()) {
            // String v[]=MappaCryptoWallet.get(IDnc);
@@ -2030,7 +2034,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
                 //Verifico se trovo movimenti di rientro e eventualmente avviso se si vuole classificarli in automatico
                // for (String[] v : MappaCryptoWallet.values()) {
-                for (String IDnc:Principale.DepositiPrelieviDaCategorizzare){
+                for (String IDnc : Principale_DepositiPrelievi.IDPresenti(Principale.DepositiPrelieviDaCategorizzare, MappaCryptoWallet)){
                     String v[]=MappaCryptoWallet.get(IDnc);
                     if (v.length > 30) {
                         String AddContratto = v[30];
@@ -2043,27 +2047,16 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                                 && v[18].isBlank()) {//questo serve per trovare solo i movimenti non ancora classificati
                             ListaIDMovimentiUguali.add(v[0]);
                             movimentimodificati++;
+                            //Il rientro si classifica qui, UNA volta, appena trovato. Prima il blocco di classificazione stava
+                            //fuori da questo if, dentro il ciclo: a ogni elemento della lista (anche non pertinente) rifaceva la
+                            //classificazione di tutti i rientri già raccolti, e ogni classificazione scorre l'intera mappa per
+                            //sommare il saldo della piattaforma. Stesso risultato, costo (lista x rientri) invece di (rientri)
+                            CreaMovimentoTrasferimentoDa(v[0], "TRASFERIMENTO DA PIATTAFORMA",
+                                    "DTW - Trasferimento da Vault/Piattaforma a Rendita", "Piattaforma/DeFi", "TRASFERIMENTO DA PIATTAFORMA");
                         }
 
                     }
-                
-                
-                
-                
-                
-                
-                
-               if (!ListaIDMovimentiUguali.isEmpty()){
-                    Descrizione = "TRASFERIMENTO DA PIATTAFORMA";
-                    Dettaglio = "DTW - Trasferimento da Vault/Piattaforma a Rendita";
-
-                        //Classifico tutti i movimenti di rientro
-                        for (String IDMov:ListaIDMovimentiUguali){
-                            CreaMovimentoTrasferimentoDa(IDMov,Descrizione,Dettaglio, "Piattaforma/DeFi", "TRASFERIMENTO DA PIATTAFORMA");
-                        }
-
-
-            }}
+                }
                 return movimentimodificati;
     }
     
@@ -2322,7 +2315,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
          //4 - Verifico che non si tratti lo stesso id del movimento che sto analizzando
          //Se soddisfa questi requisiti allora dovrò gestire il movimento come reward
          
-       for (String IDnc:Principale.DepositiPrelieviDaCategorizzare){
+       for (String IDnc : Principale_DepositiPrelievi.IDPresenti(Principale.DepositiPrelieviDaCategorizzare, MappaCryptoWallet)){
            String Mov[]=MappaCryptoWallet.get(IDnc);
            if (Mov.length>29){//Verifico che il movimento sia in defi
                String HashTnc=Mov[24];
@@ -2972,6 +2965,18 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
 
                 }
                 
+                //Un deposito spostato dopo il suo prelievo (OrdineTrasferimenti) riprende l'ID di partenza, come lo scambio
+                //differito qui sopra. Se quell'ID nel frattempo è stato occupato il marcatore resta: meglio un ID in più
+                //che sovrascrivere un movimento
+                String IDSenzaMarcatore = OrdineTrasferimenti.IDSenzaMarcatore(attuale[0]);
+                if (IDSenzaMarcatore != null && !MappaCryptoWallet.containsKey(IDSenzaMarcatore)
+                        && (attuale[0].split("_")[4].equalsIgnoreCase("DC") || attuale[0].split("_")[4].equalsIgnoreCase("DF"))) {
+                    MappaCryptoWallet.remove(attuale[0]);
+                    if (attuale[0].equals(IDOri)) IDRitorno = IDSenzaMarcatore;
+                    attuale[0] = IDSenzaMarcatore;
+                    MappaCryptoWallet.put(attuale[0], attuale);
+                }
+
                 //Come ultima cosa controllo se il movimento aveva un vecchio prezzo salvato e lo ripristino
                 //Succede se sono dei movimenti successivamente classificati come Acquisto o donazione
                 if (attuale[35] != null && !attuale[35].isBlank()) {
@@ -3315,7 +3320,7 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
                     {
                         String riga[] = new String[9];
                         riga[0] = v[0];
-                        riga[1] = v[1];
+                        riga[1] = FunzioniDate.DataOraAlSecondo(v);
                         riga[2] = v[3];
                         riga[3] = v[5];
                         riga[4] = Moneta;
@@ -3392,7 +3397,7 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
                                             
                         String riga[] = new String[9];
                         riga[0] = v[0];
-                        riga[1] = v[1];
+                        riga[1] = FunzioniDate.DataOraAlSecondo(v);
                         riga[2] = v[3];
                         riga[3] = v[5];
                         riga[4] = Moneta;
@@ -3417,7 +3422,7 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
             for (String[] v : Candidati) {
                 String riga[] = new String[9];
                 riga[0] = v[0];
-                riga[1] = v[1];
+                riga[1] = FunzioniDate.DataOraAlSecondo(v);
                 riga[2] = v[3];
                 riga[3] = v[5];
                 riga[4] = v[8].trim();

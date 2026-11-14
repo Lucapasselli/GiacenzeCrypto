@@ -459,6 +459,10 @@ public class Principale_Opzioni_ModificheManuali_Ripristino {
             if (v == null && IDBaseDifferito(id) != null) {
                 v = archivio.get(IDBaseDifferito(id));
             }
+            //Il deposito di un trasferimento spostato dopo il prelievo (OrdineTrasferimenti) è nell'archivio nuovo con l'ID senza "~"
+            if (v == null && OrdineTrasferimenti.IDSenzaMarcatore(id) != null) {
+                v = archivio.get(OrdineTrasferimenti.IDSenzaMarcatore(id));
+            }
             return v;
         }
 

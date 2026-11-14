@@ -12,14 +12,16 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 /**
- * Le plusvalenze della tabella dei movimenti divise per aliquota (26% e 33%), con vendite e costi di carico di ogni
- * gruppo, per anno e per gruppo. Si apre cliccando il riquadro della plusvalenza nella maschera dei movimenti e
+ * Le plusvalenze della tabella dei movimenti divise per aliquota (26% e 33%), con vendite, costi di carico e imposta
+ * di ogni aliquota in una tabella sola (nessuna divisione per anno). Scegliendo una riga, una seconda tabella sotto
+ * elenca i movimenti che hanno determinato quelle somme. Si apre cliccando il riquadro della plusvalenza nella maschera dei movimenti e
  * riguarda le righe mostrate in quel momento: periodo, filtri di caricamento e filtri di riga. Il dialogo dice
  * <b>quali</b> sono, in un riquadro in testa, perché le somme valgono solo per quelle righe. Solo lettura, a codice,
  * senza {@code .form}. Il calcolo è in {@link Principale_PlusvalenzeAliquote}.
@@ -62,12 +64,11 @@ public class GUI_PlusvalenzeAliquote extends JDialog {
             java.util.List<String> filtriCaricamento, java.util.List<String> filtriRiga) {
         super(owner, "Plusvalenze per aliquota", ModalityType.APPLICATION_MODAL);
 
-        JLabel testo = new JLabel("<html><div style='width:780px'>"
+        JLabel testo = new JLabel("<html><div style='width:900px'>"
                 + "Le plusvalenze delle righe mostrate nella tabella divise per aliquota dell'imposta "
                 + "sostitutiva. Fino al 31/12/2025 tutto al 26%. Dal 01/01/2026 al 33%, tranne quelle che nascono da un token di "
-                + "moneta elettronica in euro, che restano al 26%. Il programma attribuisce un movimento al 26% se la gamba da cui "
-                + "nasce la plusvalenza (quella uscita, altrimenti quella entrata) è uno di questi token. Vendite e costi contano "
-                + "come nei riquadri della tabella."
+                + "moneta elettronica in euro, che restano al 26%. Seleziona una riga della tabella in alto per vedere sotto i "
+                + "movimenti che hanno determinato quel calcolo."
                 + "</div></html>");
         testo.setBorder(BorderFactory.createEmptyBorder(10, 10, 6, 10));
 
@@ -83,68 +84,134 @@ public class GUI_PlusvalenzeAliquote extends JDialog {
         intestazione.add(testo, BorderLayout.NORTH);
         intestazione.add(righe, BorderLayout.CENTER);
 
-        JPanel centro = new JPanel();
-        centro.setLayout(new javax.swing.BoxLayout(centro, javax.swing.BoxLayout.Y_AXIS));
-        centro.add(titolo("Per aliquota"));
-        centro.add(riquadro(tabellaPerAliquota(r)));
-        centro.add(titolo("Per anno e aliquota"));
-        centro.add(riquadro(tabellaPerAnno(r)));
-        centro.add(titolo("Token di moneta elettronica nelle plusvalenze dal 2026"));
-        centro.add(testoToken(r));
+        // Tabella in alto: una riga per aliquota. Quella in basso si riempie con i movimenti della riga scelta.
+        JTable perAliquota = tabellaPerAliquota(r);
+        DefaultTableModel modelloMovimenti = modelloMovimenti();
+        JTable movimenti = tabellaMovimenti(modelloMovimenti);
+        JLabel titoloMovimenti = titolo("Movimenti");
+        perAliquota.getSelectionModel().addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) return;
+            int riga = perAliquota.getSelectedRow();
+            if (riga < 0) return;
+            int aliquota = riga < Principale_PlusvalenzeAliquote.ALIQUOTE.length ? Principale_PlusvalenzeAliquote.ALIQUOTE[riga] : 0;
+            riempiMovimenti(modelloMovimenti, titoloMovimenti, r, aliquota);
+        });
+
+        JPanel alto = new JPanel(new BorderLayout());
+        alto.add(titolo("Per aliquota"), BorderLayout.NORTH);
+        alto.add(riquadro(perAliquota), BorderLayout.CENTER);
+        JPanel basso = new JPanel(new BorderLayout());
+        basso.add(titoloMovimenti, BorderLayout.NORTH);
+        basso.add(new JScrollPane(movimenti), BorderLayout.CENTER);
+        JSplitPane centro = new JSplitPane(JSplitPane.VERTICAL_SPLIT, alto, basso);
+        centro.setBorder(null);
+        centro.setResizeWeight(0.0);
+
+        JScrollPane note = new JScrollPane(testoToken(r));
+        note.setBorder(BorderFactory.createEmptyBorder());
+        note.setPreferredSize(new Dimension(940, 110));
 
         JButton chiudi = new JButton("Chiudi");
         chiudi.addActionListener(e -> dispose());
         JPanel pulsanti = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         pulsanti.add(chiudi);
+        JPanel sud = new JPanel(new BorderLayout());
+        sud.add(note, BorderLayout.CENTER);
+        sud.add(pulsanti, BorderLayout.SOUTH);
 
         setLayout(new BorderLayout());
         add(intestazione, BorderLayout.NORTH);
         add(centro, BorderLayout.CENTER);
-        add(pulsanti, BorderLayout.SOUTH);
+        add(sud, BorderLayout.SOUTH);
         pack();
+        // Il dialogo non esce dallo schermo: i movimenti stanno in una tabella a scorrimento
+        java.awt.Rectangle schermo = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        setSize(Math.min(Math.max(getWidth(), 980), schermo.width - 40), Math.min(Math.max(getHeight(), 760), schermo.height - 40));
+        setMinimumSize(new Dimension(700, 480));
+        setResizable(true);
         setLocationRelativeTo(owner);
+
+        // Apre sulla prima aliquota che ha movimenti (altrimenti sul totale)
+        int iniziale = perAliquota.getRowCount() - 1;
+        for (int i = 0; i < Principale_PlusvalenzeAliquote.ALIQUOTE.length; i++) {
+            if (!r.voci(Principale_PlusvalenzeAliquote.ALIQUOTE[i]).isEmpty()) { iniziale = i; break; }
+        }
+        perAliquota.setRowSelectionInterval(iniziale, iniziale);
+        centro.setDividerLocation(alto.getPreferredSize().height);
     }
 
-    private static final String[] COLONNE = {"Movimenti", "Vendite (euro)", "Costi di carico (euro)", "Plusvalenza (euro)"};
+    private static final String[] COLONNE = {"Aliquota", "Movimenti", "Vendite (euro)", "Costi di carico (euro)", "Plusvalenza (euro)", "Imposta (euro)"};
 
     private static JTable tabellaPerAliquota(Principale_PlusvalenzeAliquote.Risultato r) {
-        DefaultTableModel m = modello("Gruppo");
-        for (Principale_PlusvalenzeAliquote.Categoria c : Principale_PlusvalenzeAliquote.Categoria.values()) {
-            m.addRow(valori(c.etichetta, c.aliquota + "%", r.perCategoria.get(c)));
-        }
-        m.addRow(valori("Totale", "", r.totale));
-        return tabella(m, true);
-    }
-
-    private static JTable tabellaPerAnno(Principale_PlusvalenzeAliquote.Risultato r) {
-        DefaultTableModel m = modello("Anno e gruppo");
-        for (Map.Entry<String, Map<Principale_PlusvalenzeAliquote.Categoria, Principale_PlusvalenzeAliquote.Riga>> anno : r.perAnno.entrySet()) {
-            for (Principale_PlusvalenzeAliquote.Categoria c : Principale_PlusvalenzeAliquote.Categoria.values()) {
-                Principale_PlusvalenzeAliquote.Riga riga = anno.getValue().get(c);
-                if (riga == null) continue;
-                m.addRow(valori(anno.getKey() + (c == Principale_PlusvalenzeAliquote.Categoria.EMT_EURO
-                        ? ", token di moneta elettronica in euro" : ""), c.aliquota + "%", riga));
-            }
-        }
-        if (m.getRowCount() == 0) {
-            m.addRow(new Object[] {"Nessuna plusvalenza nelle righe mostrate", "", "", "", "", ""});
-        }
-        return tabella(m, false);
-    }
-
-    private static DefaultTableModel modello(String primaColonna) {
-        DefaultTableModel m = new DefaultTableModel(new Object[] {primaColonna, "Aliquota", COLONNE[0], COLONNE[1], COLONNE[2], COLONNE[3]}, 0) {
+        DefaultTableModel m = new DefaultTableModel(COLONNE, 0) {
             @Override
             public boolean isCellEditable(int riga, int colonna) {
                 return false;
             }
         };
-        return m;
+        for (int aliquota : Principale_PlusvalenzeAliquote.ALIQUOTE) {
+            Principale_PlusvalenzeAliquote.Riga riga = r.perAliquota.get(aliquota);
+            m.addRow(valori(aliquota + "%", riga, Principale_PlusvalenzeAliquote.Imposta(riga == null ? null : riga.plusvalenza, aliquota)));
+        }
+        m.addRow(valori("Totale", r.totale, r.impostaTotale()));
+        JTable t = tabella(m, true);
+        t.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        t.getColumnModel().getColumn(0).setPreferredWidth(120);
+        return t;
     }
 
-    private static Object[] valori(String etichetta, String aliquota, Principale_PlusvalenzeAliquote.Riga riga) {
-        if (riga == null) return new Object[] {etichetta, aliquota, "0", euro(BigDecimal.ZERO), euro(BigDecimal.ZERO), euro(BigDecimal.ZERO)};
-        return new Object[] {etichetta, aliquota, String.valueOf(riga.movimenti), euro(riga.vendite), euro(riga.costi), euro(riga.plusvalenza)};
+    private static Object[] valori(String etichetta, Principale_PlusvalenzeAliquote.Riga riga, BigDecimal imposta) {
+        if (riga == null) return new Object[] {etichetta, "0", euro(BigDecimal.ZERO), euro(BigDecimal.ZERO), euro(BigDecimal.ZERO), euro(imposta)};
+        return new Object[] {etichetta, String.valueOf(riga.movimenti), euro(riga.vendite), euro(riga.costi), euro(riga.plusvalenza), euro(imposta)};
+    }
+
+    private static final String[] COLONNE_MOVIMENTI = {"Data e Ora", "Exchange / Wallet", "Tipologia", "Moneta Uscita", "Qta Uscita",
+        "Moneta Entrata", "Qta Entrata", "Corrispettivo", "Costo di Carico", "Plusvalenza", "Gruppo"};
+
+    private static DefaultTableModel modelloMovimenti() {
+        return new DefaultTableModel(COLONNE_MOVIMENTI, 0) {
+            @Override
+            public boolean isCellEditable(int riga, int colonna) {
+                return false;
+            }
+        };
+    }
+
+    private static JTable tabellaMovimenti(DefaultTableModel m) {
+        JTable t = new JTable(m);
+        Tabelle.Tabelle_ApplicaHeaderBoldCentrato(t);
+        DefaultTableCellRenderer cella = new DefaultTableCellRenderer() {
+            @Override
+            public java.awt.Component getTableCellRendererComponent(JTable tab, Object valore, boolean sel, boolean fuoco, int riga, int colonna) {
+                java.awt.Component c = super.getTableCellRendererComponent(tab, valore, sel, fuoco, riga, colonna);
+                boolean numerica = colonna == 4 || colonna == 6 || colonna == 7 || colonna == 8 || colonna == 9;
+                setHorizontalAlignment(numerica ? SwingConstants.RIGHT : SwingConstants.LEFT);
+                return c;
+            }
+        };
+        for (int c = 0; c < t.getColumnCount(); c++) {
+            t.getColumnModel().getColumn(c).setCellRenderer(cella);
+        }
+        t.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        int[] larghezze = {125, 130, 60, 70, 70, 70, 70, 90, 90, 90, 260};
+        for (int c = 0; c < larghezze.length; c++) t.getColumnModel().getColumn(c).setPreferredWidth(larghezze[c]);
+        t.setAutoCreateRowSorter(false);
+        return t;
+    }
+
+    private static void riempiMovimenti(DefaultTableModel m, JLabel titolo, Principale_PlusvalenzeAliquote.Risultato r, int aliquota) {
+        m.setRowCount(0);
+        java.util.List<Principale_PlusvalenzeAliquote.Voce> voci = r.voci(aliquota);
+        for (Principale_PlusvalenzeAliquote.Voce voce : voci) {
+            String[] v = voce.movimento();
+            boolean calcolata = "S".equals(v[33]);
+            m.addRow(new Object[] {
+                FunzioniDate.DataOraAlSecondo(v), (v[3] + " " + v[4]).trim(), v[5],
+                v[8], v[10], v[11], v[13],
+                calcolata ? v[15] : "", calcolata ? v[16] : "", v[19],
+                voce.categoria().etichetta});
+        }
+        titolo.setText((aliquota > 0 ? "Movimenti al " + aliquota + "%" : "Tutti i movimenti") + ": " + voci.size());
     }
 
     private static String euro(BigDecimal valore) {
@@ -199,8 +266,10 @@ public class GUI_PlusvalenzeAliquote extends JDialog {
             sb.append("Un token conta come in euro solo se è E-Money nelle opzioni alla data del movimento e l'elenco dei token "
                     + "lo dichiara denominato in euro. Il nome del token non basta.");
         }
-        sb.append("<br><br>Il programma non calcola l'imposta: queste sono somme informative, e non tengono conto di compensazioni "
-                + "fra minusvalenze e plusvalenze né di altri elementi della dichiarazione.</div></html>");
+        sb.append("<br><br>L'imposta mostrata è un'indicazione: plusvalenza di ogni aliquota per l'aliquota stessa, con tutti gli anni "
+                + "insieme, e zero dove la somma è negativa. Non tiene conto di compensazioni fra le due aliquote o con "
+                + "minusvalenze di altri anni, né delle regole del quadro RT dei singoli anni (per esempio la soglia dei "
+                + "51.645,69 euro per gli anni fino al 2022).</div></html>");
         JLabel l = new JLabel(sb.toString());
         l.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
         l.setAlignmentX(LEFT_ALIGNMENT);

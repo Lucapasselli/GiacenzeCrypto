@@ -384,60 +384,6 @@ public class Messaggi {
      
      
      /**
-      * Mostra un dialog con una scelta tra 5 tipologie di errore da correggere (movimento non classificato,
-      * transazione senza prezzo, parte del LIFO mancante, giacenze negative, movimenti collegati incoerenti), mostrando il conteggio di
-      * ciascuna tipologia.
-      *
-      * <p>Le ultime due portano alla stessa scheda ma <b>non sono la stessa cosa</b>, e le etichette lo
-      * devono dire: "parte del LIFO mancante" conta i movimenti a cui manca il costo di carico, ed e'
-      * ragionata per gruppo wallet; "giacenze negative" conta i singoli sotto-wallet andati sotto zero.
-      * Un giroconto interno azzera la marcatura del LIFO, quindi puo' esserci la seconda senza la prima.
-      *
-      * @param NumErroriMovSconosciuti numero di movimenti non classificati
-      * @param NumErroriMovNoPrezzo numero di transazioni senza prezzo
-      * @param NumErroriStackLiFoMancante numero di errori con parte del LIFO mancante
-      * @param NumErroriGiacenzeNegative numero di terne exchange/sotto-wallet/token con saldo negativo
-      * @param NumErroriMovimentiCollegati numero di movimenti collegati dalla classificazione in modo incoerente
-      *        ({@link MovimentiCollegati}): scambi differiti sovrascritti, contratti Dual da aggiornare, altri
-      * @param NumNoPrezzoFuoriPeriodo quanti di NumErroriMovNoPrezzo stanno fuori dal periodo selezionato
-      * @param NumLifoFuoriPeriodo quanti di NumErroriStackLiFoMancante stanno fuori dal periodo selezionato
-      * @param win finestra parent del dialog
-      * @return il risultato del dialog, da cui leggere l'azione scelta dall'utente tramite {@code isAction}
-      */
-     public static AppDialog.DialogResult Personalizzati_Multi_ScegliErrori(int NumErroriMovSconosciuti,int NumErroriMovNoPrezzo,int NumErroriStackLiFoMancante,int NumErroriGiacenzeNegative,int NumErroriMovimentiCollegati,int NumNoPrezzoFuoriPeriodo,int NumLifoFuoriPeriodo,Window win) {
-         String testo = "Scegli quale tipologia di errore correggere.";
-         AppDialog.DialogResult result = AppDialog.builder(win)
-                 .windowTitle("Correzione errori")
-                 .bodyTitle("Selezione errore")
-                 .showTitleInBody(true)
-                 .theme()
-                 .type(AppDialog.DialogType.INFO)
-                 .message(testo)
-                 .details(TestoFuoriPeriodo(NumNoPrezzoFuoriPeriodo, NumLifoFuoriPeriodo))
-                 .action(AppDialog.DialogAction.builder("cancel", "Annulla")
-                         .role(AppDialog.ActionRole.SECONDARY)
-                         .build())
-                 .action(AppDialog.DialogAction.builder("nonClassificati", "Movimento non classificato (" + NumErroriMovSconosciuti + ")")
-                         .role(AppDialog.ActionRole.PRIMARY)
-                         .build())
-                 .action(AppDialog.DialogAction.builder("PrezzoMancante", "Transazione senza prezzo (" + NumErroriMovNoPrezzo + ")")
-                         .role(AppDialog.ActionRole.PRIMARY)
-                         .build())
-                 .action(AppDialog.DialogAction.builder("LifoMancante", "Parte del LIFO mancante (" + NumErroriStackLiFoMancante + ")")
-                         .role(AppDialog.ActionRole.PRIMARY)
-                         .build())
-                 .action(AppDialog.DialogAction.builder("GiacenzeNegative", "Giacenze negative (" + NumErroriGiacenzeNegative + ")")
-                         .role(AppDialog.ActionRole.PRIMARY)
-                         .build())
-                 .action(AppDialog.DialogAction.builder("MovimentiCollegati", "Movimenti collegati incoerenti (" + NumErroriMovimentiCollegati + ")")
-                         .role(AppDialog.ActionRole.PRIMARY)
-                         .build())
-                 .showDialog();
-         
-         return result;
-     }
-
-     /**
       * Chiede se mostrare anche i movimenti in errore che stanno fuori dal periodo selezionato.
       *
       * @param Elenco che cosa c'e' fuori periodo, come lo scrive {@link #ElencoFuoriPeriodo} (non vuoto)

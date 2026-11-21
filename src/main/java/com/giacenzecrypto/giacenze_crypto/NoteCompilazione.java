@@ -69,6 +69,12 @@ public class NoteCompilazione {
     public static final String RT = "RT";
     /** Avviso stampato nei report W/RW e T/RT quando nell'anno ci sono movimenti su derivati ({@link Derivati}). */
     public static final String DERIVATI = "DERIVATI";
+    /** Avviso sui derivati dal 19/11/2026: come {@link #DERIVATI}, che resta per le versioni installate, con il risultato riportato nei quadri. */
+    public static final String DERIVATI_II_A = "DERIVATI_II_A";
+    /** Valori e criterio dei redditi da derivati nel quadro RT: la chiave nuda ha i righi fino all'anno 2023, la variante .2024 quelli dopo. */
+    public static final String DERIVATI_RT = "DERIVATI_RT";
+    /** Come {@link #DERIVATI_RT} per il quadro T del 730: la chiave nuda dice che il quadro T non esisteva (fino al 2023). */
+    public static final String DERIVATI_T = "DERIVATI_T";
     /** Note in coda al prospetto DSU del tab ISEE ({@link Principale_ISEE_Prospetto}): segnaposto {@code {annoDSU}}. */
     public static final String DSU = "DSU";
 

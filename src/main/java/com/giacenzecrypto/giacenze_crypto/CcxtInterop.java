@@ -1287,40 +1287,8 @@ public static Path getNodeExePath() {
         //progress.MostraProgressAttesa("Export in Excel", "Esportazione in corso...");
         progress.setLocationRelativeTo(c);
 
-        // Esegui l'export in background
-        SwingWorker<Void, Void> worker = new SwingWorker<>() {
-        /** Verifica/installa Node.js e CCXT, poi esegue {@link #fetchMovimenti} in background. */
-        @Override
-        protected Void doInBackground() throws Exception {
-        try {
-        //Bitget si interroga direttamente da Java (Bitget_API): Node e CCXT non servono
-        if (!Bitget_API.isBitget(exchangeId)) {
-        System.out.println("Verifico Installazione di Node");
-        ensureNodeInstalled();
-        System.out.println("Verifico Installazione di CCXT");
-        installCcxt();
-        }
-        System.out.println("Eseguo la chiamata");
-        
-        Esiti[0]=fetchMovimenti(exchangeId, apiKey, secret,dataInizio,Tokens,passphrase,progress,c,conArchivio);
-        } catch (IOException ex) {
-            Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-        }
-        
-        /** Chiude la finestra di progresso e ripristina il cursore normale al termine dell'operazione. */
-        @Override
-        protected void done() {
-        //ChiudiFineLavoro e non dispose(): la chiusura di fine lavoro non deve lasciare acceso INTERROMPI
-        //per l'exchange successivo del ciclo "scarica da tutti". Vedi Download.chiusuraDiFineLavoro.
-        progress.ChiudiFineLavoro();
-        c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        }
-        };
-
+        // Esegui lo scaricamento in background. EseguiBloccante chiude sempre la finestra e registra nel log
+        // anche un'eccezione non prevista (prima il SwingWorker la teneva per se': nessuna traccia, nessun avviso)
         //Da qui in poi INTERROMPI vale per tutta l'operazione, fase di scaricamento prezzi compresa.
         //Lo scope si apre e si chiude QUI, nel proprietario dell'operazione, e non nel costruttore di
         //Download: le finestre di avanzamento si annidano, e legare lo scope alla finestra lascerebbe il
@@ -1329,12 +1297,39 @@ public static Path getNodeExePath() {
         //caduta di linea fa aspettare e, se non torna, fa abbandonare lo scarico senza scrivere.
         Interruzione.Apri();
         AttesaConnessione.Apri(progress);
+        Throwable errore;
         try {
-            worker.execute();
-            progress.setVisible(true);// Questo blocca finché done() non chiama dispose()
+            errore = progress.EseguiBloccante(() -> {
+                try {
+                    //Bitget si interroga direttamente da Java (Bitget_API): Node e CCXT non servono
+                    if (!Bitget_API.isBitget(exchangeId)) {
+                        System.out.println("Verifico Installazione di Node");
+                        ensureNodeInstalled();
+                        System.out.println("Verifico Installazione di CCXT");
+                        installCcxt();
+                    }
+                    System.out.println("Eseguo la chiamata");
+
+                    Esiti[0] = fetchMovimenti(exchangeId, apiKey, secret, dataInizio, Tokens, passphrase, progress, c, conArchivio);
+                } catch (IOException ex) {
+                    Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(Principale.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
         } finally {
             AttesaConnessione.Chiudi();
             Interruzione.Chiudi();
+            c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+        if (errore != null) {
+            //Senza questo avviso l'utente vedrebbe solo "nessun movimento": un guasto non e' un conto vuoto
+            Messaggi.Message("Scaricamento non completato",
+                    "Si è verificato un errore durante lo scaricamento da " + exchangeId + ".",
+                    "<b>" + errore.getClass().getSimpleName() + "</b>: "
+                    + String.valueOf(errore.getMessage()).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                    + "<br>Il dettaglio è nel file di log.",
+                    AppDialog.DialogType.ERROR, c instanceof java.awt.Window w ? w : javax.swing.SwingUtilities.getWindowAncestor(c));
         }
 
         return Esiti[0];
@@ -1710,7 +1705,8 @@ public static Path getNodeExePath() {
             //Recuperati tutti i movimenti posso procedere all'aggiunta al database vera e propria
             //Se non è andato tutto a buon fine non porto a termine l'importazione
             //Importazioni.inserisciListaMovimentisuMappaCryptoWallet(lista);
-            int risultato[]=Importazioni.ScriviListaSuMappaCrypto(lista,true);
+            //Come ogni scaricamento API sovrascrive per ID, ma non riporta come doppioni i movimenti che l'archivio ha già da un file CSV
+            int risultato[]=Importazioni.ScriviListaSuMappaCryptoRiconciliando(lista);
             if (risultato[0]!=0)
             {
                 Principale.TabellaCryptodaAggiornare=true;
@@ -1803,8 +1799,15 @@ public static Path getNodeExePath() {
             List<String[]> righe = new ArrayList<>();
             JsonArray fundingBills = json.has("okx_fundingBills") ? json.getAsJsonArray("okx_fundingBills") : new JsonArray();
             JsonArray tradingBills = json.has("okx_tradingBills") ? json.getAsJsonArray("okx_tradingBills") : new JsonArray();
+            //Le posizioni a voucher si riconoscono sui bill del Trading (hanno posBal): l'esito serve anche piu' sotto,
+            //per togliere dalle righe dell'archivio trimestrale quelle che qui sono gia' state omesse.
+            OKXVoucher.Esito voucherOKX = OKXVoucher.Analizza(tradingBills);
+            if (voucherOKX.episodiAperti > 0) {
+                LoggerGC.logInfo("OKX: " + voucherOKX.episodiAperti + " posizione/i su derivati aperta/e senza chiusura fra i bill scaricati: "
+                        + "se usano un voucher, chiusura e accredito arriveranno con uno scaricamento successivo e non verranno abbinati");
+            }
             List<String[]> rf = convertOKXBills(fundingBills, "Funding", tipiOKX);
-            List<String[]> rt = convertOKXBills(tradingBills, "Trading", tipiOKX);
+            List<String[]> rt = convertOKXBills(tradingBills, "Trading", tipiOKX, voucherOKX);
             if (rf == null || rt == null) {   //null = interruzione richiesta dall'utente
                 JOptionPane.showConfirmDialog(null, "Scaricamento da "+exchangeId+" interrotto prima della fine.","Attenzione",JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,null);
                 return null;
@@ -1838,6 +1841,9 @@ public static Path getNodeExePath() {
                     }
                     return null;
                 }
+                //Il CSV dell'archivio non ha posBal e non permette di riconoscere un voucher: le sue righe di una
+                //posizione gia' abbinata dai bill (fill e 257) tornerebbero come movimenti veri
+                ra.removeIf(r -> voucherOKX.riguarda(r[14]));
                 righe.addAll(ra);
                 archivioDaRecuperare = true;
             }
@@ -3029,6 +3035,39 @@ public static Path getNodeExePath() {
         return convertOKXBills(bills, Wallet, TipiOKX.Carica());
     }
 
+    /** Valori di {@code instType} dei bill OKX che sono derivati: perpetui e futures (SWAP, FUTURES) e opzioni (OPTION). */
+    static final java.util.Set<String> INSTTYPE_DERIVATI_OKX = java.util.Set.of("SWAP", "FUTURES", "OPTION");
+
+    /** Prima parte della causale di un fill su derivati che porta la sola commissione (apertura: nessun profitto realizzato). */
+    static final String CAUSALE_COMMISSIONE_DERIVATI_OKX = "Fee";
+
+    /** Prima parte della causale del funding di un derivato (bill {@code type 8}): {@code Funding|FUTURES}. */
+    static final String CAUSALE_FUNDING_DERIVATI_OKX = "Funding";
+
+    /** Prima parte della causale della penale di una liquidazione (ricavata dal bill {@code type 5}). */
+    static final String CAUSALE_PENALE_DERIVATI_OKX = "Penale liquidazione";
+
+    /** Prima parte della causale del clawback (bill {@code type 10}): OKX copre il deficit di una posizione liquidata. */
+    static final String CAUSALE_CLAWBACK_DERIVATI_OKX = "Clawback";
+
+    /** Suffisso del {@code billId} della riga della penale: e' una seconda riga dello stesso bill, la deduplica la terrebbe sola. */
+    static final String SUFFISSO_BILL_PENALE = "-PEN";
+
+    /**
+     * @param causale causale di una riga OKX a 19 campi ({@code [4]}), anche {@code null}
+     * @return {@link Derivati#PNL} se la causale porta il suffisso di un derivato ({@code Sell|SWAP}), altrimenti
+     *         stringa vuota
+     */
+    static String TipoDerivatoDaCausaleOKX(String causale) {
+        if (causale == null) return "";
+        int sep = causale.lastIndexOf('|');
+        if (sep < 0) return "";
+        if (!INSTTYPE_DERIVATI_OKX.contains(causale.substring(sep + 1).trim().toUpperCase())) return "";
+        if (causale.startsWith(CAUSALE_FUNDING_DERIVATI_OKX + "|")) return Derivati.FUNDING;
+        if (causale.startsWith(CAUSALE_PENALE_DERIVATI_OKX + "|")) return Derivati.COMMISSIONE;
+        return causale.startsWith(CAUSALE_COMMISSIONE_DERIVATI_OKX + "|") ? Derivati.COMMISSIONE : Derivati.PNL;
+    }
+
     /**
      * Come {@link #convertOKXBills(JsonArray, String)}, con la tabella dei codici già caricata: la
      * decodifica avviene una volta per bill, e {@code OKX_Bills.js} ne consegna fino a 50.000 per conto,
@@ -3041,6 +3080,23 @@ public static Path getNodeExePath() {
      *         chiesto di interrompere
      */
     public static List<String[]> convertOKXBills(JsonArray bills, String Wallet, TipiOKX tabella) {
+        //Posizioni su perpetui/futures aperte con un voucher OKX: vedi OKXVoucher. Solo sul conto Trading.
+        OKXVoucher.Esito voucher = Wallet.equalsIgnoreCase("Trading") ? OKXVoucher.Analizza(bills) : OKXVoucher.Vuoto();
+        if (voucher.episodiAperti > 0) {
+            LoggerGC.logInfo("OKX: " + voucher.episodiAperti + " posizione/i su derivati aperta/e senza chiusura fra i bill scaricati: "
+                    + "se usano un voucher, chiusura e accredito arriveranno con uno scaricamento successivo e non verranno abbinati");
+        }
+        return convertOKXBills(bills, Wallet, tabella, voucher);
+    }
+
+    /**
+     * Come {@link #convertOKXBills(JsonArray, String, TipiOKX)}, con l'esito di {@link OKXVoucher#Analizza} già calcolato:
+     * serve a chi importa anche dall'archivio trimestrale e deve togliere dalle sue righe quelle che lo
+     * scaricamento ha già omesso, perché il CSV dell'archivio non ha {@code posBal} e non permette l'abbinamento.
+     *
+     * @param voucher esito dell'analisi dei bill del Trading, {@link OKXVoucher#Vuoto()} se non c'è
+     */
+    public static List<String[]> convertOKXBills(JsonArray bills, String Wallet, TipiOKX tabella, OKXVoucher.Esito voucher) {
         List<String[]> lista = new ArrayList<>();
         if (bills == null) return lista;
 
@@ -3066,6 +3122,9 @@ public static Path getNodeExePath() {
             if (billId.isEmpty() || ccy.isEmpty() || balChg.isEmpty() || ts.isEmpty()) continue;
             if (!Funzioni.isNumeric(balChg, false) || !Funzioni.isNumeric(ts, false)) continue;
 
+            //Bill di una posizione a voucher: il margine non era dell'utente, resta solo la 257 (vedi sotto)
+            if (voucher.omessi.contains(billId)) continue;
+
             //La commissione è sempre nella stessa moneta del bill (verificato su tutti i bill reali) ed è
             //già compresa in balChg: la si scorpora per riportare in carico il lordo. Il campo manca del
             //tutto sui bill del Funding, quindi la sua assenza è la norma e non un errore.
@@ -3077,11 +3136,109 @@ public static Path getNodeExePath() {
             //mentre balChg porta sempre il verso reale del movimento.
             BigDecimal lordo = new BigDecimal(balChg).subtract(feeBD);
 
+            //Funding di un perpetuo o di un future (type 8): il bill ha balChg 0, perche' il funding esce dal margine della
+            //posizione e non dal saldo, e porta l'importo in pnl (negativo se pagato, positivo se incassato). Si importa
+            //quell'importo, come il pnl di un fill: deposito o prelievo marcato FUNDING, da classificare.
+            String causaleFunding = null;
+            if (isTrading && "8".equals(tipo)) {
+                String instTypeF = obj.optString("instType", "").trim().toUpperCase();
+                String pnlF = obj.optString("pnl", "").trim();
+                if (INSTTYPE_DERIVATI_OKX.contains(instTypeF) && Funzioni.isNumeric(pnlF, false)) {
+                    BigDecimal importoF = new BigDecimal(pnlF);
+                    if (importoF.signum() == 0) continue;
+                    lordo = importoF;
+                    feeBD = BigDecimal.ZERO;
+                    causaleFunding = CAUSALE_FUNDING_DERIVATI_OKX + "|" + instTypeF;
+                }
+            }
+
+            //Clawback di una liquidazione (type 10): balChg 0, OKX versa nel margine il deficit della posizione (posBalChg positivo),
+            //che l'utente non ha pagato. Si importa quell'importo come accredito marcato PNL, da classificare come il pnl
+            if (isTrading && OKXDerivati.TIPO_CLAWBACK.equals(tipo) && causaleFunding == null) {
+                String instTypeC = obj.optString("instType", "").trim().toUpperCase();
+                String posC = obj.optString("posBalChg", "").trim();
+                if (INSTTYPE_DERIVATI_OKX.contains(instTypeC) && Funzioni.isNumeric(posC, false) && new BigDecimal(posC).signum() > 0) {
+                    lordo = new BigDecimal(posC);
+                    feeBD = BigDecimal.ZERO;
+                    causaleFunding = CAUSALE_CLAWBACK_DERIVATI_OKX + "|" + instTypeC;
+                }
+            }
+            //Liquidazione, ADL e consegna a scadenza (type 5, 9, 3) su un derivato: chiudono la posizione come un fill di chiusura, e
+            //seguono la stessa strada qui sotto (token, margine, pnl e commissione). La liquidazione ha in piu' la penale
+            boolean ChiusuraForzata = isTrading && OKXDerivati.TIPI_CHIUSURA_FORZATA.contains(tipo)
+                    && INSTTYPE_DERIVATI_OKX.contains(obj.optString("instType", "").trim().toUpperCase());
+
             //Un bill che non muove nulla, nemmeno in commissioni, non è un movimento
-            if (lordo.compareTo(BigDecimal.ZERO) == 0 && feeBD.compareTo(BigDecimal.ZERO) == 0) continue;
+            if (lordo.compareTo(BigDecimal.ZERO) == 0 && feeBD.compareTo(BigDecimal.ZERO) == 0 && !ChiusuraForzata) continue;
 
             //Causale nelle stesse etichette usate dal CSV, così la mappa causali resta una sola
-            String causale = causaleBillOKX(tabella, tipo, balChg, isTrading, notes);
+            String causale = causaleFunding != null ? causaleFunding : causaleBillOKX(tabella, tipo, balChg, isTrading, notes);
+            if (ChiusuraForzata) causale = "Sell";
+
+            //Futures, perpetui e opzioni: le righe di trade hanno la stessa forma di quelle dello spot (Buy/Sell dal
+            //segno di balChg), ma sono bill di margine e profitto, non scambi di monete. Il tipo di strumento
+            //(instType) si aggiunge alla causale, "Sell|SWAP", cosi' OKX.json le manda fra i movimenti da
+            //classificare e l'import le marca come derivati (vedi Ex_OKX_Consolida). Solo Buy/Sell: ogni altro
+            //codice, anche su un derivato, resta com'e' (e se non e' mappato finisce fra gli sconosciuti).
+            if (isTrading && (causale.equals("Buy") || causale.equals("Sell"))) {
+                String instType = obj.optString("instType", "").trim().toUpperCase();
+                if (INSTTYPE_DERIVATI_OKX.contains(instType)) {
+                    causale = causale + "|" + instType;
+                    //Token del contratto e margine parcheggiato (OKXDerivati): una riga "portatrice" per fill, in piu' a quelle
+                    //del pnl e della commissione. null = il bill non si presta e resta solo la forma di sotto.
+                    String[] portatrice = OKXDerivati.RigaContratto(obj);
+                    if (portatrice != null) lista.add(portatrice);
+                    //Penale di una liquidazione: un addebito a parte, marcato come commissione del derivato (decisione dell'utente del 21/11/2026)
+                    if (OKXDerivati.TIPO_LIQUIDAZIONE.equals(tipo)) {
+                        BigDecimal penale = OKXDerivati.PenaleLiquidazione(obj);
+                        if (penale != null && penale.signum() < 0) {
+                            String[] rp = new String[19];
+                            rp[0] = FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(ts));
+                            rp[1] = "OKX";
+                            rp[2] = Wallet;
+                            rp[3] = "";
+                            rp[4] = CAUSALE_PENALE_DERIVATI_OKX + "|" + instType;
+                            rp[5] = ccy;
+                            rp[6] = penale.stripTrailingZeros().toPlainString();
+                            rp[7] = obj.optString("instId", "").trim();
+                            rp[13] = ordId;
+                            rp[14] = billId + SUFFISSO_BILL_PENALE;
+                            rp[15] = "NO";
+                            Importazioni.RiempiVuotiArray(rp);
+                            lista.add(rp);
+                        }
+                    }
+                    //Il margine non e' un movimento (decisione D15, margine nelle cripto): balChg di un fill e' margine piu'
+                    //profitto meno commissione, e importarlo cosi' farebbe uscire e rientrare dal LIFO denaro che e' rimasto
+                    //dell'utente (e a posizione aperta darebbe un risultato falso). Il bill porta il profitto realizzato a
+                    //parte, nel campo pnl: si importa quello, con la commissione come sempre. Un fill senza profitto (ogni
+                    //apertura) diventa la sola commissione. Senza il campo pnl (CSV dell'archivio trimestrale) resta balChg.
+                    String pnl = obj.optString("pnl", "").trim();
+                    if (obj.has("pnl") && Funzioni.isNumeric(pnl, false)) {
+                        BigDecimal pnlBD = new BigDecimal(pnl);
+                        if (pnlBD.signum() != 0) {
+                            lordo = pnlBD;
+                            causale = (pnlBD.signum() > 0 ? "Buy" : "Sell") + "|" + instType;
+                        } else if (feeBD.signum() != 0) {
+                            lordo = feeBD;
+                            feeBD = BigDecimal.ZERO;
+                            causale = CAUSALE_COMMISSIONE_DERIVATI_OKX + "|" + instType;
+                        } else {
+                            continue;
+                        }
+                    }
+                }
+            }
+            //Accredito del voucher (type 1 / subType 257) di una posizione riconosciuta: e' il solo importo che l'utente
+            //ha davvero ricevuto. Senza abbinamento la 257 resta quello che era, un "Transfer in" non considerato.
+            String strumentoVoucher = voucher.voucher.get(billId);
+            if (isTrading && strumentoVoucher != null) causale = OKXVoucher.CAUSALE + "|" + strumentoVoucher;
+
+            //Contratto su cui si e' operato (instId, es. BTC-USD_UM_XPERP-991231): solo per i derivati, e per l'accredito di
+            //un voucher, che non lo porta sul bill e lo prende dalla posizione abbinata. Ex_OKX_Consolida lo scrive nelle note
+            String contratto = "";
+            if (isTrading && strumentoVoucher != null) contratto = voucher.contratto.getOrDefault(billId, "");
+            else if (isTrading && causale.contains("|")) contratto = obj.optString("instId", "").trim();
 
             String DatoRiga[] = new String[19];
             DatoRiga[0]  = FunzioniDate.ConvertiDatadaLongAlSecondo(Long.parseLong(ts));   //Timestamp
@@ -3091,6 +3248,7 @@ public static Path getNodeExePath() {
             DatoRiga[4]  = causale;                                                        //Causale originale
             DatoRiga[5]  = ccy;                                                            //Moneta
             DatoRiga[6]  = lordo.stripTrailingZeros().toPlainString();                     //Qta LORDA, già con segno
+            DatoRiga[7]  = contratto;                                                      //Contratto del derivato, vuoto per ogni altro bill
             //Fee lasciate vuote quando sono nulle: Ex_OKX_Consolida genera il movimento di commissione sulla
             //sola base di [12] non vuoto, e uno "0" produrrebbe un movimento fantasma su ogni bill senza fee.
             if (feeBD.compareTo(BigDecimal.ZERO) != 0) {

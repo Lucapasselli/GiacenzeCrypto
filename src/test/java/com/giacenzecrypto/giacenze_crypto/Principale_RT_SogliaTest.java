@@ -37,27 +37,141 @@ class Principale_RT_SogliaTest {
     }
 
     @Test
-    void sottoSogliaVerificata_azzeraCostiCorrispettiviEPlus_mantieneLatenteERimanenze() {
+    void sottoSogliaVerificata_tabellaConValoriVeri_stampaAZero_mantieneLatenteERimanenze() {
         var e = esito(2021, gamba("2021-03-01", "BTC", "100"), gamba("2021-03-20", "BTC", "-100"));
         String[] r = riga("2021");
         var ris = Principale_RT_Soglia.Applica(r, e);
 
         assertEquals(Principale_RT_Soglia.Stato.NON_SUPERATA, ris.stato);
         assertTrue(ris.azzerato());
-        assertEquals("0", r[1]);
-        assertEquals("0", r[2]);
-        assertEquals("0", r[3]);
-        assertEquals("300", r[4], "il latente non dipende dalla soglia");
-        assertEquals("8000", r[5], "il valore di fine anno non dipende dalla soglia");
+        assertEquals("1000.50", r[1], "la tabella mostra i valori calcolati");
+        assertEquals("5200.75", r[2]);
+        assertEquals("4200.25", r[3]);
+        assertEquals("0", ris.valoreStampato(1, r[1]), "nel quadro RT i costi vanno a zero");
+        assertEquals("0", ris.valoreStampato(2, r[2]));
+        assertEquals("0", ris.valoreStampato(3, r[3]));
+        assertEquals("300", ris.valoreStampato(4, r[4]), "il latente non dipende dalla soglia");
+        assertEquals("8000", ris.valoreStampato(5, r[5]), "il valore di fine anno non dipende dalla soglia");
+        assertEquals("2021", ris.valoreStampato(0, r[0]));
+        assertTrue(Principale_RT_Soglia.RigaAzzerata(Principale_RT_Soglia.ConNota("", ris.notaBreve, true)));
+        assertFalse(Principale_RT_Soglia.RigaAzzerata(Principale_RT_Soglia.ConNota("", ris.notaBreve, false)));
+        assertEquals("", Principale_RT_Soglia.SenzaNota(Principale_RT_Soglia.ConNota("", ris.notaBreve, true)).replace("<html>", "").replace("</html>", ""),
+                "la nota non e' un errore, anche col segno del giallo");
         assertEquals("4200.25", ris.plusvalenzaCalcolata);
         assertTrue(ris.nota.contains("non superata"));
         assertTrue(ris.nota.contains("non concorrono al reddito"));
         assertTrue(ris.nota.contains("massimo 10.000,00 euro il 01/03/2021"), ris.nota);
-        assertTrue(ris.nota.contains("plusvalenza 4.200,25 euro"), ris.nota);
-        assertTrue(ris.nota.contains("corrispettivi 5.200,75 euro"), ris.nota);
-        assertTrue(ris.nota.contains("costi 1.000,50 euro"), ris.nota);
+        assertFalse(ris.nota.contains("Valori calcolati"), "i valori stanno nei righi della tabella e dell'archivio, non nella nota");
+        assertFalse(ris.nota.contains("4.200,25"), ris.nota);
+        assertTrue(ris.nota.contains("la tabella e l'archivio riportano i valori calcolati"), ris.nota);
         assertFalse(ris.nota.contains(";"), "niente punto e virgola nei testi per l'utente");
-        assertEquals("Soglia 51.645,69 euro non superata\n(massimo 10.000,00 euro il 01/03/2021)\nanno azzerato", ris.notaBreve);
+        assertEquals("Soglia 51.645,69 euro non superata\n(massimo 10.000,00 euro il 01/03/2021)\nPlusvalenza non riportata in RT", ris.notaBreve);
+    }
+
+    @Test
+    void sottoSoglia_conMinusvalenza_ladicituraSegueIlSegno() {
+        var e = esito(2021, gamba("2021-03-01", "BTC", "100"), gamba("2021-03-20", "BTC", "-100"));
+        String[] r = riga("2021");
+        r[3] = "-800.00";
+        var ris = Principale_RT_Soglia.Applica(r, e);
+
+        assertTrue(ris.azzerato());
+        assertTrue(ris.notaBreve.contains("\nMinusvalenza non riportata in RT"), ris.notaBreve);
+        assertFalse(ris.notaBreve.contains("non tassabile"), "vale per plusvalenze e minusvalenze: niente 'non tassabile'");
+        assertEquals("-800.00", r[3]);
+    }
+
+    @Test
+    void righeExcel_soloPerUnAnnoAzzerato_conRiferimentiNormativi() {
+        var sotto = Principale_RT_Soglia.Applica(riga("2021"),
+                esito(2021, gamba("2021-03-01", "BTC", "100"), gamba("2021-03-20", "BTC", "-100")));
+        String[] righe = sotto.righeExcel();
+        assertEquals(3, righe.length);
+        assertTrue(righe[0].contains("valori di questo prospetto sono quelli calcolati") && righe[0].contains("riportati a zero"), righe[0]);
+        assertEquals(sotto.nota, righe[1]);
+        assertTrue(righe[2].contains("circolare 30/E del 27 ottobre 2023"), righe[2]);
+        assertTrue(righe[2].contains("paragrafo 2.3.1"), righe[2]);
+        assertTrue(righe[2].contains("art. 67, comma 1, lettera c-ter), e comma 1-ter, del TUIR"), righe[2]);
+        assertTrue(righe[2].contains("non si rendono deducibili neppure le minusvalenze eventualmente realizzate"),
+                "la frase della circolare va riportata com'e', senza parafrasi: " + righe[2]);
+        assertTrue(righe[2].contains("art. 68, comma 5"), righe[2]);
+        for (String s : righe) {
+            assertFalse(s.contains(";"), "niente punto e virgola nei testi per l'utente");
+        }
+
+        var sopra = Principale_RT_Soglia.Applica(riga("2021"),
+                esito(2021, gamba("2021-03-01", "BTC", "600"), gamba("2021-03-20", "BTC", "-600")));
+        assertEquals(0, sopra.righeExcel().length);
+        assertEquals(0, Principale_RT_Soglia.Applica(riga("2023"), null).righeExcel().length);
+    }
+
+    @Test
+    void sottoSogliaConDerivatiNellAnno_lanotaDiceCheSonoAzzeratiConIlResto() {
+        var e = esito(2021, gamba("2021-03-01", "BTC", "100"), gamba("2021-03-20", "BTC", "-100"));
+        var con = Principale_RT_Soglia.Applica(riga("2021"), e, true);
+        assertTrue(con.azzerato());
+        assertTrue(con.nota.contains("Nell'anno ci sono movimenti su derivati"), con.nota);
+        assertTrue(con.nota.contains("paragrafo 2.3.1") && con.nota.contains("paragrafo 2.3.2"), con.nota);
+        assertTrue(con.notaBreve.endsWith("\nDerivati dell'anno azzerati con il resto"), con.notaBreve);
+        assertFalse(con.nota.contains(";"), "niente punto e virgola nei testi per l'utente");
+        assertEquals(con.nota, con.righeExcel()[1], "l'Excel e l'archivio riportano la stessa nota");
+
+        var senza = Principale_RT_Soglia.Applica(riga("2021"), e, false);
+        assertFalse(senza.nota.contains("derivati"));
+        assertFalse(senza.notaBreve.contains("Derivati"));
+        assertEquals(senza.nota, Principale_RT_Soglia.Applica(riga("2021"), e).nota);
+    }
+
+    @Test
+    void soprasogliaConDerivati_nessunAvviso_perche_nonSiAzzeraNulla() {
+        var e = esito(2021, gamba("2021-03-01", "BTC", "600"), gamba("2021-03-20", "BTC", "-600"));
+        var ris = Principale_RT_Soglia.Applica(riga("2021"), e, true);
+        assertFalse(ris.nota.contains("derivati"), ris.nota);
+        assertFalse(ris.notaBreve.contains("Derivati"), ris.notaBreve);
+    }
+
+    @Test
+    void vociDaEvidenziare_soloSeLaDichiarazioneHaLaNotaDellaSoglia() {
+        var con = Principale_RT_Soglia.VociDaEvidenziare(List.of("Dichiarazione", "Plusvalenze realizzate",
+                Principale_RT_Soglia.TOTALE_NOTA, "Rigo 1 - VENDITA CRYPTO"));
+        assertEquals(java.util.Set.of("Plusvalenze realizzate", Principale_RT_Soglia.TOTALE_NOTA), con);
+        assertTrue(Principale_RT_Soglia.VociDaEvidenziare(List.of("Dichiarazione", "Plusvalenze realizzate", "Rigo 1 - VENDITA CRYPTO")).isEmpty(),
+                "un anno normale non ha nulla in giallo");
+    }
+
+    @Test
+    void leNote_vannoACapoDopoOgniFrase_eHtmlLeConvertePerGliAvvisi() {
+        var e = esito(2021, gamba("2021-03-01", "BTC", "100"), gamba("2021-03-20", "BTC", "-100"));
+        var ris = Principale_RT_Soglia.Applica(riga("2021"), e, true);
+        String[] frasi = ris.nota.split("\n");
+        assertTrue(frasi.length >= 4, "soglia, quadro, valori, derivati: " + ris.nota);
+        for (String f : frasi) {
+            assertTrue(f.endsWith(".") || f.endsWith(".)"), "ogni riga finisce con un punto: " + f);
+        }
+        assertFalse(Principale_RT_Soglia.Html(ris.nota).contains("\n"));
+        assertTrue(Principale_RT_Soglia.Html(ris.nota).contains(".<br>"));
+        String rif = ris.righeExcel()[2];
+        assertEquals(3, rif.split("\n").length, "riferimenti: circolare, precisazione sulle minusvalenze, art. 68: " + rif);
+    }
+
+    @Test
+    void notaElenco_soloConLaNotaDellaSoglia_eSegueIlSegno() {
+        java.util.Map<String, String> totali = new java.util.LinkedHashMap<>();
+        totali.put(Principale_Dichiarazioni.TOT_RT_PLUS, "1400.00");
+        assertEquals("", Principale_RT_Soglia.NotaElenco(totali), "un anno normale non ha nota");
+        totali.put(Principale_RT_Soglia.TOTALE_NOTA, "testo della nota");
+        assertEquals("Soglia 51.645,69 euro non superata, plusvalenza non riportata in RT", Principale_RT_Soglia.NotaElenco(totali));
+        totali.put(Principale_Dichiarazioni.TOT_RT_PLUS, "-800.00");
+        assertEquals("Soglia 51.645,69 euro non superata, minusvalenza non riportata in RT", Principale_RT_Soglia.NotaElenco(totali));
+
+        Dichiarazioni.Dichiarazione d = new Dichiarazioni.Dichiarazione();
+        d.Totali.putAll(totali);
+        assertEquals("Soglia 51.645,69 euro non superata, minusvalenza non riportata in RT", Principale_Dichiarazioni.NotaElenco(d));
+        d.Nota = "Presentata col\ncommercialista";
+        assertEquals("Soglia 51.645,69 euro non superata, minusvalenza non riportata in RT - Presentata col commercialista",
+                Principale_Dichiarazioni.NotaElenco(d));
+        d.Totali.remove(Principale_RT_Soglia.TOTALE_NOTA);
+        assertEquals("Presentata col commercialista", Principale_Dichiarazioni.NotaElenco(d), "senza soglia resta la nota dell'utente");
     }
 
     @Test
@@ -70,6 +184,7 @@ class Principale_RT_SogliaTest {
         assertEquals(Principale_RT_Soglia.Stato.SUPERATA, ris.stato);
         assertFalse(ris.azzerato());
         assertArrayEquals(prima, r);
+        assertEquals("1000.50", ris.valoreStampato(1, r[1]), "superata: il quadro RT riporta i valori");
         assertTrue(ris.nota.contains("dal 01/03/2021 al 09/03/2021"), ris.nota);
         assertEquals("Soglia 51.645,69 euro superata\ndal 01/03/2021 al 09/03/2021", ris.notaBreve);
         assertTrue(ris.nota.contains("concorrono al reddito"));

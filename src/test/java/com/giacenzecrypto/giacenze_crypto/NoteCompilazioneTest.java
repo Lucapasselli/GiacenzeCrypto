@@ -32,7 +32,8 @@ class NoteCompilazioneTest {
         NoteCompilazione.W, NoteCompilazione.W8, NoteCompilazione.RW, NoteCompilazione.RW8,
         NoteCompilazione.FIAT, NoteCompilazione.FIAT_LOOKUP_FALLITI,
         NoteCompilazione.FIAT_CONTI_CORRENTI, NoteCompilazione.FIAT_IVAFE_LIQUIDITA,
-        NoteCompilazione.T, NoteCompilazione.RT, NoteCompilazione.DERIVATI, NoteCompilazione.DSU
+        NoteCompilazione.T, NoteCompilazione.RT, NoteCompilazione.DERIVATI, NoteCompilazione.DSU,
+        NoteCompilazione.DERIVATI_II_A, NoteCompilazione.DERIVATI_RT, NoteCompilazione.DERIVATI_T
     };
 
     private static Map<String, String> note() throws Exception {
@@ -76,8 +77,9 @@ class NoteCompilazioneTest {
         java.util.Set<String> chiavi = note().keySet();
         assertTrue(chiavi.contains("T") && chiavi.contains("T.2024") && chiavi.contains("T.2025"),
                 "il file deve avere la chiave nuda e le varianti 2024 e 2025 del quadro T");
-        //La chiave nuda copre il 2023, l'anno in cui il 730 non aveva ancora il quadro T.
-        assertEquals("T", NoteCompilazione.ChiaveApplicabile(chiavi, "T", "2023"));
+        //Il 2023, l'anno in cui il 730 non aveva ancora il quadro T, ha una variante sua (le cripto nei righi RT31-RT39): la chiave
+        //nuda resta per gli anni prima, quando il quadro RT non aveva una sezione per le cripto-attivita'.
+        assertEquals("T.2023", NoteCompilazione.ChiaveApplicabile(chiavi, "T", "2023"));
         assertEquals("T.2024", NoteCompilazione.ChiaveApplicabile(chiavi, "T", "2024"));
         assertEquals("T.2025", NoteCompilazione.ChiaveApplicabile(chiavi, "T", "2025"));
         //Il 2026 non ha una variante propria : deve prendere l'ultima disponibile, non ricadere sulla
@@ -155,6 +157,9 @@ class NoteCompilazioneTest {
                     || nuda.equals(NoteCompilazione.FIAT_CONTI_CORRENTI)
                     || nuda.equals(NoteCompilazione.FIAT_IVAFE_LIQUIDITA)
                     || nuda.equals(NoteCompilazione.DERIVATI)
+                    || nuda.equals(NoteCompilazione.DERIVATI_II_A)
+                    || nuda.equals(NoteCompilazione.DERIVATI_RT)
+                    || nuda.equals(NoteCompilazione.DERIVATI_T)
                     || nuda.equals(NoteCompilazione.DSU)) {
                 continue;
             }
@@ -185,6 +190,29 @@ class NoteCompilazioneTest {
         String d = NoteCompilazione.Testo(NoteCompilazione.DERIVATI, "2025", Map.of("numero", "7", "precedenti", "3"));
         assertTrue(d.contains("<b>7</b>") && d.contains("<b>3</b>"), "i conteggi dei movimenti su derivati non sono stati sostituiti");
         assertFalse(d.contains("{numero}") || d.contains("{precedenti}"));
+    }
+
+    /** Le note dei redditi da derivati (19/11/2026): righi del modello giusto per anno e segnaposto tutti risolti. */
+    @Test
+    void leNoteDeiDerivatiDannoIRighiDelModelloDellAnno() throws Exception {
+        Map<String, String> v = Map.of("col1", "385", "col2", "412", "risultato", "minusvalenza di 27", "perdite", "nessuna", "movimenti", "10");
+        Pattern p = Pattern.compile("\\{(\\w+)\\}");
+        for (String anno : new String[]{"2022", "2023", "2024", "2025"}) {
+            String rt = NoteCompilazione.Testo(NoteCompilazione.DERIVATI_RT, anno, v);
+            String t = NoteCompilazione.Testo(NoteCompilazione.DERIVATI_T, anno, v);
+            assertFalse(p.matcher(rt).find(), "RT " + anno + " : segnaposto non risolto");
+            assertFalse(p.matcher(t).find(), "T " + anno + " : segnaposto non risolto");
+            assertTrue(rt.contains("385") && rt.contains("412") && rt.contains("minusvalenza di 27"), rt);
+            int a = Integer.parseInt(anno);
+            assertEquals(a >= 2024, rt.contains("RT11"), "RT " + anno);
+            assertEquals(a < 2024, rt.contains("RT21"), "RT " + anno);
+            assertEquals(a < 2023, rt.contains("vanno riportati a mano"), "RT " + anno);
+            assertEquals(a >= 2024, t.contains("T11"), "T " + anno);
+            assertEquals(a < 2024, t.contains("non prevedeva il quadro T"), "T " + anno);
+        }
+        String avviso = NoteCompilazione.Testo(NoteCompilazione.DERIVATI_II_A, "2025", Map.of("numero", "7", "precedenti", "3"));
+        assertTrue(avviso.contains("<b>7</b>") && avviso.contains("<b>3</b>"));
+        assertFalse(avviso.contains("non e' riportato in questo report"), "l'avviso nuovo non deve dire che il risultato manca");
     }
 
     @Test

@@ -467,6 +467,9 @@ public class Funzioni {
             POPUP_VOCE_SCOLLEGA_COMMISSIONI,
             "Modifica Note",
             "Cambia Tipologia Reward",
+            Principale_Derivati.VOCE_MENU,
+            Principale_DerivatiMarcatura.VOCE_MENU,
+            Principale_RientroMargine.VOCE_MENU,
             "Trasla Orario");
 
     /** Voci del menu dei movimenti che non cambiano niente: restano in tutti i profili. */
@@ -474,6 +477,8 @@ public class Funzioni {
             "Dettagli Movimento",
             "Mostra LiFo Transazione",
             "Apri documento di origine",
+            Principale_Derivati.VOCE_RIEPILOGO,
+            Principale_GiroMovimento.VOCE_MENU,
             "Chiedi all'IA",
             "Copia ID Transazione",
             "Copia selezione",
@@ -596,6 +601,11 @@ public class Funzioni {
                 PopUp_disabilitaMenuDatesto(pop,"Modifica Prezzo");
                 PopUp_disabilitaMenuDatesto(pop,"Modifica Note");
                 PopUp_disabilitaMenuDatesto(pop,"Cambia Tipologia Reward");
+                PopUp_disabilitaMenuDatesto(pop,Principale_Derivati.VOCE_MENU);
+                PopUp_disabilitaMenuDatesto(pop,Principale_Derivati.VOCE_RIEPILOGO);
+                PopUp_disabilitaMenuDatesto(pop,Principale_GiroMovimento.VOCE_MENU);
+                PopUp_disabilitaMenuDatesto(pop,Principale_DerivatiMarcatura.VOCE_MENU);
+                PopUp_disabilitaMenuDatesto(pop,Principale_RientroMargine.VOCE_MENU);
                 PopUp_disabilitaMenuDatesto(pop,"Mostra LiFo Transazione");
                 PopUp_disabilitaMenuDatesto(pop,"Separa in Deposito/Prelievo");
                 PopUp_disabilitaMenuDatesto(pop,"Crea movimento di scambio da Deposito/Prelievo");
@@ -637,6 +647,31 @@ public class Funzioni {
                 if(Principale_TipologiaReward.isReward(Principale.MappaCryptoWallet.get(ID)))
                     PopUp_abilitaMenuDaTesto(pop,"Cambia Tipologia Reward");
                 else PopUp_disabilitaMenuDatesto(pop,"Cambia Tipologia Reward");
+
+                //"Classifica come derivato": basta che uno dei movimenti selezionati sia marcato come derivato,
+                //l'anteprima dice poi quali si classificano e quali no
+                boolean ConDerivati = Principale_Derivati.VoceAttiva(Principale.MappaCryptoWallet.get(ID));
+                for (String IDSel : Principale.PopUp_IDTransSelezionati) {
+                    if (ConDerivati) break;
+                    ConDerivati = Principale_Derivati.VoceAttiva(Principale.MappaCryptoWallet.get(IDSel));
+                }
+                if (ConDerivati) PopUp_abilitaMenuDaTesto(pop,Principale_Derivati.VOCE_MENU);
+                else PopUp_disabilitaMenuDatesto(pop,Principale_Derivati.VOCE_MENU);
+
+                //"Marca come derivato": sempre attiva su una selezione, l'anteprima dice quali movimenti le configurazioni riconoscono
+                PopUp_abilitaMenuDaTesto(pop,Principale_DerivatiMarcatura.VOCE_MENU);
+
+                //Riepilogo della posizione: solo su un movimento di contratto o di margine, di cui si ricava la posizione
+                if (Principale_Derivati.RiepilogoDisponibile(Principale.MappaCryptoWallet.get(ID))) PopUp_abilitaMenuDaTesto(pop,Principale_Derivati.VOCE_RIEPILOGO);
+                else PopUp_disabilitaMenuDatesto(pop,Principale_Derivati.VOCE_RIEPILOGO);
+
+                //Giro del movimento: su un movimento solo. Nessun calcolo qui (gira a ogni clic destro): lo fa il dialogo
+                if (Principale.PopUp_IDTransSelezionati.size() <= 1) PopUp_abilitaMenuDaTesto(pop,Principale_GiroMovimento.VOCE_MENU);
+                else PopUp_disabilitaMenuDatesto(pop,Principale_GiroMovimento.VOCE_MENU);
+
+                //Abbinamento del rientro del margine (posizione aperta con la 1.0.66): solo su un rientro ancora da classificare
+                if (Principale_RientroMargine.VoceAttiva(Principale.MappaCryptoWallet.get(ID))) PopUp_abilitaMenuDaTesto(pop,Principale_RientroMargine.VOCE_MENU);
+                else PopUp_disabilitaMenuDatesto(pop,Principale_RientroMargine.VOCE_MENU);
 
                 //Separazione: solo su selezione singola di un movimento che coinvolge due monete
                 if (Principale.PopUp_IDTransSelezionati.size()==1
@@ -1819,11 +1854,14 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
      * deposito di un trasferimento fra gruppi wallet diversi il motore sposterebbe il costo di carico dal prelievo una
      * seconda volta; la sua quantità può essere quella già ridotta della commissione, che resta dell'originale. Per
      * duplicarlo si annulla prima la classificazione. Un movimento generato ({@code AU}) non si duplica comunque.
+     * Nemmeno una riga di token di un contratto derivato o di margine ({@link Derivati#IsRigaContrattoOMargine}): il duplicato
+     * raddoppierebbe i contratti aperti o il margine nel sotto-wallet dei derivati, e con loro il LIFO della posizione.
      * @return {@code true} se il movimento si può duplicare
      */
     public static boolean isDuplicabile(String[] riga) {
         if (riga == null) return false;
         if (riga.length > 22 && riga[22] != null && riga[22].equalsIgnoreCase("AU")) return false;
+        if (Derivati.IsRigaContrattoOMargine(riga)) return false;
         return riga.length <= 20 || riga[20] == null || riga[20].isBlank();
     }
 
@@ -2351,6 +2389,9 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
             IDTS = java.util.Arrays.copyOf(IDTS, 5);
             for (int i = 0; i < IDTS.length; i++) if (IDTS[i] == null) IDTS[i] = "";
         }
+        //P2 (ContoDerivati): ogni gamba del giroconto fra spot e conto derivati tocca le pile come nel motore (cessione in uscita
+        //dallo spot, reddito da derivati in uscita dal conto, carico al valore in entrata)
+        if (ContoDerivati.Attivo() && ContoDerivati.IsGirocontoP2(Mov, Principale.MappaCryptoWallet)) return true;
         Moneta m[] = Moneta.RitornaMoneteDaMov(Mov);
         String Data = Mov[1];
         boolean Pre2023EarnCostoZero = false;
@@ -2467,6 +2508,10 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
                     plusvalenza = false;
                 }
             }
+        } else if (Mov[18].contains(Derivati.MARCATORE_ADDEBITO)) {
+            //PDV -> addebito per derivati: lato cripto e' una cessione (come nel motore, decisione D10)
+            rilevante=true;
+            plusvalenza=true;
         } else if (Mov[18].contains("PWN")) {
             //PWN -> Trasf. su wallet morto...tolto dal lifo (prelievo)
             rilevante=false;
@@ -2486,8 +2531,8 @@ public static String GUIDammiPrezzo(Component c, String NomeMon, long DataPrezzo
             rilevante=false;
             plusvalenza=false;
         }
-        else if (Mov[18].contains("DAC")||Mov[18].contains("DDO")) {
-            //Acquisto Crypto
+        else if (Mov[18].contains("DAC")||Mov[18].contains("DDO")||Mov[18].contains(Derivati.MARCATORE_ACCREDITO)) {
+            //Acquisto Crypto (DDV: accredito da derivati, la moneta entra al valore del momento)
             rilevante=true;
             plusvalenza=false;
         }

@@ -1504,10 +1504,19 @@ public static JTable ColoraTabellaRTPrincipale(final JTable table) {
             //fore=Color.BLACK;
         }
 
+            // Anno sotto la soglia dei 51.645,69 euro: i valori sono quelli calcolati ma nel quadro RT la plusvalenza
+            // (colonna 3) non viene riportata: solo quella cella e' in giallo (testo scuro, leggibile in entrambi i temi).
+            // Si legge dalla colonna Errori del model.
+            boolean sogliaAzzerata = col == 3 && Principale_RT_Soglia.RigaAzzerata(
+                    table.getModel().getValueAt(table.convertRowIndexToModel(row), 6));
             // Imposta il colore di sfondo alternato
             if (isSelected) {
                 c.setBackground(Tabelle.SfondoSelezione(row));
             } 
+            else if (sogliaAzzerata) {
+                setForeground(Color.BLACK);
+                c.setBackground(new Color(255, 240, 150));
+            }
             else if (col==3 && value.toString().toLowerCase().contains("-")) {
                     setForeground(rosso);
                 }

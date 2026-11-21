@@ -221,7 +221,7 @@ class Principale_Opzioni_ModificheManualiTest {
         ScriviCsv(e, csv);
 
         String testo = Files.readString(csv.toPath(), StandardCharsets.UTF_8);
-        assertTrue(testo.startsWith("﻿#GiacenzeCrypto ModificheManuali;formato=" + FORMATO + ";campi=46;"));
+        assertTrue(testo.startsWith("﻿#GiacenzeCrypto ModificheManuali;formato=" + FORMATO + ";campi=" + Importazioni.ColonneTabella + ";"));
         String[] righe = testo.split("\r\n");
         assertEquals(2 + e.record().size(), righe.length);
         int colonne = COLONNE_FISSE + Importazioni.ColonneTabella;

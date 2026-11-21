@@ -885,13 +885,10 @@ public class GUI_ModificaPrezzo extends javax.swing.JDialog {
         dow.MostraProgressAttesa("Scaricamento Prezzi", "Prezzi in fase di riscaricamento");
         dow.SetLabel("Scaricamento prezzi in corso...");
         dow.setLocationRelativeTo(this);
-        Thread t = new Thread(() -> {
+        dow.EseguiBloccante(() -> {
             if (ID != null) scaricaPrezziDaID(ID);
             else scaricaPrezziDaMonete();
-            dow.ChiudiFinestra();
-        });
-        t.start();
-        dow.setVisible(true); // bloccante finché il thread chiama ChiudiFinestra
+        }, "il riscaricamento dei prezzi", this); // bloccante finché il lavoro finisce: la finestra si chiude sempre
         if (ID != null) CaricaTabellaPrezzi(ID);
         else CaricaTabellaPrezzi();
     }//GEN-LAST:event_Bottone_RiscaricaPrezziActionPerformed

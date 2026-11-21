@@ -12,23 +12,25 @@ import java.util.regex.Pattern;
 
 /**
  * La soglia dei 51.645,69 euro dentro il quadro T/RT (anni fino al 2022): decide, per ogni anno, se la riga della
- * tabella principale RT va mostrata e stampata a zero, e scrive la nota che dice l'effetto. Logica senza Swing,
+ * tabella principale RT va stampata a zero, e scrive la nota che dice l'effetto. Logica senza Swing,
  * come le altre {@code Principale_<area>}: la tabella la riempie {@code Principale}.
  *
  * <p>Il calcolo vero della soglia è {@link SogliaGiacenzaAnte2023}. Qui c'è solo l'uso che ne fa il quadro RT
  * (decisione dell'utente del 2026-11-12, opzione B di {@code Analisi_Soglia_51645.md}):</p>
  * <ul>
- *   <li><b>Soglia non superata e verificata</b>: corrispettivi, costi e plusvalenza dell'anno si mostrano a zero
+ *   <li><b>Soglia non superata e verificata</b>: la tabella mostra i valori calcolati, con la cella della plusvalenza in giallo e la nota,
+ *       mentre nel quadro RT stampato corrispettivi, costi e plusvalenza dell'anno vanno a zero (l'archivio tiene i valori calcolati)
  *       (plusvalenze e minusvalenze non concorrono al reddito). Latente e valore di fine anno restano, perché non
- *       dipendono dalla soglia. I valori calcolati finiscono nella nota.</li>
+ *       dipendono dalla soglia.</li>
  *   <li><b>Soglia non superata ma non verificabile</b> (qualche token in giacenza senza prezzo al 1° gennaio): la
  *       riga non si tocca e la nota lo dice, perché con quel valore la soglia potrebbe risultare superata.</li>
  *   <li><b>Soglia superata</b>: la riga non si tocca, la nota dice quando.</li>
  *   <li>Dal 2023, o con l'opzione spenta: nessun effetto e nessuna nota.</li>
  * </ul>
  *
- * <p>Il motore delle plusvalenze, il LIFO e i costi di carico <b>non cambiano</b>: questo agisce solo sulla riga
- * mostrata e stampata, quindi l'opzione non sta in {@code OpzioniRicalcolo.Epoca()}.</p>
+ * <p>Il motore delle plusvalenze, il LIFO e i costi di carico <b>non cambiano</b>, e la tabella mostra sempre i
+ * valori calcolati (dal 2026-11-14: azzerarli nella tabella confondeva): l'azzeramento riguarda solo quello che si
+ * stampa nel PDF del quadro, tramite {@link Risultato#valoreStampato}: l'archivio tiene i valori della tabella. Quindi l'opzione non sta in {@code OpzioniRicalcolo.Epoca()}.</p>
  *
  * <p>La nota viaggia nella colonna "Errori" della tabella, racchiusa fra due commenti HTML, perché lì l'utente guarda
  * prima di stampare. Non è un errore da correggere: chi legge quella colonna per decidere se ci sono errori deve
@@ -48,11 +50,30 @@ public final class Principale_RT_Soglia {
     /** Chiave del totale che riporta la nota nella dichiarazione archiviata. */
     public static final String TOTALE_NOTA = "Soglia 51.645,69 euro";
 
-    /** Chiave del totale con la plusvalenza calcolata ma non imponibile, solo per un anno azzerato. */
-    public static final String TOTALE_PLUS_CALCOLATA = "Plusvalenza calcolata (non imponibile)";
+    /** Riferimento normativo scritto nell'Excel di un anno azzerato. Niente punto e virgola, come ogni testo per l'utente. */
+    static final String RIFERIMENTO_NORMATIVO = "Riferimenti normativi: circolare 30/E del 27 ottobre 2023 dell'Agenzia delle entrate, paragrafo 2.3.1 "
+            + "(redditi fino al 31 dicembre 2022), che applica alle cripto-valute l'art. 67, comma 1, lettera c-ter), e comma 1-ter, del TUIR: "
+            + "i prelievi da wallet sono cessioni rilevanti solo se la giacenza media di tutti i wallet, al cambio del 1° gennaio, supera 51.645,69 euro "
+            + "per almeno sette giorni lavorativi continui nel periodo d'imposta.\n"
+            + "La circolare precisa che, se la condizione non è integrata, "
+            + "\"non si rendono deducibili neppure le minusvalenze eventualmente realizzate\".\n"
+            + "Per la somma algebrica di plusvalenze e minusvalenze e il riporto delle eccedenze vale l'art. 68, comma 5, del TUIR.";
+
+    /**
+     * Avviso di un anno azzerato che ha movimenti su derivati: dice l'effetto e il riferimento, mai cosa fare. Il programma
+     * li tratta come cripto-attività (limite noto), quindi li azzera con il resto.
+     */
+    static final String AVVISO_DERIVATI = "Nell'anno ci sono movimenti su derivati. Quelli non classificati come derivati sono trattati come "
+            + "cripto-attività e sono riportati a zero insieme al resto, di quelli classificati solo l'effetto sulle cripto-attività "
+            + "(il risultato dei derivati sta nella sezione dei redditi diversi di natura finanziaria e non è azzerato).\n"
+            + "Per la circolare 30/E le cessioni a termine rilevano sempre (paragrafo 2.3.1) "
+            + "e i redditi da derivati sono redditi diversi di natura finanziaria (paragrafo 2.3.2).";
+    static final String AVVISO_DERIVATI_BREVE = "Derivati dell'anno azzerati con il resto";
 
     private static final String APRI = "<!--SOGLIA-->";
     private static final String CHIUDI = "<!--/SOGLIA-->";
+    /** Segno, dentro la nota, di un anno la cui plusvalenza non va nel quadro RT: la tabella ne evidenzia in giallo la cella. */
+    private static final String ZERO = "<!--SOGLIA-ZERO-->";
     private static final Pattern NOTA = Pattern.compile(Pattern.quote(APRI) + ".*?" + Pattern.quote(CHIUDI), Pattern.DOTALL);
 
     /** Indici delle colonne della tabella principale RT che l'azzeramento riguarda. */
@@ -95,9 +116,35 @@ public final class Principale_RT_Soglia {
             this.plusvalenzaCalcolata = plusvalenzaCalcolata;
         }
 
-        /** {@code true} se la riga è stata azzerata. */
+        /** {@code true} se nel quadro RT la riga va a zero. */
         public boolean azzerato() {
             return stato == Stato.NON_SUPERATA;
+        }
+
+        /**
+         * Le righe da scrivere sotto il riepilogo dell'Excel di un anno azzerato nel quadro RT (vuoto negli altri casi):
+         * l'Excel mostra i valori calcolati e queste righe dicono perché nel quadro stampato non compaiono, con i
+         * riferimenti normativi.
+         */
+        public String[] righeExcel() {
+            if (!azzerato()) {
+                return new String[0];
+            }
+            return new String[] {
+                "I valori di questo prospetto sono quelli calcolati dal programma. Nel quadro RT stampato sono riportati a zero.",
+                nota,
+                RIFERIMENTO_NORMATIVO };
+        }
+
+        /**
+         * Il valore di una colonna della riga RT come va nel quadro stampato (non nell'archivio, che tiene i valori della tabella): zero per costi,
+         * corrispettivi e plusvalenza di un anno azzerato, altrimenti il valore della tabella com'è.
+         */
+        public Object valoreStampato(int colonna, Object valoreTabella) {
+            if (azzerato() && (colonna == COSTI || colonna == CORRISPETTIVI || colonna == PLUSVALENZA)) {
+                return "0";
+            }
+            return valoreTabella;
         }
     }
 
@@ -140,14 +187,26 @@ public final class Principale_RT_Soglia {
     }
 
     /**
-     * Applica l'esito alla riga dell'anno (7 colonne della tabella principale RT, come stringhe): se la soglia non è
-     * superata e verificata azzera costi, corrispettivi e plusvalenza <b>nella riga</b>. Non tocca la colonna
-     * "Errori": la nota la aggiunge il chiamante con {@link #ConNota}.
+     * Valuta l'esito per la riga dell'anno (7 colonne della tabella principale RT, come stringhe). <b>Non modifica la
+     * riga</b>: la tabella mostra i valori calcolati, l'azzeramento di un anno sotto soglia lo applica solo la stampa del
+     * quadro con {@link Risultato#valoreStampato}. La nota la aggiunge il chiamante con {@link #ConNota}.
      *
-     * @param riga   le 7 colonne dell'anno, modificate sul posto solo se la soglia non è superata e verificata
+     * @param riga   le 7 colonne dell'anno, lette soltanto
      * @param esito  esito dell'anno, {@code null} se non calcolato (anno dal 2023, opzione spenta)
      */
     public static Risultato Applica(String[] riga, SogliaGiacenzaAnte2023.Esito esito) {
+        return Applica(riga, esito, false);
+    }
+
+    /**
+     * Come {@link #Applica(String[], SogliaGiacenzaAnte2023.Esito)}; con {@code derivatiNellAnno} la nota di un anno
+     * azzerato dice anche che i movimenti su derivati dell'anno sono azzerati con il resto: tutto il movimento se non è
+     * classificato come derivato (trattato come cripto-attività), solo il lato cripto se lo è (il risultato {@code [46]}
+     * non entra nel quadro RT). La circolare 30/E tratta i derivati a parte: da rivedere con la sezione II-A.
+     *
+     * @param derivatiNellAnno {@code true} se l'anno ha movimenti su derivati ({@link Derivati#ContaNellAnno})
+     */
+    public static Risultato Applica(String[] riga, SogliaGiacenzaAnte2023.Esito esito, boolean derivatiNellAnno) {
         if (esito == null || riga == null || riga.length <= PLUSVALENZA) {
             return new Risultato(Stato.NON_APPLICABILE, "", "", riga == null || riga.length <= PLUSVALENZA ? "" : riga[PLUSVALENZA]);
         }
@@ -163,20 +222,20 @@ public final class Principale_RT_Soglia {
                 + (esito.giornoMassimo == null ? "" : " il " + data(esito.giornoMassimo));
         if (esito.incompleto()) {
             return new Risultato(Stato.NON_VERIFICABILE, "Soglia di 51.645,69 euro non verificabile: manca il prezzo del 1° gennaio di "
-                    + elenco(esito) + ", valorizzati a zero (" + massimo + " senza di loro). La riga dell'anno non è stata azzerata." + acquisto(esito),
+                    + elenco(esito) + ", valorizzati a zero (" + massimo + " senza di loro).\nLa riga dell'anno non è stata azzerata." + acquisto(esito),
                     "Soglia 51.645,69 euro non verificabile\nmancano i prezzi di " + esito.tokenSenzaPrezzo.size()
                     + " token\n(pulsante Prezzi del 1° gennaio)" + acquistoBreve(esito), plus);
         }
         String serie = esito.serieMassima == 0 ? ""
                 : ", serie più lunga " + esito.serieMassima + (esito.serieMassima == 1 ? " giorno" : " giorni") + " lavorativi";
-        String nota = "Soglia di 51.645,69 euro non superata (" + massimo + serie + "): plusvalenze e minusvalenze dell'anno non concorrono al reddito. "
-                + "Valori calcolati prima dell'azzeramento: plusvalenza " + euro(plus) + " euro, corrispettivi "
-                + euro(riga[CORRISPETTIVI]) + " euro, costi " + euro(riga[COSTI]) + " euro." + acquisto(esito);
-        riga[COSTI] = "0";
-        riga[CORRISPETTIVI] = "0";
-        riga[PLUSVALENZA] = "0";
+        //Il risultato dell'anno può essere una minusvalenza: la dicitura segue il segno (sotto soglia vale per entrambe)
+        String risultato = new BigDecimal(plus.trim()).signum() < 0 ? "Minusvalenza" : "Plusvalenza";
+        String nota = "Soglia di 51.645,69 euro non superata (" + massimo + serie + "): plusvalenze e minusvalenze dell'anno non concorrono al reddito.\n"
+                + "Nel quadro RT stampato corrispettivi, costi e plusvalenza sono riportati a zero, mentre la tabella e l'archivio riportano i valori calcolati." + acquisto(esito)
+                + (derivatiNellAnno ? "\n" + AVVISO_DERIVATI : "");
         return new Risultato(Stato.NON_SUPERATA, nota,
-                "Soglia 51.645,69 euro non superata\n(" + massimo + ")\nanno azzerato" + acquistoBreve(esito), plus);
+                "Soglia 51.645,69 euro non superata\n(" + massimo + ")\n" + risultato + " non riportata in RT" + acquistoBreve(esito)
+                + (derivatiNellAnno ? "\n" + AVVISO_DERIVATI_BREVE : ""), plus);
     }
 
     /** L'istante del prezzo della soglia: le 00:00 del 1° gennaio, in millisecondi (ora di Roma). */
@@ -209,6 +268,14 @@ public final class Principale_RT_Soglia {
 
     /** La colonna "Errori" con la nota in coda (dopo gli eventuali errori già presenti), in HTML. */
     public static String ConNota(String colonnaErrori, String nota) {
+        return ConNota(colonnaErrori, nota, false);
+    }
+
+    /**
+     * Come {@link #ConNota(String, String)}; con {@code azzerata} la nota porta il segno che fa evidenziare in giallo
+     * la riga della tabella ({@link #RigaAzzerata}).
+     */
+    public static String ConNota(String colonnaErrori, String nota, boolean azzerata) {
         if (nota == null || nota.isEmpty()) {
             return colonnaErrori;
         }
@@ -216,7 +283,51 @@ public final class Principale_RT_Soglia {
         if (!gia.isEmpty() && !gia.endsWith("<br>")) {
             gia = gia + "<br>";
         }
-        return "<html>" + gia + APRI + Html(nota).replace("\n", "<br>") + CHIUDI + "</html>";
+        return "<html>" + gia + APRI + (azzerata ? ZERO : "") + Html(nota).replace("\n", "<br>") + CHIUDI + "</html>";
+    }
+
+    /** {@code true} se la colonna "Errori" porta la nota di un anno che nel quadro RT va a zero (riga da evidenziare). */
+    public static boolean RigaAzzerata(Object colonnaErrori) {
+        return colonnaErrori != null && colonnaErrori.toString().contains(ZERO);
+    }
+
+    /**
+     * Le voci del dettaglio di una dichiarazione archiviata che l'archivio evidenzia in giallo, perché legate fra loro: la
+     * plusvalenza che nel quadro RT è a zero, la nota della soglia. Vuoto se la dichiarazione non ha la
+     * nota (anno non azzerato), così le stesse voci di un anno normale restano come sono.
+     *
+     * @param etichette le etichette (colonna "Voce") delle righe del dettaglio
+     */
+    public static java.util.Set<String> VociDaEvidenziare(Iterable<String> etichette) {
+        boolean azzerato = false;
+        for (String e : etichette) {
+            if (TOTALE_NOTA.equals(e)) {
+                azzerato = true;
+                break;
+            }
+        }
+        return azzerato
+                ? java.util.Set.of(TOTALE_NOTA, Principale_Dichiarazioni.TOT_RT_PLUS)
+                : java.util.Set.of();
+    }
+
+    /**
+     * La nota breve per la colonna «Nota» dell'elenco dell'archivio, vuota se la dichiarazione non ha la nota della
+     * soglia: dice perché la plusvalenza è in giallo. Segue il segno del risultato, come la nota della tabella.
+     *
+     * @param totali i totali della dichiarazione archiviata
+     */
+    public static String NotaElenco(Map<String, String> totali) {
+        if (totali == null || !totali.containsKey(TOTALE_NOTA)) {
+            return "";
+        }
+        boolean minusvalenza;
+        try {
+            minusvalenza = new BigDecimal(totali.getOrDefault(Principale_Dichiarazioni.TOT_RT_PLUS, "0").trim()).signum() < 0;
+        } catch (RuntimeException e) {
+            minusvalenza = false;
+        }
+        return "Soglia 51.645,69 euro non superata, " + (minusvalenza ? "minusvalenza" : "plusvalenza") + " non riportata in RT";
     }
 
     /** La colonna "Errori" senza la nota della soglia, perché non è un errore da correggere. */
@@ -233,7 +344,7 @@ public final class Principale_RT_Soglia {
         if (n == 0) {
             return "";
         }
-        return " " + (n == 1 ? "Un token è stato valorizzato" : n + " token sono stati valorizzati")
+        return "\n" + (n == 1 ? "Un token è stato valorizzato" : n + " token sono stati valorizzati")
                 + " al prezzo di acquisto perché senza prezzo del 1° gennaio (elenco e correzione con il pulsante Prezzi del 1° gennaio).";
     }
 
@@ -258,15 +369,6 @@ public final class Principale_RT_Soglia {
         return String.format(Locale.ITALY, "%,.2f", v);
     }
 
-    /** Come {@link #euro(BigDecimal)} per un valore di tabella (stringa decimale), che può mancare. */
-    private static String euro(String v) {
-        try {
-            return euro(new BigDecimal(v.trim()));
-        } catch (RuntimeException e) {
-            return v == null ? "0,00" : v;
-        }
-    }
-
     private static int annoNumerico(String anno) {
         try {
             return Integer.parseInt(anno.trim());
@@ -277,6 +379,6 @@ public final class Principale_RT_Soglia {
 
     /** Un testo semplice reso sicuro per l'HTML (i simboli dei token possono contenere caratteri speciali). */
     public static String Html(String s) {
-        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>");
     }
 }

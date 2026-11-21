@@ -240,11 +240,14 @@ public final class Principale_Dichiarazioni {
      * @param Movimenti movimenti fiscalmente rilevanti dell'anno
      *        ({@link Principale_RT_Tipologie#MovimentiRilevanti}), colonne
      *        {@link Principale_RT_Tipologie#COLONNE_MOVIMENTI}
+     * @param NoteRiepilogo righe di testo scritte sotto il riepilogo (la nota della soglia dei 51.645,69 euro di un anno
+     *        azzerato nel quadro RT), vuoto se non ce ne sono
      * @throws IOException se la scrittura fallisce
      */
     public static void RT_CreaExcel(File f, String Anno, String[] IntestazioneRiepilogo, Object[] RigaRiepilogo,
             String[] IntestazioneMonete, List<Object[]> Monete, List<Object[]> Gruppi,
-            Principale_RT_Tipologie.DatiTipologie Tipologie, List<Object[]> Movimenti) throws IOException {
+            Principale_RT_Tipologie.DatiTipologie Tipologie, List<Object[]> Movimenti, String[] NoteRiepilogo,
+            Principale_RT_Derivati.Esito Derivati) throws IOException {
         Map<String, String[]> alias = DatabaseH2.Pers_GruppoAlias_LeggiTabella();
         try (FileOutputStream fos = new FileOutputStream(f)) {
             Workbook wb = new Workbook(fos, "excel1", "1.0");
@@ -253,6 +256,14 @@ public final class Principale_Dichiarazioni {
             ws.value(0, 0, "Quadro T/RT - riepilogo anno " + Anno);
             ScriviRiga(ws, 1, IntestazioneRiepilogo);
             ScriviRiga(ws, 2, RigaRiepilogo);
+            int rn = 4;
+            //Una riga per frase: dopo ogni punto della nota si va a capo, e una cella senza "testo a capo" non mostra i ritorni
+            for (String nota : NoteRiepilogo) {
+                for (String frase : nota.split("\n")) {
+                    ws.value(rn++, 0, frase);
+                }
+                rn++;
+            }
             ws.finish();
 
             ws = wb.newWorksheet("Monete " + Anno);
@@ -291,6 +302,8 @@ public final class Principale_Dichiarazioni {
                 ScriviRiga(ws, r++, ConColonneGruppoWallet(riga, 3, gruppo, alias));
             }
             ws.finish();
+
+            if (Derivati != null && Derivati.presente()) ScriviFoglioDerivati(wb.newWorksheet("Derivati " + Anno), Derivati);
 
             wb.finish();
         }
@@ -402,6 +415,24 @@ public final class Principale_Dichiarazioni {
                         ScriviRiga(ws, r++, new Object[]{PeriodoDellaData(Data(l, 9), tratti), l[2], l[4], l[3], l[5],
                             l[9], l[8], l[10], l.length > 15 ? l[15] : ""});
                     }
+                    ws.finish();
+                }
+
+                Calcoli_RW_Derivati.Rigo der = Principale.Mappa_RW_Derivati.get(gruppo);
+                if (der != null && !der.prospetto.isEmpty()) {
+                    ws = wb.newWorksheet(num + " - Derivati");
+                    ws.value(0, 0, titolo + " - contratti derivati, rigo codice 9 " + Anno + " (prospetto dei singoli valori)");
+                    ScriviRiga(ws, 1, new Object[]{"Voce", "Monete", "Data inizio", "Valore iniziale", "Data fine", "Valore finale", "Giorni",
+                        "IVAFE", "Stato estero", "Avvisi"});
+                    int r = 2;
+                    for (String[] p : der.prospetto) {
+                        ScriviRiga(ws, r++, new Object[]{p[Calcoli_RW_Derivati.P_VOCE], p[Calcoli_RW_Derivati.P_MONETA], p[Calcoli_RW_Derivati.P_DATA_INI],
+                            p[Calcoli_RW_Derivati.P_VAL_INI], p[Calcoli_RW_Derivati.P_DATA_FINE], p[Calcoli_RW_Derivati.P_VAL_FIN],
+                            p[Calcoli_RW_Derivati.P_GIORNI], p[Calcoli_RW_Derivati.P_IVAFE], p[Calcoli_RW_Derivati.P_STATO], p[Calcoli_RW_Derivati.P_AVVISI]});
+                    }
+                    ScriviRiga(ws, r + 1, new Object[]{"Rigo", "", "", der.valoreIniziale.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString(), "",
+                        der.soloMonitoraggio ? "" : der.valoreFinale.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString(), der.giorni,
+                        der.ivafe.toPlainString(), der.stato, String.join(" - ", der.avvisi)});
                     ws.finish();
                 }
 
@@ -558,6 +589,29 @@ public final class Principale_Dichiarazioni {
         return riga;
     }
 
+    /** Intestazioni del foglio dei redditi da derivati dell'Excel T/RT. */
+    static final String[] COLONNE_DERIVATI = {"Data", "ID movimento", "Exchange", "Tipo", "Contratto", "Risultato derivati (euro)", "Colonna RT11/T11"};
+
+    /**
+     * Il foglio dei redditi da derivati: un movimento per riga con il suo risultato e la colonna in cui va, poi i totali. La somma
+     * del foglio rifà RT11/T11 (criterio movimento per movimento, D2).
+     */
+    static void ScriviFoglioDerivati(Worksheet ws, Principale_RT_Derivati.Esito D) throws IOException {
+        ws.value(0, 0, "Redditi da derivati " + D.anno + ", movimento per movimento: risultato positivo in colonna 1, negativo in colonna 2 senza segno");
+        ScriviRiga(ws, 1, COLONNE_DERIVATI);
+        int r = 2;
+        for (Principale_RT_Derivati.Voce v : D.voci) {
+            ScriviRiga(ws, r++, new Object[]{v.data, v.id, v.exchange, Principale_RT_Derivati.DescrizioneTipo(v.tipo, v.conguaglio), v.contratto, v.valore, v.colonna});
+        }
+        r++;
+        ScriviRiga(ws, r++, new Object[]{"Totale colonna 1 (centesimi)", "", "", "", "", D.positivi, ""});
+        ScriviRiga(ws, r++, new Object[]{"Totale colonna 2 (centesimi)", "", "", "", "", D.negativi, ""});
+        ScriviRiga(ws, r++, new Object[]{"RT11/T11 colonna 1 (euro)", "", "", "", "", D.colonna1(), ""});
+        ScriviRiga(ws, r++, new Object[]{"RT11/T11 colonna 2 (euro)", "", "", "", "", D.colonna2(), ""});
+        ScriviRiga(ws, r, new Object[]{"Risultato (RT52, euro)", "", "", "", "", D.risultato(), ""});
+        ws.finish();
+    }
+
     /** Scrive una riga: i numeri come numeri, il resto come testo ripulito dall'HTML. */
     private static void ScriviRiga(Worksheet ws, int Riga, Object[] Valori) {
         for (int c = 0; c < Valori.length; c++) {
@@ -654,15 +708,12 @@ public final class Principale_Dichiarazioni {
         final File[] creato = new File[1];
         Download progress = new Download();
         progress.setLocationRelativeTo(owner);
-        Thread t = new Thread(() -> {
+        //Se il backup fallisce la finestra si chiude comunque e il chiamante riceve null
+        progress.EseguiBloccante(() -> {
             progress.Titolo("Backup della dichiarazione definitiva");
             progress.SetLabel("Preparazione...");
             creato[0] = Backup_Restore.Esegui(new Backup_Restore.OpzioniBackup(), progress);
-            progress.ChiudiFinestra();
         });
-        progress.SetThread(t);
-        t.start();
-        progress.setVisible(true);
         return creato[0];
     }
 
@@ -1040,7 +1091,9 @@ public final class Principale_Dichiarazioni {
                 break;
             }
             sb.append("&nbsp;&nbsp;").append(d[0]).append(": ").append(d[1].isBlank() ? "(vuoto)" : d[1])
-                    .append(" nella definitiva, ").append(d[2].isBlank() ? "(vuoto)" : d[2]).append(" ora<br>");
+                    .append(" nella definitiva, ").append(d[2].isBlank() ? "(vuoto)" : d[2]).append(" ora");
+            if (d[0].startsWith(PREFISSO_TOT_DERIVATI) && d[1].isBlank()) sb.append(" (la definitiva non comprendeva i redditi da derivati)");
+            sb.append("<br>");
         }
         return sb.toString();
     }
@@ -1101,10 +1154,23 @@ public final class Principale_Dichiarazioni {
                 d.Errori.isBlank() ? "" : "Sì",
                 integri ? "integri" : "da verificare",
                 d.Versione,
-                d.Nota.replace('\n', ' ')
+                NotaElenco(d)
             });
         }
         return righe;
+    }
+
+    /**
+     * La colonna «Nota» dell'elenco: la nota breve della soglia dei 51.645,69 euro, se la dichiarazione ne ha una, poi la
+     * nota scritta dall'utente. Solo per la lettura: la nota dell'utente resta quella salvata nel manifest.
+     */
+    static String NotaElenco(Dichiarazioni.Dichiarazione d) {
+        String soglia = Principale_RT_Soglia.NotaElenco(d.Totali);
+        String utente = d.Nota.replace('\n', ' ');
+        if (soglia.isEmpty() || utente.isBlank()) {
+            return soglia.isEmpty() ? utente : soglia;
+        }
+        return soglia + " - " + utente;
     }
 
     /** Voce del dettaglio con il riepilogo dei documenti di origine: un doppio clic apre la loro cartella. */
@@ -1114,6 +1180,8 @@ public final class Principale_Dichiarazioni {
     public static final String TOT_RW_INIZIALE = "Valore iniziale complessivo (crypto)";
     public static final String TOT_RW_FINALE = "Valore finale complessivo (crypto)";
     public static final String TOT_RW_IC = "IC dovuta complessiva";
+    /** IVAFE dei righi codice 9 (derivati), scritto solo se il quadro ne ha. */
+    public static final String TOT_RW_DER_IVAFE = "IVAFE dei contratti derivati (codice 9)";
     /** Vedi {@link Dichiarazioni#OPZIONE_METODO_RW}. */
     public static final String OPZIONE_METODO_RW = Dichiarazioni.OPZIONE_METODO_RW;
     /** Vedi {@link Dichiarazioni#METODO_RW_SOLO_VALORI_INIZIO_FINE}. */
@@ -1122,8 +1190,28 @@ public final class Principale_Dichiarazioni {
     public static final String TOT_RT_COSTI = "Totale dei costi o valori di acquisto";
     public static final String TOT_RT_CORRISPETTIVI = "Totale dei corrispettivi";
     public static final String TOT_RT_PLUS = "Plusvalenze realizzate";
+    /** Prefisso comune dei totali dei redditi da derivati (sezione II-A del RT, sezione II del T), vedi {@link #AggiungiTotaliDerivati}. */
+    public static final String PREFISSO_TOT_DERIVATI = "Redditi da derivati: ";
+    public static final String TOT_RT_DER_POSITIVI = PREFISSO_TOT_DERIVATI + "differenziali positivi e proventi (RT11/T11 col. 1)";
+    public static final String TOT_RT_DER_NEGATIVI = PREFISSO_TOT_DERIVATI + "differenziali negativi e oneri (RT11/T11 col. 2)";
+    public static final String TOT_RT_DER_RISULTATO = PREFISSO_TOT_DERIVATI + "risultato (RT52)";
+
+    /**
+     * Scrive nei totali di una dichiarazione T/RT i redditi da derivati dell'anno, ai centesimi, <b>solo se l'anno ne ha</b>: le
+     * definitive archiviate prima non hanno queste voci, e un totale vuoto contro uno zero risulterebbe diverso. Così un anno senza
+     * derivati resta identico, e una definitiva di un anno con derivati stampata senza di loro risulta diversa (decisione R4 del
+     * 19/11/2026, {@link #TestoDifferenze} lo dice).
+     */
+    public static void AggiungiTotaliDerivati(Map<String, String> Totali, Principale_RT_Derivati.Esito Derivati) {
+        if (Derivati == null || !Derivati.presente()) return;
+        Totali.put(TOT_RT_DER_POSITIVI, Derivati.positivi.toPlainString());
+        Totali.put(TOT_RT_DER_NEGATIVI, Derivati.negativi.toPlainString());
+        Totali.put(TOT_RT_DER_RISULTATO, Derivati.risultatoCentesimi().toPlainString());
+    }
     /** Totale scritto dalla generazione del prospetto DSU ({@link Principale_ISEE_Prospetto}) e letto dall'elenco. */
     public static final String TOT_ISEE_VALORE = "Valore complessivo al 31/12 (Sez. I e II)";
+    /** Avviso sui derivati nei totali W/RW e T/RT ({@link Derivati#TestoAvvisoArchivio}): fuori dal confronto con la definitiva. */
+    public static final String TOT_AVVISO = "Avviso";
 
     /**
      * Righe della tabella inferiore ({@code Voce}, {@code Valore}): stato, totali, righi, file con la

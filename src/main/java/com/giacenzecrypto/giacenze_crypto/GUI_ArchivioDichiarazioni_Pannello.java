@@ -42,6 +42,8 @@ public class GUI_ArchivioDichiarazioni_Pannello extends javax.swing.JPanel {
         Tabelle.Tabelle_ApplicaHeaderBoldCentrato(Tabella_Dettaglio);
         Tabelle.ColoraTabellaSemplice(Tabella_Elenco);
         Tabelle.ColoraTabellaSemplice(Tabella_Dettaglio);
+        InstallaRendererDettaglio();
+        InstallaRendererElenco();
 
         //Scritto a mano: il GUI Builder non modella gli eventi del modello di selezione di una JTable
         Tabella_Elenco.getSelectionModel().addListSelectionListener(e -> {
@@ -511,10 +513,118 @@ public class GUI_ArchivioDichiarazioni_Pannello extends javax.swing.JPanel {
 
     private void MostraDettaglio() {
         ModelloDettaglio().setRowCount(0);
+        List<String> etichette = new ArrayList<>();
         for (Object[] r : Principale_Dichiarazioni.RigheDettaglio(Selezionata())) {
             ModelloDettaglio().addRow(r);
+            etichette.add(String.valueOf(r[0]));
         }
+        vociEvidenziate = Principale_RT_Soglia.VociDaEvidenziare(etichette);
         AdattaLarghezzaColonne(Tabella_Dettaglio);
+        //Il testo lungo (la nota della soglia) va a capo nella colonna del valore: le altezze si calcolano dopo il layout,
+        //quando la colonna ha la larghezza che avrà davvero (e di nuovo a ogni ridimensionamento, vedi InstallaRendererDettaglio)
+        RicalcolaAltezzeDettaglio();
+    }
+
+    private boolean altezzeInAttesa = false;
+
+    private void RicalcolaAltezzeDettaglio() {
+        if (altezzeInAttesa) {
+            return;
+        }
+        altezzeInAttesa = true;
+        SwingUtilities.invokeLater(() -> {
+            altezzeInAttesa = false;
+            Tabelle.updateRowHeights(Tabella_Dettaglio);
+        });
+    }
+
+    /**
+     * Nell'elenco in alto la cella della plusvalenza di una dichiarazione con la nota della soglia è in giallo, come la
+     * voce «Plusvalenze realizzate» del dettaglio: il valore c'è, ma nel quadro RT stampato è a zero.
+     */
+    private void InstallaRendererElenco() {
+        javax.swing.table.TableCellRenderer base = Tabella_Elenco.getDefaultRenderer(Object.class);
+        Tabella_Elenco.setDefaultRenderer(Object.class, (tabella, valore, selezionata, fuoco, riga, colonna) -> {
+            Component c = base.getTableCellRendererComponent(tabella, valore, selezionata, fuoco, riga, colonna);
+            int modello = tabella.convertRowIndexToModel(riga);
+            if (colonna == COLONNA_PLUSVALENZE && !selezionata && modello >= 0 && modello < Elenco.size()
+                    && Elenco.get(modello).Fam == Dichiarazioni.Famiglia.RT
+                    && Elenco.get(modello).Totali.containsKey(Principale_RT_Soglia.TOTALE_NOTA)) {
+                c.setBackground(GIALLO_EVIDENZIA);
+                c.setForeground(java.awt.Color.BLACK);
+            }
+            return c;
+        });
+    }
+
+    /** Colonna «Valore finale / Plusvalenze» dell'elenco. */
+    private static final int COLONNA_PLUSVALENZE = 4;
+
+    /** Voci del dettaglio da evidenziare in giallo ({@link Principale_RT_Soglia#VociDaEvidenziare}). */
+    private java.util.Set<String> vociEvidenziate = java.util.Set.of();
+
+    /** Vero mentre {@link #AdattaLarghezzaColonne} misura il testo intero: in quel momento nessuna cella va a capo. */
+    private boolean misuraInCorso = false;
+
+    /** Renderer della cella con testo a capo: una sola istanza, riconfigurata a ogni cella. */
+    private final javax.swing.JTextArea areaACapo = CreaAreaACapo();
+
+    private static javax.swing.JTextArea CreaAreaACapo() {
+        javax.swing.JTextArea a = new javax.swing.JTextArea();
+        a.setLineWrap(true);
+        a.setWrapStyleWord(true);
+        a.setOpaque(true);
+        a.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 5, 2, 5));
+        return a;
+    }
+
+    private static final java.awt.Color GIALLO_EVIDENZIA = new java.awt.Color(255, 240, 150);
+
+    /**
+     * Sopra il renderer a righe alternate di {@code ColoraTabellaSemplice}: la colonna del valore manda a capo il testo
+     * che non sta nella colonna (HTML con la larghezza della colonna, così l'altezza della riga si calcola) e le voci legate
+     * alla soglia dei 51.645,69 euro sono in giallo con testo scuro, se la riga non è selezionata.
+     */
+    private void InstallaRendererDettaglio() {
+        Tabella_Dettaglio.getColumnModel().addColumnModelListener(new javax.swing.event.TableColumnModelListener() {
+            @Override
+            public void columnMarginChanged(javax.swing.event.ChangeEvent e) {
+                RicalcolaAltezzeDettaglio();
+            }
+            @Override
+            public void columnAdded(javax.swing.event.TableColumnModelEvent e) { }
+            @Override
+            public void columnRemoved(javax.swing.event.TableColumnModelEvent e) { }
+            @Override
+            public void columnMoved(javax.swing.event.TableColumnModelEvent e) { }
+            @Override
+            public void columnSelectionChanged(javax.swing.event.ListSelectionEvent e) { }
+        });
+        javax.swing.table.TableCellRenderer base = Tabella_Dettaglio.getDefaultRenderer(Object.class);
+        Tabella_Dettaglio.setDefaultRenderer(Object.class, (tabella, valore, selezionata, fuoco, riga, colonna) -> {
+            Component c = base.getTableCellRendererComponent(tabella, valore, selezionata, fuoco, riga, colonna);
+            if (c instanceof javax.swing.JLabel etichetta) {
+                int modello = tabella.convertRowIndexToModel(riga);
+                String testo = valore == null ? "" : valore.toString();
+                if (!selezionata && vociEvidenziate.contains(String.valueOf(tabella.getModel().getValueAt(modello, 0)))) {
+                    etichetta.setBackground(GIALLO_EVIDENZIA);
+                    etichetta.setForeground(java.awt.Color.BLACK);
+                }
+                int larghezza = tabella.getColumnModel().getColumn(colonna).getWidth();
+                if (colonna == 1 && !misuraInCorso && larghezza > 50
+                        && (testo.contains("\n") || etichetta.getFontMetrics(etichetta.getFont()).stringWidth(testo) > larghezza - 12)) {
+                    //Testo che non sta nella colonna: un'area di testo con ritorno a capo, stessi colori e font della cella
+                    areaACapo.setText(testo);
+                    areaACapo.setFont(etichetta.getFont());
+                    areaACapo.setForeground(etichetta.getForeground());
+                    areaACapo.setBackground(etichetta.getBackground());
+                    areaACapo.setSize(larghezza, Short.MAX_VALUE);
+                    areaACapo.setSize(larghezza, areaACapo.getPreferredSize().height);
+                    return areaACapo;
+                }
+            }
+            return c;
+        });
     }
 
     /** @return la dichiarazione della riga selezionata, {@code null} se la selezione non è di una sola riga */
@@ -559,6 +669,15 @@ public class GUI_ArchivioDichiarazioni_Pannello extends javax.swing.JPanel {
 
     /** Porta ogni colonna alla larghezza del suo contenuto più lungo, con un tetto. */
     private void AdattaLarghezzaColonne(javax.swing.JTable t) {
+        misuraInCorso = true;
+        try {
+            AdattaLarghezzaColonneMisura(t);
+        } finally {
+            misuraInCorso = false;
+        }
+    }
+
+    private void AdattaLarghezzaColonneMisura(javax.swing.JTable t) {
         DefaultTableModel modello = (DefaultTableModel) t.getModel();
         for (int c = 0; c < t.getColumnCount(); c++) {
             int larghezza = t.getTableHeader().getDefaultRenderer()

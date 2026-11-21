@@ -161,7 +161,10 @@ public class Calcoli_RW_Giacenze {
         // MappaCryptoWallet è ordinata per ID, che comincia con yyyyMMddHHmm: il primo movimento
         // incontrato per un gruppo è il suo primo movimento in assoluto, e le gambe sono cronologiche.
         Map<String, Gruppo> gruppi = new TreeMap<>();
+        //P2 (ContoDerivati): il conto derivati e' un rigo codice 9 (Calcoli_RW_Derivati), non una cripto-attivita'
+        boolean contoP2 = ContoDerivati.Attivo();
         for (String[] v : MappaCryptoWallet.values()) {
+            if (contoP2 && ContoDerivati.SulContoP2(v, MappaCryptoWallet)) continue;
             Gruppo g = gruppi.computeIfAbsent(DatabaseH2.Pers_GruppoWallet_Leggi(v[3], true), k -> new Gruppo());
             Moneta[] monete = Funzioni.RitornaMoneteDaID(v[0]);
             if (g.apertura == null) {
@@ -362,11 +365,15 @@ public class Calcoli_RW_Giacenze {
         return prezzo.prezzo(m, FunzioniDate.ConvertiDatainLongMinuto(dataOra));
     }
 
-    /** La moneta pesa sulle giacenze: c'è, ha una quantità e non è FIAT (NFT inclusi). */
+    /**
+     * La moneta pesa sulle giacenze: c'è, ha una quantità e non è FIAT (NFT inclusi). Non il token di un contratto su derivati
+     * ({@link Derivati#IsTokenContratto}), che è la fotografia di una posizione e non una cripto-attività.
+     */
     private static boolean contaQuantita(Moneta m) {
         return m != null && m.Moneta != null && !m.Moneta.isBlank()
                 && m.Qta != null && !m.Qta.isBlank()
-                && !"FIAT".equalsIgnoreCase(m.Tipo);
+                && !"FIAT".equalsIgnoreCase(m.Tipo)
+                && !Derivati.IsTokenContratto(m.Moneta);
     }
 
     private static Moneta copia(Moneta tipo, String qta) {

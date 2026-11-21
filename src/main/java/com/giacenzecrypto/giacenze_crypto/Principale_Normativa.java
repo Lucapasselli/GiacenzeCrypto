@@ -192,17 +192,13 @@ public class Principale_Normativa {
         dow.setLocationRelativeTo(owner);
 
         AtomicReference<Funzioni.RisultatoNormativa> esito = new AtomicReference<>();
-        Thread t = new Thread(() -> {
+        dow.EseguiBloccante(() -> {
             try {
                 esito.set(Funzioni.AggiornamentoNormativaDaRepository());
             } catch (Exception ex) {
                 LoggerGC.ScriviErrore(ex);
-            } finally {
-                dow.ChiudiFinestra();
             }
-        });
-        t.start();
-        dow.setVisible(true); //bloccante finché il thread chiama ChiudiFinestra
+        }); //bloccante finché il lavoro finisce: la finestra si chiude sempre
 
         Funzioni.RisultatoNormativa r = esito.get();
         if (r == null || !r.riuscito()) {

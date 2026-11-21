@@ -16,6 +16,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -615,6 +616,11 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
     }    
         
         
+    /** Movimento di Binance importato da un file CSV (documento d'origine di tipo CSV). Senza origine nota non lo e'. */
+    static boolean eBinanceDaFileCsv(String[] v, Map<Integer, Boolean> cache) {
+        return v != null && v.length > 3 && "Binance".equalsIgnoreCase(v[3]) && DocumentiFonte.EDaFileCsv(v, cache);
+    }
+
     private void PopolaTabella(){
         
         
@@ -625,8 +631,13 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
         //prima di fare il tutto dovrei scorrere tutti i miei wallet e vedere se trovo corrispondenze con quelli in tabella
         //se così è allora devo cercare la data dell'ultimo movimento e segnarlo nella tabella
         Mappa_Exchange.clear();
+        //Per Binance la partenza dello scaricamento e' l'ultimo movimento che NON viene da un file CSV: i CSV non dicono fin dove
+        //l'API e' stata scaricata, e partire dal loro ultimo movimento lascerebbe per sempre i buchi che l'API riempie (i
+        //movimenti gia' presenti non rientrano, vedi RiconciliazioneBinance). Con un archivio fatto solo di CSV si riparte dall'inizio.
+        Map<Integer, Boolean> origineCsv = new HashMap<>();
         for (String[] v : MappaCryptoWallet.values()) {
-                    Mappa_Exchange.put(v[3], Funzioni.getOradaID(v[0]));  
+            if (eBinanceDaFileCsv(v, origineCsv)) continue;
+            Mappa_Exchange.put(v[3], Funzioni.getOradaID(v[0]));
         }
         //Questa sotto è la mappa dei wallet nella tabella
         for (String splittata[]:DatabaseH2.Pers_ExchangeApi_LeggiTabella().values())
@@ -725,7 +736,8 @@ public class GUI_ExchangeAPI extends javax.swing.JDialog {
             protected Void doInBackground() {
                 try {
                     esito[0] = Trans_XLayer.AggiornaWalletCarta(() -> progress.FineThread, progress::SetMessaggioAvanzamento);
-                } catch (Exception ex) {
+                } catch (Exception | Error ex) { //anche un Error (memoria, classe mancante): senza, il SwingWorker lo terrebbe per se'
+                    ex.printStackTrace();
                     LoggerGC.ScriviErrore(ex);
                 }
                 return null;

@@ -819,4 +819,62 @@ class CcxtInteropConvertOKXBillsTest {
         assertEquals(2, CcxtInterop.deduplicaBillOKX(List.of(senzaId1, senzaId2)).size());
         assertTrue(CcxtInterop.deduplicaBillOKX(List.of()).isEmpty());
     }
+
+    @Test
+    void tradingSuPerpetuiFuturesEOpzioniPortaIlTipoDiStrumentoNellaCausale() {
+        List<String[]> righe = CcxtInterop.convertOKXBills(bills("""
+            [{"billId":"300","instType":"SWAP","ccy":"USDC","balChg":"-18.3","type":"2","subType":"4","ts":"1700000000000","ordId":"9"},
+             {"billId":"301","instType":"FUTURES","ccy":"USDT","balChg":"5","type":"2","subType":"5","ts":"1700000001000","ordId":"10"},
+             {"billId":"302","instType":"OPTION","ccy":"BTC","balChg":"0.001","type":"2","ts":"1700000002000","ordId":"11"},
+             {"billId":"303","instType":"swap","ccy":"USDC","balChg":"1","type":"2","ts":"1700000003000","ordId":"12"}]
+            """), "Trading");
+
+        assertEquals(4, righe.size());
+        assertEquals("Sell|SWAP", righe.get(0)[4]);
+        assertEquals("Buy|FUTURES", righe.get(1)[4]);
+        assertEquals("Buy|OPTION", righe.get(2)[4]);
+        assertEquals("Buy|SWAP", righe.get(3)[4], "il confronto non distingue maiuscole e minuscole");
+        for (String[] r : righe) assertEquals(Derivati.PNL, CcxtInterop.TipoDerivatoDaCausaleOKX(r[4]));
+    }
+
+    @Test
+    void tradingSpotMarginOSenzaInstTypeNonCambia() {
+        List<String[]> righe = CcxtInterop.convertOKXBills(bills("""
+            [{"billId":"400","instType":"SPOT","ccy":"BTC","balChg":"0.01","type":"2","ts":"1700000000000","ordId":"1"},
+             {"billId":"401","instType":"MARGIN","ccy":"USDT","balChg":"-10","type":"2","ts":"1700000000000","ordId":"2"},
+             {"billId":"402","ccy":"USDT","balChg":"-350","type":"2","ts":"1700000000000","ordId":"3"}]
+            """), "Trading");
+
+        assertEquals("Buy", righe.get(0)[4]);
+        assertEquals("Sell", righe.get(1)[4]);
+        assertEquals("Sell", righe.get(2)[4]);
+        for (String[] r : righe) assertEquals("", CcxtInterop.TipoDerivatoDaCausaleOKX(r[4]));
+    }
+
+    @Test
+    void ilSuffissoDerivatoVaSoloSuBuyESellDelTrading() {
+        //Un codice non mappato resta "OKX type N" anche se il bill e' di un derivato, e il Funding non e' toccato
+        List<String[]> trading = CcxtInterop.convertOKXBills(bills("""
+            [{"billId":"500","instType":"SWAP","ccy":"USDC","balChg":"-0.5","type":"8","ts":"1700000000000","ordId":"1"}]
+            """), "Trading");
+        assertTrue(trading.get(0)[4].startsWith("OKX type 8"), trading.get(0)[4]);
+
+        List<String[]> funding = CcxtInterop.convertOKXBills(bills("""
+            [{"billId":"501","instType":"SWAP","ccy":"BTC","balChg":"0.5","type":"1","ts":"1700000000000"}]
+            """), "Funding");
+        assertEquals("deposit", funding.get(0)[4]);
+    }
+
+    @Test
+    void laMappaCausaliOKXManda_iDerivati_fraIMovimentiDaClassificare() throws Exception {
+        org.json.JSONObject mappa = new org.json.JSONObject(java.nio.file.Files.readString(
+                java.nio.file.Path.of("config/importmappe/OKX.json"))).getJSONObject("mappaCausali");
+        for (String tipo : new String[]{"SWAP", "FUTURES", "OPTION"}) {
+            assertEquals("TRASFERIMENTO-CRYPTO", mappa.getString("Buy|" + tipo));
+            assertEquals("TRASFERIMENTO-CRYPTO", mappa.getString("Sell|" + tipo));
+        }
+        //Lo spot non cambia: resta uno scambio fra monete
+        assertEquals("SCAMBIO CRYPTO-CRYPTO", mappa.getString("Buy"));
+        assertEquals("SCAMBIO CRYPTO-CRYPTO", mappa.getString("Sell"));
+    }
 }

@@ -123,8 +123,9 @@ class ImportazioneGenericaAvvisoDerivatiTest {
         assertTrue(Importazioni.TestoAvvisoDerivati().isBlank());
     }
 
+    /** Decisione D5 (21/11/2026): i Dual Investment sono cripto-attivita' per scelta, l'avviso lo dichiara e non li dice "non corretti". */
     @Test
-    void testoAvviso_elencaTutteLeCausaliSegnalate() {
+    void testoAvviso_soloDual_dichiaraLaSceltaENonLaDiceScorretta() {
         Importazioni.SegnalaCausaleDerivato("Dual Savings Purchase");
         Importazioni.SegnalaCausaleDerivato("Dual Savings Settlement");
 
@@ -132,6 +133,39 @@ class ImportazioneGenericaAvvisoDerivatiTest {
 
         assertTrue(testo.contains("Dual Savings Purchase"));
         assertTrue(testo.contains("Dual Savings Settlement"));
-        assertTrue(testo.contains("c-quater"), "deve citare il riferimento normativo");
+        assertTrue(testo.contains("c-sexies"), "dichiara la lettera applicata");
+        assertTrue(testo.contains("scelta del programma"));
+        assertTrue(testo.contains("c-quater"), "cita la lettura che non applica");
+        assertFalse(testo.contains("non è corretto"));
+        assertFalse(testo.contains("strumenti derivati"), "senza altri derivati non c'e' il paragrafo dei derivati");
+    }
+
+    /** Una causale di tipo DUAL di un'altra configurazione si riconosce dal tipo, non dal nome. */
+    @Test
+    void testoAvviso_causaleDiTipoDual_vaNelParagrafoDeiDual() {
+        Importazioni.SegnalaCausaleDerivato("Dual Asset Subscribe (prova)", Derivati.DUAL);
+
+        String testo = Importazioni.TestoAvvisoDerivati();
+
+        assertTrue(testo.contains("Dual Asset Subscribe (prova)"));
+        assertTrue(testo.contains("scelta del programma"));
+        assertFalse(testo.contains("strumenti derivati"));
+    }
+
+    @Test
+    void testoAvviso_misto_derivatiEDualInParagrafiSeparati() {
+        Importazioni.SegnalaCausaleDerivato("Dual Savings Purchase");
+        Importazioni.SegnalaCausaleDerivato("USD-M Futures Realized Profit and Loss", Derivati.PNL);
+
+        String testo = Importazioni.TestoAvvisoDerivati();
+
+        int derivati = testo.indexOf("strumenti derivati");
+        int dual = testo.indexOf("<b>Dual Investment</b>");
+        assertTrue(derivati >= 0 && dual > derivati, "prima i derivati, poi il paragrafo dei Dual");
+        String parteDerivati = testo.substring(0, dual);
+        assertTrue(parteDerivati.contains("USD-M Futures Realized Profit and Loss"));
+        assertFalse(parteDerivati.contains("Dual"), "i Dual non sono fra i derivati");
+        assertTrue(testo.substring(dual).contains("Dual Savings Purchase"));
+        assertTrue(testo.substring(dual).contains("scelta del programma"));
     }
 }

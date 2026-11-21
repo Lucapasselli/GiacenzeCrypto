@@ -19,6 +19,7 @@ title: Giacenze a data
 - [Confronto con blockchain ed exchange](#confronto)
 - [Evidenziare i microsaldi](#microsaldi)
 - [I costi netti](#costi-netti)
+- [I contratti derivati aperti](#contratti-aperti)
 - [Domande frequenti](#domande)
 - [Limiti e cose da sapere](#limiti)
 
@@ -342,6 +343,18 @@ o indirizzi diversi, ed è separato dalla tabella proprio perché è un'informaz
 perdite possono non coincidere con le plusvalenze, perché qui anche gli scambi fra cripto contano come vendita e acquisto.
 Come si calcolano, come trattano ogni tipo di movimento e come si leggono le note sono spiegati nel manuale dedicato:
 **[Costo medio netto in Giacenze a data](costo-medio-netto.html)**.
+
+## I contratti derivati aperti {#contratti-aperti}
+
+Il pulsante **Contratti aperti**, accanto a *Costi netti*, elenca le posizioni su derivati ancora aperte alla fine della
+data scelta, con tutti i wallet: exchange, contratto, verso (long o short), contratti aperti, data del lotto aperto più
+vecchio, prezzo medio dei lotti ancora aperti, margine ancora parcheggiato nel sotto-wallet *Derivati* e moneta di
+regolamento. Con un doppio clic su una riga, o con *Riepilogo del contratto*, si apre il riepilogo della posizione.
+
+Sono dati di consultazione, non valori fiscali: i token dei contratti non entrano nel quadro W/RW. Compaiono solo le
+posizioni con il token del contratto, cioè i perpetui e i futures di OKX scaricati dalle API dalla versione 1.0.67. Non
+compaiono le posizioni aperte con la versione 1.0.66 né quelle importate da file CSV (Bybit, Binance), che non hanno il
+token.
 
 ## Domande frequenti {#domande}
 

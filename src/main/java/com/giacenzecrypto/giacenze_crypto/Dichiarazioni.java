@@ -475,7 +475,10 @@ public final class Dichiarazioni {
      */
     public static List<String[]> Confronta(Dichiarazione A, Dichiarazione B) {
         List<String[]> diff = new ArrayList<>();
-        ConfrontaMappe("", A.Totali, B.Totali, diff);
+        Map<String, String> ta = new LinkedHashMap<>(A.Totali);
+        Map<String, String> tb = new LinkedHashMap<>(B.Totali);
+        TOTALI_NON_CONFRONTATI.forEach(k -> { ta.remove(k); tb.remove(k); });
+        ConfrontaMappe("", ta, tb, diff);
         Map<String, Map<String, String>> ra = RighiPerChiave(A);
         Map<String, Map<String, String>> rb = RighiPerChiave(B);
         java.util.Set<String> chiavi = new java.util.LinkedHashSet<>(ra.keySet());
@@ -509,6 +512,13 @@ public final class Dichiarazioni {
     static final java.util.Set<String> OPZIONI_TOLTE = java.util.Set.of(
             //tolta il 2026-10-25: gli alias dei prezzi valgono per tutti gli anni (AliasPrezziToken)
             "Prezzi dagli exchange anche per gli anni già dichiarati");
+
+    /**
+     * Voci dei totali che non sono valori: l'avviso sui derivati ({@code Avviso}, {@link Derivati#TestoAvvisoArchivio}) ha cambiato
+     * testo e regola il 18/11/2026, e le definitive archiviate prima risulterebbero diverse senza che i valori cambino. Un effetto
+     * sui valori compare comunque fra le differenze dei totali e dei righi.
+     */
+    static final java.util.Set<String> TOTALI_NON_CONFRONTATI = java.util.Set.of(Principale_Dichiarazioni.TOT_AVVISO);
 
     /** Campi che identificano un rigo invece di essere suoi valori. */
     /** I campi che identificano un rigo nel confronto ({@code Rapporto} è quello dei prospetti DSU). */

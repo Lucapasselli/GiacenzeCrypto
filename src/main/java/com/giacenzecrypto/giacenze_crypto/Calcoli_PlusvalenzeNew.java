@@ -639,6 +639,13 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             UltimaPassata_Completa = (Ripartenza == null);
             AndataABuonFine = true;
 
+            //Reddito dei derivati secondo il LIFO dei contratti (decisione dell'utente): passo finale, sulle sole righe di token
+            try {
+                DerivatiLifo.AggiornaRisultati(MappaCryptoWallet);
+            } catch (RuntimeException e) {
+                LoggerGC.ScriviErrore(e);
+            }
+
             System.out.println("Plusvalenze: " + (Ripartenza == null ? "passata completa (" + Motivo + ")"
                     : "incrementale da " + DaDove) + " - " + Elaborati + " movimenti su "
                     + MappaCryptoWallet.size() + " in " + (System.currentTimeMillis() - Avvio) + " ms");
@@ -723,6 +730,9 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
      * senza alcun errore visibile (paragrafo 5.1, dimostrato da
      * {@code CalcoliPlusvalenzeNewEquivalenzaIncrementaleTest}).
      * <p>
+     * Sotto-wallet {@code v[4]} e marcatore dei derivati {@code v[44]} ci sono per l'opzione P2 ({@link ContoDerivati}),
+     * che con essi sceglie la pila del conto derivati e il ramo del giroconto del margine.
+     * <p>
      * Fuori dall'impronta restano le uscite {@code v[16]}, {@code v[19]}, {@code v[33]},
      * {@code v[38]} e {@code v[31]}. {@code v[17]} invece c'è: per i DDO è un ingresso inserito
      * dall'utente, e il motore lo riscrive uguale, quindi a passata conclusa è stabile.
@@ -734,6 +744,10 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
         h = Mescola(h, v[10]); h = Mescola(h, v[11]); h = Mescola(h, v[12]);
         h = Mescola(h, v[13]); h = Mescola(h, v[15]); h = Mescola(h, v[17]);
         h = Mescola(h, v[18]); h = Mescola(h, v[20]); h = Mescola(h, v[22]);
+        //P2 (ContoDerivati): sotto-wallet e marcatore decidono la pila e il ramo (conto derivati, giroconto MARGINE). Senza,
+        //spostare un movimento sul sotto-wallet (Marca come derivato) non sporcherebbe l'impronta e la passata incrementale
+        //lascerebbe i lotti nella pila sbagliata fino alla prossima passata completa
+        h = Mescola(h, v[4]);  h = Mescola(h, v.length > Derivati.CAMPO ? v[Derivati.CAMPO] : "");
 
         if (!v[20].isBlank()) {
             for (String IdM : v[20].split(",")) {
@@ -817,6 +831,15 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             
         //Questa funzione inizializza la mappa CryptoStack nel caso non esista già nella mappa MappaGrWallet_CryptoStack, nel qual caso recupera il suo valore         
         Map<String, ArrayDeque<String[]>> CryptoStack = MappaGrWallet_CryptoStack.computeIfAbsent(GruppoWallet, k -> new TreeMap<>());
+        //P2 (ContoDerivati, decisione D15): il sotto-wallet dei derivati ha una pila sua, anche senza le plusvalenze per wallet
+        boolean ContoDerivatiP2 = Opzioni.ContoDerivatiRilevante;
+        boolean SulContoP2 = ContoDerivatiP2 && ContoDerivati.SulContoP2(v, MappaCryptoWallet);
+        boolean GirocontoP2 = ContoDerivatiP2 && ContoDerivati.IsGirocontoP2(v, MappaCryptoWallet);
+        //P2, movimento su derivati sul conto ancora da classificare: conta come accredito o addebito classificato (decisione del 21/11/2026)
+        boolean DaClassificareP2 = SulContoP2 && ContoDerivati.DaClassificareSulConto(v, MappaCryptoWallet);
+        if (SulContoP2) {
+            CryptoStack = MappaGrWallet_CryptoStack.computeIfAbsent(ContoDerivati.ChiavePila(GruppoWallet), k -> new TreeMap<>());
+        }
 
         String TipoMU = Funzioni.RitornaTipoCrypto(v[8].trim(),v[1].trim(),v[9].trim());
        // if (v[12]==null)System.out.println(v[11]+"_"+v[1]+"_"+v[12]);
@@ -845,6 +868,9 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
         String NuovoPrezzoCarico="0.00";
         String Plusvalenza="0.00";
         String CalcoloPlusvalenza="N";
+        //Risultato dei derivati (c-quater) di questo movimento, in euro e con segno: resta vuoto per ogni movimento che
+        //non e' stato classificato come derivato (campo 18 con DDV o PDV). Va in v[46], mai in v[19]/v[33]
+        String RisultatoDerivati="";
         long dataLong=FunzioniDate.ConvertiDatainLongMinuto(v[1]);
         boolean DataSuperiore2023=true;
         if (dataLong<Opzioni.long2023){DataSuperiore2023=false;}
@@ -863,9 +889,57 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
         }
         boolean SempreRealizzo = RimborsoFallimento && !Opzioni.RimborsoFallimentoComePermuta;
 
+        //P2, giroconto fra lo spot e il conto derivati (righe MARGINE, ContoDerivati): l'uscita dallo spot e' una cessione di
+        //cripto-attivita', l'uscita dal conto scarica la sua pila e la differenza valore - costo e' un reddito da derivati (v[46]),
+        //ogni entrata carica la pila di arrivo al valore del momento
+        boolean UscitaCripto = TipoME.isBlank() && !TipoMU.isBlank() && !TipoMU.equalsIgnoreCase("FIAT");
+        boolean EntrataCripto = TipoMU.isBlank() && !TipoME.isBlank() && !TipoME.equalsIgnoreCase("FIAT");
+        //Con P2 il valore del giroconto e' quello della cessione e del carico: senza valore il movimento si segnala (errore dati)
+        if (GirocontoP2 && toBigDecimalSicuro(Valore, IDTransazione).signum() <= 0) AggiungiFlagAnomalia(v, "E");
+        if (GirocontoP2 && UscitaCripto) {
+            VecchioPrezzoCarico = StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, true, IDTransazione);
+            NuovoPrezzoCarico = "";
+            if (SulContoP2) {
+                Plusvalenza = "0.00";
+                CalcoloPlusvalenza = "N";
+                RisultatoDerivati = ContoDerivati.Differenza(toBigDecimalSicuro(Valore, IDTransazione), toBigDecimalSicuro(VecchioPrezzoCarico, IDTransazione));
+            } else {
+                Plusvalenza = toBigDecimalSicuro(Valore, IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico, IDTransazione)).toPlainString();
+                CalcoloPlusvalenza = "S";
+            }
+        }
+        else if (GirocontoP2 && EntrataCripto) {
+            NuovoPrezzoCarico = Valore;
+            StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico, IDTransazione);
+            Plusvalenza = "0.00";
+            CalcoloPlusvalenza = "N";
+            VecchioPrezzoCarico = "";
+        }
+        //P2, addebito da derivati pagato dal conto derivati (perdita, funding, commissione sul sotto-wallet): esce dalla pila del
+        //conto, solo derivati. L'onere e' il costo dei lotti scaricati (il valore meno la differenza valore - costo, entrambe c-quater).
+        //Vale anche per un movimento su derivati del conto ancora da classificare: un prelievo se i movimenti non classificati entrano
+        //nel calcolo (come ogni prelievo non classificato), una commissione sempre (come ogni commissione)
+        else if (SulContoP2 && UscitaCripto && (v[18].contains(Derivati.MARCATORE_ADDEBITO)
+                || DaClassificareP2 && (TipoID.equalsIgnoreCase("CM") || Opzioni.ConsideraMovimentiNC))) {
+            VecchioPrezzoCarico = StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, true, IDTransazione);
+            NuovoPrezzoCarico = "";
+            Plusvalenza = "0.00";
+            CalcoloPlusvalenza = "N";
+            RisultatoDerivati = ContoDerivati.Differenza(BigDecimal.ZERO, toBigDecimalSicuro(VecchioPrezzoCarico, IDTransazione));
+        }
+        //P2, accredito da derivati sul conto ancora da classificare: come un DDV, entra nella pila del conto al valore e il valore e'
+        //un provento da derivati. Solo se i movimenti non classificati entrano nel calcolo, come ogni deposito non classificato
+        else if (DaClassificareP2 && EntrataCripto && Opzioni.ConsideraMovimentiNC) {
+            NuovoPrezzoCarico = Valore;
+            StackLIFO_InserisciValore(CryptoStack, MonetaE, QtaE, NuovoPrezzoCarico, IDTransazione);
+            Plusvalenza = "0.00";
+            CalcoloPlusvalenza = "N";
+            VecchioPrezzoCarico = "";
+            RisultatoDerivati = Derivati.RisultatoDaClassificazione(true, toBigDecimalSicuro(Valore, IDTransazione));
+        }
         //TIPOLOGIA = 0 (Vendita Crypto)
         //System.out.println("aaa "+IDTransazione);
-        if (TipoID.equals("VC")){
+        else if (TipoID.equals("VC")){
             //tolgo dal Lifo della moneta venduta il costo di carico e lo salvo
             VecchioPrezzoCarico=StackLIFO_TogliQta(CryptoStack,MonetaU,QtaU,true,IDTransazione);
             
@@ -982,6 +1056,19 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                 Plusvalenza = Valore;
                 CalcoloPlusvalenza="S";
                 VecchioPrezzoCarico = "";
+            }
+            //Accredito da derivati (DDV): PnL positivo, funding incassato, bonus. Lato cripto come un acquisto, la moneta entra
+            //nella pila al valore del momento e non c'e' plusvalenza cripto. Il provento (c-quater) va in v[46], con
+            //doppio effetto sul lato cripto come da decisione D10 (Decisioni_Derivati.md)
+            else if (v[18].contains(Derivati.MARCATORE_ACCREDITO)) {
+                NuovoPrezzoCarico=Valore;
+                StackLIFO_InserisciValore(CryptoStack, MonetaE,QtaE,NuovoPrezzoCarico,IDTransazione);
+
+                Plusvalenza="0.00";
+                CalcoloPlusvalenza="N";
+
+                VecchioPrezzoCarico="";
+                RisultatoDerivati=Derivati.RisultatoDaClassificazione(true, toBigDecimalSicuro(Valore,IDTransazione));
             }
             //TIPOLOGIA = 7; ( Deposito Criptoattività x rewards, stacking,cashback etc... - Plusvalenza immediata)
             else if (TipoID.equalsIgnoreCase("RW") || v[18].contains("DAI")) {
@@ -1139,8 +1226,20 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             //Se arrivo qua vuol dire che questo è un Prelievo, poi a secondo di che tipo di deposito è
             //valorizzo la tipologia corretta                         
             
+            //Addebito per derivati (PDV): PnL negativo, funding pagato, recupero di un bonus. Lato cripto e' una cessione
+            //(scarico LIFO, plusvalenza cripto = valore - costo, decisione D10), l'onere (c-quater) va in v[46] con il segno meno.
+            //Le commissioni dei derivati hanno l'ID di una commissione e passano dal ramo successivo
+            if (v[18].contains(Derivati.MARCATORE_ADDEBITO) && !TipoID.equalsIgnoreCase("CM")) {
+                VecchioPrezzoCarico = StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, true, IDTransazione);
+
+                NuovoPrezzoCarico = "";
+
+                Plusvalenza = toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString();
+                CalcoloPlusvalenza = "S";
+                RisultatoDerivati = Derivati.RisultatoDaClassificazione(false, toBigDecimalSicuro(Valore,IDTransazione));
+            }
             //Tipologia = 4 Sto facendo il rimborso di un cashback o altro quindi lo considero come vendita
-            if (TipoID.equalsIgnoreCase("RW")) {
+            else if (TipoID.equalsIgnoreCase("RW")) {
                 if (Funzioni.CashbackComeFIAT(IDTransazione)) {
                     //Rimborso casback in presenza di cashback considerato come fiat
                     //non calcolo plusvalenza, in sostanza lo tratto come tratto le donazioni
@@ -1186,6 +1285,10 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                     Plusvalenza = toBigDecimalSicuro(Valore,IDTransazione).subtract(toBigDecimalSicuro(VecchioPrezzoCarico,IDTransazione)).toPlainString();
                     CalcoloPlusvalenza = "S";
                     // else Plusvalenza="ERRORE";
+                }
+                //Commissione di un derivato (PDV): onere del rapporto, deducibile fra i derivati e non fra le cripto
+                if (v[18].contains(Derivati.MARCATORE_ADDEBITO)) {
+                    RisultatoDerivati = Derivati.RisultatoDaClassificazione(false, toBigDecimalSicuro(Valore,IDTransazione));
                 }
             }
             //Tipologia = 6;//Prelievo Criptoattività x spostamento tra wallet
@@ -1257,6 +1360,15 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                     Plusvalenza = Valore;
                     CalcoloPlusvalenza="S";
                 }
+                //Derivato regolato in valuta FIAT (20/11/2026): il provento o l'onere in euro va in v[46] come per una cripto, senza
+                //nessun effetto sulle cripto-attivita' (la valuta non e' nella pila). Accredito solo in entrata, addebito solo in
+                //uscita, commissione FIAT compresa (ha la valuta in uscita e passa da qui)
+                else if (TipoMU.isBlank() && v[18].contains(Derivati.MARCATORE_ACCREDITO)) {
+                    RisultatoDerivati = Derivati.RisultatoDaClassificazione(true, toBigDecimalSicuro(Valore,IDTransazione));
+                }
+                else if (TipoME.isBlank() && v[18].contains(Derivati.MARCATORE_ADDEBITO)) {
+                    RisultatoDerivati = Derivati.RisultatoDaClassificazione(false, toBigDecimalSicuro(Valore,IDTransazione));
+                }
                                        
                 VecchioPrezzoCarico="";
                 
@@ -1278,6 +1390,8 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
                 v[17]=NuovoPrezzoCarico;
                 v[19]=Plusvalenza;
                 v[33]=CalcoloPlusvalenza;
+                //Righe piu' corte della dimensione attuale (movimenti sintetici dei test): il risultato dei derivati non c'e'
+                if (v.length > Derivati.CAMPO_RISULTATO) v[Derivati.CAMPO_RISULTATO]=RisultatoDerivati;
 
 
     }
@@ -1309,6 +1423,8 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
         final boolean ScambiSempreRilevanti;
         /** Se {@code true} i rimborsi da fallimento ({@code FRB}) seguono le regole ordinarie degli scambi ({@code Fallimenti_RimborsoComePermuta}). */
         final boolean RimborsoFallimentoComePermuta;
+        /** Se {@code true} il conto derivati conta come derivato, opzione P2 di D15 ({@link ContoDerivati#OPZIONE}). */
+        final boolean ContoDerivatiRilevante;
         /** 1 gennaio 2023 nel formato long dei minuti, soglia delle due regole qui sopra. */
         final long long2023;
 
@@ -1333,6 +1449,8 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             ScambiSempreRilevanti = (ScambiSempre != null && ScambiSempre.equalsIgnoreCase("SI"));
 
             RimborsoFallimentoComePermuta = FallimentiPiattaforme.RimborsoComePermuta();
+
+            ContoDerivatiRilevante = ContoDerivati.Attivo();
 
             long2023 = FunzioniDate.ConvertiDatainLongMinuto("2023-01-01 00:00");
         }
@@ -1361,6 +1479,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
             h = Mescola(h, Pre2023ScambiRilevanti ? "1" : "0");
             h = Mescola(h, ScambiSempreRilevanti ? "1" : "0");
             h = Mescola(h, RimborsoFallimentoComePermuta ? "1" : "0");
+            h = Mescola(h, ContoDerivatiRilevante ? "1" : "0");
             h = Mescola(h, Long.toString(long2023));
             //Lette dentro Funzioni.RewardRilevante
             h = Mescola(h, DatabaseH2.Pers_Opzioni_Leggi("PDD_CashBack", "SI"));

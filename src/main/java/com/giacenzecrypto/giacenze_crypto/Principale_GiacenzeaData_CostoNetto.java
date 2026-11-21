@@ -39,9 +39,11 @@ import java.util.function.BooleanSupplier;
  * <li>Trasferimenti (categoria {@code TI}, campo 18 {@code PTW}/{@code DTW}, scambio differito compreso): nessun denaro.</li>
  * <li>Movimento a due gambe (acquisto, vendita, scambio, NFT, fallimenti FBL/FGC/FRB): la gamba cripto in uscita
  * incassa {@code v[15]}, quella in entrata spende {@code v[15]}. Le gambe FIAT, NFT e vuote non hanno pool.</li>
- * <li>Una gamba sola in entrata: speso {@code v[15]} se è un acquisto ({@code AC}, {@code DAC}), altrimenti zero
- * (reward, {@code DAI}, {@code DCZ}, {@code DDO}, {@code FRT}). Senza classificazione (campo 18 vuoto) è un deposito
- * non classificato: zero e segnalato.</li>
+ * <li>Una gamba sola in entrata: speso {@code v[15]} se è un acquisto ({@code AC}, {@code DAC}), il costo di carico
+ * {@code v[17]} se è una donazione ricevuta ({@code DDO}: lì {@code v[17]} è il costo del donante scritto a mano
+ * nella classificazione, non un'uscita del motore, e vuoto vale zero, decisione dell'utente del 21/11/2026),
+ * altrimenti zero (reward, {@code DAI}, {@code DCZ}, {@code FRT}). Senza classificazione (campo 18 vuoto) è un
+ * deposito non classificato: zero e segnalato.</li>
  * <li>Una gamba sola in uscita: incasso {@code v[15]} per vendita ({@code VC}) e cashout ({@code PCO}); nessun incasso
  * per commissioni, rettifiche ({@code PWN}) e rimborsi di reward. Senza classificazione è un prelievo non
  * classificato: nessun incasso e segnalato. Le commissioni sono quelle di categoria {@code CM} e i {@code PCO} la cui
@@ -240,7 +242,7 @@ public final class Principale_GiacenzeaData_CostoNetto {
                     Pool P = Ris.PoolDi(v[8], v[9]);
                     if (Commissione || Cat.equals("RW") || C18.contains("PWN")) {
                         //Esce senza incasso : la quantita' e' gia' scesa
-                    } else if (Cat.equals("VC") || C18.contains("PCO")) {
+                    } else if (Cat.equals("VC") || C18.contains("PCO") || C18.contains(Derivati.MARCATORE_ADDEBITO)) {
                         Incassa(P, Valore);
                     } else if (C18.isBlank() && (Cat.equals("PC") || Cat.isBlank())) {
                         P.PrelieviNC++;
@@ -250,11 +252,18 @@ public final class Principale_GiacenzeaData_CostoNetto {
                 }
             } else if (EntrataPresente && EntrataPool) {
                 Pool P = Ris.PoolDi(v[11], v[12]);
-                if (Cat.equals("AC") || C18.contains("DAC")) {
+                if (Cat.equals("AC") || C18.contains("DAC") || C18.contains(Derivati.MARCATORE_ACCREDITO)) {
                     Spendi(P, Valore);
-                } else if (Cat.equals("RW") || C18.contains("DAI") || C18.contains("DCZ") || C18.contains("DDO")
-                        || C18.contains("FRT")) {
-                    //Reward, deposito a costo zero, donazione, rimborso oltre il credito : a zero per scelta
+                } else if (C18.contains("DDO")) {
+                    //Donazione ricevuta: costa quanto il costo di carico scritto a mano nella classificazione (v[17], il
+                    //costo del donante, lo stesso che il motore mette nel LIFO), non il valore della transazione.
+                    //Vuoto o non numerico vale zero, come nel motore: non rende il token "senza prezzo"
+                    BigDecimal Costo = Numero(v[17]);
+                    if (Costo != null) {
+                        P.Speso = P.Speso.add(Costo.abs());
+                    }
+                } else if (Cat.equals("RW") || C18.contains("DAI") || C18.contains("DCZ") || C18.contains("FRT")) {
+                    //Reward, deposito a costo zero, rimborso oltre il credito : a zero per scelta
                 } else if (C18.isBlank()) {
                     P.DepositiNC++;
                 }

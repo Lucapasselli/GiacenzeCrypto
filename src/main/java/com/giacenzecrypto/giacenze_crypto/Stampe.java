@@ -710,6 +710,8 @@ public class Stampe {
                 x + 500,     // right
                 y            // top
                 );
+            //Interlinea stretta: fino a quattro righe di segnalazioni (errori, derivati, anno senza quadro T)
+            ct.setLeading(9.5f);
             ct.go();
              
              
@@ -818,6 +820,15 @@ public class Stampe {
      * @param Anno anno di riferimento
      */
     public void AggiungiRT(String Immagine,String Vendite,String Costo,String Segnalazioni,String Anno) {
+        AggiungiRT(Immagine, Vendite, Costo, Segnalazioni, Anno, null);
+    }
+
+    /**
+     * Come {@link #AggiungiRT(String, String, String, String, String)}, più i redditi da derivati (RT11 colonna 1 e 2, RT52):
+     * l'immagine è il modello Redditi PF 2025 (anno 2024), lo stesso schema dei righi del 2026.
+     */
+    public void AggiungiRT(String Immagine,String Vendite,String Costo,String Segnalazioni,String Anno,
+            Principale_RT_Derivati.Esito Derivati) {
           try {
               
              Costo=new BigDecimal(Costo).setScale(0, RoundingMode.HALF_UP).toPlainString();
@@ -845,6 +856,12 @@ public class Stampe {
              setPara(writer.getDirectContent(), new Phrase(Vendite,font), 273+doc.leftMargin(), psosizioneVeriticale+303);
              //Valore dei Costi relativi alle Vendite
              setPara(writer.getDirectContent(), new Phrase(Costo,font), 415+doc.leftMargin(), psosizioneVeriticale+303);
+             //Sezione II-A, redditi da derivati: stessa corrispondenza di RT41 (colonne di RT11 allineate a quelle di RT41)
+             if (Derivati != null && Derivati.presente()) {
+                 ScriviValore(Derivati.colonna1(), 273, psosizioneVeriticale + 524.5f);
+                 ScriviValore(Derivati.colonna2(), 415, psosizioneVeriticale + 524.5f);
+                 ScriviValore(Derivati.risultato(), Derivati.risultato().signum() < 0 ? 324.5f : 414.5f, psosizioneVeriticale + 242.5f);
+             }
              
              font = new Font(Font.HELVETICA, 10, Font.BOLD);
              String MessPlus="Plusvalenze Cripto-Attività anno "+Anno+" : € "+Plusvalenze;
@@ -882,6 +899,15 @@ public class Stampe {
      * @param Anno anno di riferimento
      */
     public void AggiungiRT2025(String FilePdf, String Vendite, String Costo, String Segnalazioni, String Anno) {
+        AggiungiRT2025(FilePdf, Vendite, Costo, Segnalazioni, Anno, null);
+    }
+
+    /**
+     * Come {@link #AggiungiRT2025(String, String, String, String, String)}, più i redditi da derivati della sezione II-A
+     * (RT11 colonna 1 e 2, RT52) se l'anno ne ha.
+     */
+    public void AggiungiRT2025(String FilePdf, String Vendite, String Costo, String Segnalazioni, String Anno,
+            Principale_RT_Derivati.Esito Derivati) {
         try {
 
             // ── CARICAMENTO PDF DI SFONDO ──────────────────────────────────────
@@ -944,6 +970,13 @@ public class Stampe {
                 //minusvalenza
                 setPara(writer.getDirectContent(), new Phrase(plmn, font), 345 + doc.leftMargin(), psosizioneVeriticale + 142);
             }
+            //Sezione II-A, redditi da derivati movimento per movimento (Principale_RT_Derivati): posizioni ricavate dalle
+            //coordinate del modulo con la stessa corrispondenza di RT41 e RT57
+            if (Derivati != null && Derivati.presente()) {
+                ScriviValore(Derivati.colonna1(), 288, psosizioneVeriticale + 521);
+                ScriviValore(Derivati.colonna2(), 441, psosizioneVeriticale + 521);
+                ScriviValore(Derivati.risultato(), Derivati.risultato().signum() < 0 ? 345 : 440, psosizioneVeriticale + 194.5f);
+            }
 
             font = new Font(Font.HELVETICA, 10, Font.BOLD);
             String MessPlus ="NB : Ricordarsi di compilare i campi non completati dal programma seguendo le istruzioni di compilazione";
@@ -978,6 +1011,16 @@ public class Stampe {
      * @param Anno anno di riferimento
      */
     public void AggiungiRT2025p2(String FilePdf, String Vendite, String Costo, String Segnalazioni, String Anno) {
+        AggiungiRT2025p2(FilePdf, Vendite, Costo, Segnalazioni, Anno, null);
+    }
+
+    /**
+     * Come {@link #AggiungiRT2025p2(String, String, String, String, String)}, più la perdita dell'anno dei derivati in RT102
+     * colonna 5. Vale per il modello 2026 (anno 2025) e per il 2025 (anno 2024, {@code QuadroRT_2024_2.pdf}): RT102 e la
+     * colonna 5 di RT105 stanno nello stesso punto.
+     */
+    public void AggiungiRT2025p2(String FilePdf, String Vendite, String Costo, String Segnalazioni, String Anno,
+            Principale_RT_Derivati.Esito Derivati) {
         try {
 
             // ── CARICAMENTO PDF DI SFONDO ──────────────────────────────────────
@@ -1032,6 +1075,10 @@ public class Stampe {
             if (!plus){
                 //minusvalenza nel 105
                 setPara(writer.getDirectContent(), new Phrase(plmn, font), 440 + doc.leftMargin(), psosizioneVeriticale + 448);
+            }
+            //Rigo RT102 colonna 5: la perdita dell'anno dei derivati (sezione II-A)
+            if (Derivati != null && Derivati.presente() && Derivati.risultato().signum() < 0) {
+                ScriviValore(Derivati.risultato(), 440, psosizioneVeriticale + 479.5f);
             }
 
             font = new Font(Font.HELVETICA, 10, Font.BOLD);
@@ -1217,6 +1264,98 @@ public class Stampe {
         Paragraph spazio = new Paragraph(" ");
         spazio.setLeading(28f);
         doc.add(spazio);
+    }
+
+    /**
+     * Disegna come sfondo della pagina corrente la prima pagina del PDF indicato, scalata come nei moduli 2025, e restituisce la
+     * posizione verticale di riferimento dei valori (la stessa di {@link #AggiungiRT2025}).
+     */
+    private float SfondoModulo(String FilePdf) throws IOException {
+        PdfReader pdfReader = new PdfReader(FilePdf);
+        PdfImportedPage paginaSfondo = writer.getImportedPage(pdfReader, 1);
+        float larghezzaPagina = doc.getPageSize().getWidth() - doc.rightMargin() - doc.leftMargin();
+        float altezzaPagina = doc.getPageSize().getHeight() - doc.topMargin() - doc.bottomMargin();
+        float scala = Math.min(larghezzaPagina / paginaSfondo.getWidth(), altezzaPagina / paginaSfondo.getHeight());
+        PdfContentByte cb = writer.getDirectContentUnder();
+        cb.saveState();
+        cb.addTemplate(paginaSfondo, scala, 0, 0, scala, doc.leftMargin(), doc.bottomMargin());
+        cb.restoreState();
+        return doc.getPageSize().getHeight() - doc.topMargin() - (paginaSfondo.getHeight() * scala);
+    }
+
+    /** Scrive un importo all'euro, senza segno, nel formato dei moduli, a {@code x} dal margine sinistro. */
+    private void ScriviValore(BigDecimal Valore, float x, float y) {
+        String testo = Funzioni.formattaBigDecimal(Valore.setScale(0, RoundingMode.HALF_UP).abs(), false);
+        setPara(writer.getDirectContent(), new Phrase(testo, new Font(Font.HELVETICA, 8, Font.NORMAL)), x + doc.leftMargin(), y);
+    }
+
+    /** Il riquadro delle segnalazioni e la nota «compilare i campi non completati», alla quota {@code y}. */
+    private void ScriviSegnalazioni(String Segnalazioni, float y) {
+        ScriviSegnalazioni(Segnalazioni, y, 50);
+    }
+
+    /** Come {@link #ScriviSegnalazioni(String, float)}, con l'altezza del riquadro delle segnalazioni. */
+    private void ScriviSegnalazioni(String Segnalazioni, float y, float Altezza) {
+        setPara(writer.getDirectContent(), new Phrase("NB : Ricordarsi di compilare i campi non completati dal programma seguendo le istruzioni di compilazione",
+                new Font(Font.HELVETICA, 10, Font.BOLD)), doc.leftMargin(), y);
+        ColumnText ct = new ColumnText(writer.getDirectContent());
+        ct.setText(new Phrase(Segnalazioni == null ? "" : Segnalazioni, new Font(Font.HELVETICA, 8, Font.NORMAL)));
+        ct.setSimpleColumn(doc.leftMargin(), y - Altezza, doc.leftMargin() + 500, y - 2);
+        //Interlinea stretta: nelle strisce sopra i moduli c'e' poco spazio e ColumnText scarta in silenzio le righe che non entrano
+        ct.setLeading(9.5f);
+        try {
+            ct.go();
+        } catch (DocumentException ex) {
+            Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Quadro RT del modello Redditi PF 2024 (anno d'imposta 2023, {@code QuadroRT_2023.pdf}), una pagina sola. La numerazione è
+     * quella di quell'anno: cripto-attività in RT31 (corrispettivi), RT32 colonna 2 (costi), RT33 (risultato) e RT94 colonna 5
+     * (perdita), redditi da derivati (sezione II-A) in RT21, RT22 colonna 3, RT23 e RT93 colonna 5. Prima il programma stampava
+     * il 2023 sul modello del 2024, con le cripto in RT41.
+     */
+    public void AggiungiRT2023(String FilePdf, String Vendite, String Costo, String Segnalazioni, String Anno,
+            Principale_RT_Derivati.Esito Derivati) {
+        try {
+            float y0 = SfondoModulo(FilePdf);
+            BigDecimal vendite = new BigDecimal(Vendite).setScale(0, RoundingMode.HALF_UP);
+            BigDecimal costo = new BigDecimal(Costo).setScale(0, RoundingMode.HALF_UP);
+            BigDecimal plus = vendite.subtract(costo);
+            ScriviValore(vendite, 440, y0 + 373.5f);
+            ScriviValore(costo, 437, y0 + 363);
+            ScriviValore(plus, plus.signum() < 0 ? 282 : 437, y0 + 352.5f);
+            if (plus.signum() < 0) ScriviValore(plus, 440, y0 + 57);
+            if (Derivati != null && Derivati.presente()) {
+                ScriviValore(Derivati.colonna1(), 440, y0 + 479);
+                ScriviValore(Derivati.colonna2(), 437, y0 + 468.5f);
+                ScriviValore(Derivati.risultato(), Derivati.risultato().signum() < 0 ? 269 : 437, y0 + 459);
+                if (Derivati.risultato().signum() < 0) ScriviValore(Derivati.risultato(), 440, y0 + 68.5f);
+            }
+            //Il modulo di quell'anno arriva fino in fondo alla pagina: nota e segnalazioni nella striscia bianca sopra il logo
+            ScriviSegnalazioni(Segnalazioni, y0 + 740, 48);
+        } catch (IOException | RuntimeException ex) {
+            Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * La pagina del quadro T con la sezione II (730/2025 e 730/2026, {@code QuadroT_<anno>_1.pdf}): T11 colonna 1 e 2 con i
+     * redditi da derivati. Il quadro T non ha il rigo del risultato né quello della perdita dell'anno (li calcola il 730-3).
+     */
+    public void AggiungiTSezioneII(String FilePdf, Principale_RT_Derivati.Esito Derivati, String Segnalazioni) {
+        try {
+            float y0 = SfondoModulo(FilePdf);
+            if (Derivati != null && Derivati.presente()) {
+                ScriviValore(Derivati.colonna1(), 290, y0 + 503.5f);
+                ScriviValore(Derivati.colonna2(), 443, y0 + 503.5f);
+            }
+            //Anche questa pagina arriva in fondo: nota in alto, sopra il riquadro del codice fiscale
+            ScriviSegnalazioni(Segnalazioni, y0 + 735, 40);
+        } catch (IOException | RuntimeException ex) {
+            Logger.getLogger(Stampe.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**

@@ -961,7 +961,8 @@ public final class Calcoli_ISEE {
     /** Chiama {@code azione} per ogni giorno dell'anno in cui la moneta ha quantità positiva a fine giornata. SCAM esclusi. */
     private static void perOgniGiornoConGiacenza(Andamento an, LocalDate inizio, LocalDate fine,
             java.util.function.BiConsumer<LocalDate, BigDecimal> azione) {
-        if (Funzioni.isSCAM(an.moneta.Moneta)) {
+        //Il token di un contratto su derivati non e' una cripto-attivita' (come nel quadro W/RW)
+        if (Funzioni.isSCAM(an.moneta.Moneta) || Derivati.IsTokenContratto(an.moneta.Moneta)) {
             return;
         }
         BigDecimal qta = BigDecimal.ZERO;

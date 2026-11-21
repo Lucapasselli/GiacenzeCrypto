@@ -30,8 +30,10 @@ import org.junit.jupiter.api.io.TempDir;
  *   <li>sottoscrizioni/riscatti Earn, Launchpool e giroconti non producono movimenti;</li>
  *   <li>Funding dal 2026: 'Convert' e' un acquisto (gamba in euro) o uno scambio, 'Airdrop Bonus' un
  *       airdrop a se', un prelievo seguito da 'Withdrawal Canceled' non produce movimenti;</li>
- *   <li>derivati (conto Derivati e perpetui dell'UTA): PnL e funding sommati per giorno sulla
- *       variazione di saldo, gia' netta di commissioni, quindi nessun movimento COMMISSIONI;</li>
+ *   <li>derivati, conto Derivati: funding sommato per giorno, profitti e perdite un movimento per riga (dalla 1.001 della
+ *       config, 20/11/2026), sulla variazione di saldo gia' netta di commissioni, quindi nessun movimento COMMISSIONI.
+ *       Perpetui dell'UTA: funding sommato per giorno, aperture e chiusure uno per riga con la commissione a parte (la riga e'
+ *       gia' netta: {@code ricostruisciLordoSeFeeSuMonetaUscita} evita di contarla due volte);</li>
  *   <li>UTA: scambio spot con la gamba in entrata riportata al lordo e la fee a parte, conversioni
  *       '--' in MNT come scambio.</li>
  * </ul>
@@ -225,9 +227,13 @@ class ImportazioneGenericaBybitTest {
     @Test
     void configurazioniNuove_stessoExchangeEWallet() throws Exception {
         ConfigurazioneImport s = spot(), d = derivati(), u = uta();
-        for (ConfigurazioneImport c : List.of(d, u)) {
-            assertEquals(s.nomeExchange, c.nomeExchange);
-            assertEquals(s.nomeWallet, c.nomeWallet);
+        for (ConfigurazioneImport c : List.of(d, u)) assertEquals(s.nomeExchange, c.nomeExchange);
+        assertEquals(s.nomeWallet, u.nomeWallet);
+        //Il conto contratti e' il sotto-wallet dei derivati (dalla 1.0.67, opzione P2), i giroconti tornano sul wallet degli altri conti
+        assertEquals(OKXDerivati.SOTTOWALLET, d.nomeWallet);
+        for (String causale : List.of("transferIn", "transferOut", "upgradeUTATransferOutWithMargin")) {
+            assertEquals(s.nomeWallet, d.walletSpecularePerCausale.get(causale), causale);
+            assertEquals(Derivati.MARGINE, d.tipoDerivato(causale), causale);
         }
         assertEquals(4, java.util.stream.Stream.of(s, funding(), d, u).map(c -> c.estrazione).distinct().count());
     }
@@ -369,7 +375,7 @@ class ImportazioneGenericaBybitTest {
     }
 
     @Test
-    void derivati_pnlEFundingSommatiPerGiornoECausale_bonusASe_girocontiIgnorati_marcati() throws Exception {
+    void derivati_fundingSommatoPerGiorno_profittiEPerditeUnoPerRiga_bonusASe_girocontiSulContoDerivati_marcati() throws Exception {
         List<String[]> righe = new ArrayList<>();
         righe.add(rigaDerivati("2022-11-15 00:00:00", "USDT", "funding", "0.01", "-0.01"));
         righe.add(rigaDerivati("2022-11-15 09:00:00", "USDT", "trade", "0.005", "-0.005"));
@@ -378,20 +384,59 @@ class ImportazioneGenericaBybitTest {
         righe.add(rigaDerivati("2022-11-15 17:00:00", "USDT", "bonusClaimed", "0", "10"));
         righe.add(rigaDerivati("2022-11-15 18:00:00", "USDT", "transferOut", "0", "-5"));
 
-        List<String[]> movs = importa(righe, derivati());
-        assertEquals(3, movs.size(), "un movimento per il PnL del giorno, uno per il funding, uno per il bonus");
+        List<String[]> tutti = importa(righe, derivati());
+        //Il giroconto verso lo spot (dalla 1.0.67 il conto contratti e' il sotto-wallet Derivati): due gambe di trasferimento interno
+        List<String[]> giroconto = tutti.stream().filter(m -> Derivati.Tipo(m).equals(Derivati.MARGINE)).toList();
+        assertEquals(2, giroconto.size());
+        String[] esce = giroconto.stream().filter(m -> !m[10].isBlank()).findFirst().orElseThrow();
+        String[] entra = giroconto.stream().filter(m -> !m[13].isBlank()).findFirst().orElseThrow();
+        assertEquals("TI", categoria(esce));
+        assertEquals("TI", categoria(entra));
+        assertEquals(OKXDerivati.SOTTOWALLET, esce[4], "esce dal conto contratti");
+        assertEquals("Principale", entra[4], "entra nello spot");
+        assertEquals(0, new BigDecimal(esce[10]).compareTo(new BigDecimal("-5")));
+        assertEquals(0, new BigDecimal(entra[13]).compareTo(new BigDecimal("5")));
+        assertTrue(esce[0].compareTo(entra[0]) < 0, "l'uscita viene prima dell'entrata");
+        List<String[]> movs = tutti.stream().filter(m -> !Derivati.Tipo(m).equals(Derivati.MARGINE)).toList();
+        assertEquals(4, movs.size(), "un movimento per ogni riga di PnL, uno per il funding del giorno, uno per il bonus");
+        assertTrue(movs.stream().allMatch(m -> OKXDerivati.SOTTOWALLET.equals(m[4])), "tutto il conto sta sul sotto-wallet Derivati");
         assertTrue(movs.stream().noneMatch(m -> categoria(m).equals("CM")),
                 "la commissione e' gia' dentro Change: nessun movimento COMMISSIONI");
-        String[] pnl = movs.stream().filter(m -> Derivati.Tipo(m).equals(Derivati.PNL)).findFirst().orElseThrow();
-        assertEquals("PC", categoria(pnl));
-        assertEquals("USDT", pnl[8]);
-        assertEquals(0, new BigDecimal(pnl[10]).compareTo(new BigDecimal("-0.305")), "somma dei Change del PnL del giorno");
-        assertEquals("", pnl[18], "da classificare a mano: trattato come cripto-attivita'");
+        List<String[]> pnl = movs.stream().filter(m -> Derivati.Tipo(m).equals(Derivati.PNL)).toList();
+        assertEquals(2, pnl.size(), "l'apertura (sola commissione) e la chiusura restano due movimenti");
+        assertEquals(java.util.Set.of("-0.005", "-0.3"), pnl.stream()
+                .map(m -> new BigDecimal(m[10]).stripTrailingZeros().toPlainString()).collect(java.util.stream.Collectors.toSet()));
+        for (String[] m : pnl) {
+            assertEquals("PC", categoria(m));
+            assertEquals("USDT", m[8]);
+            assertEquals("", m[18], "costruiti qui senza scrittura in archivio: la classificazione la fa l'importazione");
+        }
         String[] funding = movs.stream().filter(m -> Derivati.Tipo(m).equals(Derivati.FUNDING)).findFirst().orElseThrow();
         assertEquals("DC", categoria(funding));
         assertEquals(0, new BigDecimal(funding[13]).compareTo(new BigDecimal("0.01")), "somma dei funding del giorno");
         String[] bonus = movs.stream().filter(m -> Derivati.Tipo(m).equals(Derivati.BONUS)).findFirst().orElseThrow();
         assertEquals(0, new BigDecimal(bonus[13]).compareTo(BigDecimal.TEN));
+    }
+
+    @Test
+    void derivati_unaRigaInEuro_diventaUnDepositoFiatMarcato() throws Exception {
+        //Un derivato regolato in valuta FIAT: il marcatore va anche sul deposito FIAT, che poi nasce classificato
+        List<String[]> movs = importa(List.<String[]>of(rigaDerivati("2022-11-17 09:00:00", "EUR", "trade", "0", "25")), derivati());
+        assertEquals(1, movs.size());
+        assertEquals("DF", categoria(movs.get(0)));
+        assertEquals(Derivati.PNL, Derivati.Tipo(movs.get(0)));
+    }
+
+    @Test
+    void derivati_dueAperturedUguali_restanoDueMovimenti() throws Exception {
+        //Stessa commissione nello stesso giorno, anche nello stesso secondo: due esecuzioni, due movimenti
+        List<String[]> righe = new ArrayList<>();
+        righe.add(rigaDerivati("2022-11-16 09:00:00", "USDT", "trade", "0.005", "-0.005"));
+        righe.add(rigaDerivati("2022-11-16 09:00:00", "USDT", "trade", "0.005", "-0.005"));
+        righe.add(rigaDerivati("2022-11-16 11:30:00", "USDT", "trade", "0.005", "-0.005"));
+        List<String[]> movs = importa(righe, derivati());
+        assertEquals(3, movs.size());
+        assertTrue(movs.stream().allMatch(m -> new BigDecimal(m[10]).compareTo(new BigDecimal("-0.005")) == 0));
     }
 
     @Test
@@ -425,21 +470,40 @@ class ImportazioneGenericaBybitTest {
         assertEquals("MNT", movs.get(0)[11]);
     }
 
+    /** Riga di un perpetuo UTA: {@code Change = Cash Flow + Fee Paid}, con la commissione negativa come nei file veri. */
+    private static String[] rigaUtaPerpetuo(String fee, String cashFlow, String action, String time) {
+        String change = new BigDecimal(cashFlow).add(new BigDecimal(fee)).toPlainString();
+        return new String[]{"1", "USDT", "BTCUSDT", "TRADE", "--", "0", "0", "0", "0", fee, cashFlow, change, "0", action, time, "1.00"};
+    }
+
     @Test
-    void uta_perpetui_sommatiPerGiorno_feeNonContataDueVolte() throws Exception {
+    void uta_perpetui_unoPerRiga_fundingSommato_feeNonContataDueVolte() throws Exception {
         List<String[]> righe = new ArrayList<>();
-        righe.add(rigaUta("USDT", "TRADE", "-0.0015", "-0.0015", "OPEN", "2024-11-28 16:00:30"));
-        righe.add(rigaUta("USDT", "TRADE", "-0.001", "-0.001", "OPEN", "2024-11-28 16:00:30"));
+        //un ordine di apertura eseguito in due parti nello stesso secondo, una chiusura in perdita, una in profitto, due funding
+        righe.add(rigaUtaPerpetuo("-0.0015", "0", "OPEN", "2024-11-28 16:00:30"));
+        righe.add(rigaUtaPerpetuo("-0.001", "0", "OPEN", "2024-11-28 16:00:30"));
+        righe.add(rigaUtaPerpetuo("-0.002", "-0.3", "CLOSE", "2024-11-28 18:00:00"));
+        righe.add(rigaUtaPerpetuo("-0.002", "1.0", "CLOSE", "2024-11-28 19:00:00"));
         righe.add(rigaUta("USDT", "SETTLEMENT", "0", "-0.006", "SETTLEMENT", "2024-11-28 16:00:00"));
+        righe.add(rigaUta("USDT", "SETTLEMENT", "0", "0.002", "SETTLEMENT", "2024-11-29 00:00:00"));
+        righe.add(rigaUta("USDT", "SETTLEMENT", "0", "-0.001", "SETTLEMENT", "2024-11-29 08:00:00"));
 
         List<String[]> movs = importa(righe, uta());
-        assertEquals(2, movs.size(), "un movimento per il PnL e uno per il funding del giorno, nessuna COMMISSIONI a parte");
-        assertTrue(movs.stream().allMatch(m -> categoria(m).equals("PC")));
-        String[] pnl = movs.stream().filter(m -> Derivati.Tipo(m).equals(Derivati.PNL)).findFirst().orElseThrow();
-        assertEquals(0, new BigDecimal(pnl[10]).compareTo(new BigDecimal("-0.0025")),
-                "somma dei Change: la fee e' gia' dentro e non va sottratta una seconda volta");
-        String[] funding = movs.stream().filter(m -> Derivati.Tipo(m).equals(Derivati.FUNDING)).findFirst().orElseThrow();
-        assertEquals(0, new BigDecimal(funding[10]).compareTo(new BigDecimal("-0.006")));
+        //La somma dei movimenti e' quella dei Change: la commissione e' gia' dentro e non si sottrae una seconda volta
+        BigDecimal somma = BigDecimal.ZERO;
+        for (String[] m : movs) somma = somma.add(new BigDecimal(m[10].isBlank() ? m[13] : m[10]));
+        BigDecimal attesa = BigDecimal.ZERO;
+        for (String[] r : righe) attesa = attesa.add(new BigDecimal(r[11]));
+        assertEquals(0, attesa.compareTo(somma), "somma " + somma + " contro i Change " + attesa);
+
+        //Chiusure: profitto o perdita lordi (Cash Flow) piu' la commissione a parte. Aperture: la sola commissione
+        List<String> pnl = movs.stream().filter(m -> Derivati.Tipo(m).equals(Derivati.PNL))
+                .map(m -> new BigDecimal(m[10].isBlank() ? m[13] : m[10]).stripTrailingZeros().toPlainString()).sorted().toList();
+        assertEquals(List.of("-0.3", "1"), pnl, "un movimento per chiusura, nessuno per le aperture (quantita' zero)");
+        long commissioni = movs.stream().filter(m -> categoria(m).equals("CM") && Derivati.Tipo(m).equals(Derivati.COMMISSIONE)).count();
+        assertTrue(commissioni >= 3, "le commissioni delle due chiusure e delle aperture, marcate come derivato: " + commissioni);
+        //Funding sommato per giorno: due movimenti per due giorni
+        assertEquals(2, movs.stream().filter(m -> Derivati.Tipo(m).equals(Derivati.FUNDING)).count());
     }
 
     @Test

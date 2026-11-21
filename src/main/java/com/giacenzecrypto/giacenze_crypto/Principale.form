@@ -91,6 +91,30 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_DocumentoFonteActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="MenuItem_RiepilogoContratto">
+              <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/Images/24_Stack.png"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Riepilogo contratto derivato"/>
+                <Property name="toolTipText" type="java.lang.String" value="Mostra le chiusure della posizione su questo contratto, in LIFO e secondo l&apos;exchange"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_RiepilogoContrattoActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="MenuItem_GiroMovimento">
+              <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/Images/24_Stack.png"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Mostra il giro del movimento"/>
+                <Property name="toolTipText" type="java.lang.String" value="Mostra i movimenti legati a questo, ciascuno con una riga che dice cos&apos;&#xe8;"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_GiroMovimentoActionPerformed"/>
+              </Events>
+            </MenuItem>
             <Menu class="javax.swing.JMenu" name="MenuItem_ChiediIA">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
@@ -241,6 +265,41 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_ModificaRewardActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="MenuItem_MarcaDerivato">
+              <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/Images/24_Classifica.png"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Marca come derivato"/>
+                <Property name="toolTipText" type="java.lang.String" value="Riconosce come derivati i movimenti importati prima che l&apos;importazione li marcasse"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_MarcaDerivatoActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="MenuItem_ClassificaDerivato">
+              <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/Images/24_Classifica.png"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Classifica come derivato"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_ClassificaDerivatoActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="MenuItem_AbbinaRientroMargine">
+              <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/Images/24_Classifica.png"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Abbina rientro del margine"/>
+                <Property name="toolTipText" type="java.lang.String" value="Abbina il rientro del margine di una posizione aperta con la versione 1.0.66 ai prelievi del margine di allora"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuItem_AbbinaRientroMargineActionPerformed"/>
               </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="MenuItem_TraslaOrario">
@@ -592,7 +651,7 @@
                   <Properties>
                     <Property name="autoCreateRowSorter" type="boolean" value="true"/>
                     <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                      <Table columnCount="43" rowCount="0">
+                      <Table columnCount="45" rowCount="0">
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;ID&lt;br&gt;Transazione&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Data e Ora&lt;/html&gt;" type="java.lang.Object"/>
                         <Column editable="false" title="&lt;html&gt;&lt;center&gt;Numero&lt;br&gt;movimento&lt;br&gt;su Totale&lt;br&gt;movimenti&lt;/html&gt;" type="java.lang.Object"/>
@@ -636,6 +695,8 @@
                         <Column editable="false" title="Fonte Prezzi" type="java.lang.Object"/>
                         <Column editable="false" title="Alias Gruppo Wallet" type="java.lang.Object"/>
                         <Column editable="false" title="Operazione" type="java.lang.Object"/>
+                        <Column editable="false" title="Derivato" type="java.lang.Object"/>
+                        <Column editable="false" title="Risultato derivati" type="java.lang.Object"/>
                       </Table>
                     </Property>
                     <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -2599,6 +2660,8 @@
                                       <Component id="GiacenzeaData_CheckBox_Microsaldi" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="44" max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_Bottone_CostiNetti" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="GiacenzeaData_Bottone_ContrattiAperti" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                       <Component id="GiacenzeaData_Bottone_Guida" min="-2" max="-2" attributes="0"/>
                                   </Group>
@@ -2678,6 +2741,7 @@
                                   <Component id="GiacenzeaData_CheckBox_NascondiScam" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_CheckBox_Microsaldi" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_Bottone_CostiNetti" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="GiacenzeaData_Bottone_ContrattiAperti" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_Bottone_Guida" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
@@ -3294,6 +3358,18 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_Bottone_CostiNettiActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="GiacenzeaData_Bottone_ContrattiAperti">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/Images/24_Stack.png"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Contratti aperti"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Posizioni su derivati ancora aperte alla data scelta: contratti, prezzo medio e margine parcheggiato (consultazione)"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GiacenzeaData_Bottone_ContrattiApertiActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JLabel" name="GiacenzeaData_Label_Aggiornare">
@@ -6877,6 +6953,7 @@
                                                   <Component id="Prezzi_Opzioni_CheckBox_ServizioOnchain" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
                                                   <Component id="Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
                                                   <Component id="Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
+                                                  <Component id="Plusvalenze_Opzioni_CheckBox_ContoDerivati" alignment="0" min="-2" pref="989" max="-2" attributes="0"/>
                                               </Group>
                                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                           </Group>
@@ -6904,6 +6981,8 @@
                               <Component id="Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama" min="-2" pref="69" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti" min="-2" pref="54" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="Plusvalenze_Opzioni_CheckBox_ContoDerivati" min="-2" pref="72" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jSeparator3" min="-2" pref="10" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -7051,6 +7130,14 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevantiActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="Plusvalenze_Opzioni_CheckBox_ContoDerivati">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Conto derivati : &lt;/b&gt;Tratta il conto derivati come parte del derivato: il margine che passa dallo spot al conto derivati &#xe8; una cessione al valore del momento e il suo rientro d&#xe0; un reddito da derivati. Vale per OKX, per il conto Derivati di Bybit e per i futures di Binance, non per l&apos;Unified Trading Account di Bybit&lt;br&gt;(Non attivo di default: il margine resta una cripto-attivit&#xe0;. Cambia i valori anche degli anni gi&#xe0; dichiarati con movimenti su derivati)&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Plusvalenze_Opzioni_CheckBox_ContoDerivatiActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>
@@ -7484,6 +7571,7 @@
                             <Component id="Opzioni_Varie_Etichetta_ModificheManuali" alignment="0" min="-2" max="-2" attributes="0"/>
                             <Component id="Opzioni_Varie_Bottone_ModificheManuali" alignment="0" min="-2" pref="340" max="-2" attributes="0"/>
                             <Component id="Opzioni_Varie_Bottone_RipristinoModificheManuali" alignment="0" min="-2" pref="340" max="-2" attributes="0"/>
+                            <Component id="Opzioni_Varie_Bottone_CancellaDaCsv" alignment="0" min="-2" pref="340" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="32767" attributes="0"/>
                         </Group>
@@ -7522,6 +7610,8 @@
                           <Component id="Opzioni_Varie_Bottone_ModificheManuali" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="Opzioni_Varie_Bottone_RipristinoModificheManuali" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="Opzioni_Varie_Bottone_CancellaDaCsv" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
                         </Group>
                       </Group>
@@ -7637,6 +7727,15 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_Bottone_RipristinoModificheManualiActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="Opzioni_Varie_Bottone_CancellaDaCsv">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Cancella movimenti da un elenco CSV"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Legge un file CSV con un elenco di ID o di valori di campi, mostra quali movimenti corrispondono e, dopo conferma, li cancella in memoria. Nulla è scritto su disco finché non premi Salva."/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_Bottone_CancellaDaCsvActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>

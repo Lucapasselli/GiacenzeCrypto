@@ -100,6 +100,20 @@ distribuzioni, le spese con la carta Binance e i pagamenti Binance Pay. Alcune c
   Earn ("Rewards Income"): il programma importa solo quelli del conto Spot. Se un import fatto con una
   versione precedente li ha portati in archivio tutti e due, la pulizia è in *Opzioni – Pulizie –
   Ricompense Binance doppie*.
+- **I futures** (conti *USD-M Futures* e *COIN-M Futures*): profitto o perdita realizzati, funding
+  (sommato per giorno), commissioni e rimborsi delle commissioni da referral diventano depositi e
+  prelievi già classificati come derivati, con il loro risultato nella colonna *Risultato derivati*
+  della tabella dei movimenti e non fra le plusvalenze delle cripto-attività. Dalla versione 1.0.67 i
+  movimenti dei conti futures stanno sul sotto-wallet **Derivati** e i giroconti fra Spot e futures
+  diventano trasferimenti interni, come spiegato in [Il conto derivati](calcolo-plusvalenze-opzioni.html#conto-derivati).
+  Le commissioni dei futures importate con le versioni fino alla 1.020 della configurazione stanno fra le commissioni spot
+  (stessa causale *Fee*) e non si possono riconoscere: *Marca come derivato* non le sposta, e il sotto-wallet *Derivati*
+  resta con un piccolo saldo pari a quelle commissioni.
+  Il risultato è quello calcolato da Binance (non c'è un calcolo LIFO
+  per contratto come per OKX) e va nel quadro T/RT. Prima di questa versione queste righe
+  erano scartate come sconosciute, tranne le commissioni, che entravano come commissioni spot:
+  reimportando un file vecchio le righe dei futures entrano, le commissioni già importate restano come
+  erano.
 - **Le operazioni dei bot di trading** si trovano solo in questo file, non nelle API.
 - **P2P, Options e Alpha** hanno export a parte (*C2C History*, lo storico delle Options, quello di
   Binance Alpha) che il programma non legge: se li si è usati e dopo l'import mancano movimenti, vanno
@@ -217,9 +231,13 @@ Altre cose da sapere:
   nascere dal file delle transazioni: nella gestione dei documenti il file Dual Investment li conta
   fra i *Collegati*, e nel dettaglio di un movimento compare come *Documento collegato*. Annullando
   l'abbinamento di un contratto, il collegamento viene tolto,
-- il Dual Investment è un **derivato**: il programma lo segnala con un avviso a fine importazione e
-  nelle stampe dei quadri, perché lo calcola come se fosse una cripto-attività, cosa che non è
-  corretta.
+- il programma tratta il Dual Investment come una **cripto-attività** (lettera c-sexies), per scelta: alla
+  scadenza il contratto consegna una cripto-attività, come una cessione a termine, che la circolare 30/E
+  del 2023 elenca fra le operazioni su cripto-attività. Nessuna fonte ufficiale parla dei Dual Investment.
+  L'avviso a fine importazione dichiara la scelta e la lettura che il programma non applica (il premio
+  come reddito da derivati), spiegate in
+  [Calcolo plusvalenze](calcolo-plusvalenze-opzioni.html#dual-investment). I movimenti restano marcati
+  con il tipo *DUAL* per poterli filtrare, ma la voce *Classifica come derivato* non vale per loro.
 
 ### Auto-Invest {#binance-auto-invest}
 
@@ -407,10 +425,30 @@ La guida di Bybit all'esportazione è
   [Bybit EU](#bybit-eu).
 - **I trading bot**: i fondi mandati al bot e quelli restituiti diventano prelievi e depositi da
   classificare. Le operazioni interne al bot non sono nel file.
-- **I derivati** (conto Derivati e perpetui dell'UTA): il risultato e il funding vengono sommati per
-  giorno e moneta e restano depositi e prelievi da classificare. Il programma non calcola i redditi da
-  derivati: li segnala con un avviso a fine importazione e nelle stampe dei quadri, perché li considera
-  come cripto-attività, cosa che non è corretta.
+- **I derivati** (conto Derivati e perpetui dell'UTA): il funding viene sommato per giorno e moneta,
+  perché sono migliaia di righe. Nel file del conto Derivati, dalla versione 1.0.67, profitti e perdite
+  sono invece un movimento per riga: un'apertura è l'addebito della sola commissione, una chiusura il
+  profitto o la perdita già al netto della commissione. Nei perpetui dell'UTA, sempre dalla 1.0.67,
+  anche aperture e chiusure sono un movimento per riga, e lì la commissione è un movimento a parte: una
+  chiusura è il profitto o la perdita prima della commissione, più la commissione. Chi ha importato uno
+  di questi file con una versione precedente e lo reimporta trova profitti e perdite due volte, sommati
+  per giorno e riga per riga. Dalla versione 1.0.67 i movimenti nuovi nascono già classificati come derivati, con
+  il loro risultato nella colonna *Risultato derivati* della tabella dei movimenti, separato dalle
+  plusvalenze delle cripto-attività. Il risultato è quello calcolato da Bybit e va nel quadro T/RT. Anche il bonus nasce classificato, come accredito, e il suo recupero come addebito: la parte
+  di bonus consumata compensa così le commissioni, il funding e le perdite che Bybit ha pagato con il
+  bonus invece che con i tuoi fondi. I movimenti importati con le versioni precedenti si classificano
+  con *Classifica come derivato* (menu dei movimenti, *Altre modifiche*).
+- **Il conto Derivati è un sotto-wallet a parte** dalla versione 1.0.67: i suoi movimenti stanno sul
+  sotto-wallet **Derivati** di Bybit, e i giroconti con gli altri conti (*transferIn*, *transferOut* e il
+  passaggio all'UTA) diventano trasferimenti interni. Serve all'opzione *Conto derivati* (vedi
+  [Il conto derivati](calcolo-plusvalenze-opzioni.html#conto-derivati)), e con l'opzione spenta non cambia
+  nessun calcolo. Il file va importato **dal primo anno del conto**: se il conto aveva già un saldo prima
+  della prima riga del file, quel saldo non viene ricostruito e il sotto-wallet risulta negativo fra gli
+  errori. L'Unified Trading Account resta sul wallet principale: lì il collaterale non si sposta.
+  Se il conto Derivati era già stato importato con una versione precedente, i suoi movimenti stanno sul wallet
+  principale: **prima** si spostano con *Marca come derivato* (menu dei movimenti, *Altre modifiche*), **poi** si
+  reimportano i file. Il controllo dei doppioni non guarda il sotto-wallet: reimportando prima, i movimenti nuovi
+  sul sotto-wallet *Derivati* verrebbero scartati come già presenti e quelli vecchi resterebbero sul wallet principale.
 - Le righe dei contratti inversi dei primi giorni del 2022 senza la moneta vengono saltate: il loro
   effetto è di pochi decimilionesimi di BTC.
 
@@ -829,6 +867,25 @@ Le API coprono tutta la storia del conto, Funding e Trading, fino al 2021. Altre
   senza perdere movimenti.
 - **La carta OKX**: il programma trova da solo il wallet della carta sulla rete X Layer, lo mostra nella
   scheda *Particolarità OKX* e ne importa i movimenti.
+- **Liquidazione, riduzione automatica (ADL) e consegna a scadenza** di perpetui e futures: dalla versione 1.0.67
+  si importano come una chiusura (il contratto si chiude, il margine rientra, perdita o profitto e commissione come
+  per ogni chiusura). Una liquidazione ha in più la **penale di liquidazione**, un addebito per derivati a parte
+  (*Penale liquidazione*), e quando la perdita supera il margine OKX copre la differenza: il *Clawback* è un piccolo
+  accredito da derivati. Il margine di una posizione liquidata non rientra nel saldo: si vede dalla somma dei movimenti.
+- **Posizioni aperte con la versione 1.0.66 e chiuse dopo l'aggiornamento**: quella versione registrava il
+  margine messo all'apertura come un prelievo da classificare. Alla chiusura il margine rientra con un
+  deposito *Rientro margine*, anche lui da classificare. Alla fine dell'importazione il programma propone di
+  abbinarli, e lo si può fare anche dopo con *Abbina rientro del margine* (menu dei movimenti, *Altre
+  modifiche*). Si spuntano i prelievi del margine di quella posizione, perché i prelievi di allora non dicono
+  il contratto: il prelievo diventa un blocco di collaterale e il rientro uno sblocco, così il costo di carico
+  segue il margine. Il margine che non è rientrato (il funding pagato prima dell'aggiornamento, che la 1.0.66
+  non importava) diventa un addebito per derivati alla data della chiusura. Si abbina solo una posizione
+  chiusa del tutto, e si annulla come ogni altra classificazione. Se fra il prelievo e il rientro c'è una
+  chiusura registrata dalla 1.0.66 l'abbinamento non si fa: una parte del margine potrebbe essere già
+  rientrata con lei, e il margine non rientrato risulterebbe un addebito per derivati che non c'è stato.
+- **Le opzioni** non sono ancora gestite: le loro righe entrano marcate come derivati, ma non sono state
+  verificate su dati reali e la scadenza e l'esercizio non diventano movimenti. Perpetui e futures sono
+  invece gestiti (vedi [Derivati: come vengono calcolati](calcolo-plusvalenze-opzioni.html#derivati)).
 
 ### I file CSV {#okx-csv}
 

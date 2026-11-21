@@ -60,6 +60,8 @@ public class Calcoli_RT {
         
         //controllo se devo o meno prendere in considerazione i gruppi wallet per il calcolo della plusvalenza
         boolean PlusXWallet=false;
+        //P2 (ContoDerivati): i giroconti fra spot e conto derivati scaricano e caricano le pile come nel motore
+        boolean ContoP2 = ContoDerivati.Attivo();
         String PlusXW=DatabaseH2.Pers_Opzioni_Leggi("PlusXWallet");
         if(PlusXW!=null && PlusXW.equalsIgnoreCase("SI")){
             PlusXWallet=true;
@@ -248,7 +250,11 @@ public class Calcoli_RT {
                     
                     //PARTE 2
                     //SISTEMO GLI SCAMBI TRA WALLET
-                    if (i==Uscita&&!Monete[Uscita].CostoCarico.isBlank()&&!v[18].contains("PTW")&&!IDTS[4].equalsIgnoreCase("TI")){
+                    //Con P2 una gamba del giroconto del margine scarica (uscita) e carica al valore (entrata) anche se e' TI o PTW/DTW.
+                    //Le pile qui sono per gruppo: spot e conto derivati stanno nella stessa, quindi il costo delle rimanenze per moneta
+                    //puo' scostarsi di poco dal motore (che le tiene separate), il totale delle plusvalenze no (viene da v[19])
+                    boolean GirocontoP2 = ContoP2 && ContoDerivati.IsGirocontoP2(v, Principale.MappaCryptoWallet);
+                    if (i==Uscita&&!Monete[Uscita].CostoCarico.isBlank()&&((!v[18].contains("PTW")&&!IDTS[4].equalsIgnoreCase("TI"))||GirocontoP2)){
                         //I movimenti interni (TI) non voglio vengano considerati
                         //Tolgo il token dallo stack se non sono PTW, i PTW infatti vengono scaricati nel momento in cui arrivano a detinazione
                         //e solo se si è deciso di distinguere le plusvalenze per gruppo wallet altrimenti vengono considerati alla stregua di un trasferimento interno
@@ -258,8 +264,8 @@ public class Calcoli_RT {
                     }
                     
                     if (i == Entrata && !Monete[Entrata].CostoCarico.isBlank()) {
-                        if (!IDTS[4].equalsIgnoreCase("TI")) {
-                            if (!v[18].contains("DTW")) {
+                        if (!IDTS[4].equalsIgnoreCase("TI") || GirocontoP2) {
+                            if (!v[18].contains("DTW") || GirocontoP2) {
                                 StackLIFO_InserisciValore(MappaMoneta_PlusXMoneta, Monete[Entrata].Moneta, Monete[Entrata].Qta, Monete[Entrata].CostoCarico,Data,v[0]);
                             } else {
                                 //Se è un DTW devo quindi anche scaricare il movimento PTW contrario
@@ -803,8 +809,17 @@ public class Calcoli_RT {
       QtaGruppiXAnno.put(Anno, copia);
   }
 
+  /**
+   * Token che le tabelle per token e per gruppo non mostrano: gli SCAM e i token dei contratti su derivati
+   * ({@link Derivati#IsTokenContratto}), che sono la fotografia di una posizione a valore zero e non una cripto-attività.
+   * Nessun effetto sui totali: il loro costo, corrispettivo e plusvalenza sono sempre zero.
+   */
+  static boolean NonMostrare(String Moneta) {
+      return Funzioni.isSCAM(Moneta) || Derivati.IsTokenContratto(Moneta);
+  }
+
   void AccumulaRealizzatoGruppo(String Anno, String Gruppo, String Moneta, BigDecimal Vendite, BigDecimal Costi, BigDecimal Plus){
-      if (Funzioni.isSCAM(Moneta)) return;//Come nella tabella per token, i token SCAM non compaiono
+      if (NonMostrare(Moneta)) return;//Come nella tabella per token, i token SCAM non compaiono
       BigDecimal[] r=RealizzatoXGruppo.computeIfAbsent(Anno, k -> new TreeMap<>()).computeIfAbsent(Gruppo, k -> new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO});
       r[0]=r[0].add(Vendite);
       r[1]=r[1].add(Costi);
@@ -854,7 +869,7 @@ public class Calcoli_RT {
           for(String Moneta : MappaMoneta_PlusXMoneta.keySet()){
               //Non voglio vedere i token SCAM
               
-              if (!Funzioni.isSCAM(Moneta)){ 
+              if (!NonMostrare(Moneta)){ 
                   //NON voglio vedere i token con giacenza zero e che non hanno avuto movimentazioni nell'anno
                   PlusXMoneta plus=MappaMoneta_PlusXMoneta.get(Moneta);
                   //System.out.println(Moneta+" - "+plus.Mon.Qta+ " - "+plus.Mon.Prezzo);
@@ -917,7 +932,7 @@ public class Calcoli_RT {
           boolean presente=false;
           Map<String, PlusXMoneta> MappaMoneta_PlusXMoneta=MappaGrWallet_MappaMoneta_PlusXMoneta.get(Wallet);
           for(String Moneta : MappaMoneta_PlusXMoneta.keySet()){
-              if (Funzioni.isSCAM(Moneta)) continue;
+              if (NonMostrare(Moneta)) continue;
               PlusXMoneta plus=MappaMoneta_PlusXMoneta.get(Moneta);
               BigDecimal qta=new BigDecimal(plus.Mon.Qta);
               if (!plus.movimentatoAnno&&qta.compareTo(BigDecimal.ZERO)==0) continue;
@@ -970,7 +985,7 @@ public class Calcoli_RT {
       java.util.Set<String> gruppi=new TreeSet<>(realizzati.keySet());
       for (Map.Entry<String, Map<String, BigDecimal>> g : qtaGruppi.entrySet()){
           for (Map.Entry<String, BigDecimal> e : g.getValue().entrySet()){
-              if (e.getValue().signum()!=0&&!Funzioni.isSCAM(e.getKey())) gruppi.add(g.getKey());
+              if (e.getValue().signum()!=0&&!NonMostrare(e.getKey())) gruppi.add(g.getKey());
           }
       }
       List<Object[]> Tabella=new ArrayList<>();
@@ -983,7 +998,7 @@ public class Calcoli_RT {
           Map<String, BigDecimal> mieQta=qtaGruppi.getOrDefault(Gruppo, Map.of());
           for (Map.Entry<String, BigDecimal> e : mieQta.entrySet()){
               PlusXMoneta plus=globale==null?null:globale.get(e.getKey());
-              if (plus==null||Funzioni.isSCAM(e.getKey())) continue;
+              if (plus==null||NonMostrare(e.getKey())) continue;
               BigDecimal qtaGruppo=e.getValue();
               if (qtaGruppo.signum()<0&&Funzioni.isNegativo(plus.Mon.Qta)) negativi++;
               BigDecimal denominatore=sommaPositive.get(e.getKey());

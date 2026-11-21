@@ -42,6 +42,7 @@ final class RicaricaConfig {
             new Voce("varie", VersioniRuntime.NOME, VersioniRuntime::Ricarica, "versioni di Node e CCXT"),
             new Voce("varie", Reti.NOME, Reti::Ricarica, "reti blockchain"),
             new Voce("varie", IndirizziServizi.NOME, IndirizziServizi::Ricarica, "indirizzi dei servizi"),
+            new Voce("varie", ValoriContratti.NOME, ValoriContratti::Ricarica, "valori dei contratti derivati"),
             new Voce("importmappe", DatiPredefinitiRW.NOME, Principale_GruppiWalletRW::RicaricaExchangeNoti, "exchange noti"));
 
     /** I file che si rileggono a ogni uso (nessuna cache): un file nuovo ha effetto da solo. Formato {@code cartella/nome}. */

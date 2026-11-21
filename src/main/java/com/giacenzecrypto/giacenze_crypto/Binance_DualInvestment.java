@@ -116,9 +116,9 @@ public class Binance_DualInvestment {
     public static Esito Abbina(File fileDettaglio, int documento) throws IOException {
         Esito esito = new Esito();
         //A differenza di ImportazioneGenerica.consolidaGruppo, che segnala solo le causali
-        //effettivamente incontrate riga per riga, qui l'avviso fiscale sui derivati deve comparire
-        //sempre: un Dual Investment è per definizione un contratto a termine, indipendentemente da
-        //quanti contratti risultino poi abbinati.
+        //effettivamente incontrate riga per riga, qui l'avviso deve comparire sempre, indipendentemente
+        //da quanti contratti risultino poi abbinati: dal 21/11/2026 (decisione D5) e' il paragrafo che
+        //dichiara come il programma tratta i Dual Investment (Importazioni.TestoAvvisoDual).
         Importazioni.CausaliDerivatiSegnalate.clear();
         Importazioni.SegnalaCausaleDerivato(CAUSALE_PURCHASE);
         Importazioni.SegnalaCausaleDerivato(CAUSALE_SETTLEMENT);

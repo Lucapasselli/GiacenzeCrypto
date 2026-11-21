@@ -75,6 +75,10 @@ avvertenze sul corretto utilizzo del programma.
   [La soglia dei 51.645,69 euro nel quadro RT](calcolo-plusvalenze-opzioni.html#soglia-51645). Il resto dei
   calcoli segue le regole in vigore dal 2023.
 
+- Le **opzioni** (call e put) non sono ancora gestite, da nessun exchange: il loro risultato nel programma può
+  essere incompleto o sbagliato. Saranno integrate in una versione futura. Vedi
+  [Derivati: come vengono calcolati](calcolo-plusvalenze-opzioni.html#derivati).
+
 - Il programma parte con una serie di **preimpostazioni** che potrebbero non essere quelle corrette o
   desiderate per la propria dichiarazione: è opportuno rivedere le opzioni in base alle proprie
   esigenze e interpretazioni. Vedi

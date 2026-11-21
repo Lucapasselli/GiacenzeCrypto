@@ -223,7 +223,20 @@ private Timer timer = new Timer(1000, new ActionListener() {
      */
     public void ChiudiFineLavoro() {
         this.chiusuraDiFineLavoro = true;
-        this.dispose();
+        try {
+            this.dispose();
+        } catch (RuntimeException e) {
+            //Errore interno di Java a meta' chiusura (visto su XWayland: "Window must not be zero" dentro XWindowPeer):
+            //il dialogo modale restava aperto e l'applicazione sembrava bloccata. Si riprova una volta, dall'EDT
+            LoggerGC.ScriviErrore("Download: chiusura del dialogo non riuscita, riprovo: " + e);
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                try {
+                    if (this.isDisplayable()) this.dispose();
+                } catch (RuntimeException e2) {
+                    LoggerGC.ScriviErrore("Download: seconda chiusura del dialogo non riuscita: " + e2);
+                }
+            });
+        }
     }
 
     /**
@@ -304,6 +317,92 @@ private Timer timer = new Timer(1000, new ActionListener() {
     public void ChiudiFinestra() {
         RipristinaStdout();
         this.dispose();
+    }
+
+    private void ChiudiPerFineLavoro() {
+        //Chiusura di fine lavoro e non dispose() nudo: non deve accendere InterrompiCiclo/Interruzione.Chiedi()
+        //per l'operazione successiva (vedi chiusuraDiFineLavoro). Se l'utente aveva gia' chiuso a mano e'
+        //un secondo dispose(), senza nuovo evento
+        RipristinaStdout();
+        ChiudiFineLavoro();
+    }
+
+    /**
+     * Esegue {@code lavoro} su un thread separato mentre questo dialogo modale resta aperto, e <b>lo chiude sempre</b>,
+     * anche se il lavoro lancia un'eccezione o un {@link Error}: il dialogo è modale, quindi se nessuno lo chiude
+     * l'applicazione resta bloccata (la traccia dell'errore finirebbe solo nel log). Sostituisce lo schema
+     * {@code new Thread(...).start(); progress.setVisible(true);} con {@code progress.ChiudiFinestra()} in coda al thread.
+     * <p>
+     * Tre garanzie che lo schema a mano non aveva:
+     * <ul>
+     * <li>la chiusura passa da {@code invokeLater} ed è ripetuta alla {@code windowOpened}, quindi un lavoro così
+     * breve da finire <i>prima</i> che il dialogo compaia non lascia più una finestra modale che nessuno chiude;</li>
+     * <li>l'errore è scritto nel log con lo stack trace completo ({@code NullPointerException} senza messaggio
+     * compresa), non solo con il messaggio;</li>
+     * <li>l'errore è restituito al chiamante, che decide se avvisare l'utente e come proseguire.</li>
+     * </ul>
+     * Da chiamare dal thread che mostrerebbe il dialogo (di norma l'EDT): ritorna a dialogo chiuso.
+     *
+     * @param lavoro operazione da eseguire fuori dall'EDT
+     * @return l'eccezione o l'errore che ha interrotto il lavoro, {@code null} se è finito normalmente
+     */
+    public Throwable EseguiBloccante(Runnable lavoro) {
+        final Throwable[] errore = new Throwable[1];
+        final java.util.concurrent.atomic.AtomicBoolean finito = new java.util.concurrent.atomic.AtomicBoolean(false);
+        this.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowOpened(java.awt.event.WindowEvent e) {
+                //Il lavoro e' gia' finito prima che il dialogo comparisse: la chiusura richiesta allora e' andata a vuoto
+                if (finito.get()) {
+                    ChiudiPerFineLavoro();
+                }
+            }
+        });
+        Thread t = new Thread(() -> {
+            try {
+                lavoro.run();
+            } catch (Throwable e) {
+                errore[0] = e;
+                System.err.println("ERRORE nel lavoro in background (" + LabelScaricamento.getText() + "): " + e);
+                e.printStackTrace();
+            } finally {
+                finito.set(true);
+                javax.swing.SwingUtilities.invokeLater(this::ChiudiPerFineLavoro);
+            }
+        }, "Download-lavoro");
+        if (thread == null) {
+            thread = t; //per FineThread(), come con SetThread
+        }
+        t.start();
+        if (!finito.get()) {
+            this.setVisible(true);
+        }
+        //Nessun join: alcuni lavori chiudono il dialogo apposta prima di finire (aprono un secondo dialogo modale che ha
+        //bisogno dell'EDT), e attenderli qui lo bloccherebbe. Chi deve leggere risultati completi dopo una chiusura a
+        //mano (X) aspetta da se' il thread, che e' in "thread".
+        return errore[0];
+    }
+
+    /**
+     * Come {@link #EseguiBloccante(Runnable)}, ma se il lavoro fallisce avvisa l'utente con un messaggio d'errore
+     * (il dettaglio completo resta nel log).
+     *
+     * @param lavoro      operazione da eseguire fuori dall'EDT
+     * @param descrizione cosa si stava facendo, per il messaggio (es. "il ripristino del backup")
+     * @param owner       finestra proprietaria del messaggio
+     * @return l'errore che ha interrotto il lavoro, {@code null} se è finito normalmente
+     */
+    public Throwable EseguiBloccante(Runnable lavoro, String descrizione, java.awt.Window owner) {
+        Throwable errore = EseguiBloccante(lavoro);
+        if (errore != null) {
+            String causa = errore.getMessage() == null ? errore.getClass().getSimpleName() : errore.getMessage();
+            Messaggi.Message("Operazione non completata",
+                    "Si è verificato un errore durante " + descrizione + ".",
+                    "<b>" + errore.getClass().getSimpleName() + "</b>: " + causa.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                    + "<br>Il dettaglio è nel file di log.",
+                    AppDialog.DialogType.ERROR, owner);
+        }
+        return errore;
     }
 
     /**

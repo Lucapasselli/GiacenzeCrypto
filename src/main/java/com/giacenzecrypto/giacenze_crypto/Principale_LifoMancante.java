@@ -76,6 +76,7 @@ public final class Principale_LifoMancante {
                 || TipoID.equalsIgnoreCase("TI") || Campo18.contains("DTW")
                 || Campo18.contains("DCZ")
                 || Campo18.contains("DAC") || TipoID.equals("AC")
+                || Campo18.contains(Derivati.MARCATORE_ACCREDITO)
                 || Campo18.contains("DDO")
                 || Campo18.isBlank();
     }

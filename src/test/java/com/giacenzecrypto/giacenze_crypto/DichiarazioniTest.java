@@ -169,6 +169,20 @@ class DichiarazioniTest {
     }
 
     @Test
+    void lAvvisoSuiDerivatiNonEUnaDifferenza() {
+        //Le definitive archiviate prima del 18/11/2026 hanno il testo di allora, o l'avviso dove ora non c'e' piu'
+        String m = Dichiarazioni.METODO_RW_SOLO_VALORI_INIZIO_FINE;
+        Dichiarazioni.Dichiarazione a = rw("2025", m, "01 (Binance)", "10", "20", "02 (Kraken)", "5", "5");
+        Dichiarazioni.Dichiarazione b = rw("2025", m, "01 (Binance)", "10", "20", "02 (Kraken)", "5", "5");
+        a.Totali.put(Principale_Dichiarazioni.TOT_AVVISO, "Movimenti su derivati trattati come cripto-attività");
+        assertTrue(Dichiarazioni.Confronta(a, b).isEmpty());
+        b.Totali.put(Principale_Dichiarazioni.TOT_AVVISO, "Movimenti su derivati: 3 classificati nell'anno, con il risultato in nessun quadro");
+        assertTrue(Dichiarazioni.Confronta(a, b).isEmpty());
+        b.Totali.put("Totale", "1");
+        assertEquals(1, Dichiarazioni.Confronta(a, b).size(), "gli altri totali restano confrontati");
+    }
+
+    @Test
     void unOpzioneToltaNonEUnaDifferenza() {
         //Le definitive archiviate dalla 1.0.65 hanno ancora l'opzione degli alias per gli anni passati, le bozze no
         String m = Dichiarazioni.METODO_RW_SOLO_VALORI_INIZIO_FINE;

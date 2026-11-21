@@ -904,6 +904,37 @@ riportare è indicato nelle note di compilazione della stampa.
 dal **Fiat Wallet** (la scheda *Fiat Wallet Crypto.com*): il saldo del quadro è quindi quello verificabile in
 quella scheda, ed è completo solo se il file del Fiat Wallet copre tutta la storia.
 
+## Contratti derivati (codice 9) {#contratti-derivati-codice-9}
+
+I contratti derivati presso un exchange estero vanno nel quadro con il **codice 9** ("contratti derivati e altri
+rapporti finanziari stipulati al di fuori del territorio dello Stato") e pagano l'IVAFE: 0,20%, o 0,40% dal 2024 se lo
+Stato dell'intermediario è a fiscalità privilegiata. Il programma produce **un rigo per exchange** (gruppo wallet) e
+per anno: le istruzioni permettono di sommare i prodotti con lo stesso codice e lo stesso Stato, con i giorni come
+media ponderata, e il prospetto dei singoli valori si vede scegliendo il rigo, nella tabella dei dettagli, e nel file
+Excel. Lo Stato estero è quello indicato nei periodi FIAT del gruppo, come per la liquidità.
+
+**Senza l'opzione Conto derivati** (il margine resta una cripto-attività) il rigo somma i contratti:
+
+- colonna 7: il **margine impegnato**, cioè la somma dei margini di tutte le aperture dell'anno (una posizione
+  costruita in più volte impegna il margine di ognuna), più quello ancora vincolato al 1° gennaio. Il valore zero
+  non si può trasmettere (le specifiche tecniche scartano un rigo con il valore iniziale vuoto), e il margine è il valore più vicino a quello di un contratto per cui non si paga un prezzo,
+- colonna 8: il **guadagno della chiusura**, se positivo, per una posizione chiusa nell'anno, o il **guadagno non
+  realizzato** al 31 dicembre, se positivo, per una posizione ancora aperta. Il guadagno non realizzato è stimato
+  con il prezzo a pronti della cripto sottostante, perché il programma non ha il prezzo di riferimento
+  dell'exchange,
+- con un valore finale zero il rigo è di solo monitoraggio (colonna 16).
+
+Per gli exchange di cui il programma non conosce le singole posizioni (Bybit, Binance) il rigo è di **solo
+monitoraggio**, con il valore del conto derivati all'ingresso in colonna 7.
+
+**Con l'opzione Conto derivati** il rigo riporta il conto: colonna 7 il valore del conto al 1° gennaio o al primo
+ingresso dell'anno, colonna 8 il valore alla fine dell'anno, o all'ultimo giorno in cui il conto aveva un saldo, più
+il guadagno non realizzato delle posizioni aperte se positivo. Il conto non compare fra i righi delle
+cripto-attività.
+
+L'IVAFE dei righi con codice 9 non entra nell'imposta sulle cripto-attività del report. Nella stampa i righi
+stanno in una pagina a parte, con i valori da riportare colonna per colonna.
+
 ## Valori di inizio e fine anno {#valori-di-inizio-e-fine-anno}
 
 I valori di inizio e fine anno (e quelli ai confini dei periodi) sono prezzi di mercato: il 31/12 di un anno

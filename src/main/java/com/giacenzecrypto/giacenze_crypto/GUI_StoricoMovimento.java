@@ -140,6 +140,14 @@ public class GUI_StoricoMovimento extends javax.swing.JDialog {
                 "Provento riportato a deposito da classificare";
             case Principale_TipologiaReward.OP_TIPOLOGIA_REWARD ->
                 "Cambio della tipologia di provento";
+            case Principale_DerivatiMarcatura.OP_MARCA ->
+                "Riconosciuto come derivato";
+            case Principale_DerivatiMarcatura.OP_SPOSTA ->
+                "Spostato sul sotto-wallet Derivati (conto derivati)";
+            case Principale_Derivati.OP_CLASSIFICA ->
+                "Classificazione come derivato";
+            case Principale_Derivati.OP_ANNULLA ->
+                "Derivato riportato da classificare";
             case MovimentiStorico.OP_IN_PLACE ->
                 "Modifica dei dati (ID invariato)";
             case MovimentiStorico.OP_PREZZO ->

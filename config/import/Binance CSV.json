@@ -1,5 +1,7 @@
 {
-  "versione": "1.020",
+  "versione": "1.021",
+  "versioneMinimaApp": "1.0.66.06",
+  "_commentoVersioneMinima": "Dalla 1.021 serve la versione 1.0.66.06 del programma (versioneMinimaApp): le versioni precedenti non conoscono il tipo MARGINE dei giroconti fra spot e conto derivati (li segnalerebbero come derivati da classificare) e non classificano i movimenti all'importazione. Dalla 1.0.65.08 una versione piu' vecchia tiene la sua copia locale della configurazione, fino alla 1.0.65.07 la voce non viene piu' proposta.",
   "centralizzato":true,
   "fontePrezzoPreferita": "binance",
   "nomeExchange": "Binance",
@@ -29,13 +31,41 @@
   ],
   "causaliAllertaDerivati": [
   "Dual Savings Purchase",
-  "Dual Savings Settlement"
+  "Dual Savings Settlement",
+  "Realized Profit and Loss",
+  "Funding Fee",
+  "Futures Fee",
+  "Referee Commission",
+  "Insurance Fund Compensation"
   ],
   "_commentoDerivati": "causaliDerivati marca i movimenti nel campo 44 (classe Derivati): solo identificazione, restano trattati come cripto-attivita'. Le stesse causali restano in causaliAllertaDerivati per le versioni del programma che non conoscono causaliDerivati.",
   "causaliDerivati": {
-    "Dual Savings Purchase":   "DUAL",
-    "Dual Savings Settlement": "DUAL"
+    "Dual Savings Purchase":       "DUAL",
+    "Dual Savings Settlement":     "DUAL",
+    "Realized Profit and Loss":    "PNL",
+    "Funding Fee":                 "FUNDING",
+    "Futures Fee":                 "COMMISSIONE",
+    "Referee Commission":          "RIMBORSO_COMMISSIONI",
+    "Insurance Fund Compensation": "PNL",
+    "Transfer Between Spot and UM Futures":                  "MARGINE",
+    "Transfer Between Spot and CM Futures":                  "MARGINE",
+    "Transfer Between Spot and UM Futures (conto futures)":  "MARGINE",
+    "Transfer Between Spot and CM Futures (conto futures)":  "MARGINE"
   },
+  "_commentoFutures": "Dalla 1.021 (2026-11-17) i futures (conti 'USD-M Futures' e 'COIN-M Futures') non sono piu' causali sconosciute: profitto realizzato, funding (sommato per giorno), rimborso commissioni da referral e indennizzo del fondo assicurativo entrano come deposito/prelievo, marcati come derivati (e da questa versione del programma gia' classificati come tali), i giroconti fra Spot e futures si ignoravano fino alla 1.021 (le due gambe stanno nello stesso file e nello stesso wallet), dalla 1.0.67 vedi _commentoContoFutures. Il 'Fee' del conto futures ha la stessa causale del 'Fee' spot: le quattro regoleRiga lo riconoscono dal conto (colonna 2) e lo rinominano 'Futures Fee', usando due colonne di appoggio (7 e 8). Una regola ha una sola condizione, quindi la condizione doppia (causale Fee E conto futures) si ottiene in quattro passi: segna i Fee, segna i conti futures, toglie il segno ai Fee che non sono futures, rinomina quelli rimasti. Le versioni senza regoleRiga (prima della 1.0.65.02) lasciano il Fee dei futures come commissione spot, come prima.",
+  "causaliConsolidaPerGiorno": ["Funding Fee"],
+  "regoleRiga": [
+    {"colonna": 3, "uguale": "Fee", "imposta": {"colonna": 7, "valore": "Fee"}},
+    {"colonna": 2, "contiene": "Futures", "imposta": {"colonna": 8, "valore": "Futures"}},
+    {"colonna": 8, "vuota": true, "imposta": {"colonna": 7, "valore": ""}},
+    {"colonna": 7, "uguale": "Fee", "imposta": {"colonna": 3, "valore": "Futures Fee"}},
+    {"colonna": 3, "uguale": "Transfer Between Spot and UM Futures", "imposta": {"colonna": 7, "valore": "TUM"}},
+    {"colonna": 3, "uguale": "Transfer Between Spot and CM Futures", "imposta": {"colonna": 7, "valore": "TCM"}},
+    {"colonna": 8, "vuota": true, "imposta": {"colonna": 7, "valore": ""}},
+    {"colonna": 7, "uguale": "TUM", "imposta": {"colonna": 3, "valore": "Transfer Between Spot and UM Futures (conto futures)"}},
+    {"colonna": 7, "uguale": "TCM", "imposta": {"colonna": 3, "valore": "Transfer Between Spot and CM Futures (conto futures)"}}
+  ],
+  "_commentoContoFutures": "Dalla 1.0.67 (2026-11-21, opzione P2 di D15) i conti futures sono il sotto-wallet 'Derivati' (walletPerCausale), come il margine OKX e il conto contratti Bybit: profitti, funding, commissioni, rimborsi e indennizzi stanno li', e i giroconti fra Spot e futures non si ignorano piu'. Le due righe del giroconto hanno la stessa causale e le distingue il conto: le regole 5-9 (stesse colonne di appoggio 7 e 8 del Fee, stessa tecnica) rinominano la riga del conto futures '... (conto futures)', che va sul sotto-wallet, mentre quella dello Spot resta su 'Principale'. Entrambe sono trasferimenti interni marcati MARGINE: con P1 nessun effetto fiscale, con P2 l'uscita dallo spot e' una cessione e il rientro un reddito da derivati.",
   "_commentoCarta": "Dalla 1.020 (2026-10-17) 'Spending' e 'Cashback' del conto Funding (Remark 'Binance Card', negli export dal 2022) sono la carta Binance, come 'Binance Card Spending' e 'Card Cashback' dei file piu' vecchi: spesa PRELIEVO FIAT (in EUR un prelievo fiat, in crypto un prelievo da classificare, i rimborsi positivi un deposito fiat) e cashback CASHBACK. Prima venivano scartate come causali sconosciute.",
   "_commentoCashVoucher": "Dalla 1.018 (2026-10-07) 'Cash Voucher' e' REWARD (come 'Cash Voucher Distribution') e non piu' CASHBACK: sono ricompense (buoni accreditati in crypto), non rimborsi su una spesa. Vale per le importazioni da qui in avanti, i movimenti gia' importati restano come sono.",
   "_commentoRewardsIncome": "Dalla 1.017 (2026-10-06) 'Simple Earn Flexible - Rewards Income' e 'Simple Earn Locked - Rewards Income' (conto Earn, negli export dal 2026) sono IGNORA: registrano lo stesso Bonus Tiered APR che Binance paga sul conto Spot come 'Simple Earn Flexible Interest' / 'Simple Earn Locked Rewards' (stessa moneta e quantita', 0-2 ore dopo), e importarle tutte e due contava ogni bonus due volte. Verificato sullo storico Rewards dell'app (Assets, Earn, Flexible): il 'Bonus Tiered APR Rewards' coincide per ora e importo con la riga del conto Earn. Le 'Real-Time APR Rewards' invece non compaiono in nessuna riga dell'export: maturano dentro il prodotto ed escono solo con i riscatti, che qui sono IGNORA. Per questo l'archivio resta corto di quelle, e dopo un prelievo totale su Binance possono comparire giacenze negative: vanno aggiunte a parte. Attenzione: in una prima verifica le righe Earn sembravano necessarie proprio perche' coprivano in parte quel buco.",
@@ -135,6 +165,15 @@
     "Token Swap - Redenomination/Rebranding":         "SCAMBIO CRYPTO-CRYPTO",
     "Transaction Fee":                                "COMMISSIONI",
     "Fee":                                            "COMMISSIONI",
+    "Futures Fee":                                    "COMMISSIONI",
+    "Realized Profit and Loss":                       "TRASFERIMENTO-CRYPTO",
+    "Funding Fee":                                    "TRASFERIMENTO-CRYPTO",
+    "Referee Commission":                             "TRASFERIMENTO-CRYPTO",
+    "Insurance Fund Compensation":                    "TRASFERIMENTO-CRYPTO",
+    "Transfer Between Spot and UM Futures":           "TRASFERIMENTO-CRYPTO-INTERNO",
+    "Transfer Between Spot and CM Futures":           "TRASFERIMENTO-CRYPTO-INTERNO",
+    "Transfer Between Spot and UM Futures (conto futures)": "TRASFERIMENTO-CRYPTO-INTERNO",
+    "Transfer Between Spot and CM Futures (conto futures)": "TRASFERIMENTO-CRYPTO-INTERNO",
     "Strategy Trading Fee Rebate":                    "COMMISSIONI",
     "Fiat Deposit":                                   "DEPOSITO FIAT",
     "Binance Card Spending":                          "PRELIEVO FIAT",
@@ -177,5 +216,13 @@
     "7": 3,
     "21": 6
   },
-  "walletPerCausale": {}
+  "walletPerCausale": {
+    "Realized Profit and Loss":                              "Derivati",
+    "Funding Fee":                                           "Derivati",
+    "Futures Fee":                                           "Derivati",
+    "Referee Commission":                                    "Derivati",
+    "Insurance Fund Compensation":                           "Derivati",
+    "Transfer Between Spot and UM Futures (conto futures)":  "Derivati",
+    "Transfer Between Spot and CM Futures (conto futures)":  "Derivati"
+  }
 }

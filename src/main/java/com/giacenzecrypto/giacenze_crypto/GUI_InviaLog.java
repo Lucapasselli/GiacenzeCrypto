@@ -254,18 +254,14 @@ public class GUI_InviaLog extends JDialog {
         dow.setLocationRelativeTo(this);
 
         final SegnalazioniClient.Esito[] esito = new SegnalazioniClient.Esito[1];
-        Thread t = new Thread(() -> {
+        dow.EseguiBloccante(() -> {
             try {
                 esito[0] = SegnalazioniClient.inviaLog(gz, modalita, null);
             } catch (RuntimeException ex) {
                 LoggerGC.ScriviErrore(ex);
                 esito[0] = new SegnalazioniClient.Esito(false, 0, "Errore imprevisto: " + ex.getMessage());
-            } finally {
-                dow.ChiudiFinestra();
             }
-        });
-        t.start();
-        dow.setVisible(true); // bloccante finché il thread chiama ChiudiFinestra
+        }); // bloccante finché il lavoro finisce: la finestra si chiude sempre
 
         SegnalazioniClient.Esito e = esito[0];
         if (e != null && e.ok()) {

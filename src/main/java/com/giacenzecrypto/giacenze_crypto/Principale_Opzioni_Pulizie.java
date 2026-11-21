@@ -184,7 +184,7 @@ public class Principale_Opzioni_Pulizie {
         dow.SetLabel("Compattazione in corso, attendere...");
         dow.setLocationRelativeTo(win);
 
-        Thread t = new Thread(() -> {
+        dow.EseguiBloccante(() -> {
             try {
                 //Le due chiamate sono in sequenza e non condizionate l'una all'altra: se la prima
                 //fallisce la seconda è comunque indipendente, i lock di H2 sono per file
@@ -193,12 +193,8 @@ public class Principale_Opzioni_Pulizie {
                 Esito.set(OKPrezzi && OKPrincipale);
             } catch (Exception ex) {
                 LoggerGC.ScriviErrore(ex);
-            } finally {
-                dow.ChiudiFinestra();
             }
-        });
-        t.start();
-        dow.setVisible(true); //bloccante finché il thread chiama ChiudiFinestra
+        }); //bloccante finché il lavoro finisce: la finestra si chiude sempre
 
         if (!Esito.get()) {
             Messaggi.WarningMessage("Compattazione non riuscita",
@@ -254,7 +250,7 @@ public class Principale_Opzioni_Pulizie {
         dow.SetLabel("Compattazione dei database, attendere...");
         dow.setLocationRelativeTo(win);
 
-        Thread t = new Thread(() -> {
+        dow.EseguiBloccante(() -> {
             try {
                 //Riapri=false: l'applicazione sta chiudendo, riaprire i file servirebbe solo a
                 //richiuderli subito dopo
@@ -266,12 +262,8 @@ public class Principale_Opzioni_Pulizie {
                 }
             } catch (Exception ex) {
                 LoggerGC.ScriviErrore(ex);
-            } finally {
-                dow.ChiudiFinestra();
             }
-        });
-        t.start();
-        dow.setVisible(true); //bloccante finché il thread chiama ChiudiFinestra
+        }); //bloccante finché il lavoro finisce: la finestra si chiude sempre
 
         return true;
     }

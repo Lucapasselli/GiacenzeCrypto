@@ -763,6 +763,22 @@ public class DocumentiFonte {
     }
 
     /**
+     * Il movimento è stato importato da un file CSV (il suo documento d'origine è di tipo {@link #TIPO_CSV}). Senza origine
+     * nota non lo è.
+     * @param v riga del movimento
+     * @param cache esiti già letti per id di documento, per non rileggere il registro a ogni riga
+     */
+    public static boolean EDaFileCsv(String[] v, java.util.Map<Integer, Boolean> cache) {
+        if (v == null || v.length <= 41) return false;
+        int id = IdDaCampo41(v[41]);
+        if (id <= 0) return false;
+        return cache.computeIfAbsent(id, k -> {
+            Documento d = Leggi(k);
+            return d != null && TIPO_CSV.equalsIgnoreCase(d.Tipo);
+        });
+    }
+
+    /**
      * Estrae l'id del documento di <b>origine</b> dal campo {@code [41]} di un movimento.
      *
      * <p>Il campo è {@code origine|supporto,supporto}: prima della barra il documento da cui il movimento nasce,

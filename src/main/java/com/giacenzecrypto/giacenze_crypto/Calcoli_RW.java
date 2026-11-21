@@ -1024,6 +1024,9 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
         if (DatabaseH2.Pers_Opzioni_Leggi("RW_StakingZero","NO").equals("SI")) StakingZero=true;
         boolean LiFoComplessivo = false;
         if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo","NO").equals("SI")) LiFoComplessivo=true;
+        //P2 (ContoDerivati): il conto derivati esce dai righi cripto (va nel rigo codice 9 di Calcoli_RW_Derivati), il giroconto dallo
+        //spot chiude i lotti come una cessione e il rientro ne apre uno nuovo al valore del momento
+        boolean ContoP2 = ContoDerivati.Attivo();
         //Periodi CRYPTO (metodi B/C/D): confini fra i tratti di ogni gruppo, in ordine di data. Con la
         //Rilevanza A il rigo e' una fotografia per tratto (Calcoli_RW_Giacenze) e i lotti non si tagliano.
         TreeMap<LocalDate, List<String>> ConfiniPeriodi = new TreeMap<>();
@@ -1074,6 +1077,11 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
             if (progress != null && progress.FineThread()) {
                 return false;
             }
+            //Il token di un contratto su derivati e' la fotografia di una posizione, non una cripto-attivita': non entra nel quadro.
+            //Il margine parcheggiato nel sotto-wallet dei derivati si' (decisione D15, P1)
+            if (Derivati.IsTokenContratto(v[8]) || Derivati.IsTokenContratto(v[11])) continue;
+            if (ContoP2 && ContoDerivati.SulContoP2(v, MappaCryptoWallet)) continue;
+            boolean GirocontoP2 = ContoP2 && ContoDerivati.IsGirocontoP2(v, MappaCryptoWallet);
             String GruppoWallet = DatabaseH2.Pers_GruppoWallet_Leggi(v[3],true);
             String GW = GruppoWallet;
             //if (DatabaseH2.Pers_Opzioni_Leggi("RW_LiFoComplessivo").equals("SI")) GW = "Unico 01";
@@ -1237,8 +1245,30 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                     }
 
                 //Adesso a seconda del tipo movimento devo comportarmi in maniera diversa
+                //P2: giroconto fra lo spot e il conto derivati (la gamba sul conto e' gia' saltata sopra)
+                if (GirocontoP2) {
+                    if (!Monete[0].Moneta.isBlank() && !Monete[0].Tipo.equalsIgnoreCase("FIAT")) {
+                        ChiudiRWFR(Monete[0], CryptoStack, GruppoWallet, Data, Valore, "Giroconto al conto derivati", IDTransazione);
+                    }
+                    if (!Monete[1].Moneta.isBlank() && !Monete[1].Tipo.equalsIgnoreCase("FIAT")) {
+                        ElementiStack el = new ElementiStack();
+                        el.IDOri = IDTransazione;
+                        el.CostoOri = Valore;
+                        el.MonOri = Monete[1].Moneta;
+                        el.QtaOri = Monete[1].Qta;
+                        el.DataOri = Data;
+                        el.GruppoWalletOri = GruppoWallet;
+                        el.Moneta = Monete[1].Moneta;
+                        el.Qta = Monete[1].Qta;
+                        el.TipoMonetaOri = Monete[1].Tipo;
+                        el.Tipo = Monete[1].Tipo;
+                        el.GruppoWallet = GruppoWallet;
+                        el.Data = Data;
+                        StackLIFO_InserisciValoreFR(CryptoStack, GruppoWallet, el);
+                    }
+                }
                 //TIPOLOGIA = 0 (Vendita Crypto)
-                if (IDTS[4].equals("VC") //Vendita Cripto - MU=crypto ME=FIAT
+                else if (IDTS[4].equals("VC") //Vendita Cripto - MU=crypto ME=FIAT
                         || IDTS[4].equals("CM")//Commissione - MU=crypto ME=null
                         || IDTS[4].equals("RW")//Reward - MU=null ME=crypto
                         || IDTS[4].equals("AC")) //Acquisto Crypto - MU=FIAT ME=Crypto
@@ -1410,8 +1440,8 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                         StackLIFO_InserisciValoreFR(CryptoStack,GruppoWallet,el);
                            // StackLIFO_InserisciValoreFR(CryptoStack, Monete[1].Moneta, Monete[1].Qta, Valore, Data, IDTransazione, GruppoWallet);
                         }
-                    } else if (v[18].contains("PWN") || v[18].contains("PCO")) {
-                        //Chiudo RW
+                    } else if (v[18].contains("PWN") || v[18].contains("PCO") || v[18].contains(Derivati.MARCATORE_ADDEBITO)) {
+                        //Chiudo RW (PDV: addebito per derivati, per il lato cripto e' una cessione come il PCO)
                         ChiudiRWFR(Monete[0], CryptoStack, GruppoWallet, Data, Valore, "Cashout o Similare", IDTransazione);
                     } else if (v[18].contains("DAI") || v[18].contains("DCZ")) {
                         //Apro nuovo RW
@@ -1459,7 +1489,7 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
 
                         }
 
-                    }else if (v[18].contains("DAC")||v[18].contains("DDO")
+                    }else if (v[18].contains("DAC")||v[18].contains("DDO")||v[18].contains(Derivati.MARCATORE_ACCREDITO)
                             || FallimentiPiattaforme.RimborsoOltreIlCredito(v[18])) {
 
                         //Apro RW nel caso di un acquisto Crypto da piattaforma esterna

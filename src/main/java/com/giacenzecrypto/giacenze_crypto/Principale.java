@@ -132,11 +132,15 @@ private static final long serialVersionUID = 3L;
      *  {@link #Mappa_RW_ListeXGruppoWallet} perché il path CRYPTO resti immutato. Popolata da
      *  {@code Calcoli_RW_Fiat.generaRighiFiat} in coda a {@code Calcoli_RW.AggiornaRWFR} (Fase 3). */
     static public Map<String, List<String[]>> Mappa_RW_ListeXGruppoWallet_Fiat = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    /** Righi codice 9 (contratti derivati e, con P2, conto derivati) per gruppo wallet, da {@link Calcoli_RW_Derivati}. */
+    static public Map<String, Calcoli_RW_Derivati.Rigo> Mappa_RW_Derivati = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    /** Natura dei righi codice 9 nella tabella del quadro RW. */
+    static final String NATURA_DERIVATI = "DERIVATI";
     static public Map<String, List<Moneta>> Mappa_RW_GiacenzeInizioPeriodo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static public Map<String, List<Moneta>> Mappa_RW_GiacenzeFinePeriodo = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     static List<String> DepositiPrelieviDaCategorizzare;//viene salvata la lista degli id dei depositi e prelievi ancora da categorizzare
     static public Map<Integer, List<String>> CDC_FiatWallet_ListaSaldi;
-    static public boolean TabellaCryptodaAggiornare=false;
+    static public volatile boolean TabellaCryptodaAggiornare=false;
     /**
      * Segnala che le righe della tabella movimenti non sono state ricostruite nell'ultimo
      * ricalcolo perché la scheda non era a video. Viene azzerata appena la tabella viene
@@ -260,6 +264,8 @@ private static final long serialVersionUID = 3L;
     //Grafico della scheda "Dettagli x Tipologia" del quadro RT: istanziato dopo initComponents e
     //aggiunto a RT_Pannello_GraficoTipologia (contenitore disegnato dal GUI Builder).
     private transient RT_GraficoPlusvalenze RT_GraficoTipologia;
+    /** Scheda "Redditi da derivati" del quadro RT, scritta a mano dopo initComponents (20/11/2026). */
+    private transient GUI_RT_Derivati RT_Derivati;
     /** Grafico della giacenza e del valore della moneta selezionata in "Giacenze a data" (scheda accanto al dettaglio). */
     private transient GiacenzeaData_Grafico GiacenzeaData_Grafico;
     
@@ -362,6 +368,7 @@ private static final long serialVersionUID = 3L;
     public Principale() {
     //Salvo la versione nei log
     System.out.println("Versione attuale : "+VarStatiche.Versione);
+    AggiornamentoMovimenti.Avvia(this); //consuma TabellaCryptodaAggiornare anche senza evento di focus (2026-11-15)
         
     try {    
         //imposto la velocità di comparsa dei tooltip a 100ms invece che 750
@@ -506,6 +513,15 @@ private static final long serialVersionUID = 3L;
         RT_GraficoTipologia = new RT_GraficoPlusvalenze();
         RT_Pannello_GraficoTipologia.setLayout(new java.awt.BorderLayout());
         RT_Pannello_GraficoTipologia.add(RT_GraficoTipologia, java.awt.BorderLayout.CENTER);
+        //Scheda "Redditi da derivati" del quadro RT (senza .form): si riempie alla scelta dell'anno in RT_CompilaTabellaDettagli
+        RT_Derivati = new GUI_RT_Derivati();
+        jTabbedPane1.addTab("Redditi da derivati", RT_Derivati);
+        RT_Derivati.Tabella().addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                Funzioni_RichiamaPopUpdaTabella(RT_Derivati.Tabella(), evt, Principale_RT_Derivati.COLONNA_ID_RIQUADRO);
+            }
+        });
         //Analisi Crypto, scheda "Fallimenti piattaforme" (scritta a mano, senza .form): subito dopo Giacenze a Data, si
         //rilegge da sola ogni volta che diventa visibile perché i movimenti si caricano dopo il costruttore
         //Il valore dei crediti (A/B/C) non tocca movimenti né plusvalenze: come l'opzione DefiLlama dei prezzi, segnala
@@ -787,6 +803,8 @@ private static final long serialVersionUID = 3L;
         MenuItem_Analizza = new javax.swing.JMenu();
         MenuItem_LiFoTransazione = new javax.swing.JMenuItem();
         MenuItem_DocumentoFonte = new javax.swing.JMenuItem();
+        MenuItem_RiepilogoContratto = new javax.swing.JMenuItem();
+        MenuItem_GiroMovimento = new javax.swing.JMenuItem();
         MenuItem_ChiediIA = new javax.swing.JMenu();
         MenuItem_Prezzi = new javax.swing.JMenu();
         MenuItem_ModificaPrezzo = new javax.swing.JMenuItem();
@@ -802,6 +820,9 @@ private static final long serialVersionUID = 3L;
         MenuItem_AltreModifiche = new javax.swing.JMenu();
         MenuItem_ModificaNote = new javax.swing.JMenuItem();
         MenuItem_ModificaReward = new javax.swing.JMenuItem();
+        MenuItem_ClassificaDerivato = new javax.swing.JMenuItem();
+        MenuItem_AbbinaRientroMargine = new javax.swing.JMenuItem();
+        MenuItem_MarcaDerivato = new javax.swing.JMenuItem();
         MenuItem_TraslaOrario = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         MenuItem_CopiaID = new javax.swing.JMenuItem();
@@ -921,6 +942,7 @@ private static final long serialVersionUID = 3L;
         GiacenzeaData_CheckBox_NascondiScam = new javax.swing.JCheckBox();
         GiacenzeaData_CheckBox_Microsaldi = new javax.swing.JCheckBox();
         GiacenzeaData_Bottone_CostiNetti = new javax.swing.JButton();
+        GiacenzeaData_Bottone_ContrattiAperti = new javax.swing.JButton();
         GiacenzeaData_Bottone_Guida = new javax.swing.JButton();
         GiacenzeaData_Label_Aggiornare = new javax.swing.JLabel();
         GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative = new javax.swing.JCheckBox();
@@ -1112,6 +1134,7 @@ private static final long serialVersionUID = 3L;
         Prezzi_Opzioni_CheckBox_ServizioOnchain = new javax.swing.JCheckBox();
         Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama = new javax.swing.JCheckBox();
         Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti = new javax.swing.JCheckBox();
+        Plusvalenze_Opzioni_CheckBox_ContoDerivati = new javax.swing.JCheckBox();
         Opzioni_RW_Pannello = new javax.swing.JPanel();
         RW_Opzioni_CheckBox_LiFoComplessivo = new javax.swing.JCheckBox();
         RW_Opzioni_CheckBox_StakingZero = new javax.swing.JCheckBox();
@@ -1155,6 +1178,7 @@ private static final long serialVersionUID = 3L;
         Opzioni_Varie_Etichetta_ModificheManuali = new javax.swing.JLabel();
         Opzioni_Varie_Bottone_ModificheManuali = new javax.swing.JButton();
         Opzioni_Varie_Bottone_RipristinoModificheManuali = new javax.swing.JButton();
+        Opzioni_Varie_Bottone_CancellaDaCsv = new javax.swing.JButton();
         Opzioni_Pulizie = new javax.swing.JPanel();
         jTabbedPane2 = new javax.swing.JTabbedPane();
         Opzioni_CardWallet_Pannello = new javax.swing.JPanel();
@@ -1300,6 +1324,26 @@ private static final long serialVersionUID = 3L;
         });
         MenuItem_Analizza.add(MenuItem_DocumentoFonte);
 
+        MenuItem_RiepilogoContratto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Stack.png"))); // NOI18N
+        MenuItem_RiepilogoContratto.setText("Riepilogo contratto derivato");
+        MenuItem_RiepilogoContratto.setToolTipText("Mostra le chiusure della posizione su questo contratto, in LIFO e secondo l'exchange");
+        MenuItem_RiepilogoContratto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_RiepilogoContrattoActionPerformed(evt);
+            }
+        });
+        MenuItem_Analizza.add(MenuItem_RiepilogoContratto);
+
+        MenuItem_GiroMovimento.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Stack.png"))); // NOI18N
+        MenuItem_GiroMovimento.setText("Mostra il giro del movimento");
+        MenuItem_GiroMovimento.setToolTipText("Mostra i movimenti legati a questo, ciascuno con una riga che dice cos'è");
+        MenuItem_GiroMovimento.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_GiroMovimentoActionPerformed(evt);
+            }
+        });
+        MenuItem_Analizza.add(MenuItem_GiroMovimento);
+
         MenuItem_ChiediIA.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Libro.png"))); // NOI18N
         MenuItem_ChiediIA.setText("Chiedi all'IA");
         MenuItem_ChiediIA.setToolTipText("Chiede a un chatbot di spiegare il movimento selezionato");
@@ -1416,6 +1460,35 @@ private static final long serialVersionUID = 3L;
         });
         MenuItem_AltreModifiche.add(MenuItem_ModificaReward);
 
+        MenuItem_MarcaDerivato.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Classifica.png"))); // NOI18N
+        MenuItem_MarcaDerivato.setText("Marca come derivato");
+        MenuItem_MarcaDerivato.setToolTipText("Riconosce come derivati i movimenti importati prima che l'importazione li marcasse");
+        MenuItem_MarcaDerivato.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_MarcaDerivatoActionPerformed(evt);
+            }
+        });
+        MenuItem_AltreModifiche.add(MenuItem_MarcaDerivato);
+
+        MenuItem_ClassificaDerivato.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Classifica.png"))); // NOI18N
+        MenuItem_ClassificaDerivato.setText("Classifica come derivato");
+        MenuItem_ClassificaDerivato.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_ClassificaDerivatoActionPerformed(evt);
+            }
+        });
+        MenuItem_AltreModifiche.add(MenuItem_ClassificaDerivato);
+
+        MenuItem_AbbinaRientroMargine.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Classifica.png"))); // NOI18N
+        MenuItem_AbbinaRientroMargine.setText("Abbina rientro del margine");
+        MenuItem_AbbinaRientroMargine.setToolTipText("Abbina il rientro del margine di una posizione aperta con la versione 1.0.66 ai prelievi del margine di allora");
+        MenuItem_AbbinaRientroMargine.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuItem_AbbinaRientroMargineActionPerformed(evt);
+            }
+        });
+        MenuItem_AltreModifiche.add(MenuItem_AbbinaRientroMargine);
+
         MenuItem_TraslaOrario.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_TraslaOrario.png"))); // NOI18N
         MenuItem_TraslaOrario.setText("Trasla Orario");
         MenuItem_TraslaOrario.addActionListener(new java.awt.event.ActionListener() {
@@ -1494,14 +1567,14 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "<html><center>ID<br>Transazione</html>", "<html><center>Data e Ora</html>", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Costo di Carico<br>Moneta Uscente</html>", "<html><center>Costo di Carico<br>Moneta Entrante</html>", "<html><center><html><center>Tipo Trasferimento</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "Blocco Transazione", "Hash Transazione", "DeFi - Nome Token Uscito", "DeFi - Address Token Uscita", "DeFi - Nome Token Entrato", "DeFi - Address Token Entrato", "Timestamp", "Address Controparte", "Data Fine Trasferimento", "Movimento Valorizzato", "Movimento con Plusvalenza", "Rete", "null", "null", "null", "Errori", "null", "Fonte Prezzi", "Alias Gruppo Wallet", "Operazione"
+                "<html><center>ID<br>Transazione</html>", "<html><center>Data e Ora</html>", "<html><center>Numero<br>movimento<br>su Totale<br>movimenti</html>", "<html><center>Exchange<br>/<br>Wallet</html>", "<html><center>Dettaglio<br>Wallet</html>", "<html><center>Tipo<br>Transazione<br></html>", "<html><center>Dettaglio<br>Movimento<br></html>", "<html><center>Causale<br>originale<br></html>", "<html><center>Moneta<br>Ven./Trasf.</html>", "<html><center>Tipo<br>Moneta<br>Ven./Trasf.</html>", "<html><center>Qta<br>Ven./Trasf.</html>", "<html><center>Moneta<br>Acq./Ric.</html>", "<html><center>Tipo<br>Moneta<br>Acq./Ric.</html>", "<html><center>Qta<br>Acq./Ric.</html>", "<html><center>Valore <br>transazione<br>come da CSV</html>", "<html><center>Valore<br>transazione<br>in EURO</html>", "<html><center>Costo di Carico<br>Moneta Uscente</html>", "<html><center>Costo di Carico<br>Moneta Entrante</html>", "<html><center><html><center>Tipo Trasferimento</html></html>", "<html><center>Plusvalenza<br>in EURO</html>", "<html><center>Riferimento<br>Trasferimento</html>", "Note", "Auto", "Blocco Transazione", "Hash Transazione", "DeFi - Nome Token Uscito", "DeFi - Address Token Uscita", "DeFi - Nome Token Entrato", "DeFi - Address Token Entrato", "Timestamp", "Address Controparte", "Data Fine Trasferimento", "Movimento Valorizzato", "Movimento con Plusvalenza", "Rete", "null", "null", "null", "Errori", "null", "Fonte Prezzi", "Alias Gruppo Wallet", "Operazione", "Derivato", "Risultato derivati"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -3105,6 +3178,15 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        GiacenzeaData_Bottone_ContrattiAperti.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Stack.png"))); // NOI18N
+        GiacenzeaData_Bottone_ContrattiAperti.setText("Contratti aperti");
+        GiacenzeaData_Bottone_ContrattiAperti.setToolTipText("Posizioni su derivati ancora aperte alla data scelta: contratti, prezzo medio e margine parcheggiato (consultazione)");
+        GiacenzeaData_Bottone_ContrattiAperti.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GiacenzeaData_Bottone_ContrattiApertiActionPerformed(evt);
+            }
+        });
+
         GiacenzeaData_Label_Aggiornare.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
         GiacenzeaData_Label_Aggiornare.setForeground(Tabelle.rosso);
         GiacenzeaData_Label_Aggiornare.setText("ATTENZIONE! Sono variate delle informazioni, premere CALCOLA per vedere i valori corretti!");
@@ -3176,6 +3258,8 @@ private static final long serialVersionUID = 3L;
                         .addComponent(GiacenzeaData_CheckBox_Microsaldi)
                         .addGap(44, 44, 44)
                         .addComponent(GiacenzeaData_Bottone_CostiNetti)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(GiacenzeaData_Bottone_ContrattiAperti)
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(GiacenzeaData_Bottone_Guida))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, GiacenzeaDataLayout.createSequentialGroup()
@@ -3241,6 +3325,7 @@ private static final long serialVersionUID = 3L;
                     .addComponent(GiacenzeaData_CheckBox_NascondiScam)
                     .addComponent(GiacenzeaData_CheckBox_Microsaldi)
                     .addComponent(GiacenzeaData_Bottone_CostiNetti)
+                    .addComponent(GiacenzeaData_Bottone_ContrattiAperti)
                     .addComponent(GiacenzeaData_Bottone_Guida))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -5516,6 +5601,13 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Plusvalenze_Opzioni_CheckBox_ContoDerivati.setText("<html><b>Conto derivati : </b>Tratta il conto derivati come parte del derivato: il margine che passa dallo spot al conto derivati è una cessione al valore del momento e il suo rientro dà un reddito da derivati. Vale per OKX, per il conto Derivati di Bybit e per i futures di Binance, non per l'Unified Trading Account di Bybit<br>(Non attivo di default: il margine resta una cripto-attività. Cambia i valori anche degli anni già dichiarati con movimenti su derivati)</html>");
+        Plusvalenze_Opzioni_CheckBox_ContoDerivati.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Plusvalenze_Opzioni_CheckBox_ContoDerivatiActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_Calcolo_PannelloLayout = new javax.swing.GroupLayout(Opzioni_Calcolo_Pannello);
         Opzioni_Calcolo_Pannello.setLayout(Opzioni_Calcolo_PannelloLayout);
         Opzioni_Calcolo_PannelloLayout.setHorizontalGroup(
@@ -5544,7 +5636,8 @@ private static final long serialVersionUID = 3L;
                                     .addComponent(Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(Prezzi_Opzioni_CheckBox_ServizioOnchain, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(Plusvalenze_Opzioni_CheckBox_ContoDerivati, javax.swing.GroupLayout.PREFERRED_SIZE, 989, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
@@ -5565,6 +5658,8 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Plusvalenze_Opzioni_CheckBox_ContoDerivati, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -5966,6 +6061,14 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Opzioni_Varie_Bottone_CancellaDaCsv.setText("Cancella movimenti da un elenco CSV");
+        Opzioni_Varie_Bottone_CancellaDaCsv.setToolTipText("Legge un file CSV con un elenco di ID o di valori di campi, mostra quali movimenti corrispondono e, dopo conferma, li cancella in memoria. Nulla è scritto su disco finché non premi Salva.");
+        Opzioni_Varie_Bottone_CancellaDaCsv.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Varie_Bottone_CancellaDaCsvActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_VarieLayout = new javax.swing.GroupLayout(Opzioni_Varie);
         Opzioni_Varie.setLayout(Opzioni_VarieLayout);
         Opzioni_VarieLayout.setHorizontalGroup(
@@ -5987,7 +6090,8 @@ private static final long serialVersionUID = 3L;
                     .addComponent(Opzioni_Varie_Separatore_ModificheManuali, javax.swing.GroupLayout.PREFERRED_SIZE, 560, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Opzioni_Varie_Etichetta_ModificheManuali)
                     .addComponent(Opzioni_Varie_Bottone_ModificheManuali, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Opzioni_Varie_Bottone_RipristinoModificheManuali, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(Opzioni_Varie_Bottone_RipristinoModificheManuali, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_Varie_Bottone_CancellaDaCsv, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         Opzioni_VarieLayout.setVerticalGroup(
@@ -6023,6 +6127,8 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Opzioni_Varie_Bottone_ModificheManuali)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Opzioni_Varie_Bottone_RipristinoModificheManuali)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_Varie_Bottone_CancellaDaCsv)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -7399,6 +7505,9 @@ private void SettaIcone(){
             Plusvalenze_ScambiSempreRilevanti="NO";
         }
         Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti.setSelected("SI".equalsIgnoreCase(Plusvalenze_ScambiSempreRilevanti));
+
+        //Conto derivati rilevante (P2 di D15): manca = NO, il margine resta una cripto-attivita'
+        Plusvalenze_Opzioni_CheckBox_ContoDerivati.setSelected(ContoDerivati.Attivo());
 
         //Log verboso dei JSON scaricati: allineo sia il checkbox che il flag condiviso letto dalle
         //funzioni di importazione/prezzatura, che devono avere il valore corretto anche se l'utente
@@ -10392,11 +10501,9 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
     private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowGainedFocus
         // TODO add your handling code here:
         System.out.println("Focus");
-            if (TabellaCryptodaAggiornare) {
-                //TransazioniCrypto_Funzione_VerificaeAggiornaTabellaCrypto();
-                TabellaCryptodaAggiornare = false;
-                Funzioni_AggiornaTutto();
-            }
+        //Il focus consuma sempre il flag. Non e' piu' l'unico: la chiusura di un dialogo e un timer di sicurezza fanno lo
+        //stesso (AggiornamentoMovimenti), perche' su Linux l'evento di focus puo' non arrivare mai
+        AggiornamentoMovimenti.FocusRicevuto();
       
       //Ogni volta che ho il focus conto le righe tabella e le scrivo nel campo informazioni nella pagina principale
       ScriviNumeroRigheTabellaPrincipaleinLabel();
@@ -10697,18 +10804,14 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                 progress.MostraProgressAttesa("Scaricamento Prezzi", "Attendi scaricamento dei prezzi...");
                 progress.setLocationRelativeTo(this);
                 String Ritorno[]=new String[2];
-                Thread thread;
-                thread = new Thread() {
+                progress.EseguiBloccante(new Runnable() {
                     /** Apre in background il dialogo {@link GUI_ModificaPrezzo} per la giacenza selezionata. */
                     public void run() {
                         GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(MU, null,IPr,df,MU.Rete,Ritorno,progress);
                         t.setLocationRelativeTo(c);
                         t.setVisible(true);
-                        progress.ChiudiFinestra();
                     }
-                };
-                thread.start();
-                progress.setVisible(true);
+                }, "la scelta del prezzo", this);
                 
                 
                 String m=Ritorno[0];
@@ -11314,7 +11417,7 @@ GiacenzeaData_CompilaTabellaToken(true);
             progress.setLocationRelativeTo(this);
             progress.NascondiInterrompi();
 
-            Thread thread = new Thread(() -> {
+            progress.EseguiBloccante(() -> {
                 progress.Titolo("Rimozione stato SCAM");
                 progress.SetLabel("Rimozione dello stato SCAM in corso....");
                 progress.SetMassimo(tokenSelezionati.size());
@@ -11324,10 +11427,7 @@ GiacenzeaData_CompilaTabellaToken(true);
                     progress.SetAvanzamento(i);
                     GiacenzeaData_Funzione_RimuoviScamSenzaConferma(token[0], token[1], token[2], "Tutti");
                 }
-                progress.ChiudiFinestra();
-            });
-            thread.start();
-            progress.setVisible(true);// Questo blocca finché done() non chiama dispose()
+            }, "la rimozione dello stato SCAM", this);// Blocca finché il lavoro non finisce, anche in errore
         }
 
         //Ricalcolo le tabelle una sola volta, per tutta la selezione, e azzero il flag in modo che
@@ -12286,9 +12386,9 @@ if (result.isAction("delete-all")) {
         RW_ElaborazioneCompletata = true;
         Download progress = new Download();
         progress.setLocationRelativeTo(this);
-        Thread thread;
-        thread = new Thread() {
+        Throwable erroreRW = progress.EseguiBloccante(new Runnable() {
             /** Calcola in background i dati del quadro RW (giacenze e periodi di detenzione per anno/wallet/moneta). */
+            @Override
             public void run() {
               LoggerGC.apriOperazione("RW");
               try {
@@ -12307,8 +12407,14 @@ if (result.isAction("delete-all")) {
                 // Questa Funzione va a popolare Mappa_RW_ListeXGruppoWallet che contiene una la lista degli RW per ogni wallet
                 RW_ElaborazioneCompletata = Calcoli_RW.AggiornaRWFR(RW_Anno_ComboBox.getSelectedItem().toString(), progress);
                 if (!RW_ElaborazioneCompletata) {
-                    progress.ChiudiFinestra();
                     return;
+                }
+                //Righi codice 9 (D7, P2): in questo thread perche' i prezzi possono richiedere la rete
+                try {
+                    Mappa_RW_Derivati = Calcoli_RW_Derivati.Calcola(RW_Anno_ComboBox.getSelectedItem().toString());
+                } catch (RuntimeException ex) {
+                    LoggerGC.ScriviErrore(ex);
+                    Mappa_RW_Derivati = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
                 }
                 //Poi utilizzerò questa lista per fare la media ponderata e popolare la tabella
                 //Righi CRYPTO : uno per gruppo wallet e per tratto CRYPTO (periodi di GRUPPO_PERIODO_RW) ; un gruppo
@@ -12323,11 +12429,13 @@ if (result.isAction("delete-all")) {
                 //Parte FIAT : aggiunge a MappaWallerQuadro un rigo per ogni tratto di detenzione in valuta
                 //(chiave "Wallet NN|FIAT|<prog>"). Non tocca i righi CRYPTO gia' calcolati.
                 RW_CalcolaRW_ParteFiat(MappaWallerQuadro);
+                //Righi codice 9 : uno per gruppo wallet (chiave "Wallet NN|DERIVATI|000")
+                RW_CalcolaRW_ParteDerivati(MappaWallerQuadro);
 
                 String ICtot = "0";
                 //Blocco 1 : righi CRYPTO (gia' completi di etichetta, chiave e bollo) + totale IC.
                 for (String[] RWx : MappaWallerQuadro.values()) {
-                    if ("FIAT".equalsIgnoreCase(RWx[8])) continue;
+                    if ("FIAT".equalsIgnoreCase(RWx[8]) || NATURA_DERIVATI.equalsIgnoreCase(RWx[8])) continue;
                     if (!"SI".equals(RWx[7])) {
                         ICtot = new BigDecimal(ICtot).add(new BigDecimal(RWx[5])).toPlainString();
                     }
@@ -12339,16 +12447,20 @@ if (result.isAction("delete-all")) {
                     RWx[7] = "NO";
                     ModelloTabella.addRow(RWx);
                 }
+                //Blocco 3 : righi codice 9 (derivati) - IVAFE, mai nell'IC.
+                for (String[] RWx : MappaWallerQuadro.values()) {
+                    if (!NATURA_DERIVATI.equalsIgnoreCase(RWx[8])) continue;
+                    ModelloTabella.addRow(RWx);
+                }
                 RW_Text_IC.setText(ICtot);
-                progress.ChiudiFinestra();
               } finally {
                 LoggerGC.chiudiOperazione();
               }
             }
-        };
-        thread.start();
-        progress.setVisible(true);
-        if (!RW_ElaborazioneCompletata) {
+        }, "il calcolo del quadro RW", this);
+        if (erroreRW != null) {
+            RW_ElaborazioneCompletata = false; //il dialogo d'errore e' gia' stato mostrato
+        } else if (!RW_ElaborazioneCompletata) {
             Messaggi.WarningMessage("Elaborazione terminata dall'utente", "", this);
         }
         this.RW_Label_SegnalaRicalcolo.setVisible(false);
@@ -12461,6 +12573,31 @@ if (result.isAction("delete-all")) {
         }
     }
 
+    /**
+     * Aggiunge a {@code MappaWallerQuadro} il rigo codice 9 di ogni gruppo wallet ({@link #Mappa_RW_Derivati}): valore iniziale e finale,
+     * giorni (media ponderata), IVAFE in colonna 5, natura {@value #NATURA_DERIVATI}, Stato estero in colonna 9. Non tocca gli altri righi.
+     */
+    private void RW_CalcolaRW_ParteDerivati(Map<String, String[]> MappaWallerQuadro) {
+        if (Mappa_RW_Derivati == null || Mappa_RW_Derivati.isEmpty()) return;
+        for (Calcoli_RW_Derivati.Rigo r : Mappa_RW_Derivati.values()) {
+            String gruppo = r.gruppo;
+            String num = gruppo.contains(" ") ? gruppo.substring(gruppo.indexOf(' ') + 1).trim() : gruppo;
+            String[] alias = DatabaseH2.Pers_GruppoAlias_Leggi(gruppo);
+            String[] RWx = new String[10];
+            RWx[0] = num + " ( " + alias[1] + " ) - derivati (codice 9)";
+            RWx[1] = r.valoreIniziale.setScale(2, RoundingMode.HALF_UP).toPlainString();
+            RWx[2] = r.soloMonitoraggio ? "0.00" : r.valoreFinale.setScale(2, RoundingMode.HALF_UP).toPlainString();
+            RWx[3] = String.valueOf(r.giorni);
+            RWx[4] = r.conErrori() ? "ERRORI" : "";
+            RWx[5] = r.ivafe.setScale(2, RoundingMode.HALF_UP).toPlainString();
+            RWx[6] = gruppo + "|" + NATURA_DERIVATI + "|000";
+            RWx[7] = "NO";
+            RWx[8] = NATURA_DERIVATI;
+            RWx[9] = r.stato;
+            MappaWallerQuadro.put(RWx[6], RWx);
+        }
+    }
+
     private void RW_CompilaTabellaDettagli(){
         Map<String, String[]> Mappa_Gruppo_Alias =DatabaseH2.Pers_GruppoAlias_LeggiTabella();
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -12494,12 +12631,18 @@ if (result.isAction("delete-all")) {
             List<String[]> RigheDettaglio = "FIAT".equalsIgnoreCase(NaturaRiga)
                     ? Mappa_RW_ListeXGruppoWallet_Fiat.get(Gruppo)
                     : Mappa_RW_ListeXGruppoWallet.get(Gruppo);
+            if (NATURA_DERIVATI.equalsIgnoreCase(NaturaRiga)) {
+                //Prospetto del rigo codice 9: una riga per contratto (P1) o per conto (P2), su copia
+                Calcoli_RW_Derivati.Rigo rd = Mappa_RW_Derivati.get(Gruppo);
+                RigheDettaglio = new java.util.ArrayList<>();
+                if (rd != null) for (String[] p : rd.prospetto) RigheDettaglio.add(p);
+            }
             if (RigheDettaglio == null) RigheDettaglio = new java.util.ArrayList<>();
             //Rigo CRYPTO di un periodo ("Wallet NN|CRYPTO|inizio/fine") : solo le righe il cui tratto è quello,
             //riconosciuto dalla data fine [9] (il motore chiude i lotti a ogni confine di periodo).
             String[] PartiChiave = chiaveSintesi.split("\\|", -1);
             String TrattoDa = "", TrattoA = "";
-            if (!"FIAT".equalsIgnoreCase(NaturaRiga) && PartiChiave.length > 2 && PartiChiave[2].contains("/")) {
+            if (!"FIAT".equalsIgnoreCase(NaturaRiga) && !NATURA_DERIVATI.equalsIgnoreCase(NaturaRiga) && PartiChiave.length > 2 && PartiChiave[2].contains("/")) {
                 TrattoDa = PartiChiave[2].split("/")[0];
                 TrattoA = PartiChiave[2].split("/")[1];
             }
@@ -12511,7 +12654,7 @@ if (result.isAction("delete-all")) {
                 //I righi CRYPTO vengono da liste ricostruite a ogni ricalcolo, i righi FIAT vivono nella
                 //mappa Mappa_RW_ListeXGruppoWallet_Fiat e verrebbero corrotti da una seconda selezione
                 //(lo split verrebbe rieseguito su una stringa gia' aliasata) : per il FIAT lavoro su copia.
-                String[] riga = "FIAT".equalsIgnoreCase(NaturaRiga) ? lista.clone() : lista;
+                String[] riga = "FIAT".equalsIgnoreCase(NaturaRiga) || NATURA_DERIVATI.equalsIgnoreCase(NaturaRiga) ? lista.clone() : lista;
                 if (Mappa_Gruppo_Alias.get(riga[1])!=null)riga[1]=riga[1].split(" ")[1].trim()+" ( "+Mappa_Gruppo_Alias.get(riga[1])[1]+" )";
                 if (Mappa_Gruppo_Alias.get(riga[6])!=null)riga[6]=riga[6].split(" ")[1].trim()+" ( "+Mappa_Gruppo_Alias.get(riga[6])[1]+" )";
                 if (RW_CheckBox_VediSoloErrori.isSelected())
@@ -12538,6 +12681,27 @@ if (result.isAction("delete-all")) {
             DefaultTableModel ModelloTabella3 = (DefaultTableModel) RW_Tabella_DettaglioMovimenti.getModel();
             Tabelle.Funzioni_PulisciTabella(ModelloTabella3);
             int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(RW_Tabella_Dettagli);
+            //Voce del prospetto di un rigo codice 9 (Calcoli_RW_Derivati): si elencano i suoi movimenti dell'anno (colonna 16)
+            if (Calcoli_RW_Derivati.IsVoce(RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 12).toString())) {
+                RW_Bottone_CorreggiErrore.setEnabled(false);
+                RW_Bottone_IdentificaScam.setEnabled(false);
+                Object ids = RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 16);
+                for (String id : ids == null ? new String[0] : ids.toString().split(",")) {
+                    String[] Movimento = MappaCryptoWallet.get(id.trim());
+                    if (Movimento == null) continue;
+                    String Mov[] = new String[7];
+                    Mov[0] = Movimento[1];
+                    Mov[1] = Movimento[3] + " - " + Movimento[4];
+                    Mov[2] = Movimento[5];
+                    Mov[3] = Movimento[10].isBlank() ? "" : Movimento[10] + " " + Movimento[8];
+                    Mov[4] = Movimento[13].isBlank() ? "" : Movimento[13] + " " + Movimento[11];
+                    Mov[5] = Movimento[15];
+                    Mov[6] = Movimento[0];
+                    ModelloTabella3.addRow(Mov);
+                }
+                Tabelle.updateRowHeights(RW_Tabella_DettaglioMovimenti);
+                return;
+            }
             //I righi FIAT (causale "Periodo FIAT") non hanno movimenti di apertura/chiusura : sono periodi
             //valorizzati a saldo. Mostro un'unica riga informativa e non provo a risalire agli ID.
             if ("Periodo FIAT".equalsIgnoreCase(RW_Tabella_Dettagli.getModel().getValueAt(rigaselezionata, 12).toString().trim())) {
@@ -12975,6 +13139,17 @@ if (result.isAction("delete-all")) {
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevantiActionPerformed
 
+    private void Plusvalenze_Opzioni_CheckBox_ContoDerivatiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Plusvalenze_Opzioni_CheckBox_ContoDerivatiActionPerformed
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        //P2 di D15 (ContoDerivati): l'opzione sta in OpzioniRicalcolo.Epoca(), il cambio forza da solo una passata completa
+        DatabaseH2.Pers_Opzioni_Scrivi(ContoDerivati.OPZIONE, Plusvalenze_Opzioni_CheckBox_ContoDerivati.isSelected() ? "SI" : "NO");
+        Funzioni_AggiornaTutto();
+        if (RT_Tabella_Principale.getRowCount() > 0) RT_Label_Avviso.setVisible(true);
+        //Con P2 cambia anche il quadro W/RW: il conto derivati esce dai righi cripto e diventa il rigo codice 9 (Calcoli_RW_Derivati)
+        if (RW_Tabella.getRowCount() > 0) RW_Label_SegnalaRicalcolo.setVisible(true);
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_Plusvalenze_Opzioni_CheckBox_ContoDerivatiActionPerformed
+
     private void Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZeroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZeroActionPerformed
         // TODO add your handling code here:
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -13135,6 +13310,18 @@ if (result.isAction("delete-all")) {
     private void GiacenzeaData_Bottone_CostiNettiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_CostiNettiActionPerformed
         GiacenzeaData_MostraCostiNetti();
     }//GEN-LAST:event_GiacenzeaData_Bottone_CostiNettiActionPerformed
+
+    private void GiacenzeaData_Bottone_ContrattiApertiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GiacenzeaData_Bottone_ContrattiApertiActionPerformed
+        //Posizioni su derivati aperte alla data scelta, con tutti i wallet: la logica sta in Principale_ContrattiAperti
+        if (GiacenzeaData_Data_DataChooser.getDate() == null) {
+            Messaggi.WarningMessage("Attenzione", "Scegliere la data.", this);
+            return;
+        }
+        String DataTesto = new SimpleDateFormat("yyyy-MM-dd").format(GiacenzeaData_Data_DataChooser.getDate());
+        //Stessa data di riferimento della tabella: la mezzanotte del giorno dopo, limitata ad adesso
+        long Limite = Math.min(FunzioniDate.ConvertiDatainLong(DataTesto) + 86400000, System.currentTimeMillis());
+        GUI_ContrattiAperti.Mostra(this, new SimpleDateFormat("dd/MM/yyyy").format(GiacenzeaData_Data_DataChooser.getDate()), Limite);
+    }//GEN-LAST:event_GiacenzeaData_Bottone_ContrattiApertiActionPerformed
 
     private void RW_Opzioni_CheckBox_LiFoComplessivoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_CheckBox_LiFoComplessivoActionPerformed
         // TODO add your handling code here:
@@ -13691,17 +13878,18 @@ if (result.isAction("delete-all")) {
             apriW = quadro == 0;
         }
 
-            //Movimenti su derivati nell'anno (Derivati): il quadro li conta come cripto-attivita'. Solo un
-            //avviso, la stampa prosegue e porta il testo completo in una pagina dedicata.
+            //Movimenti su derivati (Derivati.DaSegnalare): il quadro non ha una voce per i contratti, e quelli non classificati
+            //li conta come cripto-attivita'. Solo un avviso, la stampa prosegue e porta il testo completo in una pagina dedicata.
             String AvvisoDerivati = Derivati.MessaggioAvviso(AnnoDiCompetenza);
             if (!AvvisoDerivati.isEmpty()) {
                 AppDialog.builder(this)
                         .windowTitle("Avviso fiscale")
-                        .bodyTitle("Movimenti su derivati trattati come cripto-attività")
+                        .bodyTitle("Movimenti su strumenti derivati")
                         .showTitleInBody(true)
                         .theme()
                         .type(AppDialog.DialogType.WARNING)
-                        .message("Le giacenze dei quadri W e RW comprendono anche i movimenti su derivati.")
+                        .message(Mappa_RW_Derivati.isEmpty() ? "Nel quadro W/RW non ci sono righi con codice 9."
+                                : "I contratti derivati sono in un rigo con codice 9 per exchange, i movimenti su derivati non classificati restano fra le cripto-attività.")
                         .details(AvvisoDerivati)
                         .action(AppDialog.DialogAction.builder("ok", "Ho capito")
                                 .role(AppDialog.ActionRole.PRIMARY).build())
@@ -13796,6 +13984,8 @@ if (result.isAction("delete-all")) {
         BigDecimal iniziale = BigDecimal.ZERO;
         BigDecimal finale = BigDecimal.ZERO;
         BigDecimal ic = BigDecimal.ZERO;
+        BigDecimal ivafeDerivati = BigDecimal.ZERO;
+        boolean conDerivati = false;
         java.util.List<String> conErrori = new java.util.ArrayList<>();
         for (int i = 0; i < m.getRowCount(); i++) {
             String nome = Dichiarazioni_Testo(m.getValueAt(i, 0));
@@ -13816,7 +14006,10 @@ if (result.isAction("delete-all")) {
             if (errori.toUpperCase().contains("ERROR")) {
                 conErrori.add(nome);
             }
-            if (!"FIAT".equalsIgnoreCase(natura)) {
+            if (NATURA_DERIVATI.equalsIgnoreCase(natura)) {
+                ivafeDerivati = ivafeDerivati.add(Dichiarazioni_Numero(m.getValueAt(i, 5)).setScale(0, RoundingMode.HALF_UP));
+                conDerivati = true;
+            } else if (!"FIAT".equalsIgnoreCase(natura)) {
                 iniziale = iniziale.add(Dichiarazioni_Numero(m.getValueAt(i, 1)));
                 finale = finale.add(Dichiarazioni_Numero(m.getValueAt(i, 2)));
                 //Come il totale IC del PDF: somma dei valori arrotondati all'unita'
@@ -13827,8 +14020,11 @@ if (result.isAction("delete-all")) {
         d.Totali.put(Principale_Dichiarazioni.TOT_RW_INIZIALE, iniziale.setScale(2, RoundingMode.HALF_UP).toPlainString());
         d.Totali.put(Principale_Dichiarazioni.TOT_RW_FINALE, finale.setScale(2, RoundingMode.HALF_UP).toPlainString());
         d.Totali.put(Principale_Dichiarazioni.TOT_RW_IC, ic.toPlainString());
-        if (Derivati.InfluisconoSullAnno(Anno)) {
-            d.Totali.put("Avviso", "Movimenti su derivati trattati come cripto-attività");
+        //Solo con righi codice 9: scritto sempre, ogni definitiva archiviata prima risulterebbe diversa
+        if (conDerivati) d.Totali.put(Principale_Dichiarazioni.TOT_RW_DER_IVAFE, ivafeDerivati.toPlainString());
+        String AvvisoArchivio = Derivati.TestoAvvisoArchivio(Anno);
+        if (!AvvisoArchivio.isEmpty()) {
+            d.Totali.put(Principale_Dichiarazioni.TOT_AVVISO, AvvisoArchivio);
         }
         if (!conErrori.isEmpty()) {
             d.Errori = "errori da correggere nei righi " + String.join(", ", conErrori);
@@ -13868,6 +14064,7 @@ if (result.isAction("delete-all")) {
         if (FallimentiPiattaforme.RimborsiComePermutaNelAnno(Anno)) {
             o.put(FallimentiPiattaforme.NOME_OPZIONE_RIMBORSO, FallimentiPiattaforme.DESCRIZIONE_RIMBORSO_PERMUTA);
         }
+        if (ContoDerivati.InfluisceFinoAllAnno(Anno)) o.put(ContoDerivati.NOME_OPZIONE, ContoDerivati.DESCRIZIONE_OPZIONE);
         Dichiarazioni_OpzioniComuni(o);
         return d;
     }
@@ -13935,7 +14132,7 @@ if (result.isAction("delete-all")) {
             for (int i=0;i<numeroRighe;i++){
                 //I righi FIAT (valuta estera) hanno una stampa dedicata (fase F5) : per ora non entrano
                 //nel Quadro W cripto ne' nel Quadro RW cripto (eviterei di emetterli con codice bene 21).
-                if ("FIAT".equalsIgnoreCase(RW_FiatNaturaRiga(i))) continue;
+                if ("FIAT".equalsIgnoreCase(RW_FiatNaturaRiga(i)) || NATURA_DERIVATI.equalsIgnoreCase(RW_FiatNaturaRiga(i))) continue;
                 String NomeGruppo=RW_Tabella.getModel().getValueAt(i, 0).toString().split("\\(")[1].split("\\)")[0].trim();
                 String ValIniziale=RW_Tabella.getModel().getValueAt(i, 1).toString();
                 if(ValIniziale.contains("0.")) ValIniziale=new BigDecimal(ValIniziale).setScale(0, RoundingMode.UP).toPlainString();
@@ -14011,7 +14208,7 @@ if (result.isAction("delete-all")) {
             //boolean stampatoRW8=false;
             String ICTotale="0";
             for (int i = 0; i < numeroRighe; i++) {
-                if ("FIAT".equalsIgnoreCase(RW_FiatNaturaRiga(i))) continue;//il FIAT e' solo monitoraggio : niente IC
+                if ("FIAT".equalsIgnoreCase(RW_FiatNaturaRiga(i)) || NATURA_DERIVATI.equalsIgnoreCase(RW_FiatNaturaRiga(i))) continue;//il FIAT e' solo monitoraggio, i derivati pagano l'IVAFE : niente IC
                 BigDecimal ICriga=new BigDecimal(RW_Tabella.getModel().getValueAt(i, 5).toString()).setScale(0, RoundingMode.HALF_UP);
                 ICTotale=new BigDecimal(ICTotale).add(ICriga).toPlainString();
             }
@@ -14025,7 +14222,7 @@ if (result.isAction("delete-all")) {
                     String Messaggi[] = new String[5];
                     boolean mancaStampa=false;
                     for (int i = 0; i < numeroRighe; i++) {
-                        if ("FIAT".equalsIgnoreCase(RW_FiatNaturaRiga(i))) continue;//stampa FIAT dedicata : fase F5
+                        if ("FIAT".equalsIgnoreCase(RW_FiatNaturaRiga(i)) || NATURA_DERIVATI.equalsIgnoreCase(RW_FiatNaturaRiga(i))) continue;//stampa FIAT e derivati dedicate
                         String NomeGruppo = RW_Tabella.getModel().getValueAt(i, 0).toString().split("\\(")[1].split("\\)")[0].trim();
                         String ValIniziale = RW_Tabella.getModel().getValueAt(i, 1).toString();
                         ValIniziale = new BigDecimal(ValIniziale).setScale(0, RoundingMode.HALF_UP).toPlainString();
@@ -14326,6 +14523,8 @@ if (result.isAction("delete-all")) {
             // in colonna 4, colonna 16 "SOLO MONITORAGGIO" barrata, colonna 14 e IC vuote (v1 = solo
             // monitoraggio). Numerazione W/RW che prosegue da quella cripto (punto 21).
             RW_StampaParteFiat(stampa, anno, AnnoDiCompetenza, numeroRighe, totRigheW, totRigheRW, stampaW);
+            // ===================== PARTE DERIVATI (righi codice 9) =====================
+            RW_StampaParteDerivati(stampa, AnnoDiCompetenza, stampaW);
 
             if (!stampa.ScriviPDF(false)) {
                 throw new IOException("il PDF del quadro " + (stampaW ? "W" : "RW") + " non risulta scritto");
@@ -14333,6 +14532,52 @@ if (result.isAction("delete-all")) {
         } catch (RuntimeException ex) {
             throw new IOException("errore nel PDF del quadro " + (stampaW ? "W" : "RW") + ": " + ex, ex);
         }
+    }
+
+    /**
+     * Stampa i righi codice 9 ({@link #Mappa_RW_Derivati}) in una pagina a parte, dopo la liquidita': per ogni gruppo i valori da riportare
+     * nelle colonne del quadro W o RW (codice 9, Stato estero, criterio 1 = valore di mercato, colonne 7, 8, 10, 14, 16, 21, IVAFE) e il
+     * prospetto delle voci. Il modulo non si compila graficamente: i valori si trascrivono. Nessun output senza righi codice 9.
+     */
+    private void RW_StampaParteDerivati(Stampe stampa, String AnnoDiCompetenza, boolean stampaW) {
+        if (Mappa_RW_Derivati == null || Mappa_RW_Derivati.isEmpty()) return;
+        stampa.NuovaPagina();
+        String quadro = stampaW ? "W" : "RW";
+        if (stampa.VesteGraficaAttiva()) {
+            stampa.ContestoPagina("Quadro " + quadro + " - contratti derivati (codice 9) - anno " + AnnoDiCompetenza, false);
+            stampa.DistanziatoreTestata();
+        } else {
+            stampa.AggiungiTestoCentrato("QUADRO " + quadro + " - CONTRATTI DERIVATI (CODICE 9) - ANNO " + AnnoDiCompetenza, Font.BOLD, 12);
+        }
+        StringBuilder h = new StringBuilder("<html><font size=\"2\" face=\"Courier New,Courier, mono\" >");
+        h.append(Calcoli_RW_Derivati.TestoNota(ContoDerivati.Attivo())).append("<br><br>");
+        BigDecimal totale = BigDecimal.ZERO;
+        for (Calcoli_RW_Derivati.Rigo r : Mappa_RW_Derivati.values()) {
+            String[] alias = DatabaseH2.Pers_GruppoAlias_Leggi(r.gruppo);
+            String vi = r.valoreIniziale.setScale(0, RoundingMode.HALF_UP).toPlainString();
+            if (vi.equals("0")) vi = "1";   //lo zero non si trasmette: il rigo e' comunque segnalato fra gli avvisi
+            String vf = r.soloMonitoraggio ? "" : r.valoreFinale.setScale(0, RoundingMode.HALF_UP).toPlainString();
+            boolean privilegiato = StatiEsteri.isPrivilegiato(r.stato);
+            h.append("<b>").append(alias[1]).append("</b> : colonna 1 = 1, colonna 3 = 9, colonna 4 = ")
+             .append(r.stato.isBlank() ? "<b>Stato estero da indicare</b>" : r.stato)
+             .append(", colonna 5 = 100, colonna 6 = 1, colonna 7 = ").append(vi)
+             .append(r.soloMonitoraggio ? ", colonna 8 vuota, colonna 16 barrata (solo monitoraggio)"
+                     : ", colonna 8 = " + vf + ", colonna 10 = " + Math.min(r.giorni, 365) + ", colonna 14 = " + r.colonna14
+                     + (privilegiato ? ", colonna 21 barrata" : "") + ", IVAFE = " + r.ivafe.setScale(0, RoundingMode.HALF_UP).toPlainString())
+             .append("<br>");
+            if (!r.soloMonitoraggio) totale = totale.add(r.ivafe.setScale(0, RoundingMode.HALF_UP));
+            for (String[] p : r.prospetto) {
+                h.append("&emsp;- ").append(p[Calcoli_RW_Derivati.P_VOCE]).append(" (").append(p[Calcoli_RW_Derivati.P_DATA_INI]).append(" / ")
+                 .append(p[Calcoli_RW_Derivati.P_DATA_FINE]).append(") : valore iniziale ").append(p[Calcoli_RW_Derivati.P_VAL_INI])
+                 .append(p[Calcoli_RW_Derivati.P_VAL_FIN].isBlank() ? "" : ", valore finale " + p[Calcoli_RW_Derivati.P_VAL_FIN])
+                 .append(", giorni ").append(p[Calcoli_RW_Derivati.P_GIORNI]).append("<br>");
+            }
+            for (String a : r.avvisi) h.append("&emsp;<i>").append(a).append("</i><br>");
+            h.append("<br>");
+        }
+        h.append("IVAFE dei righi codice 9 : ").append(totale.toPlainString())
+         .append(" euro. Non è compresa nell'imposta sulle cripto-attività del report.</font></html>");
+        stampa.AggiungiHtml(h.toString());
     }
 
     /**
@@ -14724,9 +14969,9 @@ if (result.isAction("delete-all")) {
         Download progress = new Download();
         progress.setLocationRelativeTo(this);
 
-        Thread thread;
-        thread = new Thread() {
+        Throwable erroreRT = progress.EseguiBloccante(new Runnable() {
             /** Calcola in background le plusvalenze per anno tramite {@link Calcoli_RT#CalcoliPlusvalenzeXAnno}. */
+            @Override
             public void run() {
                 progress.Titolo("Analisi sulle plusvalenze in corso.... Attendere");
                 progress.SetLabel("Analisi sulle plusvalenze in corso.... Attendere");
@@ -14749,12 +14994,11 @@ if (result.isAction("delete-all")) {
                         APlus = null;
                     }
                 }
-                progress.ChiudiFinestra();
             }
-        };
-        thread.start();
-        progress.setVisible(true);
-        if (APlus==null){
+        }, "il calcolo delle plusvalenze", this);
+        if (erroreRT != null) {
+            APlus = null; //un calcolo fallito a meta' non va mostrato; il dialogo d'errore e' gia' stato mostrato
+        } else if (APlus==null){
             Messaggi.WarningMessage("Elaborazione terminata dall'utente", "", this);
         }
         else{
@@ -14777,19 +15021,21 @@ if (result.isAction("delete-all")) {
                     default -> Val[va]=Valori[va].toPlainString();
                 }
             }
-            //Movimenti su derivati nell'anno o prima (Derivati): non sono un errore da correggere ma un limite del
-            //programma, che li tratta come cripto-attivita'. Stanno nella stessa colonna perche' e' li' che
-            //l'utente guarda prima di stampare; il pulsante di stampa distingue le due cose.
-            if (Derivati.InfluisconoSullAnno(Val[0])) {
+            //Movimenti su derivati (Derivati.DaSegnalare): non sono un errore da correggere. Il loro risultato va nella
+            //sezione II-A (Principale_RT_Derivati), quelli non classificati restano cripto-attivita'. Stanno nella
+            //stessa colonna perche' e' li' che l'utente guarda prima di stampare; il pulsante di stampa distingue le due cose.
+            if (Derivati.DaSegnalare(Val[0])) {
                 String gia = Val[6] == null ? "" : Val[6].replace("<html>", "").replace("</html>", "");
                 if (!gia.isEmpty() && !gia.endsWith("<br>")) gia = gia + "<br>";
                 Val[6] = "<html>" + gia + RT_ERRORE_DERIVATI + "</html>";
             }
-            //Anni fino al 2022: se la soglia dei 51.645,69 euro non e' superata la riga va a zero. La nota sta in coda
-            //alla colonna "Errori" ma non e' un errore: chi la legge per decidere se ce ne sono la toglie (SenzaNota)
-            Principale_RT_Soglia.Risultato soglia = Principale_RT_Soglia.Applica(Val, RT_EsitiSoglia.get(Val[0]));
+            //Anni fino al 2022: se la soglia dei 51.645,69 euro non e' superata la tabella mostra comunque i valori
+            //calcolati (azzerarli confondeva), con la cella della plusvalenza in giallo e la nota: nel quadro RT stampato
+            //vanno a zero (RT_ValoreStampato), l'archivio tiene i valori calcolati. La nota sta in coda alla colonna "Errori" ma non e' un errore: chi la
+            //legge per decidere se ce ne sono la toglie (SenzaNota)
+            Principale_RT_Soglia.Risultato soglia = Principale_RT_Soglia.Applica(Val, RT_EsitiSoglia.get(Val[0]), Derivati.ContaNellAnno(Val[0]) > 0);
             RT_RisultatiSoglia.put(Val[0], soglia);
-            Val[6] = Principale_RT_Soglia.ConNota(Val[6], soglia.notaBreve);
+            Val[6] = Principale_RT_Soglia.ConNota(Val[6], soglia.notaBreve, soglia.azzerato());
             ModelloTabellaRT.addRow(Val);
         }
         Tabelle.updateRowHeights(RT_Tabella_Principale);
@@ -14860,6 +15106,16 @@ if (result.isAction("delete-all")) {
            /*for (String[] riga : tab.iterato)
           */
            } 
+        //Redditi da derivati dell'anno scelto (scheda a parte, letti dai movimenti come la stampa)
+        if (RT_Derivati != null) {
+            int rigaDerivati = Tabelle.Funzioni_getRigaSelezionata(RT_Tabella_Principale);
+            if (rigaDerivati >= 0) {
+                String annoDerivati = RT_Tabella_Principale.getModel().getValueAt(rigaDerivati, 0).toString();
+                RT_Derivati.Mostra(Principale_RT_Derivati.Calcola(annoDerivati), Principale_RT_Derivati.PerditeAnniPrecedenti(annoDerivati));
+            } else {
+                RT_Derivati.Pulisci();
+            }
+        }
         Tabelle.ColoraTabellaRTDettaglio(RT_Tabella_DettaglioMonete);
         Tabelle.Tabelle_FiltroColonne(RT_Tabella_DettaglioMonete,null,popup);
         Tabelle.ColoraTabellaRTDettaglio(RT_Tabella_Gruppi);
@@ -15400,6 +15656,13 @@ if (erroreScelto != null) {
             TabellaCryptodaAggiornare = false;
         }
     }//GEN-LAST:event_Opzioni_Varie_Bottone_RipristinoModificheManualiActionPerformed
+
+    private void Opzioni_Varie_Bottone_CancellaDaCsvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Bottone_CancellaDaCsvActionPerformed
+        //La scelta del file e l'anteprima stanno nella classe compagna, la cancellazione passa dall'unica strada che
+        //c'è (Funzione_EliminaMovimenti: gruppi collegati, commissioni orfane, storico, ricalcolo, provvisoria fino a Salva)
+        List<String> IDs = Principale_Opzioni_CancellaDaCsv.ScegliEAnteprima(this);
+        if (IDs != null && !IDs.isEmpty()) Funzione_EliminaMovimenti(IDs, Opzioni_Varie_Bottone_CancellaDaCsv);
+    }//GEN-LAST:event_Opzioni_Varie_Bottone_CancellaDaCsvActionPerformed
 
     private void Opzioni_Varie_Checkbox_LogJsonDefiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Checkbox_LogJsonDefiActionPerformed
         //Abilita/disabilita la stampa nel log dei JSON scaricati durante l'importazione dei wallet DeFi.
@@ -16198,19 +16461,15 @@ if (erroreScelto != null) {
         long versionePrima = VersioneMovimenti;
         Component posizione = PopUp_Component;
 
-        Thread thread;
-            thread = new Thread() {
+        progress.EseguiBloccante(new Runnable() {
             /** Apre in background il dialogo {@link GUI_ModificaPrezzo} per il movimento selezionato dal popup. */
             public void run() {
             GUI_ModificaPrezzo t =new GUI_ModificaPrezzo(PopUp_IDTrans,progress);
             t.setLocationRelativeTo(dopo != null ? posizione : c);
             t.setVisible(true);
             SwingUtilities.invokeLater(() -> PopUp_ConcludiAzione(dopo, versionePrima));
-            //progress.ChiudiFinestra();
         }
-            };
-        thread.start();  
-        progress.setVisible(true);
+            }, "la scelta del prezzo", this);
             
         
     }//GEN-LAST:event_MenuItem_ModificaPrezzoActionPerformed
@@ -16313,6 +16572,92 @@ if (erroreScelto != null) {
         }
     }//GEN-LAST:event_MenuItem_ModificaRewardActionPerformed
 
+    private void MenuItem_MarcaDerivatoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_MarcaDerivatoActionPerformed
+        //Tutta la selezione: la logica sta in Principale_DerivatiMarcatura, qui solo l'anteprima, la scelta e il ricalcolo
+        List<String> IDs = PopUp_IDTransSelezionati.isEmpty() ? List.of(PopUp_IDTrans) : PopUp_IDTransSelezionati;
+        java.util.Map<String, java.util.Map<String, String>> Tipi = Principale_DerivatiMarcatura.TipiCorrenti();
+        java.util.Map<String, java.util.Set<String>> Conti = Principale_DerivatiMarcatura.ContiCorrenti();
+        Principale_DerivatiMarcatura.Piano Piano = Principale_DerivatiMarcatura.Pianifica(IDs, Tipi, Conti);
+        if (Piano.voci.isEmpty() && Piano.sposta.isEmpty()) {
+            Messaggi.WarningMessage("Marcatura come derivato", "Nessun movimento da marcare.",
+                    Principale_DerivatiMarcatura.TestoAnteprima(Piano), PopUp_Finestra());
+            return;
+        }
+        AppDialog.DialogResult result = AppDialog.builder(PopUp_Finestra())
+                .windowTitle("Marcatura come derivato")
+                .bodyTitle("Movimenti su strumenti derivati")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .details(Principale_DerivatiMarcatura.TestoAnteprima(Piano))
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("marca", Piano.voci.isEmpty() ? "Sposta" : "Marca")
+                        .role(AppDialog.ActionRole.PRIMARY)
+                        .build())
+                .showDialog();
+        if (result == null || !"marca".equals(result.getActionId())) {
+            return;
+        }
+        if (Principale_DerivatiMarcatura.Applica(Piano, Tipi, Conti) > 0) {
+            Funzioni_AggiornaTutto();
+            DepositiPrelievi_Caricatabella();
+        }
+    }//GEN-LAST:event_MenuItem_MarcaDerivatoActionPerformed
+
+    private void MenuItem_ClassificaDerivatoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_ClassificaDerivatoActionPerformed
+        //Tutta la selezione. La logica sta in Principale_Derivati: qui solo l'anteprima, la scelta e il ricalcolo
+        List<String> IDs = PopUp_IDTransSelezionati.isEmpty() ? List.of(PopUp_IDTrans) : PopUp_IDTransSelezionati;
+        Principale_Derivati.Piano Piano = Principale_Derivati.Pianifica(IDs);
+        if (Piano.voci.isEmpty() && Piano.giaClassificati.isEmpty()) {
+            Messaggi.WarningMessage("Classificazione come derivato", "Nessun movimento da classificare.",
+                    Principale_Derivati.TestoAnteprima(Piano), PopUp_Finestra());
+            return;
+        }
+        AppDialog.Builder Dialogo = AppDialog.builder(PopUp_Finestra())
+                .windowTitle("Classificazione come derivato")
+                .bodyTitle("Movimenti su strumenti derivati")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .details(Principale_Derivati.TestoAnteprima(Piano))
+                .action(AppDialog.DialogAction.builder("cancel", "Annulla")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build());
+        if (!Piano.giaClassificati.isEmpty()) {
+            Dialogo.action(AppDialog.DialogAction.builder("annulla-classificazione", "Riporta da classificare")
+                    .role(AppDialog.ActionRole.NEUTRAL)
+                    .build());
+        }
+        if (!Piano.voci.isEmpty()) {
+            Dialogo.action(AppDialog.DialogAction.builder("classifica", "Classifica")
+                    .role(AppDialog.ActionRole.PRIMARY)
+                    .build());
+        }
+        AppDialog.DialogResult result = Dialogo.showDialog();
+        if (result == null || result.getActionId() == null) {
+            return;
+        }
+        int Modificati = switch (result.getActionId()) {
+            case "classifica" -> Principale_Derivati.Applica(Piano);
+            case "annulla-classificazione" -> Principale_Derivati.Annulla(Piano.giaClassificati);
+            default -> 0;
+        };
+        if (Modificati > 0) {
+            Funzioni_AggiornaTutto();
+            DepositiPrelievi_Caricatabella();
+        }
+    }//GEN-LAST:event_MenuItem_ClassificaDerivatoActionPerformed
+
+    private void MenuItem_AbbinaRientroMargineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_AbbinaRientroMargineActionPerformed
+        //La logica sta in Principale_RientroMargine, il dialogo in GUI_RientroMargine: qui solo il ricalcolo
+        if (PopUp_IDTrans != null && GUI_RientroMargine.Mostra(PopUp_Finestra(), PopUp_IDTrans)) {
+            Funzioni_AggiornaTutto();
+            DepositiPrelievi_Caricatabella();
+        }
+    }//GEN-LAST:event_MenuItem_AbbinaRientroMargineActionPerformed
+
     private void Donazioni_Bottone1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Donazioni_Bottone1ActionPerformed
         // TODO add your handling code here:
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -16333,6 +16678,19 @@ if (erroreScelto != null) {
         // TODO add your handling code here:
         Funzioni.ApriWeb("https://paypal.me/GiacenzeCrypto?country.x=IT&locale.x=it_IT");
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void MenuItem_RiepilogoContrattoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_RiepilogoContrattoActionPerformed
+        if (PopUp_IDTrans != null) {
+            Principale_Derivati.ApriRiepilogo(PopUp_Finestra(), PopUp_IDTrans);
+        }
+    }//GEN-LAST:event_MenuItem_RiepilogoContrattoActionPerformed
+
+    private void MenuItem_GiroMovimentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_GiroMovimentoActionPerformed
+        //Solo consultazione: la logica sta in Principale_GiroMovimento, il dialogo in GUI_GiroMovimento
+        if (PopUp_IDTrans != null) {
+            GUI_GiroMovimento.Mostra(PopUp_Finestra(), PopUp_IDTrans);
+        }
+    }//GEN-LAST:event_MenuItem_GiroMovimentoActionPerformed
 
     private void MenuItem_LiFoTransazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuItem_LiFoTransazioneActionPerformed
         // TODO add your handling code here:
@@ -16788,6 +17146,12 @@ if (erroreScelto != null) {
         if (DepositiPrelievi_Tabella.getSelectedRow() >= 0) {
             int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(DepositiPrelievi_Tabella);
             String IDTransazione = DepositiPrelievi_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            if (Derivati.IsRigaContrattoOMargine(MappaCryptoWallet.get(IDTransazione))) {
+                Messaggi.WarningMessage("Movimento di un contratto derivato",
+                        "Questo movimento rappresenta i contratti aperti o il margine di una posizione su derivati e non può essere duplicato.<br>"
+                        + "Un duplicato raddoppierebbe i contratti aperti o il margine della posizione.", this);
+                return;
+            }
             if (!Funzioni.isDuplicabile(MappaCryptoWallet.get(IDTransazione))) {
                 Messaggi.WarningMessage("Movimento collegato ad altri",
                         "Questo movimento fa parte di un gruppo classificato (trasferimento, scambio differito, "
@@ -17054,7 +17418,7 @@ if (erroreScelto != null) {
                 progress.setLocationRelativeTo(this);
                 progress.NascondiInterrompi();
 
-                Thread thread = new Thread(() -> {
+                progress.EseguiBloccante(() -> {
                     progress.Titolo("Classificazione token SCAM");
                     progress.SetLabel("Marcatura dei token come SCAM in corso....");
                     progress.SetMassimo(daMarcare.size());
@@ -17065,10 +17429,7 @@ if (erroreScelto != null) {
                         progress.SetMessaggioAvanzamento(t.Nome + " - " + i + " di " + daMarcare.size());
                         t.NuovoNome = MarcaTokenComeScam(t.Nome, t.Address, t.Rete);
                     }
-                    progress.ChiudiFinestra();
-                });
-                thread.start();
-                progress.setVisible(true);// Questo blocca finché il thread non chiama ChiudiFinestra()
+                }, "la marcatura dei token come SCAM", this);// Blocca finché il lavoro non finisce, anche in errore
             } else {
                 //Pochi token: qui la marcatura è due sole operazioni sul database per token, quindi il
                 //thread finirebbe *prima* che l'EDT arrivi a setVisible(true). ChiudiFinestra() è un
@@ -17155,8 +17516,9 @@ if (erroreScelto != null) {
         progress.SetLabel("Verifica dei token in corso tramite GoPlusLabs. Attendere...");
         progress.SetMassimo(candidati.size());
 
-        Thread thread = new Thread() {
+        progress.EseguiBloccante(new Runnable() {
             /** Verifica in background, token per token, se i candidati sono SCAM/SPAM (regole locali poi GoPlusLabs). */
+            @Override
             public void run() {
                 int i = 0;
                 for (String[] token : candidati) {
@@ -17193,12 +17555,8 @@ if (erroreScelto != null) {
                     if (Principale.InterrompiCiclo) break;
                 }
                 Funzioni_AggiornaTutto();
-                progress.ChiudiFinestra();
             }
-        };
-        progress.SetThread(thread);
-        thread.start();
-        progress.setVisible(true);
+        }, "l'identificazione automatica dei token SCAM", this);
     }//GEN-LAST:event_DepositiPrelievi_Bottone_ScamAutoActionPerformed
 
     /**
@@ -18091,6 +18449,15 @@ if (erroreScelto != null) {
         return "<br>" + Principale_RT_Soglia.Html(r.nota) + "<br><br>";
     }
 
+    /**
+     * Il valore di una colonna della riga RT come va nel quadro stampato e nell'archivio: la tabella mostra i valori
+     * calcolati, ma per un anno sotto la soglia dei 51.645,69 euro costi, corrispettivi e plusvalenza vanno a zero.
+     */
+    private Object RT_ValoreStampato(String Anno, int Colonna, Object Valore) {
+        Principale_RT_Soglia.Risultato r = RT_RisultatiSoglia.get(Anno);
+        return r == null ? Valore : r.valoreStampato(Colonna, Valore);
+    }
+
     private void RT_GeneraDichiarazione(boolean ApriExcel) {
         javax.swing.table.TableModel m = RT_Tabella_Principale.getModel();
         int rigoVista = RT_Tabella_Principale.getSelectedRow();
@@ -18133,8 +18500,8 @@ if (erroreScelto != null) {
         }
 
             int Anno=Integer.parseInt(AnnoS);
-            String Vendite=m.getValueAt(rigo, 2).toString();
-            String Costi=m.getValueAt(rigo, 1).toString();
+            String Vendite=RT_ValoreStampato(AnnoS, 2, m.getValueAt(rigo, 2)).toString();
+            String Costi=RT_ValoreStampato(AnnoS, 1, m.getValueAt(rigo, 1)).toString();
             String Errori=m.getValueAt(rigo, 6).toString();
             //La colonna porta anche "Movimenti su derivati", che non e' un errore da correggere: conta solo
             //il resto (movimenti non classificati o senza prezzo)
@@ -18161,11 +18528,11 @@ if (erroreScelto != null) {
             if (!AvvisoDerivati.isEmpty()) {
                 AppDialog.builder(this)
                         .windowTitle("Avviso fiscale")
-                        .bodyTitle("Movimenti su derivati trattati come cripto-attività")
+                        .bodyTitle("Movimenti su strumenti derivati")
                         .showTitleInBody(true)
                         .theme()
                         .type(AppDialog.DialogType.WARNING)
-                        .message("I valori del quadro T/RT comprendono anche i movimenti su derivati.")
+                        .message("Il quadro T/RT riporta i redditi da derivati classificati nella sezione dei redditi diversi di natura finanziaria.")
                         .details(AvvisoDerivati)
                         .action(AppDialog.DialogAction.builder("ok", "Ho capito")
                                 .role(AppDialog.ActionRole.PRIMARY).build())
@@ -18190,8 +18557,11 @@ if (erroreScelto != null) {
         Object[] riga = new Object[m.getColumnCount()];
         for (int c = 0; c < m.getColumnCount(); c++) {
             intestazione[c] = m.getColumnName(c);
+            //L'Excel riporta i valori calcolati (come la tabella): perche' nel quadro stampato sono a zero lo dice la nota sotto il riepilogo
             riga[c] = m.getValueAt(rigo, c);
         }
+        Principale_RT_Soglia.Risultato sogliaExcel = RT_RisultatiSoglia.get(AnnoS);
+        final String[] noteExcel = sogliaExcel == null ? new String[0] : sogliaExcel.righeExcel();
         javax.swing.table.TableModel mm = RT_Tabella_DettaglioMonete.getModel();
         String[] intestazioneMonete = new String[mm.getColumnCount()];
         for (int c = 0; c < mm.getColumnCount(); c++) {
@@ -18210,7 +18580,8 @@ if (erroreScelto != null) {
             RT_ScriviPdf(new File(cartella, fileRT).getPath(), Anno, Vendite, Costi, errFinale, false);
             try {
                 Principale_Dichiarazioni.RT_CreaExcel(new File(cartella, fileExcel), AnnoS, intestazione, riga,
-                        intestazioneMonete, monete, gruppi, tipologie, Principale_RT_Tipologie.MovimentiRilevanti(AnnoS));
+                        intestazioneMonete, monete, gruppi, tipologie, Principale_RT_Tipologie.MovimentiRilevanti(AnnoS), noteExcel,
+                        Principale_RT_Derivati.Calcola(AnnoS));
             } catch (IOException | RuntimeException ex) {
                 throw new IOException("errore nell'Excel di dettaglio: " + ex, ex);
             }
@@ -18235,9 +18606,12 @@ if (erroreScelto != null) {
         bozza.Totali.put(Principale_Dichiarazioni.TOT_RT_PLUS, Dichiarazioni_Testo(m.getValueAt(Rigo, 3)));
         bozza.Totali.put("Plusvalenze latenti", Dichiarazioni_Testo(m.getValueAt(Rigo, 4)));
         bozza.Totali.put("Valore di fine anno", Dichiarazioni_Testo(m.getValueAt(Rigo, 5)));
-        if (Errori.contains(RT_ERRORE_DERIVATI)) {
-            bozza.Totali.put("Avviso", "Movimenti su derivati trattati come cripto-attività");
+        String AvvisoArchivio = Derivati.TestoAvvisoArchivio(bozza.Anno);
+        if (!AvvisoArchivio.isEmpty()) {
+            bozza.Totali.put(Principale_Dichiarazioni.TOT_AVVISO, AvvisoArchivio);
         }
+        //Redditi da derivati (sezione II-A), solo negli anni che ne hanno: vedi AggiungiTotaliDerivati
+        Principale_Dichiarazioni.AggiungiTotaliDerivati(bozza.Totali, Principale_RT_Derivati.Calcola(bozza.Anno));
         bozza.Errori = Principale_RT_Soglia.SenzaNota(Errori).replace(RT_ERRORE_DERIVATI, "").replace("<br>", " ").replaceAll("<[^>]*>", "").trim();
         for (Map.Entry<String, BigDecimal[]> e : Tipologie.perTipologia.entrySet()) {
             Map<String, String> r = new java.util.LinkedHashMap<>();
@@ -18246,17 +18620,19 @@ if (erroreScelto != null) {
             bozza.Righi.add(r);
         }
         Map<String, String> o = bozza.Opzioni;
-        //La soglia entra nell'archivio solo per un anno azzerato: negli altri casi i valori non cambiano e scriverla
-        //farebbe risultare diversa ogni dichiarazione già archiviata
+        //I totali dell'archivio sono quelli della tabella, anche per un anno azzerato (nel PDF sono a zero). La nota e
+        //l'opzione entrano solo per un anno azzerato: negli altri casi scriverle farebbe risultare diversa ogni
+        //dichiarazione già archiviata
         Principale_RT_Soglia.Risultato soglia = RT_RisultatiSoglia.get(bozza.Anno);
         if (soglia != null && soglia.azzerato()) {
             bozza.Totali.put(Principale_RT_Soglia.TOTALE_NOTA, soglia.nota);
-            bozza.Totali.put(Principale_RT_Soglia.TOTALE_PLUS_CALCOLATA, soglia.plusvalenzaCalcolata);
             o.put(Principale_RT_Soglia.NOME_OPZIONE, "attiva");
         }
         o.put("LiFo", Opzioni_GruppoWallet_CheckBox_PlusXWallet.isSelected() ? "per gruppo wallet" : "sulla totalità dei wallet");
         o.put("Scambi fra cripto-attività con medesime caratteristiche", Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti.isSelected()
                 ? "fiscalmente rilevanti" : "non rilevanti");
+        //Solo con P2 e con movimenti del conto derivati fino all'anno: altrimenti ogni definitiva archiviata risulterebbe diversa
+        if (ContoDerivati.InfluisceFinoAllAnno(bozza.Anno)) o.put(ContoDerivati.NOME_OPZIONE, ContoDerivati.DESCRIZIONE_OPZIONE);
         if (FallimentiPiattaforme.RimborsiComePermutaNelAnno(bozza.Anno)) {
             o.put(FallimentiPiattaforme.NOME_OPZIONE_RIMBORSO, FallimentiPiattaforme.DESCRIZIONE_RIMBORSO_PERMUTA);
         }
@@ -18380,8 +18756,17 @@ if (erroreScelto != null) {
                         //completo va nelle note (Derivati.TestoAvvisoQuadro)
                         String AvvisoDerivatiT = Derivati.TestoAvvisoQuadro(String.valueOf(Anno));
                         if (!AvvisoDerivatiT.isEmpty()) {
-                            Errore = Errore + "ATTENZIONE : nell'anno o in quelli precedenti ci sono movimenti su derivati, trattati come cripto-attività. Vedere le note.\n";
+                            Errore = Errore + "ATTENZIONE : nell'anno o in quelli precedenti ci sono movimenti su derivati. Vedere le note.\n";
                         }
+                        //Il quadro T esiste dal 730/2025 (anno 2024): prima il modulo stampato e' solo un ausilio, lo dicono
+                        //anche le note (chiave T), qui la riga sul modulo stesso
+                        if (QuadroT && Anno < 2024) {
+                            Errore = Errore + "ATTENZIONE : il 730 per l'anno " + Anno + " non prevedeva il quadro T, i valori vanno nel quadro RT del modello Redditi. Vedere le note.\n";
+                        }
+                        //Redditi da derivati dell'anno (sezione II-A del RT, sezione II del T) e perdite dei quattro anni prima
+                        Principale_RT_Derivati.Esito DerivatiAnno = Principale_RT_Derivati.Calcola(String.valueOf(Anno));
+                        String NotaDerivati = Principale_RT_Derivati.Nota(DerivatiAnno,
+                                Principale_RT_Derivati.PerditeAnniPrecedenti(String.valueOf(Anno)), QuadroT);
 
             Stampe stampa=new Stampe(Percorso);
             String AnnoDiCompetenza=String.valueOf(Anno);
@@ -18403,8 +18788,14 @@ if (erroreScelto != null) {
                     //variante "T.2025" copre il 2025 e gli anni dopo, la chiave nuda gli anni prima.
                     testo = NoteCompilazione.Testo(NoteCompilazione.T, AnnoDiCompetenza);
                     stampa.AggiungiHtml(testo);
+                    if (!NotaDerivati.isEmpty()) stampa.AggiungiHtml(NotaDerivati);
 
-                    //Stampa Quadro T
+                    //Stampa Quadro T. La sezione II (T11, redditi da derivati) sta nella pagina prima della sezione V, e il
+                    //quadro T esiste dal 730/2025 (anno 2024)
+            if (Anno >= 2024 && DerivatiAnno.presente()) {
+                stampa.NuovaPagina();
+                stampa.AggiungiTSezioneII(VarStatiche.getPathImmagini() + (Anno < 2025 ? "QuadroT_2024_1.pdf" : "QuadroT_2025_1.pdf"), DerivatiAnno, "");
+            }
             stampa.NuovaPagina();
             if (Anno<2025){
                 stampa.AggiungiT(immagineT, Vendite, Costo, Errore,AnnoDiCompetenza);
@@ -18415,15 +18806,24 @@ if (erroreScelto != null) {
             stampa.AggiungiTestoCentrato("NOTE DI COMPILAZIONE QUADRO RT\n\n", Font.BOLD, 12);
             testo = NoteCompilazione.Testo(NoteCompilazione.RT, AnnoDiCompetenza);
             stampa.AggiungiHtml(testo);
+            if (!NotaDerivati.isEmpty()) stampa.AggiungiHtml(NotaDerivati);
 
                     stampa.NuovaPagina();
                     String immagineRT=VarStatiche.getPathImmagini()+"QuadroRT_2024.jpg";
-                    if (Anno<2025){
+                    if (Anno<2023){
+                        //Modello di quegli anni non disponibile: si stampa su quello del 2024 (il programma avvisa già che vigevano
+                        //regole diverse), i redditi da derivati solo nelle note, con i righi di allora
                         stampa.AggiungiRT(immagineRT, Vendite, Costo, Errore,AnnoDiCompetenza);
-                    }else{
-                        stampa.AggiungiRT2025(PdfRT2025, Vendite, Costo, Errore,AnnoDiCompetenza);
+                    }else if (Anno==2023){
+                        stampa.AggiungiRT2023(VarStatiche.getPathImmagini()+"QuadroRT_2023.pdf", Vendite, Costo, Errore, AnnoDiCompetenza, DerivatiAnno);
+                    }else if (Anno==2024){
+                        stampa.AggiungiRT(immagineRT, Vendite, Costo, Errore,AnnoDiCompetenza, DerivatiAnno);
                         stampa.NuovaPagina();
-                        stampa.AggiungiRT2025p2(PdfRT2025p2, Vendite, Costo, Errore,AnnoDiCompetenza);
+                        stampa.AggiungiRT2025p2(VarStatiche.getPathImmagini()+"QuadroRT_2024_2.pdf", Vendite, Costo, Errore, AnnoDiCompetenza, DerivatiAnno);
+                    }else{
+                        stampa.AggiungiRT2025(PdfRT2025, Vendite, Costo, Errore,AnnoDiCompetenza, DerivatiAnno);
+                        stampa.NuovaPagina();
+                        stampa.AggiungiRT2025p2(PdfRT2025p2, Vendite, Costo, Errore,AnnoDiCompetenza, DerivatiAnno);
                     }
           }
                     
@@ -19635,9 +20035,9 @@ try {
         Download progress = new Download();
         progress.setLocationRelativeTo(this);
 //SwingUtilities.invokeLater(() -> {
-        Thread thread;
-        thread = new Thread() {
+        progress.EseguiBloccante(new Runnable() {
             /** Calcola in background le giacenze per token/wallet della scheda "Giacenze a Data". */
+            @Override
             public void run() {
 
                 //Compilo la mappa QtaCrypto con la somma dei movimenti divisa per crypto
@@ -19727,13 +20127,9 @@ try {
                         }
                         GiacenzeaData_Totali_TextField.setText("");
                         Messaggi.WarningMessage("Attenzione", "Elaborazione Interrotta!", SwingUtilities.getWindowAncestor(progress));
-                        progress.ChiudiFinestra();
-                        try {
-                            this.join();
-                        } catch (InterruptedException ex) {
-                            LoggerGC.ScriviErrore(ex);
-                        }
-                        
+                        //Elaborazione interrotta: si esce, senza riempire il resto della tabella. (Prima qui c'era un
+                        //this.join() sul thread stesso, che non tornava mai: il thread restava appeso per sempre)
+                        return;
                     }
                     if (i <= progress.Massimo) {
                         progress.SetAvanzamento(i);
@@ -19848,14 +20244,8 @@ try {
                 
                 
                 
-                progress.ChiudiFinestra();
-
             }
-        };
-
-        thread.start();
-//});
-        progress.setVisible(true);
+        }, "il calcolo delle giacenze a data", this);
         
                          //SEZIONE RIPRISTINO SELEZIONI SU TABELLE
         //Ripristino la selezione sulla tabella principale se ancora valida (controllo anche se i valori corrispondono altrimenti non seleziono nulla)
@@ -20597,6 +20987,22 @@ try {
     }
 
     /**
+     * Il testo con il reddito dei derivati delle righe mostrate, da accodare all'etichetta del numero di righe: vuoto se nessuna riga mostrata
+     * ha un risultato dei derivati.
+     */
+    private String TestoRedditiDerivati() {
+        java.util.List<String[]> mostrati = TransazioniCrypto_MovimentiMostrati();
+        Object[] t = Derivati.TotaleRisultato(mostrati);
+        if (t[0] == null) return "";
+        //Il reddito in LIFO sta sulla riga del token, nel sotto-wallet dei derivati: un filtro che lo esclude lo toglie dal totale
+        int fuori = DerivatiLifo.RedditiFuoriVista(mostrati, MappaCryptoWallet);
+        return "  -  Redditi da derivati: € " + Funzioni.formattaBigDecimal((java.math.BigDecimal) t[0], true)
+                + " (" + t[1] + (((Integer) t[1]) == 1 ? " movimento" : " movimenti") + ")"
+                + (fuori == 0 ? "" : ", senza il reddito in LIFO di " + fuori + (fuori == 1 ? " chiusura" : " chiusure")
+                        + " che sta nel sotto-wallet " + OKXDerivati.SOTTOWALLET + ", escluso dai filtri");
+    }
+
+    /**
      * Rende evidente che sulla tabella dei movimenti ci sono filtri attivi, di caricamento
      * ({@link #FiltriCorrenti}) o di riga (campo di ricerca e filtri per colonna, via
      * {@link #FiltriMovimenti_AltriFiltriAttivi()}). Due segnali, sopra e sotto la tabella:
@@ -20621,6 +21027,9 @@ try {
         int visibili = rs != null ? rs.getViewRowCount() : TransazioniCryptoTabella.getRowCount();
         int archivio = MappaCryptoWallet.size();
 
+        //Reddito dei derivati (v[46], c-quater) delle righe che la tabella mostra: sta fuori dal riquadro delle plusvalenze, che sono solo cripto
+        String redditiDerivati = TestoRedditiDerivati();
+
         if (filtrato) {
             //Il pulsante non cambia piu' colore (2026-10-03): la banda sotto la tabella e la scheda
             //"Filtri" dei dettagli dicono gia' tutto; resta il numero, in grassetto.
@@ -20631,7 +21040,7 @@ try {
             String cr = tot == 1 ? " criterio attivo" : " criteri attivi";
             TransazioniCrypto_RigheTabella_Label.setText(
                     "  FILTRI:  " + tot + cr + "  -  " + visibili + " di " + archivio
-                    + " movimenti mostrati  -  clic qui (o \"Azzera Filtri\") per rimuoverli  ");
+                    + " movimenti mostrati" + redditiDerivati + "  -  clic qui (o \"Azzera Filtri\") per rimuoverli  ");
             TransazioniCrypto_RigheTabella_Label.setOpaque(true);
             TransazioniCrypto_RigheTabella_Label.setBackground(Tabelle.ambra);
             TransazioniCrypto_RigheTabella_Label.setForeground(Color.WHITE);
@@ -20645,7 +21054,7 @@ try {
             TransazioniCrypto_Bottone_Filtri.setFont(filtriFontDefault);
             TransazioniCrypto_Bottone_AzzeraFiltri.setFont(filtriFontDefault);
 
-            TransazioniCrypto_RigheTabella_Label.setText("Transazioni Visualizzate : " + visibili);
+            TransazioniCrypto_RigheTabella_Label.setText("Transazioni Visualizzate : " + visibili + redditiDerivati);
             TransazioniCrypto_RigheTabella_Label.setOpaque(false);
             TransazioniCrypto_RigheTabella_Label.setBackground(righeLabelBgDefault);
             TransazioniCrypto_RigheTabella_Label.setForeground(righeLabelFgDefault);
@@ -21277,6 +21686,10 @@ try {
                     //la ricerca e i filtri di colonna agiscono sul model, e lì il campo 45 non c'è. Fino al
                     //2026-10-05 mostrava v[43], che allora conteneva anche i contratti
                     z[42] = OperazioneDi.getOrDefault(v[0], "");
+                    //[43] "Derivato" e [44] "Risultato derivati": come la 42 non sono v[43]/v[44] ma il marcatore dei derivati (v[44]) e il
+                    //risultato in euro (v[46]). Servono a filtrare e a vedere il reddito dei derivati, che non e' in v[19]
+                    z[43] = Derivati.ColonnaDerivato(v);
+                    z[44] = Derivati.ColonnaRisultato(v);
                     ModelloTabellaCrypto.addRow(z);
                 }
             }
@@ -21787,6 +22200,7 @@ try {
     private javax.swing.JButton GiacenzeaData_Bottone_RettificaQta;
     private javax.swing.JButton GiacenzeaData_Bottone_Scam;
     private javax.swing.JCheckBox GiacenzeaData_CheckBox_DettaglioFiltraQtaNegative;
+    private javax.swing.JButton GiacenzeaData_Bottone_ContrattiAperti;
     private javax.swing.JButton GiacenzeaData_Bottone_CostiNetti;
     private javax.swing.JCheckBox GiacenzeaData_CheckBox_Microsaldi;
     private javax.swing.JCheckBox GiacenzeaData_CheckBox_MostraQtaZero;
@@ -21822,6 +22236,8 @@ try {
     private javax.swing.JMenuItem MenuItem_CopiaID;
     private javax.swing.JMenuItem MenuItem_DettagliMovimento;
     private javax.swing.JMenuItem MenuItem_DocumentoFonte;
+    private javax.swing.JMenuItem MenuItem_GiroMovimento;
+    private javax.swing.JMenuItem MenuItem_RiepilogoContratto;
     private javax.swing.JMenuItem MenuItem_EliminaMovimento;
     private javax.swing.JMenuItem MenuItem_EsportaTabella;
     private javax.swing.JMenuItem MenuItem_Incolla;
@@ -21831,6 +22247,9 @@ try {
     private javax.swing.JMenuItem MenuItem_ModificaNote;
     private javax.swing.JMenuItem MenuItem_ModificaPrezzo;
     private javax.swing.JMenuItem MenuItem_ModificaReward;
+    private javax.swing.JMenuItem MenuItem_AbbinaRientroMargine;
+    private javax.swing.JMenuItem MenuItem_ClassificaDerivato;
+    private javax.swing.JMenuItem MenuItem_MarcaDerivato;
     private javax.swing.JMenuItem MenuItem_RicalcolaPrezzi;
     private javax.swing.JMenu MenuItem_Prezzi;
     private javax.swing.JMenuItem MenuItem_ScollegaCommissioni;
@@ -21939,6 +22358,7 @@ try {
     private javax.swing.JButton Opzioni_Varie_Bottone_VerificaServizi;
     private javax.swing.JButton Opzioni_Varie_Bottone_ModificheManuali;
     private javax.swing.JButton Opzioni_Varie_Bottone_RipristinoModificheManuali;
+    private javax.swing.JButton Opzioni_Varie_Bottone_CancellaDaCsv;
     private javax.swing.JButton Opzioni_Varie_Bottone_ProblemiNoti;
     private javax.swing.JCheckBox Opzioni_Varie_Checkbox_LogJsonDefi;
     private javax.swing.JCheckBox Opzioni_Varie_Checkbox_LogJsonPrezzi;
@@ -21949,6 +22369,7 @@ try {
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023Soglia;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti;
+    private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_ContoDerivati;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_NonConsiderareMovimentiNC;
     private javax.swing.JPopupMenu PopupMenu;
     private javax.swing.JCheckBox Prezzi_Opzioni_CheckBox_DefiSoloDefiLlama;

@@ -104,6 +104,7 @@ public class RetiTest {
     public void gliIndirizziDeiServiziSonoSoloHttpsSenzaParametri() {
         assertEquals("https://coins.llama.fi", IndirizziServizi.Url(IndirizziServizi.DEFILLAMA));
         assertEquals("https://mempool.space/api", IndirizziServizi.Url(IndirizziServizi.MEMPOOL));
+        assertEquals("https://www.okx.com", IndirizziServizi.Url(IndirizziServizi.OKX_PUBBLICO));
         for (String k : List.of(IndirizziServizi.BANCA_ITALIA, IndirizziServizi.COINBASE, IndirizziServizi.COINMARKETCAP_DATI,
                 IndirizziServizi.GOPLUS, IndirizziServizi.BINANCE_PUBBLICO, IndirizziServizi.CRONOS_EXPLORER)) {
             assertTrue(IndirizziServizi.Url(k).startsWith("https://"), k);

@@ -488,22 +488,112 @@ private static final long serialVersionUID = 8L;
      */
     @Override
     public void dispose() {
-        if (!avvisoDerivatiMostrato && !avvisoDerivati.isBlank()) {
+        if (!avvisoDerivatiMostrato) {
             avvisoDerivatiMostrato = true;
-            MostraAvvisoDerivati();
+            if (!avvisoDerivati.isBlank()) MostraAvvisoDerivati();
+            ChiediDerivatiAnniDichiarati();
+            ChiediAbbinamentoRientriMargine();
         }
         super.dispose();
+    }
+
+    /**
+     * Movimenti su derivati appena importati con la data in un anno che ha una dichiarazione definitiva: sono nati da
+     * classificare ({@link Principale_Derivati#InAttesa}). Si chiede se classificarli adesso, per esempio perché la
+     * dichiarazione di quell'anno non è ancora stata presentata, o lasciarli per la voce di menu.
+     */
+    private void ChiediDerivatiAnniDichiarati() {
+        java.util.List<String[]> inAttesa = Principale_Derivati.InAttesa();
+        if (inAttesa.isEmpty()) {
+            Principale_Derivati.ScartaInAttesa();
+            return;
+        }
+        String anni = String.join(", ", Principale_Derivati.AnniInAttesa());
+        int n = inAttesa.size();
+        //Con P2 quelli sul conto derivati contano gia' come derivati anche da classificare (ContoDerivati.CalcolatoComeDerivato)
+        long sulConto = !ContoDerivati.Attivo() ? 0
+                : inAttesa.stream().filter(v -> ContoDerivati.CalcolatoComeDerivato(v, Principale.MappaCryptoWallet)).count();
+        String notaConto = sulConto == 0 ? ""
+                : "\n\nCon l'opzione Conto derivati attiva " + (sulConto == n ? (n == 1 ? "questo movimento sta" : "questi movimenti stanno")
+                : sulConto + " di questi movimenti stanno") + " sul conto derivati e contano già come derivati anche da classificare: "
+                + "il loro risultato va nella colonna Risultato derivati e la classificazione non lo cambia.";
+        AppDialog.DialogResult r = AppDialog.builder(this)
+                .windowTitle("Derivati in anni già dichiarati")
+                .bodyTitle("Movimenti su derivati in anni con una dichiarazione definitiva")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.WARNING)
+                .message((n == 1 ? "1 movimento su derivati appena importato ha" : n + " movimenti su derivati appena importati hanno")
+                        + " la data in anni con una dichiarazione definitiva archiviata (" + anni + "). "
+                        + (n == 1 ? "È rimasto" : "Sono rimasti") + " da classificare, per non cambiare i valori di quegli anni.")
+                .details("Da classificare sono trattati come cripto-attività: concorrono a plusvalenze e giacenze cripto, e il loro "
+                        + "risultato non va nella colonna Risultato derivati.\n\n"
+                        + "Classificandoli adesso nascono come gli altri movimenti su derivati importati: il loro risultato esce dalle "
+                        + "plusvalenze delle cripto-attività e cambiano le plusvalenze e le giacenze di quegli anni e dei successivi. "
+                        + "Il confronto con la dichiarazione definitiva segnalerà la differenza. Ha senso, per esempio, se la "
+                        + "dichiarazione di quegli anni non è ancora stata presentata.\n\n"
+                        + "Lasciandoli da classificare si possono classificare anche dopo, con la voce Classifica come derivato del "
+                        + "menu dei movimenti." + notaConto)
+                .action(AppDialog.DialogAction.builder("classifica", "Classificali adesso")
+                        .role(AppDialog.ActionRole.SECONDARY).build())
+                //Il pulsante principale e la chiusura con la X lasciano tutto com'e': un anno dichiarato non cambia senza una scelta
+                .action(AppDialog.DialogAction.builder("lascia", "Lasciali da classificare")
+                        .role(AppDialog.ActionRole.PRIMARY).build())
+                .showDialog();
+        if (r != null && r.isAction("classifica")) {
+            if (Principale_Derivati.ClassificaInAttesa() > 0) Principale.TabellaCryptodaAggiornare = true;
+        } else {
+            Principale_Derivati.ScartaInAttesa();
+        }
+    }
+
+    /**
+     * Posizioni OKX aperte con la versione 1.0.66 e chiuse in questa importazione: il margine e' rientrato con un deposito da
+     * classificare. Si propone di abbinarlo subito ai prelievi di allora ({@link Principale_RientroMargine}), una posizione alla volta,
+     * oppure di lasciarlo per la voce di menu. Mai in automatico: i prelievi li sceglie l'utente.
+     */
+    private void ChiediAbbinamentoRientriMargine() {
+        java.util.List<String> rientri = Principale_RientroMargine.DaAbbinareDopoImportazione();
+        if (rientri.isEmpty()) return;
+        int n = rientri.size();
+        AppDialog.DialogResult r = AppDialog.builder(this)
+                .windowTitle("Rientro del margine")
+                .bodyTitle("Posizioni aperte con la versione 1.0.66 e chiuse adesso")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .message((n == 1 ? "1 posizione su derivati aperta" : n + " posizioni su derivati aperte")
+                        + " con la versione 1.0.66 " + (n == 1 ? "si è chiusa" : "si sono chiuse") + " in questa importazione. "
+                        + "Il margine è rientrato con un deposito da classificare, e il prelievo del margine di allora è ancora da classificare.")
+                .details("Da classificare tutti e due compaiono fra gli errori e, con l'impostazione iniziale in cui i movimenti non "
+                        + "classificati entrano nel calcolo delle plusvalenze, il prelievo conta come una cessione e il deposito entra a "
+                        + "costo zero.\n\n"
+                        + "Abbinandoli diventano un blocco e uno sblocco di collaterale: il costo di carico segue il margine. Il margine "
+                        + "che non è rientrato, cioè il funding pagato prima dell'aggiornamento, diventa un addebito per derivati alla "
+                        + "data della chiusura.\n\n"
+                        + "Si possono abbinare anche dopo, con la voce Abbina rientro del margine del menu dei movimenti (Altre modifiche).")
+                .action(AppDialog.DialogAction.builder("dopo", "Più tardi")
+                        .role(AppDialog.ActionRole.SECONDARY).build())
+                .action(AppDialog.DialogAction.builder("abbina", "Abbina adesso")
+                        .role(AppDialog.ActionRole.PRIMARY).build())
+                .showDialog();
+        if (r == null || !r.isAction("abbina")) return;
+        boolean fatto = false;
+        for (String id : rientri) {
+            if (GUI_RientroMargine.Mostra(this, id)) fatto = true;
+        }
+        if (fatto) Principale.TabellaCryptodaAggiornare = true;
     }
 
     private void MostraAvvisoDerivati() {
         AppDialog.builder(this)
                 .windowTitle("Avviso fiscale")
-                .bodyTitle("Derivati trattati come cripto-attività")
+                .bodyTitle("Movimenti su strumenti derivati")
                 .showTitleInBody(true)
                 .theme()
                 .type(AppDialog.DialogType.WARNING)
-                .message("Alcuni dei movimenti importati riguardano strumenti derivati: il programma li tratta "
-                        + "come cripto-attività, e non è corretto.")
+                .message("Alcuni dei movimenti importati riguardano strumenti derivati, che il programma gestisce "
+                        + "solo in parte.")
                 .details(avvisoDerivati)
                 .action(AppDialog.DialogAction.builder("ok", "Ho capito")
                         .role(AppDialog.ActionRole.PRIMARY).build())
@@ -549,7 +639,7 @@ private static final long serialVersionUID = 8L;
         final boolean corpoGrande = corpo.getBytes(StandardCharsets.UTF_8).length > SOGLIA_COMPRESSIONE_BYTE;
 
         final SegnalazioniClient.Esito[] esito = new SegnalazioniClient.Esito[1];
-        Thread t = new Thread(() -> {
+        dow.EseguiBloccante(() -> {
             try {
                 esito[0] = corpoGrande
                         ? SegnalazioniClient.inviaLog(SegnalazioneBundle.gzip(corpo), "errore-import-grande", d)
@@ -557,12 +647,8 @@ private static final long serialVersionUID = 8L;
             } catch (RuntimeException ex) {
                 LoggerGC.ScriviErrore(ex);
                 esito[0] = new SegnalazioniClient.Esito(false, 0, "Errore imprevisto: " + ex.getMessage());
-            } finally {
-                dow.ChiudiFinestra();
             }
         });
-        t.start();
-        dow.setVisible(true);
 
         SegnalazioniClient.Esito e = esito[0];
         if (e != null && e.ok()) {

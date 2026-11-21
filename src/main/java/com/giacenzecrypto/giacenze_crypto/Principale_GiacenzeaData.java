@@ -713,6 +713,17 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
      * @param Simboli se non {@code null}, solo le monete con uno di questi simboli toccano le pile
      */
     private static void ElaboraLotti(CostiCaricoRimanenze Costi, String[] v, java.util.Set<String> Simboli) {
+        //P2 (ContoDerivati): una gamba del giroconto fra spot e conto derivati scarica la pila da cui esce e carica al valore quella in cui
+        //entra, come nel motore, anche se e' un trasferimento interno o un PTW/DTW (blocco e sblocco di un rientro della 1.0.66)
+        if (Costi.ContoP2 && ContoDerivati.IsGirocontoP2(v, MappaCryptoWallet)) {
+            boolean Esce = !v[9].isBlank() && !v[9].equalsIgnoreCase("FIAT") && !v[16].isBlank() && (Simboli == null || Simboli.contains(v[8]));
+            if (Esce) Costi.TogliLotti(Costi.GruppoDi(v), ChiaveRiga(v[8], v[9], v[26], Funzioni.TrovaReteDaIMovimento(v)), v[10]);
+            boolean Entra = !v[12].isBlank() && !v[12].equalsIgnoreCase("FIAT") && !v[17].isBlank();
+            if (Entra && (Simboli == null || Simboli.contains(v[11]))) {
+                Costi.InserisciLotto(Costi.GruppoDi(v), ChiaveRiga(v[11], v[12], v[28], Funzioni.TrovaReteDaIMovimento(v)), v[13], v[17], v[0]);
+            }
+            return;
+        }
         boolean Uscita = !v[9].isBlank() && !v[9].equalsIgnoreCase("FIAT") && !v[16].isBlank()
                 && !v[18].contains("PTW") && (Simboli == null || Simboli.contains(v[8]));
         boolean Entrata = !v[12].isBlank() && !v[12].equalsIgnoreCase("FIAT") && !v[17].isBlank();
@@ -737,7 +748,7 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
         //wallet proprio), che vengono scaricati dal DTW corrispondente quando arrivano a destinazione
         if (Uscita) {
             Rete = Funzioni.TrovaReteDaIMovimento(v);
-            Gruppo = Costi.GruppoDelMovimento(v[3]);
+            Gruppo = Costi.GruppoDi(v);
             Costi.TogliLotti(Gruppo, ChiaveRiga(v[8], v[9], v[26], Rete), v[10]);
         }
 
@@ -747,7 +758,7 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                 if (Simboli == null || Simboli.contains(v[11])) {
                     if (Gruppo == null) {
                         Rete = Funzioni.TrovaReteDaIMovimento(v);
-                        Gruppo = Costi.GruppoDelMovimento(v[3]);
+                        Gruppo = Costi.GruppoDi(v);
                     }
                     Costi.InserisciLotto(Gruppo, ChiaveRiga(v[11], v[12], v[28], Rete), v[13], v[17], v[0]);
                 }
@@ -774,7 +785,7 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                     if (CaricoQui) {
                         if (Gruppo == null) {
                             Rete = Funzioni.TrovaReteDaIMovimento(v);
-                            Gruppo = Costi.GruppoDelMovimento(v[3]);
+                            Gruppo = Costi.GruppoDi(v);
                         }
                         Costi.InserisciLotto(Gruppo, ChiaveRiga(v[11], v[12], v[28], Rete), v[13], v[17], v[0]);
                     }
@@ -1479,9 +1490,24 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
          */
         private final boolean PlusXWallet;
 
+        /** Copia dell'opzione P2 ({@link ContoDerivati}): il conto derivati ha una pila sua, come nel motore. */
+        private final boolean ContoP2;
+
         private CostiCaricoRimanenze() {
             String PlusXW = DatabaseH2.Pers_Opzioni_Leggi("PlusXWallet");
             PlusXWallet = (PlusXW != null && PlusXW.equalsIgnoreCase("SI"));
+            ContoP2 = ContoDerivati.Attivo();
+        }
+
+        /** Il gruppo della pila di un movimento: con P2 un movimento sul conto derivati usa la pila del conto del suo gruppo. */
+        private String GruppoDi(String[] v) {
+            String g = GruppoDelMovimento(v[3]);
+            return ContoP2 && ContoDerivati.SulContoP2(v, MappaCryptoWallet) ? ContoDerivati.ChiavePila(g) : g;
+        }
+
+        /** I gruppi da leggere per un gruppo wallet: il gruppo e, con P2, la pila del suo conto derivati. */
+        private List<String> ConConto(String Gruppo) {
+            return ContoP2 ? List.of(Gruppo, ContoDerivati.ChiavePila(Gruppo)) : List.of(Gruppo);
         }
 
         /** @return il gruppo wallet su cui tenere la pila dei movimenti del wallet indicato */
@@ -1635,7 +1661,7 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
          * pila è una sola, esattamente come nella tabella "Giacenze a data".
          */
         public String CostoDelGruppo(String Gruppo, String Chiave, String Qta) {
-            return CostoDaiGruppi(PlusXWallet ? List.of(Gruppo) : Pile.keySet(), Chiave, Qta);
+            return CostoDaiGruppi(PlusXWallet ? ConConto(Gruppo) : Pile.keySet(), Chiave, Qta);
         }
 
         /**
@@ -1718,12 +1744,12 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                 return Pile.keySet();
             }
             if (Wallet.contains("Gruppo :")) {
-                return List.of(Wallet.split(" : ")[1].split("\\(")[0].trim());
+                return ConConto(Wallet.split(" : ")[1].split("\\(")[0].trim());
             }
             //Un wallet non più presente in WALLETGRUPPO non ha lotti da leggere : meglio nessun costo
             //che il costo di un gruppo scelto a caso
             String Gruppo = DatabaseH2.Pers_GruppoWallet_Leggi(Wallet, false);
-            return Gruppo == null ? List.of() : List.of(Gruppo);
+            return Gruppo == null ? List.of() : ConConto(Gruppo);
         }
     }
 
@@ -2008,6 +2034,8 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
         Riga[Inizio + 40] = FontePrezzi(v.length > 40 ? v[40] : null);
         Riga[Inizio + 41] = AliasGruppoWallet(DatabaseH2.Pers_GruppoWallet_Leggi(v[3], true), AliasGruppi);
         Riga[Inizio + 42] = Operazioni == null ? "" : Operazioni.getOrDefault(v[0], "");
+        Riga[Inizio + 43] = Derivati.ColonnaDerivato(v);
+        Riga[Inizio + 44] = Derivati.ColonnaRisultato(v);
     }
 
     /**

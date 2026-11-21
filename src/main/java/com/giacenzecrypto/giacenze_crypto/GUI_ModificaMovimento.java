@@ -1116,8 +1116,7 @@ private static final long serialVersionUID = 9L;
             //Oggetto 0 -> Prezzo
             //Oggetto 1 -> Token+"|"+TimeStamp+"|"+PrezzoU+"|"+Fonte;
 
-            Thread thread;
-            thread = new Thread() {
+            progress.EseguiBloccante(new Runnable() {
                 /** Apre in background il dialogo {@link GUI_ModificaPrezzo} per la scelta/modifica del prezzo. */
                 public void run() {
                     String Rete=null;
@@ -1126,12 +1125,8 @@ private static final long serialVersionUID = 9L;
                     //GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(MU, ME,IPr,DataLong,Rete,Ritorno);
                     t.setLocationRelativeTo(c);
                     t.setVisible(true);
-                    progress.ChiudiFinestra();
                 }
-            };
-            thread.start();
-            progress.setVisible(true);
-           // progress.ChiudiFinestra();
+            }, "la scelta del prezzo", this);
 
             
             
@@ -1219,19 +1214,14 @@ private static final long serialVersionUID = 9L;
             //Oggetto 0 -> Prezzo
             //Oggetto 1 -> Token+"|"+TimeStamp+"|"+PrezzoU+"|"+Fonte;
 
-            Thread thread;
-            thread = new Thread() {
+            progress.EseguiBloccante(new Runnable() {
                 /** Recupera in background il prezzo della transazione tramite {@link Prezzi#DammiPrezzoInfoTransazione}. */
                 public void run() {
                     String Rete=null;
                     if (ModificaMovimento) Rete=Funzioni.TrovaReteDaID(MovimentoRiportato[0]);
                     IPp[0]=Prezzi.DammiPrezzoInfoTransazione(MU, ME, DataLong, Rete, Fonte);
-                    progress.ChiudiFinestra();
                 }
-            };
-            thread.start();
-            progress.setVisible(true);
-           // progress.ChiudiFinestra();
+            }, "il recupero del prezzo", this);
           
          
             

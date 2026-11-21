@@ -442,7 +442,7 @@
 
     "causaliDerivati": {
       "type": "object",
-      "description": "Causale CSV -> marcatore del derivato (PNL, FUNDING, BONUS, RIMBORSO_COMMISSIONI, CONSEGNA, DUAL, COMMISSIONE). Solo identificazione e avviso, il calcolo non cambia. #causaliderivati",
+      "description": "Causale CSV -> marcatore del derivato (PNL, FUNDING, BONUS, RIMBORSO_COMMISSIONI, CONSEGNA, DUAL, COMMISSIONE). DUAL e' il Dual Investment, trattato come cripto-attivita'. Solo identificazione e avviso, il calcolo non cambia. #causaliderivati",
       "additionalProperties": { "type": "string" }
     },
     "causaliAllertaDerivati": {

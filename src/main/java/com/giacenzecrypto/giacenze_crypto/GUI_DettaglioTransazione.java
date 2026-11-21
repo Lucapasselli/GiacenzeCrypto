@@ -378,6 +378,13 @@ public class GUI_DettaglioTransazione extends javax.swing.JDialog {
             Val=new String[]{"Note ",Valore};
             ModelloTabellaCrypto.addRow(Val);
         }
+
+        //Conguaglio dei derivati (DerivatiLifo): calcolato a ogni ricalcolo, non e' una nota scritta nel movimento
+        Valore=DerivatiLifo.TestoConguaglio(Transazione);
+        if (!Valore.isBlank()){
+            Val=new String[]{"Conguaglio derivati ","<html>"+Valore.replace("&","&amp;").replace("<","&lt;")+"</html>"};
+            ModelloTabellaCrypto.addRow(Val);
+        }
         
         //Operazione (OperazioniCalcolate): tutti gli altri movimenti dell'operazione, con quello che sono, al posto
         //dell'elenco degli ID nudi di [20] ("Movimenti Correlati"); poi le commissioni collegate al movimento

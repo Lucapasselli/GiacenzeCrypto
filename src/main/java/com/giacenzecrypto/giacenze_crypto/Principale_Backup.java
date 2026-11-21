@@ -66,15 +66,12 @@ public class Principale_Backup {
         final File[] creato = new File[1];
         Download progress = new Download();
         progress.setLocationRelativeTo(owner);
-        Thread t = new Thread(() -> {
+        //Se il backup lancia un'eccezione il dialogo si chiude comunque e creato[0] resta null: segue l'avviso
+        progress.EseguiBloccante(() -> {
             progress.Titolo("Backup in corso");
             progress.SetLabel("Preparazione...");
             creato[0] = Backup_Restore.Esegui(opz, progress);
-            progress.ChiudiFinestra();
         });
-        progress.SetThread(t);
-        t.start();
-        progress.setVisible(true);
 
         if (creato[0] == null) {
             Messaggi.WarningMessage("Backup",
@@ -237,7 +234,7 @@ public class Principale_Backup {
         Download progress = new Download();
         progress.setLocationRelativeTo(owner);
         progress.NascondiInterrompi();
-        Thread t = new Thread(() -> {
+        Throwable errore = progress.EseguiBloccante(() -> {
             //Il backup di sicurezza è la rete sotto tutto il resto : l'utente ha appena autorizzato la
             //cancellazione del proprio archivio vivo, e deve poter tornare indietro anche se è il backup
             //ripristinato a rivelarsi sbagliato
@@ -255,11 +252,10 @@ public class Principale_Backup {
 
             progress.SetLabel("Ripristino dei dati...");
             esito[0] = Backup_Restore.Ripristina(Zip, gruppi, progress);
-            progress.ChiudiFinestra();
-        });
-        t.start();
-        progress.setVisible(true);
-        return esito[0];
+        }, "il ripristino del backup", owner);
+        //Un errore a meta' lascia l'archivio in uno stato che solo il backup di sicurezza sa riportare indietro
+        //(il dialogo ha gia' avvisato): non si finge un ripristino riuscito
+        return errore == null ? esito[0] : null;
     }
 
     /**

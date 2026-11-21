@@ -670,7 +670,7 @@ public class Principale_TraslaOrario {
         Download progress = new Download();
         progress.setLocationRelativeTo(owner);
 
-        Thread thread = new Thread() {
+        progress.EseguiBloccante(new Runnable() {
             @Override
             public void run() {
                 progress.Titolo("Ricalcolo prezzi in corso....");
@@ -694,11 +694,8 @@ public class Principale_TraslaOrario {
                 }
                 Messaggi.SuccessMessage("Ricalcolo prezzi completato",
                         "Sono stati aggiornati <b>" + RigheModificate + "</b> prezzi su " + DaRiprezzare.size() + " movimenti traslati.", progress);
-                progress.ChiudiFinestra();
             }
-        };
-        thread.start();
-        progress.setVisible(true);
+        }, "il ricalcolo dei prezzi dei movimenti traslati", owner);
     }
 
     /**

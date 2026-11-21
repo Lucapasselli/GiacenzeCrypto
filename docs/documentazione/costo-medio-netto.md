@@ -204,8 +204,8 @@ una media del costo non fa mai.
 
 ## Quali movimenti contano e come {#movimenti}
 
-Il programma classifica ogni movimento e decide cosa aggiunge a «speso» e a «incassato». Il **valore** usato è sempre
-il *Valore transazione in EURO* del movimento.
+Il programma classifica ogni movimento e decide cosa aggiunge a «speso» e a «incassato». Il **valore** usato è
+il *Valore transazione in EURO* del movimento, tranne che per le donazioni ricevute.
 
 | Movimento | Effetto sul token | Speso | Incassato |
 |---|---|---|---|
@@ -215,7 +215,8 @@ il *Valore transazione in EURO* del movimento.
 | **Acquisto o vendita di un NFT** pagato con cripto | la cripto esce o entra | se entra: valore | se esce: valore |
 | **Deposito classificato come acquisto** (acquisto tramite contanti o servizi esterni) | entra il token | valore | |
 | **Reward, staking, airdrop, earn, cashback** | entra il token | **zero** | |
-| **Deposito a costo zero, donazione ricevuta, rimborso oltre il credito di un fallimento** | entra il token | **zero** | |
+| **Deposito a costo zero, rimborso oltre il credito di un fallimento** | entra il token | **zero** | |
+| **Donazione ricevuta** | entra il token | il **costo di carico** indicato nella classificazione (il costo di chi ha donato), non il valore | |
 | **Deposito non classificato** | entra il token | **zero**, con nota | |
 | **Prelievo non classificato** | esce il token | | **zero**, con nota |
 | **Cashout o pagamento di un servizio** (prelievo classificato come cashout) | esce il token | | valore |

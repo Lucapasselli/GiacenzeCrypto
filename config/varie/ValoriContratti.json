@@ -1,0 +1,32 @@
+{
+  "_nota": "Valori dei contratti derivati OKX (ctVal, nell'unita' del sottostante o in dollari per le inverse) che l'endpoint pubblico non da' piu'. Si legge prima della rete, la prima regola che vale vince: qui solo valori storici (con 'al') o di famiglie non piu' quotate. famiglia = instId senza l'ultimo segmento ('*-USDT' = ogni famiglia che finisce cosi'), tipo FUTURES o SWAP, dal (compreso) e al (escluso) sul giorno del fill, valore oppure comeSwap (il valore del perpetuo della stessa famiglia, solo se OKX non elenca il futures). Un valore sbagliato non cambia i redditi: il controllo per posizione lo scarta e resta il profitto dell'exchange.",
+  "_fonteMarzo2020": "Annuncio OKX 'Adjustment of Face Value for USDT-margined Perpetual Swap & Futures Trading' (marzo 2020): perpetui EOS il 17/3, ETH il 19/3, BTC il 20/3, futures il 27/3. Le posizioni aperte sono state divise per 100 o 1.000 senza esecuzioni: una posizione aperta a cavallo del cambio non supera il controllo per posizione.",
+  "okx": [
+    {"famiglia": "EOS-USDT", "tipo": "SWAP", "al": "2020-03-17", "valore": "0.1"},
+    {"famiglia": "ETH-USDT", "tipo": "SWAP", "al": "2020-03-19", "valore": "0.001"},
+    {"famiglia": "BTC-USDT", "tipo": "SWAP", "al": "2020-03-20", "valore": "0.0001"},
+
+    {"famiglia": "BTC-USDT", "tipo": "FUTURES", "al": "2020-03-27", "valore": "0.0001"},
+    {"famiglia": "EOS-USDT", "tipo": "FUTURES", "al": "2020-03-27", "valore": "0.1"},
+    {"famiglia": "ETH-USDT", "tipo": "FUTURES", "al": "2020-03-27", "valore": "0.001"},
+    {"famiglia": "LTC-USDT", "tipo": "FUTURES", "al": "2020-03-27", "valore": "0.001"},
+    {"famiglia": "BCH-USDT", "tipo": "FUTURES", "al": "2020-03-27", "valore": "0.001"},
+    {"famiglia": "XRP-USDT", "tipo": "FUTURES", "al": "2020-03-27", "valore": "1"},
+    {"famiglia": "ETC-USDT", "tipo": "FUTURES", "al": "2020-03-27", "valore": "0.1"},
+    {"famiglia": "BSV-USDT", "tipo": "FUTURES", "al": "2020-03-27", "valore": "0.001"},
+    {"famiglia": "TRX-USDT", "tipo": "FUTURES", "al": "2020-03-27", "valore": "1"},
+
+    {"famiglia": "BTC-USDT", "tipo": "FUTURES", "dal": "2020-03-27", "valore": "0.01"},
+    {"famiglia": "EOS-USDT", "tipo": "FUTURES", "dal": "2020-03-27", "valore": "10"},
+    {"famiglia": "ETH-USDT", "tipo": "FUTURES", "dal": "2020-03-27", "valore": "0.1"},
+    {"famiglia": "LTC-USDT", "tipo": "FUTURES", "dal": "2020-03-27", "valore": "1"},
+    {"famiglia": "BCH-USDT", "tipo": "FUTURES", "dal": "2020-03-27", "valore": "0.1"},
+    {"famiglia": "XRP-USDT", "tipo": "FUTURES", "dal": "2020-03-27", "valore": "100"},
+    {"famiglia": "ETC-USDT", "tipo": "FUTURES", "dal": "2020-03-27", "valore": "10"},
+    {"famiglia": "BSV-USDT", "tipo": "FUTURES", "dal": "2020-03-27", "valore": "1"},
+    {"famiglia": "TRX-USDT", "tipo": "FUTURES", "dal": "2020-03-27", "valore": "1000"},
+
+    {"famiglia": "*-USDT", "tipo": "FUTURES", "comeSwap": true},
+    {"famiglia": "*-USD", "tipo": "FUTURES", "comeSwap": true}
+  ]
+}

@@ -147,6 +147,7 @@ private static Map<String, String[]> creaMappaTipologie() {
     public static final Set<Integer> CampiNonCopiabiliVerbatim = Set.of(
             0, 1, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 15, 18, 21, 22, 24, 25, 26, 27, 28, 29, 32, 34, 40,
             16, 17, 19, 31, 33, 38,
+            46,
             35,
             20
     );

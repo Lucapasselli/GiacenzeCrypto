@@ -796,7 +796,7 @@ public class ImportazioneGenerica {
             String tipoRiga0 = cfg.tipoMovimentoNelGruppo(riga0, gruppo);
             boolean ignorata = "IGNORA".equalsIgnoreCase(tipoRiga0) || "NON CONSIDERARE".equalsIgnoreCase(tipoRiga0);
             if (!ignorata && cfg.causaliAllertaDerivati.contains(cfg.getCausaleCSV(riga0))) {
-                Importazioni.SegnalaCausaleDerivato(cfg.getCausaleCSV(riga0));
+                Importazioni.SegnalaCausaleDerivato(cfg.getCausaleCSV(riga0), cfg.tipoDerivato(cfg.getCausaleCSV(riga0)));
             }
             List<String[]> movs = costruisciMovimenti(riga0, tipoRiga0, cfg);
             if (movs != null) {
@@ -845,7 +845,7 @@ public class ImportazioneGenerica {
             }
 
             if (cfg.causaliAllertaDerivati.contains(causaleCSV)) {
-                Importazioni.SegnalaCausaleDerivato(causaleCSV);
+                Importazioni.SegnalaCausaleDerivato(causaleCSV, cfg.tipoDerivato(causaleCSV));
             }
 
             if (dataDiGruppo == null) {

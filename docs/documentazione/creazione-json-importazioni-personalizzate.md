@@ -1268,7 +1268,7 @@ Tre cose da sapere:
 
 ## 10. Derivati {#10-derivati}
 
-Il programma **non calcola i redditi da derivati** (futures, perpetui, opzioni, Dual Investment, art. 67 c-quater TUIR): li tratta come cripto-attività, e questo non è corretto sul piano fiscale. Le due chiavi seguenti servono a farli riconoscere e ad
+I redditi da derivati (futures, perpetui, art. 67 c-quater TUIR) vanno nel quadro T/RT solo per i movimenti **classificati come derivati**: quelli non classificati restano cripto-attività. Le opzioni non sono ancora gestite. Vedi [Derivati: come vengono calcolati](calcolo-plusvalenze-opzioni.html#derivati). Le due chiavi seguenti servono a farli riconoscere e ad
 avvisare l'utente.
 
 ### `causaliDerivati` {#causaliderivati}
@@ -1276,11 +1276,15 @@ avvisare l'utente.
 **Tipo:** oggetto causale CSV → tipo | **Default:** {}
 
 Per ogni causale elencata, i movimenti che nascono da quella riga ricevono nel campo Derivato un tipo che li
-identifica. Il tipo non cambia il calcolo, serve solo a riconoscerli e filtrarli. Una causale presente qui fa
+identifica. Dalla versione 1.0.67 i movimenti nuovi con tipo `PNL`, `FUNDING`, `COMMISSIONE`,
+`RIMBORSO_COMMISSIONI`, `CONSEGNA` o `BONUS` nascono già classificati come derivati, gli altri tipi servono solo
+a riconoscerli e filtrarli. Una causale presente qui fa
 comparire anche l'avviso di fine importazione e l'avvertenza nelle stampe dei quadri W/RW e T/RT.
 
 I tipi usati dalle configurazioni ufficiali sono `PNL` (risultato realizzato), `FUNDING`, `BONUS`,
-`RIMBORSO_COMMISSIONI`, `CONSEGNA`, `DUAL` e `COMMISSIONE`.
+`RIMBORSO_COMMISSIONI`, `CONSEGNA`, `DUAL` e `COMMISSIONE`. `DUAL` è il Dual Investment, che il programma tratta
+come cripto-attività: il tipo serve solo a riconoscerlo, l'avviso di fine importazione dichiara questa scelta
+invece di quello sui derivati e le stampe dei quadri non lo contano fra i derivati.
 
 ```json
 "causaliDerivati": {

@@ -87,7 +87,7 @@ public final class ScartiImport {
      * quando cambia il modo in cui si rileggono o si raggruppano i bill, non quando cambiano le mappe (quelle
      * entrano nell'impronta da sole).
      */
-    static final int VERSIONE_RILETTORE_OKX = 1;
+    static final int VERSIONE_RILETTORE_OKX = 3;   //3 (21/11/2026): liquidazione, ADL, consegna, penale e clawback dei derivati
 
     /** Categorie che {@code Ex_OKX_Consolida} accumula in un solo scambio: le righe che le portano sono un'unità sola */
     private static final Set<String> CATEGORIE_SCAMBIO = Set.of("DUST-CONVERSION", "SCAMBIO CRYPTO-CRYPTO");
@@ -573,6 +573,9 @@ public final class ScartiImport {
             System.out.println("ScartiImport.LeggiRigheOKX : " + e.getMessage());
             return null;
         }
+        //Le righe portatrici dei contratti (OKXDerivati) le genera il programma per i fill di un derivato: non sono bill sconosciuti
+        //da recuperare, e riproposte da qui lascerebbero token e margine senza la guardia sulle chiusure. Tolte, il rilettore resta quello di prima.
+        righe.removeIf(OKXDerivati::IsRiga);
         righe = CcxtInterop.deduplicaBillOKX(righe);
         CcxtInterop.AbbinaLiquidStakingOnChain(righe, storicoOnChain);
         return righe;

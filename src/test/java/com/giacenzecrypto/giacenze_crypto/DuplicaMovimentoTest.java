@@ -53,6 +53,30 @@ class DuplicaMovimentoTest {
         assertFalse(Funzioni.DuplicaMovimento(g[0]));
     }
 
+    /** I contratti aperti e il margine di una posizione su derivati: un duplicato li raddoppierebbe, con il LIFO della posizione. */
+    @Test
+    void unaRigaDiTokenODiMargineDiUnDerivato_nonSiDuplica() {
+        String[] t = movimento("20230101100000_OKX_001_001_DC");
+        t[11] = "DERIV.BTC-USDT-SWAP.LONG";
+        t[CampoDerivato()] = Derivati.CONTRATTO;
+        String[] m = movimento("20230101100000_OKX_002_001_TI");
+        m[CampoDerivato()] = Derivati.MARGINE;
+
+        assertFalse(Funzioni.isDuplicabile(t));
+        assertFalse(Funzioni.isDuplicabile(m));
+        assertFalse(Funzioni.DuplicaMovimento(t[0]));
+        assertFalse(Funzioni.DuplicaMovimento(m[0]));
+        assertEquals(2, MappaCryptoWallet.size());
+        //un movimento di pnl dello stesso fill resta un movimento singolo
+        String[] p = movimento("20230101100000_OKX_003_001_DC");
+        p[CampoDerivato()] = Derivati.PNL;
+        assertTrue(Funzioni.isDuplicabile(p));
+    }
+
+    private static int CampoDerivato() {
+        return Derivati.CAMPO;
+    }
+
     @Test
     void ilDuplicato_tieneClassificazioneSingolaEDocumento_nonStoricoNeGruppi() {
         String[] v = movimento("20230101100000_Binance_001_001_DC");

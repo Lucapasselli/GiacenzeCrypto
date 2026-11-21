@@ -226,7 +226,9 @@ public class LoggerGC {
      * @param ex eccezione da registrare
      */
     public static void ScriviErrore(Throwable ex) {
-        System.err.println("ERRORE in "+LoggerGC.getCurrentClassAndMethod(3)+" chiamato da "+getCurrentClassAndMethod(4)+suffissoOperazione()+"\n"+ex.getMessage());
+        //Una NullPointerException o simili puo' non avere messaggio: senza la classe il log direbbe solo "null"
+        String causa = ex.getMessage() == null ? ex.toString() : ex.getMessage();
+        System.err.println("ERRORE in "+LoggerGC.getCurrentClassAndMethod(3)+" chiamato da "+getCurrentClassAndMethod(4)+suffissoOperazione()+"\n"+causa);
 }
     /** @return {@code " (operazione: NOME)"} se un'operazione e' aperta sul thread corrente, altrimenti stringa vuota */
     private static String suffissoOperazione() {

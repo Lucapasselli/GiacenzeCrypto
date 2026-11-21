@@ -88,7 +88,7 @@ public class Principale_Opzioni_ModificheManuali {
      * Campi che il motore ricalcola da solo (costi di carico, plusvalenza, "genera plusvalenza"), la segnalazione
      * errori e il lignaggio: cambiano a ogni ricalcolo e non sono una modifica dell'utente.
      */
-    static final Set<Integer> CAMPI_NON_CONFRONTATI = Set.of(16, 17, 19, 33, 38, MovimentiStorico.CAMPO_LIGNAGGIO);
+    static final Set<Integer> CAMPI_NON_CONFRONTATI = Set.of(16, 17, 19, 33, 38, Derivati.CAMPO_RISULTATO, Derivati.CAMPO_DATI, MovimentiStorico.CAMPO_LIGNAGGIO);
 
     /** Nomi dei campi della riga movimento, nell'ordine di {@code Importazioni} (la colonna N è il campo N). */
     static final String[] NOMI_CAMPI = {
@@ -101,7 +101,7 @@ public class Principale_Opzioni_ModificheManuali {
         "Data fine trasferimento", "Movimento valorizzato", "Genera plusvalenza", "Rete",
         "Prezzo transazione originale", "Address provenienza", "Address destinazione", "Segnalazione errori",
         "Fonte dati", "Fonte prezzi", "Documento di origine", "Lignaggio", "Chiave commissioni collegate",
-        "Marcatore derivato", "Chiave operazione"
+        "Marcatore derivato", "Chiave operazione", "Risultato derivati", "Dati del contratto"
     };
 
     private static final String[] INTESTAZIONE_FISSA = {"Tipo", "Chiave", "Passo", "Data", "Millis", "Operazione",

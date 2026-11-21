@@ -110,7 +110,8 @@ public final class Principale_RecuperoScarti {
                         NonRecuperati.addAll(ScartiImport.NonRecuperati(Scelti, Principale.MappaCryptoWallet));
                         ScartiImport.Ignora(NonRecuperati);
                     }
-                } catch (Exception ex) {
+                } catch (Exception | Error ex) { //anche un Error: senza, il SwingWorker lo terrebbe per se'
+                    ex.printStackTrace();
                     LoggerGC.ScriviErrore(ex);
                 }
                 return null;

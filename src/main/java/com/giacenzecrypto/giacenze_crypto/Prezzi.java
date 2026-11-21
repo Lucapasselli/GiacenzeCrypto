@@ -1638,6 +1638,9 @@ public class Prezzi {
         if (Moneta2a == null) {
             InfoPrezzo IPCredito = FallimentiPiattaforme.PrezzoCredito(Moneta1a, Data);
             if (IPCredito != null) return IPCredito;
+            //Token di un contratto su derivati (OKXDerivati): una fotografia della posizione, valore zero e nessuna ricerca
+            InfoPrezzo IPContratto = Derivati.PrezzoContratto(Moneta1a, Data);
+            if (IPContratto != null) return IPContratto;
         }
 
         Moneta MonOri[] = new Moneta[]{Moneta1a, Moneta2a};
@@ -2734,8 +2737,7 @@ public static long GUI_ModificaPrezzoConAttesa(Moneta M,String[] Ritorno,Compone
                 progress.MostraProgressAttesa("Scaricamento Prezzi", "Attendi scaricamento dei prezzi...");
                 progress.setLocationRelativeTo(c);
                 //Prezzi.InfoPrezzo IPt=IPr;//creo una nuova variabile da passare al thread perchè questa deve essere final
-                Thread thread;
-                thread = new Thread() {
+                progress.EseguiBloccante(new Runnable() {
                     /** Ricalcola il prezzo e apre {@link GUI_ModificaPrezzo} in background. */
                     public void run() {
                         Prezzi.InfoPrezzo IPr;
@@ -2763,11 +2765,8 @@ public static long GUI_ModificaPrezzoConAttesa(Moneta M,String[] Ritorno,Compone
                         GUI_ModificaPrezzo t = new GUI_ModificaPrezzo(M, null,IPr,dataL,M.Rete,Ritorno,progress);                   
                         t.setLocationRelativeTo(c);
                         t.setVisible(true);
-                        progress.ChiudiFinestra();
                     }
-                };
-                thread.start();
-                progress.setVisible(true);
+                }, "il calcolo del prezzo", c instanceof java.awt.Window ? (java.awt.Window) c : javax.swing.SwingUtilities.getWindowAncestor(c));
                 //System.out.println("xxxxxxx"+timestampDaCancellare[0]);
                 return timestampDaCancellare[0];
 }

@@ -87,12 +87,25 @@ class Principale_Opzioni_ModificheManuali_RipristinoTest {
     void ilLettoreRifiutaIFileCheNonConosce() {
         assertThrows(FileNonValido.class, () -> Principale_Opzioni_ModificheManuali_Ripristino.Leggi("qualcosa;di;altro\r\nx\r\n"));
         assertThrows(FileNonValido.class, () -> Principale_Opzioni_ModificheManuali_Ripristino
-                .Leggi("#GiacenzeCrypto ModificheManuali;formato=99;campi=46;\r\nTipo\r\n"));
+                .Leggi("#GiacenzeCrypto ModificheManuali;formato=99;campi=" + Importazioni.ColonneTabella + ";\r\nTipo\r\n"));
         assertThrows(FileNonValido.class, () -> Principale_Opzioni_ModificheManuali_Ripristino
                 .Leggi("#GiacenzeCrypto ModificheManuali;formato=1;campi=10;\r\nTipo\r\n"));
         FileNonValido corta = assertThrows(FileNonValido.class, () -> Principale_Opzioni_ModificheManuali_Ripristino
-                .Leggi("#GiacenzeCrypto ModificheManuali;formato=1;campi=46;\r\nTipo\r\nINIZIALE;a;b\r\n"));
+                .Leggi("#GiacenzeCrypto ModificheManuali;formato=1;campi=" + Importazioni.ColonneTabella + ";\r\nTipo\r\nINIZIALE;a;b\r\n"));
         assertTrue(corta.getMessage().contains("Riga 3"));
+    }
+
+    /** Un'esportazione fatta quando la riga aveva 46 campi resta leggibile: il campo in piu' e' calcolato e si completa con un vuoto. */
+    @Test
+    void unFileConUnCampoInMenoSiLeggeEdEventualmenteSiCompleta() throws Exception {
+        String riga = String.join(";", java.util.Collections.nCopies(Principale_Opzioni_ModificheManuali.COLONNE_FISSE + 46, "x"));
+        Contenuto c = Principale_Opzioni_ModificheManuali_Ripristino.Leggi(
+                "#GiacenzeCrypto ModificheManuali;formato=1;campi=46;\r\nTipo\r\n" + riga + "\r\n");
+        assertEquals(Importazioni.ColonneTabella, c.campi());
+        assertEquals(Principale_Opzioni_ModificheManuali.COLONNE_FISSE + Importazioni.ColonneTabella, c.record().get(0).length);
+        assertEquals("", c.record().get(0)[c.record().get(0).length - 1]);
+        assertThrows(FileNonValido.class, () -> Principale_Opzioni_ModificheManuali_Ripristino
+                .Leggi("#GiacenzeCrypto ModificheManuali;formato=1;campi=45;\r\nTipo\r\n"));
     }
 
     // --- modifiche puntuali ----------------------------------------------------------------------------------

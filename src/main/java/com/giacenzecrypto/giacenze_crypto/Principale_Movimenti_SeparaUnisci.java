@@ -83,7 +83,7 @@ public class Principale_Movimenti_SeparaUnisci {
      * ricostruendo le gambe senza riportarlo, un movimento su derivati smetterebbe di esserlo.
      */
     private static final int[] CampiDaRiportare = {2, 7, 14, 23, 30, 31, 36, 37, 39, 41, 42, CommissioniCollegate.CAMPO,
-        Derivati.CAMPO, GruppoOperazione.CAMPO};
+        Derivati.CAMPO, GruppoOperazione.CAMPO, Derivati.CAMPO_DATI};
 
     // =================================================================================================
     // ABILITAZIONE DELLE VOCI DI MENU
@@ -1342,7 +1342,7 @@ public class Principale_Movimenti_SeparaUnisci {
      * delle commissioni collegate, tipo di derivato e chiave di operazione.
      */
     private static final int[] CampiProvenienzaUnione = {7, 14, 23, 24, 30, 36, 37, 39, 41, 42, CommissioniCollegate.CAMPO,
-        Derivati.CAMPO, GruppoOperazione.CAMPO};
+        Derivati.CAMPO, GruppoOperazione.CAMPO, Derivati.CAMPO_DATI};
 
     /**
      * Output del motore delle plusvalenze, da svuotare sul movimento unito: stesso elenco di

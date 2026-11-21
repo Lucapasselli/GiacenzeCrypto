@@ -156,7 +156,7 @@ public class Importazioni {
     public static int TransazioniAggiunte=0;
     public static int TrasazioniScartate=0;
     public static int TrasazioniSconosciute=0;
-    public static int ColonneTabella=46;
+    public static int ColonneTabella=48;
     /**
      * Id del documento di origine dell'importazione in corso, timbrato nel campo {@code [41]} di ogni movimento
      * che passa da {@link #ScriviListaSuMappaCrypto}; {@code 0} quando non c'è un documento da collegare.
@@ -221,6 +221,19 @@ public class Importazioni {
      * correttamente, non sono errori di riconoscimento — è un avviso fiscale, non uno di import.
      */
     public static Set<String> CausaliDerivatiSegnalate = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+
+    /**
+     * Causali che importano un <b>Dual Investment</b> (tipo {@link Derivati#DUAL} nella {@code causaliDerivati} della configurazione,
+     * piu' le due di Binance): un registro della sessione, non uno stato dell'importazione, quindi non si azzera. Serve a
+     * {@link #TestoAvvisoDerivati()} per separarle dalle causali dei derivati: dal 21/11/2026 (decisione D5, lettura A) il programma
+     * tratta i Dual Investment come cripto-attivita' per scelta, e l'avviso lo dichiara invece di dirlo "non corretto".
+     */
+    static final Set<String> CausaliDual = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+
+    static {
+        CausaliDual.add(Binance_DualInvestment.CAUSALE_PURCHASE);
+        CausaliDual.add(Binance_DualInvestment.CAUSALE_SETTLEMENT);
+    }
 
     /**
      * Testo premesso a {@link #Sconosciuti()} quando l'importazione viene abbandonata per
@@ -398,31 +411,57 @@ public class Importazioni {
         CausaliDerivatiSegnalate.add(causale);
     }
 
+    /** Come {@link #SegnalaCausaleDerivato(String)}, e ricorda le causali di tipo {@link Derivati#DUAL} ({@link #CausaliDual}). */
+    public static void SegnalaCausaleDerivato(String causale, String tipo) {
+        //Il giroconto fra spot e conto derivati (MARGINE) non e' un'operazione su un contratto: niente avviso
+        if (Derivati.MARGINE.equalsIgnoreCase(tipo == null ? "" : tipo.trim())) return;
+        SegnalaCausaleDerivato(causale);
+        if (causale != null && Derivati.DUAL.equalsIgnoreCase(tipo == null ? "" : tipo.trim())) CausaliDual.add(causale);
+    }
+
     /**
      * Testo HTML dell'avviso fiscale sui derivati mostrato da {@link Importazioni_Resoconto} in un
      * dialog separato (non più incassato nel riquadro del resoconto, dove si leggeva poco), o stringa
      * vuota se {@link #CausaliDerivatiSegnalate} è vuoto (nessuna causale a rischio incontrata). I tag
      * {@code <b>} evidenziano i punti salienti — è testo destinato a un {@code JLabel}/{@code JTextPane}
      * in modalità HTML, non testo semplice.
-     * <p>Vale per ogni strumento derivato (perpetui e futures di Bybit, Dual Investment di Binance...):
-     * l'art. 67, comma 1, lett. c-quater) del TUIR e la Circolare Agenzia Entrate 30/E del 27/10/2023
-     * (§2.3.2) li inquadrano fra i redditi diversi di natura finanziaria, non fra le plusvalenze da
-     * cripto-attività della lett. c-sexies). Il programma non li gestisce ancora: i movimenti vengono
-     * marcati come derivati ({@link Derivati}) ma trattati come cripto-attività, cosa che l'avviso
-     * dichiara come non corretta. Fino al 2026-09-29 il testo parlava di "permuta cripto-cripto", che
-     * era vero solo per i Dual Investment e falso per i perpetui, importati come depositi/prelievi.
+     * <p>Vale per ogni strumento derivato (perpetui e futures di Bybit, OKX, Binance...): l'art. 67, comma 1, lett. c-quater)
+     * del TUIR e la Circolare Agenzia Entrate 30/E del 27/10/2023 (§2.3.2) li inquadrano fra i redditi diversi di natura
+     * finanziaria, non fra le plusvalenze da cripto-attività della lett. c-sexies). Fino al 2026-09-29 il testo parlava di
+     * "permuta cripto-cripto", che era vero solo per i Dual Investment e falso per i perpetui.
+     * <p>Le causali dei Dual Investment ({@link #CausaliDual}) hanno un paragrafo a parte (dal 21/11/2026, decisione D5, lettura A):
+     * il programma li tratta come cripto-attività per scelta (contratto con consegna della cripto, assimilabile alla cessione a
+     * termine che la circolare 30/E §3 mette nella lettera c-sexies), e il testo dichiara la scelta e la lettura alternativa.
      * @return il testo HTML dell'avviso, o {@code ""} se non c'è nulla da segnalare
      */
     public static String TestoAvvisoDerivati() {
         if (CausaliDerivatiSegnalate.isEmpty()) return "";
         StringBuilder elenco = new StringBuilder();
+        StringBuilder dual = new StringBuilder();
+        boolean rientri = false;
         for (String c : CausaliDerivatiSegnalate) {
-            if (elenco.length() > 0) elenco.append(", ");
-            elenco.append(EscapeHtml(c));
+            if (c.startsWith(OKXDerivati.CAUSALE_RIENTRO + "|")) {
+                rientri = true;
+                continue;
+            }
+            StringBuilder dove = CausaliDual.contains(c) ? dual : elenco;
+            if (dove.length() > 0) dove.append(", ");
+            dove.append(EscapeHtml(c));
+        }
+        String testoDual = dual.length() == 0 ? "" : TestoAvvisoDual(dual.toString());
+        //Chiusure di posizioni aperte con la forma delle versioni fino alla 1.0.66 (OKXDerivati.FiltraPerSaldoAperto)
+        String testoRientri = !rientri ? "" : "Alcune posizioni su derivati di OKX erano state aperte con una versione precedente "
+                + "del programma, che registrava l'uscita del margine come un prelievo da classificare. Alla loro chiusura il margine "
+                + "rientra con un deposito <i>" + OKXDerivati.CAUSALE_RIENTRO + "</i>, anch'esso da classificare e non marcato come "
+                + "derivato, così il saldo della moneta torna uguale a quello dell'exchange. Il funding della posizione che non è fra i "
+                + "movimenti, perché la versione precedente non lo importava, resta compreso nel margine che rientra.\n\n";
+        if (elenco.length() == 0) {
+            String parti = testoDual + (testoDual.isEmpty() || testoRientri.isEmpty() ? "" : "\n\n") + testoRientri.replace("\n\n", "");
+            return parti;
         }
         return "Sono stati importati movimenti di tipo: <b>" + elenco + "</b>.\n\n"
-                + "Si tratta di operazioni su <b>strumenti derivati</b> (contratti perpetui, futures, "
-                + "prodotti a termine come i Dual Investment), non di semplici compravendite di "
+                + "Si tratta di operazioni su <b>strumenti derivati</b> (contratti perpetui, futures), "
+                + "non di semplici compravendite di "
                 + "cripto-attività a pronti. Questi movimenti sono stati marcati come derivati.\n\n"
                 + "Secondo l'<b>art. 67, comma 1, lettera c-quater) del TUIR</b> e la <b>Circolare dell'Agenzia "
                 + "delle Entrate 30/E del 27/10/2023 (§2.3.2)</b>, i redditi da contratti derivati, anche "
@@ -430,11 +469,39 @@ public class Importazioni {
                 + "finanziaria</b>: si dichiarano in una sezione diversa del quadro RT/T, <b>non sono "
                 + "compensabili</b> con plus/minusvalenze da cripto-attività e i contratti esteri vanno nel "
                 + "quadro RW con un codice proprio.\n\n"
-                + "Il programma <b>non gestisce ancora i derivati</b>: questi movimenti sono <b>trattati come "
-                + "cripto-attività</b> (depositi e prelievi da classificare, scambi, commissioni) e concorrono "
-                + "a plusvalenze e giacenze cripto. <b>Non è corretto</b>, e le stampe dei quadri W/RW e T/RT "
-                + "lo segnalano per gli anni interessati. Si consiglia di verificare con un professionista "
-                + "la qualificazione di questi importi.";
+                + "Il programma gestisce i derivati <b>solo in parte</b>. Profitti, perdite, funding, commissioni e bonus "
+                + "appena importati sono già <b>classificati come derivati</b> (salvo quelli di anni con una dichiarazione "
+                + "definitiva archiviata, per cui il programma chiede): il loro risultato va nella colonna "
+                + "<i>Risultato derivati</i> della tabella dei movimenti, separato dalle plusvalenze delle cripto-attività. "
+                + "Per i perpetui e i futures di OKX il contratto è neutro, il margine anche salvo l'opzione <i>Conto derivati</i>, "
+                + "e il reddito è calcolato in "
+                + "<b>LIFO</b>. Il risultato compare nel quadro <b>T/RT</b>, nella sezione dei redditi diversi di natura "
+                + "finanziaria, e non nel quadro W/RW. "
+                + "I movimenti importati prima di questa versione sono ancora <b>trattati come "
+                + "cripto-attività</b> finché non si classificano con <i>Classifica come derivato</i>, e concorrono a "
+                + "plusvalenze e giacenze cripto: <b>non è corretto</b>. "
+                + "Le stampe dei quadri W/RW e T/RT lo segnalano per gli anni interessati. Si consiglia di "
+                + "verificare con un professionista la qualificazione di questi importi."
+                + (testoDual.isEmpty() ? "" : "\n\n" + testoDual)
+                + (testoRientri.isEmpty() ? "" : "\n\n" + testoRientri.replace("\n\n", ""));
+    }
+
+    /**
+     * Il paragrafo sui Dual Investment dell'avviso (decisione D5, lettura A, 21/11/2026): dichiara come il programma li tratta e
+     * perché, e la lettura che non applica. Dice l'effetto, mai come dichiarare.
+     *
+     * @param causali le causali incontrate, già pronte per l'HTML
+     */
+    static String TestoAvvisoDual(String causali) {
+        return "Sono stati importati movimenti di <b>Dual Investment</b> (<b>" + causali + "</b>). Il programma li tratta come "
+                + "<b>cripto-attività</b> (art. 67, comma 1, lettera c-sexies, del TUIR): alla scadenza il contratto consegna una "
+                + "cripto-attività, come una cessione a termine, che la circolare 30/E del 27/10/2023 elenca fra le operazioni su "
+                + "cripto-attività. Con la liquidazione in una moneta diversa acquisto e liquidazione sono uno scambio fra le due "
+                + "monete, con la liquidazione nella stessa moneta l'eccedenza incassata è un provento.\n\n"
+                + "Nessuna fonte ufficiale parla dei Dual Investment: è una <b>scelta del programma</b>. Una lettura diversa vede nel "
+                + "contratto un deposito più un'opzione venduta e tratta il premio come reddito da derivati (lettera c-quater), "
+                + "separato dalla cripto-attività e non compensabile con le sue minusvalenze. Il programma non la applica, e la voce "
+                + "<i>Classifica come derivato</i> non vale per questi movimenti.";
     }
 
     /** Escape minimo per inserire testo non fidato (causali CSV) dentro l'HTML di {@link #TestoAvvisoDerivati()}. */
@@ -862,6 +929,8 @@ public class Importazioni {
         if (righe == null) return coppie;
         for (String[] r : righe) {
             if (r == null || r.length < 13) continue;
+            //La riga portatrice di un contratto non ha prezzi da cercare: quantita' di contratti e margine in valuta
+            if (OKXDerivati.IsRiga(r)) continue;
             long istante = FunzioniDate.ConvertiDatainLongSecondo(r[0]);
             if (istante <= 0) continue;
             if (Ex_OKX_DaPrezzare(r[5], r[6])) coppie.add(new Prezzi.SimboloIstante(r[5], istante));
@@ -1042,6 +1111,11 @@ public class Importazioni {
         List<String[]> righeOrdinate = Ex_OKX_Ordina(righe);
 
         for (String riga[] : righeOrdinate) {
+            //Riga portatrice di un fill su derivati (OKXDerivati): la genera il programma, non sta nella mappa causali
+            if (OKXDerivati.IsRiga(riga)) {
+                riga[3] = OKXDerivati.CATEGORIA;
+                continue;
+            }
             String MovGenerico = Mappa_Conversione_Causali.get(riga[4]);
             if (MovGenerico == null) {
                 AccodaSconosciuti(riga[0] + " " + riga[2] + " " + riga[4] + " " + riga[5] + " " + riga[6] + "\n");
@@ -1184,6 +1258,9 @@ public class Importazioni {
             }
         }
 
+        //Token e margine di una chiusura che non ha la posizione aperta fra i movimenti non si creano (OKXDerivati)
+        listaDaImportare = OKXDerivati.FiltraPerSaldoAperto(listaDaImportare, Principale.MappaCryptoWallet.values());
+
         int InsScart[] = ScriviListaSuMappaCrypto(listaDaImportare, false);
         TransazioniAggiunte = InsScart[0];
         TrasazioniScartate = InsScart[1];
@@ -1201,6 +1278,13 @@ public class Importazioni {
 
         //Bill 325 appena arrivati (anche dal recupero degli scarti): abbinati alle ricariche sul wallet della carta
         if (TransazioniAggiunte > 0) OKX_CartaAbbina.Abbina();
+
+        //Derivati: le righe salvate senza il valore del contratto (lettura non riuscita a un import precedente) si completano ora.
+        //Il campo dati sta fuori dall'impronta del motore, che non se ne accorgerebbe: il passo del LIFO si rifa' qui
+        if (!AttesaConnessione.Abortita() && OKXDerivati.CompletaValoriContratto(Principale.MappaCryptoWallet.values()) > 0) {
+            DerivatiLifo.AggiornaRisultati(Principale.MappaCryptoWallet);
+            Principale.TabellaCryptodaAggiornare = true;
+        }
 
         if (TransazioniAggiunte > 0) Principale.TabellaCryptodaAggiornare = true;
         return InsScart;
@@ -1388,8 +1472,12 @@ public class Importazioni {
      * @param Indice non {@code null} solo con «sovrascrivi esistenti»: se l'ID della riga non c'è in archivio, né nella
      *        forma rinominata dello scambio differito, il movimento da sostituire si cerca per ID precedente nello storico
      *        modifiche e per chiave logica (Trasla Orario, Modifica movimento, ID di una versione precedente)
+     * @return {@code true} se la riga è un movimento nuovo, oppure sostituisce un movimento che era classificato come
+     *         derivato: solo allora l'importazione può classificarla da sé come derivato
+     *         ({@link Principale_Derivati#ClassificaAllImportazione}). Una riga che sostituisce un movimento lasciato da
+     *         classificare deve restare così (anni già dichiarati)
      */
-    static void InserisciMovimentosuMappaCryptoWallet(String Chiave, String[] Valore, FormeImportate.Indice Indice) {
+    static boolean InserisciMovimentosuMappaCryptoWallet(String Chiave, String[] Valore, FormeImportate.Indice Indice) {
        //QUA DOVRO' INSERIRE ANCHE L'EVENTUALE CAMBIO NOME DEL TOKEN
        //PER EVITARE DI FARLO AD OGNI CARICAMENTO DI TABELLA E AUMENTARE LA VELOCITA' MA LO VEDRO' CON CALMA PIU' AVANTI  
        //POSSO ANCHE GESTIRE L'EVENTUALE IDENTIFICAZIONE DI UN TOKEN SCAM (DA VEDERE CON CALMA)
@@ -1406,6 +1494,8 @@ public class Importazioni {
             Vecchio = Rinominato != null ? MappaCryptoWallet.get(Rinominato) : Indice.Trova(Valore);
             if (Vecchio != null) Esistente = Vecchio[0];
         }
+        //Prima dell'annullamento, che svuota il campo 18
+        boolean ClassificabileComeDerivato = Vecchio == null || Derivati.HaMarcatore(Vecchio);
         if (Vecchio != null) {
             //Con «sovrascrivi» un movimento che ha già uno storico lo passa alla riga del file, con una voce che conserva
             //il movimento sostituito: da "Versioni precedenti" si vede cosa la sovrascrittura ha scartato. Va fotografato
@@ -1434,6 +1524,7 @@ public class Importazioni {
             if (MappaCryptoWallet.get(Vecchio[0]) == Vecchio) MappaCryptoWallet.remove(Vecchio[0]);
         }
         MappaCryptoWallet.put(Chiave, Valore);
+        return ClassificabileComeDerivato;
     }
 
     /**
@@ -1599,6 +1690,66 @@ public class Importazioni {
      * @return array di 2 interi: {@code [0]} movimenti effettivamente aggiunti, {@code [1]} movimenti scartati
      */
     public static int[] ScriviListaSuMappaCrypto(List<String[]> lista,boolean SovrascriEsistenti,int IdDocumento){
+        return ScriviListaSuMappaCrypto(lista, SovrascriEsistenti, IdDocumento, false);
+    }
+
+    /**
+     * Scrittura dello scaricamento API di Binance: sovrascrive per ID come ogni scaricamento API, ma una riga che
+     * l'archivio contiene già in un'altra forma (tipicamente da un file CSV) non rientra come doppione
+     * ({@link RiconciliazioneBinance}). Una riga il cui ID è già in archivio la sostituisce come sempre.
+     * @param lista movimenti consolidati scaricati
+     * @return come {@link #ScriviListaSuMappaCrypto(List, boolean)}: aggiunti e scartati
+     */
+    public static int[] ScriviListaSuMappaCryptoRiconciliando(List<String[]> lista){
+        return ScriviListaSuMappaCrypto(lista, true, DocumentoFonteCorrente, true);
+    }
+
+    /**
+     * Le righe di uno scaricamento API di Binance che vanno davvero scritte. Una riga che è lo stesso movimento già in
+     * archivio (stesso ID e stessa chiave logica: lo stesso scaricamento ripetuto) resta com'è e si sostituisce come sempre,
+     * tranne quando il movimento dell'archivio viene da un file CSV: quello si tiene.
+     * Ogni altra riga si confronta con l'archivio ({@link RiconciliazioneBinance}) e, se l'archivio ha già quel movimento
+     * in un'altra forma (un file CSV), si scarta: il movimento dell'archivio non si tocca mai. Una riga nuova che ha però
+     * l'ID di un movimento diverso dell'archivio (le due fonti numerano gli ID allo stesso modo) prende un ID libero:
+     * sovrascrivere distruggerebbe un movimento vero.
+     */
+    private static List<String[]> RiconciliaApiBinance(List<String[]> lista) {
+        List<String[]> altre = new ArrayList<>();
+        Map<Integer, Boolean> origineCsv = new java.util.HashMap<>();
+        for (String[] r : lista) {
+            String[] esistente = r != null && r[0] != null ? MappaCryptoWallet.get(r[0]) : null;
+            boolean stessoMovimento = esistente != null && r.length >= ColonneTabella && esistente.length >= ColonneTabella
+                    && F_buildKeyMovimento(esistente).equals(F_buildKeyMovimento(r));
+            //lo stesso movimento già importato da un CSV non si sostituisce con la riga dell'API: si tiene quello
+            if (!stessoMovimento || DocumentiFonte.EDaFileCsv(esistente, origineCsv)) altre.add(r);
+        }
+        RiconciliazioneBinance.Risultato ric = RiconciliazioneBinance.Riconcilia(altre, MappaCryptoWallet.values());
+        if (!ric.giaPresenti.isEmpty()) {
+            LoggerGC.logInfo("Binance, integrazione CSV/API: " + ric.giaPresenti.size()
+                    + " movimenti scartati perché già presenti in un'altra forma " + ric.perMotivo);
+        }
+        java.util.Set<String[]> scartate = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        scartate.addAll(ric.giaPresenti);
+        Map<String, String[]> occupati = null;//mappa + ID in arrivo, creata solo se c'è un ID da cambiare
+        for (String[] r : ric.nuove) {
+            if (r == null || r[0] == null || MappaCryptoWallet.get(r[0]) == null) continue;
+            if (occupati == null) {
+                occupati = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+                occupati.putAll(MappaCryptoWallet);
+                for (String[] x : lista) if (x != null && x[0] != null) occupati.putIfAbsent(x[0], x);
+            }
+            String nuovoID = MovimentiCrypto.getIDUnivoco(occupati, r[0]);
+            if (nuovoID == null) continue;//formato dell'ID non riconosciuto: resta com'è, come prima
+            LoggerGC.logInfo("Binance, integrazione CSV/API: l'ID " + r[0] + " è di un altro movimento, la riga prende " + nuovoID);
+            r[0] = nuovoID;
+            occupati.put(nuovoID, r);
+        }
+        List<String[]> restanti = new ArrayList<>();
+        for (String[] r : lista) if (!scartate.contains(r)) restanti.add(r);
+        return restanti;
+    }
+
+    private static int[] ScriviListaSuMappaCrypto(List<String[]> lista,boolean SovrascriEsistenti,int IdDocumento,boolean RiconciliaAltreFonti){
         //===== 0 - IMPORTAZIONE ABBANDONATA PER MANCANZA DI CONNESSIONE: NON SI SCRIVE NULLA =====
         //Meglio non importare che importare senza prezzo. Non scrivere nulla e' anche cio' che rende
         //l'abbandono ripetibile: la prossima esecuzione riparte dallo stesso punto, esattamente come
@@ -1623,6 +1774,10 @@ public class Importazioni {
         if (!SovrascriEsistenti) {
             lista = Importazioni.F_ritornaSoloElementiNuovi(lista);
         }
+        //Con «sovrascrivi» la deduplica non gira: lo scaricamento API di Binance riconcilia le sue righe con l'archivio
+        if (SovrascriEsistenti && RiconciliaAltreFonti) {
+            lista = RiconciliaApiBinance(lista);
+        }
         ritorno[1] = numI - lista.size();
         
         //Con «sovrascrivi» il movimento da sostituire si cerca anche nelle forme che aveva prima di essere modificato:
@@ -1630,6 +1785,7 @@ public class Importazioni {
         FormeImportate.Indice Indice = SovrascriEsistenti ? FormeImportate.Indice(lista) : null;
 
         //===== 3 - OGNI MOVIMENTO DELLA LISTA VIENE CONTROLLATO ED INSERITO NELLA MAPPACRYPTO
+        List<String[]> DerivatiDaClassificare = new ArrayList<>();
         for (String mov[] : lista) {
             //Se non devo sovrascrivere i movimenti e trovo lo stesso id per qualche motivo nella lista allora cambio l'ID e lo rendo univoco           
             if (!SovrascriEsistenti) {
@@ -1642,12 +1798,18 @@ public class Importazioni {
                 mov[41]=DocumentiFonte.ConOrigine(mov[41], String.valueOf(IdDocumento));
             }
             if (mov[0]!=null){
-                InserisciMovimentosuMappaCryptoWallet(mov[0], mov, Indice);
+                //Un movimento nuovo marcato come derivato nasce già classificato (decisione dell'utente del 17/11/2026):
+                //qui passano tutti gli importatori, da file e da API
+                if (InserisciMovimentosuMappaCryptoWallet(mov[0], mov, Indice)) DerivatiDaClassificare.add(mov);
                 ritorno[0]++;
             }else{
                 ritorno[1]++;
             }
         }
+        //Dopo il ciclo: una commissione collegata segue il suo movimento, che può venire dopo di lei nella lista
+        Principale_Derivati.ClassificaAllImportazione(DerivatiDaClassificare);
+        //Rientri del margine di posizioni aperte con la 1.0.66: alla chiusura del resoconto si propone di abbinarli
+        Principale_RientroMargine.RegistraNuovi(DerivatiDaClassificare);
         //Ricariche dei conti ether.fi Cash: il prelievo d'origine (da un exchange, da un wallet) puo' arrivare dopo
         if (ritorno[0] > 0) Trans_EtherFi.Abbina();
         if (ritorno[0] > 0) Trans_MiniPay.Abbina();
@@ -3187,6 +3349,9 @@ return filtrata;
  * Un prelievo classificato come trasferimento conta anche con la quantita' che aveva prima della
  * classificazione ({@link GUI_ClassificazioneMovimento#PrelievoPrimaDellaClassificazione}).
  * 
+ * Per Binance, dopo la chiave esatta, {@link RiconciliazioneBinance} toglie anche i movimenti che l'archivio ha già
+ * da un'altra fonte (CSV contro API) in una forma diversa.
+ *
  * @param lista Lista di nuovi movimenti da verificare contro MappaCryptoWallet
  * @return Lista contenente SOLO i movimenti nuovi (non presenti in MappaCryptoWallet)
  */
@@ -3213,6 +3378,15 @@ public static List<String[]> F_ritornaSoloElementiNuovi(List<String[]> lista) {
             listaNew.add(valoreLista);                     // Nuovo → lo tengo
         }
         // Se chiave già presente → skip (duplicato)
+    }
+
+    // STEP 3: Binance ha due fonti (file CSV e API) che descrivono lo stesso fatto in forme diverse: una riga che la chiave
+    // esatta non riconosce ma che l'archivio contiene già in un'altra forma si scarta qui (mai si tocca l'esistente)
+    RiconciliazioneBinance.Risultato riconciliate = RiconciliazioneBinance.Riconcilia(listaNew, Principale.MappaCryptoWallet.values());
+    if (!riconciliate.giaPresenti.isEmpty()) {
+        LoggerGC.logInfo("Binance, integrazione CSV/API: " + riconciliate.giaPresenti.size()
+                + " movimenti scartati perché già presenti in un'altra forma " + riconciliate.perMotivo);
+        listaNew = riconciliate.nuove;
     }
 
     return listaNew;  // Lista ripulita da duplicati
@@ -4042,6 +4216,22 @@ static int Ex_OKX_NumMovimentoCommissione(String IDOriginale, int posizioneNelGr
     return posizioneNelGruppo + 1;
 }
 
+/**
+ * Scrive nelle note di un movimento OKX su derivati il contratto su cui si e' operato. Il campo 7 della riga
+ * intermedia lo porta da {@code convertOKXBills}. Le note si scrivono direttamente e non da {@code creaMovimento}, che
+ * toglie i trattini bassi dei nomi e storpierebbe {@code BTC-USD_UM_XPERP-991231}. Un movimento che ha gia' delle note
+ * non le perde. Non fa nulla per un movimento che non e' un derivato o senza contratto.
+ *
+ * @param RT il movimento appena creato
+ * @param tipoDerivato il tipo di derivato della riga, vuoto se non lo e'
+ * @param contratto {@code instId} del bill, anche vuoto
+ */
+static void NotaContrattoDerivato(String[] RT, String tipoDerivato, String contratto) {
+    if (RT == null || tipoDerivato == null || tipoDerivato.isEmpty() || contratto == null || contratto.isBlank()) return;
+    String nota = "Contratto " + contratto.trim();
+    RT[21] = RT[21] == null || RT[21].isBlank() ? nota : RT[21] + " - " + nota;
+}
+
 public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaConsolidare, Map<String, String> Mappa_Conversione_Causali, List<String[]> listaAutoinvest) {
 
         //int mov è un indice che viene aggiunto all'ID per permettere a più transazioni con lo stesso id di coesistere
@@ -4101,6 +4291,13 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
             String RT[];
             String movimentoSplittato[] = listaMovimentidaConsolidare.get(k);
             data = movimentoSplittato[0];
+            //Fill su un contratto (OKXDerivati): margine parcheggiato e token, senza prezzi da cercare. Gli altri movimenti
+            //dello stesso fill (pnl, commissione) sono righe a parte e seguono la strada di sempre.
+            if (OKXDerivati.IsRiga(movimentoSplittato)) {
+                WalletPrincipale = movimentoSplittato[1];
+                lista.addAll(OKXDerivati.CreaMovimenti(movimentoSplittato));
+                continue;
+            }
             Moneta Mon = new Moneta();
             Mon.Moneta = movimentoSplittato[5];
             Mon.Qta = new BigDecimal(movimentoSplittato[6]).toPlainString();
@@ -4123,6 +4320,11 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
             String WalletSecondario = movimentoSplittato[2];
             String CausaleOriginale = movimentoSplittato[4];
             IDOriginale = movimentoSplittato[14];
+
+            //Futures, perpetui e opzioni (causale "Sell|SWAP"...): identificati con il marcatore derivato e segnalati
+            //nel resoconto. Il calcolo resta quello delle cripto-attivita', come per ogni derivato (vedi Derivati).
+            String tipoDerivato = CcxtInterop.TipoDerivatoDaCausaleOKX(CausaleOriginale);
+            if (!tipoDerivato.isEmpty()) SegnalaCausaleDerivato(CausaleOriginale);
             long TimeStamp = FunzioniDate.ConvertiDatainLongSecondo(data);
 
             String movimentoConvertito = movimentoSplittato[3];
@@ -4143,6 +4345,8 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
                         IDOriginale, "COMMISSIONI", WalletPrincipale + IDOriginale);
                 if (RT != null) {
                     lista.add(RT);
+                    Derivati.Marca(RT, tipoDerivato.isEmpty() ? "" : Derivati.COMMISSIONE);
+                    NotaContrattoDerivato(RT, tipoDerivato, movimentoSplittato[7]);
                 }
 
             }
@@ -4169,6 +4373,8 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
                 if (RT != null) {
                     lista.add(RT);
                     RT[7] = CausaleOriginale;
+                    Derivati.Marca(RT, tipoDerivato);
+                    NotaContrattoDerivato(RT, tipoDerivato, movimentoSplittato[7]);
                 }
             }
             

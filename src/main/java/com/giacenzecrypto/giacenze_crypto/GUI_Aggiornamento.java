@@ -347,17 +347,17 @@ public class GUI_Aggiornamento extends JDialog {
         final File[] creato = new File[1];
         Download progress = new Download();
         progress.setLocationRelativeTo(proprietario);
-        Thread t = new Thread(() -> {
+        //Un errore nel backup lascia creato[0] a null: l'aggiornamento non parte (vedi sotto) e la finestra si chiude
+        progress.EseguiBloccante(() -> {
             progress.Titolo("Backup prima dell'aggiornamento");
             progress.SetLabel("Preparazione...");
             creato[0] = Backup_Restore.Esegui(opz, progress);
-            progress.ChiudiFinestra();
-        }, "BackupAggiornamento");
-        progress.SetThread(t);
-        t.start();
-        progress.setVisible(true);
+        });
         try {
-            t.join();
+            //Chiuso a mano prima della fine: si aspetta il thread, per non leggere un risultato a meta'
+            if (progress.thread != null) {
+                progress.thread.join();
+            }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }

@@ -194,10 +194,24 @@ class Principale_GiacenzeaData_CostoNettoTest {
     void depositoACostoZeroEDonazioneRicevutaNonSonoDepositiNonClassificati() {
         acquisto("2026-01-01 10:00", "XYZ", "100", "100.00");
         riga("2026-01-02 10:00", "DC", "DCZ - DEPOSITO A COSTO 0", "DEPOSITO A COSTO 0", "", "", "", "XYZ", "Crypto", "10", "0.00");
-        riga("2026-01-03 10:00", "DC", "DDO - Donazione", "DONAZIONE", "", "", "", "XYZ", "Crypto", "10", "20.00");
+        //Donazione a costo di carico zero: il valore della transazione (20) non conta
+        riga("2026-01-03 10:00", "DC", "DDO - Donazione", "DONAZIONE", "", "", "", "XYZ", "Crypto", "10", "20.00")[17] = "0.00";
         Principale_GiacenzeaData_CostoNetto.Riga r = riga("XYZ", "1");
         assertEquals(100.0 / 120.0, r.CostoMedioNetto, TOLLERANZA);
         assertEquals(100.0, r.Speso, TOLLERANZA);
+        assertEquals("", r.Note);
+    }
+
+    @Test
+    void donazioneRicevutaSpendeIlCostoDiCaricoNonIlValore() {
+        acquisto("2026-01-01 10:00", "XYZ", "100", "100.00");
+        //Costo del donante 15, valore della transazione 20: conta il costo di carico
+        riga("2026-01-02 10:00", "DC", "DDO - Donazione", "DONAZIONE", "", "", "", "XYZ", "Crypto", "10", "20.00")[17] = "15.00";
+        //Costo di carico vuoto: zero, senza rendere il token senza prezzo
+        riga("2026-01-03 10:00", "DC", "DDO - Donazione", "DONAZIONE", "", "", "", "XYZ", "Crypto", "10", "")[17] = "";
+        Principale_GiacenzeaData_CostoNetto.Riga r = riga("XYZ", "1");
+        assertEquals(115.0, r.Speso, TOLLERANZA);
+        assertEquals(115.0 / 120.0, r.CostoMedioNetto, TOLLERANZA);
         assertEquals("", r.Note);
     }
 

@@ -76,6 +76,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  */
 public class Principale_Opzioni_ModificheManuali_Ripristino {
 
+    /** Campi per movimento del file piu' corto ancora leggibile: 46, la riga prima che il motore scrivesse il risultato dei derivati. */
+    static final int CAMPI_MINIMI_LEGGIBILI = 46;
+
     private Principale_Opzioni_ModificheManuali_Ripristino() {
     }
 
@@ -338,7 +341,9 @@ public class Principale_Opzioni_ModificheManuali_Ripristino {
             throw new FileNonValido("Il formato del file (" + (formato < 1 ? "sconosciuto" : formato)
                     + ") non è leggibile da questa versione del programma.");
         }
-        if (campi != Importazioni.ColonneTabella) {
+        //Un file scritto quando la riga aveva meno campi resta leggibile se i campi in piu' sono solo calcolati
+        //(il 46, risultato dei derivati, lo scrive il motore e il ripristino lo ignora): si completano con vuoti
+        if (campi < CAMPI_MINIMI_LEGGIBILI || campi > Importazioni.ColonneTabella) {
             throw new FileNonValido("Il file ha " + campi + " campi per movimento, questa versione ne usa "
                     + Importazioni.ColonneTabella + ".");
         }
@@ -353,9 +358,15 @@ public class Principale_Opzioni_ModificheManuali_Ripristino {
             if (r.length != colonne) {
                 throw new FileNonValido("Riga " + (i + 1) + " del file: " + r.length + " colonne invece di " + colonne + ".");
             }
+            if (campi < Importazioni.ColonneTabella) {
+                String[] piena = new String[COLONNE_FISSE + Importazioni.ColonneTabella];
+                Arrays.fill(piena, "");
+                System.arraycopy(r, 0, piena, 0, r.length);
+                r = piena;
+            }
             record.add(r);
         }
-        return new Contenuto(formato, campi, record);
+        return new Contenuto(formato, Importazioni.ColonneTabella, record);
     }
 
     private static int Intero(String s) {

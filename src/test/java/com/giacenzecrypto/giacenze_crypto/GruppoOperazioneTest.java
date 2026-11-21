@@ -34,7 +34,7 @@ class GruppoOperazioneTest {
 
     @Test
     void laRigaHaUnCampoPerLOperazione() {
-        assertEquals(46, Importazioni.ColonneTabella);
+        assertEquals(48, Importazioni.ColonneTabella);
         assertEquals(45, GruppoOperazione.CAMPO);
         assertNotEquals(CommissioniCollegate.CAMPO, GruppoOperazione.CAMPO);
     }

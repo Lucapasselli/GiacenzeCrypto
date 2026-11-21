@@ -63,8 +63,8 @@ public final class LayoutColonneMovimenti {
     /** Ordine di default delle colonne visibili: coincide con lo storico di NascondiColonneTabellaCrypto(). */
     static final List<Integer> ORDINE_DEFAULT = List.of(1, 3, 4, 5, 6, 8, 10, 11, 13, 15, 17, 19);
 
-    /** Indice di model massimo esistente (0-based): 40 = Fonte Prezzi, 41 = Alias Gruppo Wallet, 42 = Operazione. */
-    static final int COLONNA_MASSIMA = 42;
+    /** Indice di model massimo esistente (0-based): 40 = Fonte Prezzi, 41 = Alias Gruppo Wallet, 42 = Operazione, 43 = Derivato (marcatore v[44]), 44 = Risultato derivati (v[46]). */
+    static final int COLONNA_MASSIMA = 44;
 
     /**
      * Ciò che distingue una tabella personalizzabile dall'altra. Gli indici sono sempre quelli del

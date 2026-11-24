@@ -414,6 +414,9 @@ scambi non rilevanti. Il 01/04 si realizza quindi una plusvalenza di **20.000 �
 
 ## Derivati: come vengono calcolati {#derivati}
 
+> **Funzione in bozza.** La gestione dei derivati è ancora in versione di prova e può cambiare con le prossime
+> versioni, anche nei valori calcolati.
+
 I redditi da contratti derivati (perpetui, futures), anche quando il sottostante è una cripto-attività, sono
 redditi diversi di natura finanziaria (art. 67, comma 1, lettera c-quater, del TUIR, circolare 30/E del
 27/10/2023, paragrafo 2.3.2) e non si compensano con le plusvalenze da cripto-attività.
@@ -424,8 +427,11 @@ si classificano con la voce *Classifica come derivato* del menu dei movimenti. S
 in un anno con una dichiarazione definitiva archiviata resta da classificare, per non cambiare i valori di
 quell'anno, e alla fine dell'importazione il programma chiede se classificarlo comunque. Il risultato dei derivati va nella
 colonna *Risultato derivati* della tabella dei movimenti, separato dalle plusvalenze delle cripto-attività, e
-compare nel **quadro T/RT** (vedi [Derivati nei quadri T e RT](#derivati-quadri)), non nel quadro W/RW. Per i perpetui e i futures di OKX il reddito è il differenziale
-calcolato in LIFO sulla chiusura di ogni posizione.
+compare nel **quadro T/RT** (vedi [Derivati nei quadri T e RT](#derivati-quadri)), non nel quadro W/RW. Per i perpetui e i futures di OKX e di Bybit (conto Derivati e
+Unified Trading Account) il reddito è il differenziale calcolato in LIFO sulla chiusura di ogni posizione, nelle
+posizioni in cui i prezzi di esecuzione ricostruiscono il profitto che l'exchange dichiara. Altrimenti, per esempio
+con prezzi in un'unità diversa o con una chiusura di una posizione aperta prima del primo file, resta il profitto
+dell'exchange. Per Bybit serve reimportare i file: i token dei contratti si aggiungono ai movimenti già importati.
 
 Un derivato regolato in euro o in un'altra valuta FIAT (il profitto o la perdita accreditati o addebitati direttamente in
 valuta) si classifica allo stesso modo: il suo risultato è il valore in euro del movimento e va nella colonna *Risultato
@@ -548,9 +554,9 @@ margine rientra. Il 30 giugno si vendono tutti i 1.300 USDT a 0,88 € (1.144 �
 | | Senza l'opzione | Con l'opzione |
 |---|---|---|
 | 1° marzo, margine al conto | nessun effetto | cessione: 500 USDT valgono 450 € e costano 460 €, minusvalenza cripto di 10 € |
-| 31 maggio, profitto | reddito da derivati di 264 € (300 × 0,88), i 300 USDT entrano a 264 € | uguale |
-| 31 maggio, rientro del margine | nessun effetto | reddito da derivati: 500 USDT valgono 440 € e nel conto costano 450 €, quindi −10 € |
-| 30 giugno, vendita | 1.144 € meno 1.184 € (300 USDT a 264 €, 1.000 a 920 €): −40 € | 1.144 € meno 1.164 € (500 a 440 €, 300 a 264 €, 500 a 460 €): −20 € |
+| 31 maggio, profitto | reddito da derivati di 264 € (300 × 0,88), i 300 USDT entrano a 264 € | uguale, i 300 USDT entrano nel conto a 264 € |
+| 31 maggio, rientro dal conto | nessun effetto | reddito da derivati: tornano 800 USDT, valgono 704 € e nel conto costano 714 € (450 + 264), quindi −10 € |
+| 30 giugno, vendita | 1.144 € meno 1.184 € (300 USDT a 264 €, 1.000 a 920 €): −40 € | 1.144 € meno 1.164 € (800 a 704 €, 500 a 460 €): −20 € |
 | **Totale derivati** | **+264 €** | **+254 €** |
 | **Totale cripto-attività** | **−40 €** | **−30 €** |
 
@@ -558,11 +564,21 @@ In tutti e due i casi il totale è 1.144 − 920 = **+224 €**. Cambia dove cad
 tutto fra le cripto-attività senza l'opzione, fra i derivati durante la permanenza nel conto con l'opzione. Dal 2023
 le due parti non si compensano fra loro, quindi l'imposta può essere diversa.
 
+Con una **perdita** di 200 USDT alla chiusura la perdita esce dal conto e tornano 300 USDT. Con l'opzione la perdita vale
+il costo dei 200 USDT nel conto, 180 € (200 × 0,90), senza cessione cripto, e il rientro dei 300 USDT dà 264 − 270 = −6 €:
+derivati **−186 €**, cripto-attività −10 € al passaggio al conto e −20 € alla vendita (704 € contro 460 + 264), **−30 €**.
+Senza l'opzione la perdita vale 176 € (200 × 0,88) fra i derivati e i 200 USDT sono anche una cessione cripto (176 € contro
+un costo di 184 €): derivati **−176 €**, cripto-attività **−40 €**. In tutti e due i casi il totale è **−216 €**.
+
 Dove si applica:
 
-- **OKX**: il margine di ogni posizione passa dal wallet principale al sotto-wallet **Derivati** e torna alla chiusura.
-  Profitti, perdite, commissioni e funding restano sul wallet principale, come li registra OKX, con il loro doppio
-  effetto: la commissione d'apertura e il funding pagati producono anche una piccola cessione cripto.
+- **OKX**: il margine di ogni posizione passa dal wallet principale al sotto-wallet **Derivati**, e lì stanno anche
+  profitti, perdite, commissioni e funding della posizione, come nei conti futures di Bybit e Binance. Il giroconto fra i
+  due wallet porta solo quello che OKX toglie o aggiunge al saldo: all'apertura il margine più la commissione, alla
+  chiusura il margine con il profitto o meno la perdita e la commissione. Così una perdita non esce mai da un conto spot
+  che non ha più la moneta. Restano sul wallet principale, con il loro doppio effetto, profitto e commissione delle
+  operazioni di cui OKX non dà il margine (margine cross, archivio trimestrale in CSV) e delle posizioni aperte con la
+  versione 1.0.66, e il funding quando sono aperti insieme un long e uno short dello stesso contratto.
 - **Bybit** (conto Derivati) e **Binance** (conti futures): dalla versione 1.0.67 il conto è il sotto-wallet
   **Derivati** e i giroconti con gli altri conti diventano trasferimenti interni. I movimenti importati con le
   versioni precedenti stanno sul wallet principale: la voce *Marca come derivato* (menu dei movimenti, *Altre
@@ -599,6 +615,9 @@ fra loro.
 
 ### Derivati nei quadri T e RT {#derivati-quadri}
 
+> **Funzione in bozza.** La gestione dei derivati è ancora in versione di prova e può cambiare con le prossime
+> versioni, anche nei valori calcolati.
+
 I redditi da derivati vanno nella **sezione II-A del quadro RT** (modello Redditi Persone fisiche) e nella **sezione II
 del quadro T** (modello 730), insieme agli altri redditi diversi di natura finanziaria tassati al 26%. Il programma
 riporta i movimenti classificati come derivati. Quelli non classificati restano cripto-attività.
@@ -626,7 +645,9 @@ Esempio con cifre inventate, anno 2025:
 
 Colonna 1 = 300 + 5 + 80 = **385**, colonna 2 = 100 + 15 + 10 + 250 + 5 + 30 + 2 = **412**, risultato = minusvalenza di
 **27**. Per una chiusura di OKX calcolata in LIFO il valore sta sulla riga del token, mentre la riga del profitto di OKX
-vale 0,00 e non sposta nulla.
+vale 0,00 e non sposta nulla. Con l'opzione *Conto derivati* una perdita pagata dal conto vale il costo delle monete nel
+conto, mentre il LIFO la valuta al valore del momento: la differenza resta sulla riga della perdita (nell'esempio del conto
+derivati −4 €, cioè 180 € di costo contro 176 € di valore).
 
 **Righi compilati, che cambiano con il modello dell'anno:**
 

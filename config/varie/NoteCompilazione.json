@@ -384,6 +384,7 @@
    "                scelta, perche' il contratto consegna una cripto-attivita' come una cessione a termine.<br>",
    "                I valori di questo report vanno quindi <b>verificati con un professionista</b> prima",
    "                di riportarli in dichiarazione.<br>",
+   "                <b>Calcolo dei derivati in versione bozza</b> : puo' cambiare con le prossime versioni del programma.<br>",
    "                </font></html>"
   ],
   "DERIVATI_RT": [
@@ -411,6 +412,7 @@
    "                Perdite della sezione dei derivati che risultano dal programma nei quattro anni precedenti, solo",
    "                derivati : <b>{perdite}</b>. Non tengono conto di quanto gia' usato in compensazione ne' delle",
    "                perdite da altri strumenti.<br>",
+   "                <b>Calcolo dei derivati in versione bozza</b> : puo' cambiare con le prossime versioni del programma.<br>",
    "                </font></html>"
   ],
   "DERIVATI_RT.2023": [
@@ -436,6 +438,7 @@
    "                Perdite della sezione dei derivati che risultano dal programma nei quattro anni precedenti, solo",
    "                derivati : <b>{perdite}</b>. Non tengono conto di quanto gia' usato in compensazione ne' delle",
    "                perdite da altri strumenti.<br>",
+   "                <b>Calcolo dei derivati in versione bozza</b> : puo' cambiare con le prossime versioni del programma.<br>",
    "                </font></html>"
   ],
   "DERIVATI_RT.2024": [
@@ -461,6 +464,7 @@
    "                Perdite della sezione dei derivati che risultano dal programma nei quattro anni precedenti, solo",
    "                derivati : <b>{perdite}</b>. Non tengono conto di quanto gia' usato in compensazione ne' delle",
    "                perdite da altri strumenti.<br>",
+   "                <b>Calcolo dei derivati in versione bozza</b> : puo' cambiare con le prossime versioni del programma.<br>",
    "                </font></html>"
   ],
   "DERIVATI_T": [
@@ -479,6 +483,7 @@
    "                cioe' la somma algebrica di differenziali, proventi e oneri, non dipende dal modo di raggruppare. Alcuni movimenti sono gia' il netto di un giorno : il funding dei CSV di Bybit e di Binance. Per loro le due colonne sono piu' basse di quelle che darebbero le singole righe del file, con lo stesso risultato. Il funding conta nell'anno in cui e' pagato o incassato, anche quando la posizione si chiude in un anno successivo: e' una scelta del programma, perche' nessuna fonte ufficiale parla del funding.",
    "                Le due colonne sono arrotondate all'euro sul totale, e il dettaglio movimento per movimento e'",
    "                nel foglio <i>Derivati</i> dell'Excel archiviato con la dichiarazione.<br>",
+   "                <b>Calcolo dei derivati in versione bozza</b> : puo' cambiare con le prossime versioni del programma.<br>",
    "                </font></html>"
   ],
   "DERIVATI_T.2024": [
@@ -505,6 +510,7 @@
    "                Perdite della sezione dei derivati che risultano dal programma nei quattro anni precedenti, solo",
    "                derivati : <b>{perdite}</b>. Non tengono conto di quanto gia' usato in compensazione ne' delle",
    "                perdite da altri strumenti.<br>",
+   "                <b>Calcolo dei derivati in versione bozza</b> : puo' cambiare con le prossime versioni del programma.<br>",
    "                </font></html>"
   ],
   "DSU": [

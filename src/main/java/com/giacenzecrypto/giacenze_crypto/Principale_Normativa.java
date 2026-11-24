@@ -14,13 +14,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -701,5 +705,170 @@ public class Principale_Normativa {
         }
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
                 .replace("\"", "&quot;").replace("'", "&#39;");
+    }
+
+    // ------------------------------------------------------------------ ricerca per estremi e filtri
+
+    /** Voce "nessun filtro" delle combo tipo di atto e argomento. */
+    public static final String TUTTI = "Tutti";
+
+    /**
+     * Tipo di atto, nell'ordine di prova (il primo che combacia vince). Il CSV distingue solo
+     * ufficiale/derivato: il tipo si ricava dagli estremi. <b>Copia</b> di {@code TIPI_ATTO} in
+     * {@code Sito/strumenti/genera_indice_normativa.py}: i due elenchi vanno tenuti allineati.
+     */
+    private static final List<Map.Entry<Pattern, String>> TIPI_ATTO = List.of(
+            Map.entry(Pattern.compile("^(Allegato \\d+ al )?Provvedimento", Pattern.CASE_INSENSITIVE), "Provvedimento"),
+            Map.entry(Pattern.compile("^Circolare", Pattern.CASE_INSENSITIVE), "Circolare"),
+            Map.entry(Pattern.compile("^Risoluzione", Pattern.CASE_INSENSITIVE), "Risoluzione"),
+            Map.entry(Pattern.compile("^Risposta a interpello", Pattern.CASE_INSENSITIVE), "Risposta a interpello"),
+            Map.entry(Pattern.compile("^(Legge|L\\.\\s)", Pattern.CASE_INSENSITIVE), "Legge"),
+            Map.entry(Pattern.compile("^(D\\.L\\.|Decreto[- ]legge)", Pattern.CASE_INSENSITIVE), "Decreto-legge"),
+            Map.entry(Pattern.compile("^(D\\.Lgs\\.|Decreto legislativo)", Pattern.CASE_INSENSITIVE), "Decreto legislativo"),
+            Map.entry(Pattern.compile("^(D\\.P\\.R\\.|D\\.P\\.C\\.M\\.|D\\.M\\.|Decreto|TUIR)", Pattern.CASE_INSENSITIVE),
+                    "Decreto, DPR, DPCM, DM"),
+            Map.entry(Pattern.compile("^(Direttiva|Regolamento)", Pattern.CASE_INSENSITIVE), "Normativa UE"),
+            Map.entry(Pattern.compile("^(Modello|Istruzioni|Dichiarazione Sostitutiva)", Pattern.CASE_INSENSITIVE),
+                    "Modelli e istruzioni"));
+
+    private static final Pattern ESTREMI_DA_IDENTIFICATIVO = Pattern.compile(
+            "^(Circolare|Risoluzione|Risposta a interpello|Provvedimento|Allegato|D\\.M\\.|Modello)",
+            Pattern.CASE_INSENSITIVE);
+    private static final Pattern SEPARATORE_TITOLO = Pattern.compile("\\s+[-\u2014\u2013]\\s+");
+
+    /** "12/E", "12 / e": la sigla di circolari e risoluzioni, da unire in "12e" (come {@code SIGLA_RE} del sito). */
+    private static final Pattern SIGLA = Pattern.compile("\\b(\\d{1,4})\\s*/\\s*([a-z])\\b");
+    private static final Pattern PAROLA = Pattern.compile("[a-z0-9]+");
+
+    /** Parole che non dicono nulla su quale atto si cerca ("circolare n. 12/E"). */
+    private static final Set<String> PAROLE_VUOTE = Set.of(
+            "il", "lo", "la", "i", "gli", "le", "un", "uno", "una",
+            "di", "del", "dello", "della", "dei", "degli", "delle",
+            "a", "al", "allo", "alla", "ai", "agli", "alle",
+            "da", "dal", "dallo", "dalla", "dai", "dagli", "dalle",
+            "in", "nel", "nello", "nella", "nei", "negli", "nelle",
+            "con", "col", "coi", "su", "sul", "sullo", "sulla", "sui", "sugli", "sulle",
+            "per", "tra", "fra", "che", "n", "nr", "num", "numero");
+
+    /**
+     * Designazione dell'atto ("Circolare n. 12/E dell'8 aprile 2016", "Legge 29 dicembre 2022, n.
+     * 197"). Per la prassi sta nell'identificativo (il titolo è l'oggetto); per le leggi
+     * l'identificativo è un URN e la designazione è la prima parte del titolo, prima del trattino.
+     */
+    public static String Estremi(DocumentoNormativa d) {
+        String ident = d.identificativo() == null ? "" : d.identificativo().strip();
+        if (ESTREMI_DA_IDENTIFICATIVO.matcher(ident).find()) {
+            return ident;
+        }
+        String titolo = d.titolo() == null ? "" : d.titolo();
+        return SEPARATORE_TITOLO.split(titolo, 2)[0].strip();
+    }
+
+    /** @return il tipo di atto ("Circolare", "Legge"...), {@code "Altro"} se non riconosciuto */
+    public static String TipoAtto(DocumentoNormativa d) {
+        String estremi = Estremi(d);
+        String titolo = d.titolo() == null ? "" : d.titolo();
+        for (Map.Entry<Pattern, String> t : TIPI_ATTO) {
+            if (t.getKey().matcher(estremi).find() || t.getKey().matcher(titolo).find()) {
+                return t.getValue();
+            }
+        }
+        if (d.percorso() != null && d.percorso().startsWith("Istruzioni_Dichiarazioni/")) {
+            return "Modelli e istruzioni";
+        }
+        return "Altro";
+    }
+
+    private static String Normalizza(String testo) {
+        return Normalizer.normalize(testo == null ? "" : testo, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "").toLowerCase(Locale.ITALIAN);
+    }
+
+    private static List<String> Parole(String normalizzato) {
+        List<String> parole = new ArrayList<>();
+        Matcher m = PAROLA.matcher(normalizzato);
+        while (m.find()) {
+            parole.add(m.group());
+        }
+        return parole;
+    }
+
+    /**
+     * Parole del testo digitato per il confronto con gli estremi: sigla unita ("12/e" diventa
+     * "12e"), senza le parole vuote ("n", "del"...).
+     */
+    static List<String> ParoleRicerca(String ricerca) {
+        String unito = SIGLA.matcher(Normalizza(ricerca)).replaceAll("$1$2");
+        List<String> parole = Parole(unito);
+        parole.removeIf(PAROLE_VUOTE::contains);
+        return parole;
+    }
+
+    /** Termini degli estremi in entrambe le forme: "12" e "e" separati, e la sigla unita "12e". */
+    private static Set<String> TermineEstremi(DocumentoNormativa d) {
+        String n = Normalizza(Estremi(d) + " " + TipoAtto(d));
+        Set<String> termini = new HashSet<>(Parole(n));
+        termini.addAll(Parole(SIGLA.matcher(n).replaceAll("$1$2")));
+        return termini;
+    }
+
+    /**
+     * @return {@code true} se gli estremi del documento contengono tutte le parole della ricerca: i
+     *         numeri devono coincidere per intero ("12" non è "2012"), le parole possono essere
+     *         l'inizio di un termine. Così "circolare 12/e", "circolare 12e", "circolare n. 12/E"
+     *         e "circolare 12" trovano la stessa circolare. Stessa regola della pagina Normative
+     *         del sito ({@code corrispondenzeEstremi} in {@code ricerca-normative.js}).
+     */
+    public static boolean CorrispondeEstremi(DocumentoNormativa d, String ricerca) {
+        List<String> parole = ParoleRicerca(ricerca);
+        if (parole.isEmpty()) {
+            return false;
+        }
+        Set<String> termini = TermineEstremi(d);
+        for (String p : parole) {
+            boolean numero = p.chars().allMatch(Character::isDigit);
+            boolean trovata = numero ? termini.contains(p) : termini.stream().anyMatch(t -> t.startsWith(p));
+            if (!trovata) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Ripiego quando la frase intera non compare nel testo: tutte le parole, in qualunque punto.
+     *
+     * @param testoMinuscolo testo del documento già in minuscolo
+     * @param ricercaMinuscola testo digitato già in minuscolo
+     */
+    public static boolean ContieneTutteLeParole(String testoMinuscolo, String ricercaMinuscola) {
+        String[] parole = ricercaMinuscola.strip().split("\\s+");
+        for (String p : parole) {
+            if (!p.isEmpty() && !testoMinuscolo.contains(p)) {
+                return false;
+            }
+        }
+        return parole.length > 0 && !parole[0].isEmpty();
+    }
+
+    /** @return i valori distinti, dal più frequente (a parità, in ordine alfabetico), preceduti da {@link #TUTTI} */
+    private static List<String> ValoriPerFrequenza(Stream<String> valori) {
+        Map<String, Long> conta = valori.filter(v -> v != null && !v.isBlank())
+                .collect(Collectors.groupingBy(v -> v, Collectors.counting()));
+        List<String> risultato = new ArrayList<>(conta.keySet());
+        risultato.sort((a, b) -> conta.get(b).equals(conta.get(a))
+                ? a.compareToIgnoreCase(b) : Long.compare(conta.get(b), conta.get(a)));
+        risultato.add(0, TUTTI);
+        return risultato;
+    }
+
+    /** @return i tipi di atto presenti nel catalogo, per la combo "Tipo di atto" */
+    public static List<String> TipiAttoPresenti(List<DocumentoNormativa> catalogo) {
+        return ValoriPerFrequenza(catalogo.stream().map(Principale_Normativa::TipoAtto));
+    }
+
+    /** @return gli argomenti presenti nel catalogo, per la combo "Argomento" */
+    public static List<String> ArgomentiPresenti(List<DocumentoNormativa> catalogo) {
+        return ValoriPerFrequenza(catalogo.stream().flatMap(d -> d.argomenti().stream()));
     }
 }

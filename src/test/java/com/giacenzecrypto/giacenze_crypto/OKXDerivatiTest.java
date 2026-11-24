@@ -477,9 +477,9 @@ class OKXDerivatiTest {
     private static java.math.BigDecimal saldoMargine(List<String[]> righe) {
         java.math.BigDecimal tot = java.math.BigDecimal.ZERO;
         for (String[] v : righe) {
-            if (!Derivati.Tipo(v).equals(Derivati.MARGINE) || !OKXDerivati.SOTTOWALLET.equals(v[4])) continue;
-            if (!v[13].isBlank()) tot = tot.add(new java.math.BigDecimal(v[13]));
-            else tot = tot.add(new java.math.BigDecimal(v[10]));
+            //Tutte le monete del sotto-wallet: nella forma "conto" ci stanno anche profitto, perdita, commissione e funding
+            if (!OKXDerivati.SOTTOWALLET.equals(v[4]) || Derivati.Tipo(v).equals(Derivati.CONTRATTO)) continue;
+            tot = tot.add(OKXDerivati.QuantitaConSegno(v));
         }
         return tot;
     }
@@ -850,6 +850,29 @@ class OKXDerivatiTest {
         assertEquals(1, r.size());
         assertEquals(0, new java.math.BigDecimal("6.5").compareTo(new java.math.BigDecimal(r.get(0)[13])));
         assertEquals(0, sommaBalChg(vecchia, nuova, ch).compareTo(sommaUSDC()));
+    }
+
+    /**
+     * Come sopra, con un funding pagato fra l'apertura nuova e la chiusura: il funding va sul conto (la parte nuova e' aperta fra i token)
+     * e torna allo spot con il margine riportato, quindi il rientro della parte vecchia non lo riaggiunge una seconda volta.
+     */
+    @Test
+    void apertaConLaVersionePubblicataEAumentataDopo_conFundingSulConto() {
+        JSONObject vecchia = fill("0999", T0 - 3_600_000L, "1", "1", "6.5", "0", "-0.0033");
+        aperturaPubblicata("0999", T0 - 3_600_000L, "6.5", "-0.0033");
+        JSONObject nuova = fill("1001", T0, "1", "1", "6.5", "0", "-0.0033");
+        JSONObject f = funding("2201", T0 + 1_800_000L, "-0.004");
+        JSONObject ch = fill("1003", T0 + 7_200_000L, "2", "2", "-12.996", "0.004", "-0.0026");
+        importa(nuova, f, ch);
+
+        String[] funding = Principale.MappaCryptoWallet.values().stream()
+                .filter(v -> Derivati.Tipo(v).equals(Derivati.FUNDING)).findFirst().orElseThrow();
+        assertEquals(OKXDerivati.SOTTOWALLET, funding[4], "pagato dal margine della parte nuova");
+        assertEquals(0, saldoMargine(new ArrayList<>(Principale.MappaCryptoWallet.values())).signum(), "sotto-wallet a zero");
+        List<String[]> r = rientri();
+        assertEquals(1, r.size());
+        assertEquals(0, new java.math.BigDecimal("6.5").compareTo(new java.math.BigDecimal(r.get(0)[13])), "12,996 - 6,496 riportati");
+        assertEquals(0, sommaBalChg(vecchia, nuova, f, ch).compareTo(sommaUSDC()));
     }
 
     @Test
@@ -1237,7 +1260,7 @@ class OKXDerivatiTest {
         assertEquals(1, g.voci.stream().filter(x -> x.legame == Principale_GiroMovimento.Legame.SCELTO).count());
         assertTrue(Principale_GiroMovimento.Spiega(Principale.MappaCryptoWallet.get(apertura), Principale.MappaCryptoWallet).startsWith("Apertura di 2 contratti long"));
         assertTrue(Principale_GiroMovimento.Spiega(Principale.MappaCryptoWallet.get(fundingPagato), Principale.MappaCryptoWallet).startsWith("Funding pagato"));
-        assertTrue(Principale_GiroMovimento.Spiega(Principale.MappaCryptoWallet.get(margine), Principale.MappaCryptoWallet).startsWith("Margine parcheggiato"));
+        assertTrue(Principale_GiroMovimento.Spiega(Principale.MappaCryptoWallet.get(margine), Principale.MappaCryptoWallet).startsWith("Giroconto dallo spot al sotto-wallet Derivati"));
     }
 
     @Test
@@ -1277,5 +1300,114 @@ class OKXDerivatiTest {
         assertTrue(idGiro(cm[0]).contains(pc[0]));
         assertTrue(idGiro(pc[0]).contains(cm[0]));
         assertTrue(Principale_GiroMovimento.Spiega(cm, Principale.MappaCryptoWallet).startsWith("Commissione collegata"));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Forma "conto" (decisione dell'utente del 22/11/2026)
+    // ---------------------------------------------------------------------------------------------
+
+    /** Un fill con il margine della posizione dopo il fill ({@code posBal}), come lo scrive OKX. */
+    private static JSONObject fillConSaldo(String billId, long ts, String subType, String sz, String posBalChg, String pnl, String fee,
+            String posBal) {
+        return fill(billId, ts, subType, sz, posBalChg, pnl, fee).put("posBal", posBal);
+    }
+
+    /**
+     * Profitto, perdita, commissione e funding stanno sul sotto-wallet dei derivati, e dopo ogni fill il sotto-wallet vale il margine della
+     * posizione secondo OKX ({@code posBal}). Lo spot ha solo margine e commissione d'apertura: la perdita della chiusura non lo porta mai
+     * sotto zero, perche' la paga il conto e rientra il netto. Apertura di 2 contratti con 13 USDC, funding pagato 0,009, chiusura di
+     * meta' con profitto 0,003, chiusura del resto con perdita 0,2.
+     */
+    @Test
+    void laFormaConto_ilSottoWalletSegueIlMargineDiOKXELoSpotNonVaMaiSottoZero() {
+        chiusuraPubblicata("0001", T0 - 2_592_000_000L, "13.0065");
+        Principale.MappaCryptoWallet.values().stream().filter(v -> "0001".equals(v[24])).findFirst().orElseThrow()[7] = "Deposit";
+        JSONObject[] bill = {
+            fillConSaldo("5001", T0, "1", "2", "13", "0", "-0.0065", "13"),
+            funding("5002", T0 + 1_800_000L, "-0.009").put("posBal", "12.991"),
+            fillConSaldo("5003", T0 + 3_600_000L, "2", "1", "-6.4955", "0.003", "-0.0013", "6.4955"),
+            fillConSaldo("5004", T0 + 7_200_000L, "2", "1", "-6.4955", "-0.2", "-0.0013", "0")};
+        java.math.BigDecimal spot = new java.math.BigDecimal("13.0065");
+        for (JSONObject b : bill) {
+            importa(b);
+            spot = spot.add(new java.math.BigDecimal(b.getString("balChg")));
+            java.math.BigDecimal conto = saldo(OKXDerivati.SOTTOWALLET, "USDC");
+            assertEquals(0, new java.math.BigDecimal(b.getString("posBal")).compareTo(conto), "conto dopo il bill " + b.getString("billId") + ": " + conto);
+            assertEquals(0, spot.compareTo(sommaUSDC().subtract(conto)), "spot dopo il bill " + b.getString("billId"));
+            assertTrue(Funzioni.ControllaSaldiNegativi(Principale.MappaCryptoWallet.values()).isEmpty(), "nessun saldo negativo");
+        }
+        //Le righe del risultato stanno sul conto, il giroconto e' il netto: all'apertura margine piu' commissione, alla chiusura il balChg
+        for (String[] v : Principale.MappaCryptoWallet.values()) {
+            if (!"OKX".equals(v[3]) || "0001".equals(v[24])) continue;
+            String tipo = Derivati.Tipo(v);
+            if (tipo.equals(Derivati.PNL) || tipo.equals(Derivati.COMMISSIONE) || tipo.equals(Derivati.FUNDING)) {
+                assertEquals(OKXDerivati.SOTTOWALLET, v[4], v[0]);
+            }
+        }
+        java.util.function.Function<String, java.math.BigDecimal> giroconto = billId -> Principale.MappaCryptoWallet.values().stream()
+                .filter(v -> billId.equals(v[24]) && Derivati.Tipo(v).equals(Derivati.MARGINE) && OKXDerivati.SOTTOWALLET.equals(v[4]))
+                .map(OKXDerivati::QuantitaConSegno).findFirst().orElseThrow();
+        assertEquals(0, new java.math.BigDecimal("13.0065").compareTo(giroconto.apply("5001")));
+        assertEquals(0, new java.math.BigDecimal("-6.4972").compareTo(giroconto.apply("5003")));
+        assertEquals(0, new java.math.BigDecimal("-6.2942").compareTo(giroconto.apply("5004")));
+        //La commissione dell'apertura viene dopo il giroconto in entrata, nello stesso secondo: il conto ha gia' il denaro
+        String commissione = Principale.MappaCryptoWallet.values().stream()
+                .filter(v -> "5001".equals(v[24]) && Derivati.Tipo(v).equals(Derivati.COMMISSIONE)).findFirst().orElseThrow()[0];
+        String entrata = Principale.MappaCryptoWallet.values().stream()
+                .filter(v -> "5001".equals(v[24]) && Derivati.Tipo(v).equals(Derivati.MARGINE) && OKXDerivati.SOTTOWALLET.equals(v[4]))
+                .findFirst().orElseThrow()[0];
+        assertTrue(entrata.compareToIgnoreCase(commissione) < 0, entrata + " prima di " + commissione);
+        //Contratti aperti dopo l'apertura e il funding: margine parcheggiato 12,991 (letto dai dati, non dal giroconto)
+        List<Principale_ContrattiAperti.Riga> aperti = Principale_ContrattiAperti.Calcola(T0 + 3_000_000L, Principale.MappaCryptoWallet.values());
+        assertEquals(1, aperti.size());
+        assertEquals(0, new java.math.BigDecimal("12.991").compareTo(aperti.get(0).margine));
+    }
+
+    /**
+     * Due aperture nello stesso secondo con gli stessi contratti, margine diverso e la stessa commissione, arrivate in due scaricamenti
+     * diversi: la seconda non si scarta come doppione della prima (stessa chiave logica: istante, moneta, quantita'), perche' ha un altro
+     * billId. Prima si perdevano il suo token e la sua commissione, e la chiusura non trovava tutti i contratti aperti.
+     */
+    @Test
+    void dueFillUgualiNelloStessoSecondoInDueScaricamenti_nonSiScartano() {
+        chiusuraPubblicata("0001", T0 - 2_592_000_000L, "20");
+        Principale.MappaCryptoWallet.values().stream().filter(v -> "0001".equals(v[24])).findFirst().orElseThrow()[7] = "Deposit";
+        JSONObject a1 = fillConSaldo("6001", T0, "1", "1", "6.5", "0", "-0.0013", "6.5");
+        JSONObject a2 = fillConSaldo("6002", T0, "1", "1", "6.6", "0", "-0.0013", "13.1");
+        JSONObject ch = fillConSaldo("6003", T0 + 3_600_000L, "2", "2", "-13.1", "0.01", "-0.0026", "0");
+        importa(a1);
+        importa(a2);
+        assertEquals(2, Principale.MappaCryptoWallet.values().stream()
+                .filter(v -> Derivati.Tipo(v).equals(Derivati.CONTRATTO) && !v[11].isBlank()).count(), "due token di apertura");
+        assertEquals(2, Principale.MappaCryptoWallet.values().stream()
+                .filter(v -> Derivati.Tipo(v).equals(Derivati.COMMISSIONE) && ("6001".equals(v[24]) || "6002".equals(v[24]))).count(), "due commissioni");
+        importa(ch);
+        assertEquals(0, saldo(OKXDerivati.SOTTOWALLET, "USDC").signum(), "conto a zero a posizione chiusa");
+        assertEquals(0, new java.math.BigDecimal("20").add(sommaBalChg(a1, a2, ch)).compareTo(sommaUSDC()), "somma dei movimenti = deposito + balChg");
+        assertTrue(rientri().isEmpty(), "la chiusura trova tutti i contratti fra i token");
+        //Reimportando tutto non entra nulla
+        int righe = Principale.MappaCryptoWallet.size();
+        importa(a1, a2, ch);
+        assertEquals(righe, Principale.MappaCryptoWallet.size());
+    }
+
+    /**
+     * Inversione in net mode (D18 punto 10): chiusura del long e apertura dello short nello stesso millisecondo, con la stessa commissione,
+     * arrivate in due scaricamenti diversi. Entrambe le commissioni restano, e il conto segue il margine di OKX.
+     */
+    @Test
+    void inversioneInDueScaricamenti_entrambeLeCommissioniRestano() {
+        chiusuraPubblicata("0001", T0 - 2_592_000_000L, "20");
+        Principale.MappaCryptoWallet.values().stream().filter(v -> "0001".equals(v[24])).findFirst().orElseThrow()[7] = "Deposit";
+        JSONObject ap = fillConSaldo("7001", T0, "1", "1", "6.5", "0", "-0.0013", "6.5");
+        JSONObject chiude = fillConSaldo("7002", T0 + 3_600_000L, "2", "1", "-6.5", "-0.01", "-0.003", "0").put("ordId", "77");
+        JSONObject apre = fillConSaldo("7003", T0 + 3_600_000L, "2", "1", "6.4", "0", "-0.003", "6.4").put("ordId", "77");
+        importa(ap);
+        importa(chiude);
+        importa(apre);
+        assertEquals(3, Principale.MappaCryptoWallet.values().stream().filter(v -> Derivati.Tipo(v).equals(Derivati.COMMISSIONE)).count(),
+                Principale.MappaCryptoWallet.values().stream().map(v -> v[0] + " " + v[24]).toList().toString());
+        assertEquals(0, new java.math.BigDecimal("6.4").compareTo(saldo(OKXDerivati.SOTTOWALLET, "USDC")));
+        assertEquals(0, new java.math.BigDecimal("20").add(sommaBalChg(ap, chiude, apre)).add(new java.math.BigDecimal("6.4")).compareTo(sommaUSDC()));
     }
 }

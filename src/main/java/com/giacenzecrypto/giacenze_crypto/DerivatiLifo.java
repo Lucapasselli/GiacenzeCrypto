@@ -483,22 +483,74 @@ public final class DerivatiLifo {
                 //Il reddito si conta solo quando il profitto dell'exchange dello stesso fill e' classificato come derivato: altrimenti
                 //quel denaro entra come deposito da classificare e il reddito risulterebbe due volte se poi lo si classifica diversamente
                 if (!PnlClassificati(fill)) continue;
+                //Un token da un file CSV (DerivatiDaCsv) senza la riga del profitto collegata: quel profitto non si saprebbe azzerare e
+                //conterebbe due volte. Resta il profitto dell'exchange
+                if (RichiedeRigaProfitto(riga) && !HaRigaProfitto(fill)) continue;
                 BigDecimal prezzo = PrezzoMoneta(fill);
                 if (prezzo == null) continue;
-                BigDecimal lifo = c.differenzialeLifo.multiply(prezzo).setScale(2, RoundingMode.HALF_UP);
+                //Commissione compresa nella riga del profitto (DerivatiDaCsv, Bybit conto Derivati): la riga del profitto torna a zero come le
+                //altre, quindi il reddito della chiusura e' il LIFO meno la commissione, arrotondato una volta sola. Lasciarla alla riga del
+                //profitto come importo a se' la farebbe sparire nell'arrotondamento a due decimali, quando e' di pochi millesimi
+                BigDecimal inclusa = Num(Derivati.Dati(riga).get(DerivatiDaCsv.CHIAVE_COMMISSIONE_INCLUSA));
+                BigDecimal netto = inclusa == null ? c.differenzialeLifo : c.differenzialeLifo.subtract(inclusa);
+                BigDecimal lifo = netto.multiply(prezzo).setScale(2, RoundingMode.HALF_UP);
                 riga[Derivati.CAMPO_RISULTATO] = lifo.toPlainString();
-                scarto.merge(c.episodio, RisultatoPnlMotore(fill).subtract(lifo), BigDecimal::add);
+                scarto.merge(c.episodio, RisultatoPnlAValore(fill, contoP2, mappa).subtract(lifo), BigDecimal::add);
                 anniScarto.computeIfAbsent(c.episodio, k -> new java.util.TreeSet<>()).add(c.anno());
                 fillCoperti.add(ChiaveFill(riga));
                 n++;
             }
         }
+        //Le righe di pnl dei fill in LIFO: il LIFO ha preso il loro risultato al valore del momento. Resta solo la parte che il motore
+        //calcola diversamente (con il conto derivati, una perdita pagata dal conto vale il costo dei lotti scaricati): zero altrove
         for (String bill : fillCoperti) {
             for (String[] v : perBill.get(bill)) {
-                if (Derivati.HaMarcatore(v) && Derivati.Tipo(v).equals(Derivati.PNL)) v[Derivati.CAMPO_RISULTATO] = "0.00";
+                if (!Derivati.HaMarcatore(v) || !Derivati.Tipo(v).equals(Derivati.PNL)) continue;
+                BigDecimal motore = Derivati.Risultato(v);
+                BigDecimal valore = RisultatoAValore(v, contoP2, mappa);
+                BigDecimal resto = motore == null || valore == null ? BigDecimal.ZERO : motore.subtract(valore);
+                v[Derivati.CAMPO_RISULTATO] = resto.setScale(2, RoundingMode.HALF_UP).toPlainString();
             }
         }
         return n;
+    }
+
+    /**
+     * Il risultato di una riga di pnl al valore del momento, quello che il LIFO ridistribuisce fra le chiusure: il {@code [46]} del motore,
+     * salvo una perdita pagata dal conto derivati con l'opzione Conto derivati, che per il motore vale il costo dei lotti scaricati e qui
+     * vale meno il suo valore ({@code [15]}). La differenza fra i due resta sulla riga quando il fill passa in LIFO.
+     *
+     * @return il risultato, {@code null} se la riga non ne ha uno
+     */
+    static BigDecimal RisultatoAValore(String[] v, boolean contoP2, Map<String, String[]> mappa) {
+        if (AddebitoSulConto(v, contoP2, mappa)) {
+            BigDecimal valore = Num(v[15]);
+            return valore == null ? null : valore.negate();
+        }
+        return Derivati.Risultato(v);
+    }
+
+    /** Somma di {@link #RisultatoAValore} delle righe di pnl classificate del fill. */
+    static BigDecimal RisultatoPnlAValore(List<String[]> righeDelFill, boolean contoP2, Map<String, String[]> mappa) {
+        BigDecimal t = BigDecimal.ZERO;
+        if (righeDelFill == null) return t;
+        for (String[] v : righeDelFill) {
+            if (!Derivati.Tipo(v).equals(Derivati.PNL) || !Derivati.HaMarcatore(v)) continue;
+            BigDecimal r = RisultatoAValore(v, contoP2, mappa);
+            if (r != null) t = t.add(r);
+        }
+        return t;
+    }
+
+    /**
+     * Con l'opzione Conto derivati, la riga e' un addebito ({@code PDV}) di una moneta non FIAT pagato dal conto derivati: il motore le da'
+     * il costo dei lotti scaricati invece del valore. Stesso riconoscimento del motore ({@link ContoDerivati#SulContoP2}).
+     */
+    static boolean AddebitoSulConto(String[] v, boolean contoP2, Map<String, String[]> mappa) {
+        if (!contoP2 || v == null || v.length <= Derivati.CAMPO_RISULTATO || v[18] == null) return false;
+        boolean prelievo = (v[11] == null || v[11].isBlank()) && v[8] != null && !v[8].isBlank() && !"FIAT".equalsIgnoreCase(v[9]);
+        return prelievo && !v[18].contains(Derivati.MARCATORE_ACCREDITO) && v[18].contains(Derivati.MARCATORE_ADDEBITO)
+                && ContoDerivati.SulContoP2(v, mappa);
     }
 
     /**
@@ -614,6 +666,22 @@ public final class DerivatiLifo {
                 + " e il reddito degli anni precedenti non cambia.";
     }
 
+    /**
+     * @return {@code true} se il token viene dal file di un exchange diverso da OKX ({@link DerivatiDaCsv}): il suo profitto sta in una
+     *         riga collegata solo quando l'abbinamento e' riuscito, e senza quella il LIFO non si applica
+     */
+    static boolean RichiedeRigaProfitto(String[] token) {
+        String p = Derivati.Dati(token).get("piattaforma");
+        return p != null && !p.isBlank() && !p.equalsIgnoreCase("OKX");
+    }
+
+    /** @return {@code true} se il fill ha almeno una riga di profitto ({@link Derivati#PNL}) */
+    static boolean HaRigaProfitto(List<String[]> righeDelFill) {
+        if (righeDelFill == null) return false;
+        for (String[] v : righeDelFill) if (Derivati.Tipo(v).equals(Derivati.PNL)) return true;
+        return false;
+    }
+
     /** @return {@code true} se ogni riga di pnl del fill (se ce ne sono) e' classificata come derivato ({@code DDV}/{@code PDV}) */
     static boolean PnlClassificati(List<String[]> righeDelFill) {
         if (righeDelFill == null) return true;
@@ -631,12 +699,12 @@ public final class DerivatiLifo {
             BigDecimal d = Num(Derivati.Dati(v).get(CHIAVE_PREZZO_MONETA));
             if (d != null && d.signum() > 0) return d;
         }
-        //2 - il margine del fill: valore in euro (due decimali) diviso la quantita' con cui e' stato valutato
+        //2 - il giroconto del fill: valore in euro (due decimali) diviso la sua quantita' (OKXDerivati.ImpostaQuantita tiene il valore
+        //allineato quando la quantita' cambia, e nella forma "conto" la quantita' non e' piu' il margine)
         for (String[] v : righeDelFill) {
             if (!Derivati.Tipo(v).equals(Derivati.MARGINE)) continue;
-            Map<String, String> d = Derivati.Dati(v);
-            BigDecimal qta = Num(d.get("margineBorsa"));
-            if (qta == null) qta = Num(d.get("margine"));
+            BigDecimal qta = Num(v[13] != null && !v[13].isBlank() ? v[13] : v[10]);
+            if (qta != null) qta = qta.abs();
             BigDecimal valore = Num(v[15]);
             if (qta != null && qta.signum() > 0 && valore != null && valore.signum() > 0) return valore.divide(qta, MC);
         }

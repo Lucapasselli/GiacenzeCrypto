@@ -906,6 +906,9 @@ quella scheda, ed è completo solo se il file del Fiat Wallet copre tutta la sto
 
 ## Contratti derivati (codice 9) {#contratti-derivati-codice-9}
 
+> **Funzione in bozza.** La gestione dei derivati è ancora in versione di prova e può cambiare con le prossime
+> versioni, anche nei valori calcolati.
+
 I contratti derivati presso un exchange estero vanno nel quadro con il **codice 9** ("contratti derivati e altri
 rapporti finanziari stipulati al di fuori del territorio dello Stato") e pagano l'IVAFE: 0,20%, o 0,40% dal 2024 se lo
 Stato dell'intermediario è a fiscalità privilegiata. Il programma produce **un rigo per exchange** (gruppo wallet) e
@@ -922,15 +925,57 @@ Excel. Lo Stato estero è quello indicato nei periodi FIAT del gruppo, come per 
   realizzato** al 31 dicembre, se positivo, per una posizione ancora aperta. Il guadagno non realizzato è stimato
   con il prezzo a pronti della cripto sottostante, perché il programma non ha il prezzo di riferimento
   dell'exchange,
-- con un valore finale zero il rigo è di solo monitoraggio (colonna 16).
+- con tutti i contratti in perdita la colonna 8 è zero.
 
-Per gli exchange di cui il programma non conosce le singole posizioni (Bybit, Binance) il rigo è di **solo
-monitoraggio**, con il valore del conto derivati all'ingresso in colonna 7.
+Per gli exchange di cui il programma non conosce le singole posizioni (Bybit, Binance) la colonna 7 è il valore del
+conto derivati all'ingresso e la colonna 8 è zero.
 
-**Con l'opzione Conto derivati** il rigo riporta il conto: colonna 7 il valore del conto al 1° gennaio o al primo
-ingresso dell'anno, colonna 8 il valore alla fine dell'anno, o all'ultimo giorno in cui il conto aveva un saldo, più
-il guadagno non realizzato delle posizioni aperte se positivo. Il conto non compare fra i righi delle
-cripto-attività.
+Il rigo con codice 9 non è mai di solo monitoraggio: la colonna 16 si barra solo quando l'intermediario paga
+l'imposta, e un exchange estero non lo fa. Un valore iniziale o finale zero è riportato come **1**, perché il
+software dell'Agenzia delle entrate non accetta lo zero, con i giorni e l'IVAFE (zero) compilati come negli altri
+righi.
+
+**Con l'opzione Conto derivati** il rigo riporta il conto, diviso nei periodi dell'anno in cui ha un saldo: un
+periodo finisce quando il conto si svuota e ne comincia un altro quando torna ad avere un saldo. Per ogni periodo la
+colonna 7 è il valore del conto al 1° gennaio o all'ingresso, la colonna 8 il valore alla fine dell'anno o appena
+prima che il conto si svuoti, e per l'ultimo periodo si aggiunge il guadagno non realizzato delle posizioni aperte se
+positivo. Il rigo somma i periodi e prende come giorni la media ponderata sui valori finali, quindi i giorni in cui il
+conto è vuoto non contano. Il conto non compare fra i righi delle cripto-attività.
+
+Il periodo che comincia il 1° gennaio con delle posizioni ancora aperte dall'anno prima ha in colonna 7 anche il guadagno
+non realizzato al 31 dicembre dell'anno prima, se positivo, calcolato come nella colonna 8 di quell'anno. Il valore
+finale di un anno e il valore iniziale dell'anno dopo coincidono, e il guadagno non realizzato non sparisce al
+passaggio d'anno.
+
+Un esempio con due contratti, uno aperto il 1° marzo e chiuso il 31 marzo, l'altro aperto il 1° luglio e chiuso il
+31 luglio, con il conto vuoto in mezzo:
+
+| Periodo | Colonna 7 | Colonna 8 | Giorni | IVAFE (0,20%) |
+|---|---|---|---|---|
+| Marzo | 1.000 | 1.048 | 31 | 0,18 |
+| Luglio | 2.000 | 1.896 | 31 | 0,32 |
+| **Rigo** | **3.000** | **2.944** | **31** | **0,50** |
+
+Chi apre e chiude molte posizioni svuotando ogni volta il conto ha molti periodi brevi: le colonne 7 e 8 diventano la
+somma di tutti i periodi, mentre i giorni e l'IVAFE restano quelli dei periodi in cui il conto aveva un saldo.
+
+In alternativa, la spunta *Con l'opzione Conto derivati, nel rigo con codice 9 il conto è un solo periodo* (in fondo
+alla scheda *Opzioni Calcolo RW/W*, non attiva di default) tratta il conto come un rapporto unico aperto per tutto
+l'anno: un solo periodo dal primo ingresso all'ultimo giorno con un saldo, con il valore del primo ingresso in colonna
+7 e quello di fine anno, o di appena prima dell'ultimo svuotamento, in colonna 8. I giorni in cui il conto è vuoto
+contano come giorni di detenzione. Nell'esempio sopra il rigo diventa colonna 7 1.000, colonna 8 1.896, 153 giorni,
+IVAFE 1,59. La scelta compare fra le opzioni della dichiarazione archiviata negli anni con il conto derivati.
+
+**Cosa dice l'Agenzia delle entrate.** La circolare 12/E dell'8 aprile 2016 (paragrafo 14.1) tratta il rapporto con
+l'intermediario come un rapporto finanziario unitario: vanno indicati il valore iniziale e il valore finale di
+detenzione del rapporto nel suo complesso, e le singole variazioni della sua composizione non contano. Il periodo si
+spezza solo con un apporto di capitale, come un versamento di contanti o il conferimento di titoli, che richiede un
+nuovo rigo. La circolare risponde a un quesito sulla sanzione per omessa compilazione e porta l'esempio di un singolo
+titolo, non parla dei contratti derivati. Non dice che il periodo finisce quando il saldo va a zero, e non dice nulla
+sui prelievi. Le due opzioni sono quindi due letture della stessa regola: il periodo unico tratta il conto come il
+rapporto unitario della circolare, mentre un periodo per ogni tratto con un saldo lo divide anche quando il conto si
+svuota, perché i giorni a conto vuoto non sono giorni di detenzione. Il programma non spezza il periodo unico per gli
+apporti successivi al primo.
 
 L'IVAFE dei righi con codice 9 non entra nell'imposta sulle cripto-attività del report. Nella stampa i righi
 stanno in una pagina a parte, con i valori da riportare colonna per colonna.

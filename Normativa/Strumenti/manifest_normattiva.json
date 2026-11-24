@@ -209,6 +209,50 @@
   "argomenti": "DAC8"
  },
  {
+  "file": "Leggi/Originale/NormeRichiamate/DLGS_2026-06-19_117_TU_imposte_redditi_originario.akn.xml",
+  "titolo": "D.Lgs. 19 giugno 2026, n. 117 - Testo unico delle imposte sui redditi (nuovo testo unico, applicabile dal 1° gennaio 2027) (originario, vigenza 20260704)",
+  "autorita": "Normattiva - Istituto Poligrafico e Zecca dello Stato",
+  "identificativo": "urn:nir:stato:decreto.legislativo:2026-06-19;117 | G.U. 20260703 cod. 26G00131",
+  "data_documento": "2026-07-04",
+  "argomenti": "plusvalenze, derivati",
+  "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2026-06-19;117",
+  "scaricato_il": "2026-11-23",
+  "sha256": "4a4326d6927b47c140e9610ae19a495fdff9f45a09a8825e95c65af3b6746ffc"
+ },
+ {
+  "file": "Leggi/Originale/NormeRichiamate/DLGS_2026-06-19_117_TU_imposte_redditi_vigente.akn.xml",
+  "titolo": "D.Lgs. 19 giugno 2026, n. 117 - Testo unico delle imposte sui redditi (nuovo testo unico, applicabile dal 1° gennaio 2027) (vigente)",
+  "autorita": "Normattiva - Istituto Poligrafico e Zecca dello Stato",
+  "identificativo": "urn:nir:stato:decreto.legislativo:2026-06-19;117 | G.U. 20260703 cod. 26G00131",
+  "data_documento": "",
+  "argomenti": "plusvalenze, derivati",
+  "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2026-06-19;117",
+  "scaricato_il": "2026-11-23",
+  "sha256": "37f019ed4d0685dbc0057c98581dfebc10f2df2316adfc2a7ef3511ca855e9d2"
+ },
+ {
+  "file": "Leggi/Originale/NormeRichiamate/DLGS_2026-08-07_148_correttivo_omnibus_originario.akn.xml",
+  "titolo": "D.Lgs. 7 agosto 2026, n. 148 - Disposizioni integrative e correttive in materia di imposte sui redditi, successioni e donazioni, IVA, accise, controlli e adempimento collaborativo (Titolo VII: revisione della disciplina dei redditi finanziari) (originario, vigenza 20260812)",
+  "autorita": "Normattiva - Istituto Poligrafico e Zecca dello Stato",
+  "identificativo": "urn:nir:stato:decreto.legislativo:2026-08-07;148 | G.U. 20260811 cod. 26G00169",
+  "data_documento": "2026-08-12",
+  "argomenti": "plusvalenze",
+  "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2026-08-07;148",
+  "scaricato_il": "2026-11-23",
+  "sha256": "262087fa70dc3bdea85f8696c08b26fc056ddcd5a212ce4f9ced341b6f53b62f"
+ },
+ {
+  "file": "Leggi/Originale/NormeRichiamate/DLGS_2026-08-07_148_correttivo_omnibus_vigente.akn.xml",
+  "titolo": "D.Lgs. 7 agosto 2026, n. 148 - Disposizioni integrative e correttive in materia di imposte sui redditi, successioni e donazioni, IVA, accise, controlli e adempimento collaborativo (Titolo VII: revisione della disciplina dei redditi finanziari) (vigente)",
+  "autorita": "Normattiva - Istituto Poligrafico e Zecca dello Stato",
+  "identificativo": "urn:nir:stato:decreto.legislativo:2026-08-07;148 | G.U. 20260811 cod. 26G00169",
+  "data_documento": "",
+  "argomenti": "plusvalenze",
+  "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2026-08-07;148",
+  "scaricato_il": "2026-11-23",
+  "sha256": "262087fa70dc3bdea85f8696c08b26fc056ddcd5a212ce4f9ced341b6f53b62f"
+ },
+ {
   "file": "Leggi/Originale/NormeRichiamate/DL_1990-06-28_167_2022-12-31_ante_bilancio2023.akn.xml",
   "titolo": "D.L. 28 giugno 1990, n. 167 (conv. L. 4 agosto 1990, n. 227) - Monitoraggio fiscale: artt. 1, 4, 5 (Quadro RW) (2022-12-31_ante_bilancio2023, vigenza 20221231)",
   "autorita": "Normattiva - Istituto Poligrafico e Zecca dello Stato",

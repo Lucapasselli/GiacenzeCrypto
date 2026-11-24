@@ -5,7 +5,8 @@
   "_commentoConversioni": "Le righe con Type '--' sono conversioni verso MNT fatte da Bybit (piccoli saldi e token Launchpool ricevuti dal Funding): una o piu' monete cedute e MNT ricevuto nello stesso secondo, quindi uno scambio. Una riga '--' rimasta senza controparte nel suo secondo diventa un deposito/prelievo da classificare. Sui dati visti ce ne sono due (USDT, dicembre 2024) di origine non chiarita: potrebbero essere movimenti di un altro prodotto Bybit che non ha export.",
   "_commentoDerivati": "Perpetui. Il funding ('SETTLEMENT|SETTLEMENT') e' sommato per giorno, moneta e causale sul 'Change' (la somma azzera la colonna fee). Aperture e chiusure ('TRADE|OPEN', 'TRADE|CLOSE') sono un movimento per riga dalla 1.001 (decisione dell'utente del 20/11/2026, come i profitti e le perdite di 'Bybit Derivati.json'). Qui pero' la riga ha anche 'Fee Paid' (negativa) e 'Change' = 'Cash Flow' + 'Fee Paid', cioe' gia' al netto: senza ricostruisciLordoSeFeeSuMonetaUscita la commissione di una riga in uscita diventerebbe anche un movimento COMMISSIONI e conterebbe due volte. Con la chiave (esiste dalla 1.0.59, gli scambi spot non hanno mai un'uscita con commissione) un'apertura e' la sola commissione (la riga a quantita' zero non si crea), una chiusura e' il profitto o la perdita lordi ('Cash Flow') piu' la commissione a parte, marcata COMMISSIONE. Verificato su un CSV vero: la somma dei movimenti e' quella dei 'Change'. 'BONUS_RECOLLECT' (recupero di un bonus) resta riga singola. Tutte le causali alzano l'avviso sui derivati e, tramite causaliDerivati, marcano i movimenti nel campo 44: dalla 1.0.67 un movimento nuovo marcato nasce classificato come derivato, le versioni precedenti si fermano alla marcatura. Chi aveva importato con la 1.000 e reimporta lo stesso file trova aperture e chiusure due volte.",
   "_commentoGiroconti": "'TRANSFER_IN'/'TRANSFER_OUT' sono giroconti con il Funding e gli altri conti Bybit: stesso nomeExchange e nomeWallet, ignorati da entrambi i lati.",
-  "versione": "1.001",
+  "_commentoContratti": "Dalla 1.002 (decisione dell'utente del 22/11/2026, regola dei derivati) ogni apertura e chiusura di perpetuo ('TRADE|OPEN', 'TRADE|CLOSE') diventa anche il token del contratto (DERIV.<base>-<quota>-BYBIT.LONG|SHORT) sul sotto-wallet Derivati, come per OKX (contrattiDerivati, classe DerivatiDaCsv): verso da Direction e Action (BUY|OPEN apre un long, SELL|CLOSE lo chiude, SELL|OPEN apre uno short, BUY|CLOSE lo chiude), contratti (Quantity), posizione dopo l'esecuzione (Position), prezzo (Filled Price), profitto lordo (Cash Flow). Il token non ha effetti fiscali. Il LIFO dei contratti sostituisce il profitto dell'exchange solo negli episodi in cui i prezzi del file ricostruiscono il Cash Flow con il prezzo medio. Il file non ha un identificativo dell'esecuzione: il campo 24 del token e della riga del profitto (anche gia' in archivio, solo se vuoto) e' un'impronta stabile di data, contratto, verso, quantita', posizione, prezzo e profitto. Il profitto e la commissione sono gia' movimenti separati, quindi niente commissioneInclusa. Il conto resta P1: il collaterale non si sposta e il margine di ogni posizione non c'e' nel file. Reimportare il file aggiunge i token ai movimenti gia' importati. Le versioni precedenti ignorano la chiave.",
+  "versione": "1.002",
   "centralizzato": true,
   "fontePrezzoPreferita": "bybit",
   "nomeExchange": "Bybit",
@@ -48,6 +49,23 @@
     "TRADE|CLOSE":            "PNL",
     "SETTLEMENT|SETTLEMENT":  "FUNDING",
     "BONUS_RECOLLECT|--":     "BONUS"
+  },
+  "contrattiDerivati": {
+    "causali":             ["TRADE|OPEN", "TRADE|CLOSE"],
+    "colonnaContratto":    2,
+    "colonneVerso":        [4, 13],
+    "versi": {
+      "BUY|OPEN":          "apre long",
+      "SELL|CLOSE":        "chiude long",
+      "SELL|OPEN":         "apre short",
+      "BUY|CLOSE":         "chiude short"
+    },
+    "colonnaQuantita":     5,
+    "colonnaPosizione":    6,
+    "colonnaPrezzo":       7,
+    "colonnaProfitto":     10,
+    "colonnaCommissione":  9,
+    "colonnaMovimento":    10
   },
   "mappaCausali": {
     "TRADE|--":               "SCAMBIO CRYPTO-CRYPTO",

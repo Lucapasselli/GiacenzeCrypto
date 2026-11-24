@@ -54,6 +54,7 @@ class DerivatiLifoFiscaleTest {
         DatabaseH2.Pers_Opzioni_Scrivi("PL_CosiderareMovimentiNC", "SI");
         DatabaseH2.Pers_Opzioni_Scrivi("PlusXWallet", "NO");
         DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_NoPlusvalenzeCommissioni", "NO");
+        DatabaseH2.Pers_Opzioni_Scrivi(ContoDerivati.OPZIONE, "NO");
         OKXDerivati.AzzeraCacheValore();
         ValoriContratti.ImpostaPerTest(java.util.List.of());   //le regole vere hanno una prova a parte
         OKXDerivati.FonteValoreContratto = id -> "1";
@@ -176,7 +177,6 @@ class DerivatiLifoFiscaleTest {
                 .values().iterator().next();
         assertEquals(0, new BigDecimal("63000").compareTo(dic.valoreIniziale), "margini delle due aperture (30.000 + 40.000 USDC) a 0,90");
         assertEquals(0, new BigDecimal("13500").compareTo(dic.valoreFinale), "1 contratto aperto a 30.000, 45.000 al 31/12: 15.000 USDC");
-        assertFalse(dic.soloMonitoraggio);
         assertEquals("3", dic.colonna14, "redditi da derivati nell'anno (la chiusura di dicembre)");
         assertTrue(dic.avvisi.stream().anyMatch(t -> t.contains("prezzo a pronti")));
         assertTrue(dic.avvisi.stream().anyMatch(t -> t.contains("Stato estero")));
@@ -191,6 +191,48 @@ class DerivatiLifoFiscaleTest {
         assertEquals(0, new BigDecimal("31500").compareTo(gen.valoreIniziale), "35.000 USDC ancora parcheggiati al 1/1");
         assertEquals(0, new BigDecimal("7200").compareTo(gen.valoreFinale), "chiusura in LIFO: (38.000 - 30.000) a 0,90");
         assertEquals(annoChiusura + "-01-01", gen.prospetto.get(0)[Calcoli_RW_Derivati.P_DATA_INI]);
+    }
+
+    /**
+     * Rigo codice 9 con P2, continuita' fra gli anni (23/11/2026): una posizione aperta al 31/12 (stessi fill di d3) porta il guadagno non
+     * realizzato nella colonna 8 dell'anno, e lo stesso importo entra nella colonna 7 del tratto che parte dal 1/1 dell'anno dopo, cosi'
+     * il valore finale di un anno e il valore iniziale del successivo coincidono. Con P1 resta com'e' (colonna 7 solo il margine).
+     */
+    @Test
+    void ilRigoCodice9ConP2_ilValoreInizialeDellAnnoDopoComprendeIlNonRealizzato() {
+        acquistoUsdc();
+        importa(true, d3().toArray(new JSONObject[0]));
+        for (String[] v : Principale.MappaCryptoWallet.values()) {
+            if (Derivati.Tipo(v).equals(Derivati.MARGINE)) {
+                String q = !v[13].isBlank() ? v[13] : v[10];
+                v[15] = new BigDecimal(q).abs().multiply(new BigDecimal("0.9")).setScale(2, java.math.RoundingMode.HALF_UP).toPlainString();
+            }
+        }
+        Calcoli_PlusvalenzeNew.InvalidaStatoIncrementale();
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        Calcoli_RW_Derivati.Prezzo prezzo = (m, ist) -> switch (m) {
+            case "BTC" -> new BigDecimal("45000");
+            case "USD" -> BigDecimal.ONE;
+            case "USDC" -> new BigDecimal("0.9");
+            default -> null;
+        };
+        String annoApertura = riga("1", Derivati.CONTRATTO)[1].substring(0, 4);
+        String annoChiusura = riga("4", Derivati.CONTRATTO)[1].substring(0, 4);
+
+        Calcoli_RW_Derivati.Rigo dic = Calcoli_RW_Derivati.Calcola(annoApertura, Principale.MappaCryptoWallet, true, prezzo, (g, d) -> "")
+                .values().iterator().next();
+        Calcoli_RW_Derivati.Rigo gen = Calcoli_RW_Derivati.Calcola(annoChiusura, Principale.MappaCryptoWallet, true, prezzo, (g, d) -> "")
+                .values().iterator().next();
+        assertEquals(0, dic.valoreFinale.compareTo(gen.valoreIniziale),
+                "valore finale " + dic.valoreFinale + " e valore iniziale dell'anno dopo " + gen.valoreIniziale);
+        assertEquals(0, new BigDecimal("13500").add(new BigDecimal("31500")).compareTo(gen.valoreIniziale),
+                "35.000 USDC ancora nel conto al 1/1 (31.500) piu' il non realizzato (13.500): " + gen.valoreIniziale);
+        assertTrue(gen.prospetto.get(0)[Calcoli_RW_Derivati.P_AVVISI].contains("guadagno non realizzato al 31/12 dell'anno prima"));
+
+        //Il primo anno non ha niente prima: il valore iniziale non cambia
+        Calcoli_RW_Derivati.Rigo p1 = Calcoli_RW_Derivati.Calcola(annoChiusura, Principale.MappaCryptoWallet, false, prezzo, (g, d) -> "")
+                .values().iterator().next();
+        assertEquals(0, new BigDecimal("31500").compareTo(p1.valoreIniziale), "P1 invariato: solo il margine");
     }
 
     /** Con la vista filtrata sul solo wallet Principale il reddito in LIFO (sulle righe del token, nel sotto-wallet) resta fuori: la nota lo conta. */
@@ -636,5 +678,116 @@ class DerivatiLifoFiscaleTest {
         OKXDerivati.ValoreContratto("ETH-USDT-250101");
         OKXDerivati.ValoreContratto("ETH-USDT-250101");
         assertEquals(3, chiamate[0], "un errore di rete si riprova");
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Forma "conto" di OKX con le due letture del conto derivati (decisione dell'utente del 22/11/2026)
+    // ---------------------------------------------------------------------------------------------
+
+    private static void movimentoManuale(String id, String data, String monetaU, String qtaU, String monetaE, String qtaE, String valore,
+            String campo5) {
+        String[] m = new String[Importazioni.ColonneTabella];
+        Arrays.fill(m, "");
+        m[0] = id;
+        m[1] = data;
+        m[3] = "OKX";
+        m[4] = "Principale";
+        m[5] = campo5;
+        m[8] = monetaU; m[9] = monetaU.equals("EUR") ? "FIAT" : monetaU.isEmpty() ? "" : "Crypto"; m[10] = qtaU;
+        m[11] = monetaE; m[12] = monetaE.equals("EUR") ? "FIAT" : monetaE.isEmpty() ? "" : "Crypto"; m[13] = qtaE;
+        m[15] = valore;
+        m[22] = "M";
+        Principale.MappaCryptoWallet.put(m[0], m);
+    }
+
+    /**
+     * L'esempio del documento per il forum, importato da OKX: 1.000 USDC comprati a 0,92 euro, il 1/3 un long di 1 contratto a 60.000
+     * con 500 USDC di margine (USDC a 0,90), il 31/5 la chiusura a 59.800 con una perdita di 200 USDC (USDC a 0,88), il 30/6 la vendita
+     * degli 800 USDC a 0,88. Nella forma "conto" la perdita esce dal sotto-wallet dei derivati e rientrano 300 USDC.
+     */
+    private static void esempioPerdita() {
+        movimentoManuale("20250201100000_TESTOKX_001_001_AC", "2025-02-01 10:00", "EUR", "-920", "USDC", "1000", "920.00", "ACQUISTO CRYPTO");
+        long marzo = 1_740_823_200_000L, maggio = 1_748_685_600_000L;
+        importa(false, fill("11", marzo, "1", "1", "60000", "500", "0"), fill("12", maggio, "2", "1", "59800", "-500", "-200"));
+        for (String[] v : Principale.MappaCryptoWallet.values()) {
+            if (!"OKX".equals(v[3]) || !Derivati.isDerivato(v) || Derivati.Tipo(v).equals(Derivati.CONTRATTO)) continue;
+            BigDecimal prezzo = new BigDecimal("11".equals(v[24]) ? "0.90" : "0.88");
+            BigDecimal q = new BigDecimal(!v[13].isBlank() ? v[13] : v[10]).abs();
+            v[15] = q.multiply(prezzo).setScale(2, java.math.RoundingMode.HALF_UP).toPlainString();
+        }
+        for (String[] v : Principale.MappaCryptoWallet.values()) {
+            if (!"OKX".equals(v[3]) || !Derivati.IsRigaContrattoOMargine(v)) continue;
+            Map<String, String> d = Derivati.Dati(v);
+            d.put(DerivatiLifo.CHIAVE_PREZZO_MONETA, "11".equals(v[24]) ? "0.90" : "0.88");
+            Derivati.ImpostaDati(v, d);
+        }
+        movimentoManuale("20250630100000_TESTOKX_002_001_VC", "2025-06-30 10:00", "USDC", "-800", "EUR", "704", "704.00", "VENDITA CRYPTO");
+    }
+
+    private static BigDecimal sommaDerivati() {
+        BigDecimal t = BigDecimal.ZERO;
+        for (String[] v : Principale.MappaCryptoWallet.values()) {
+            BigDecimal r = Derivati.Risultato(v);
+            if (r != null) t = t.add(r);
+        }
+        return t;
+    }
+
+    private static BigDecimal sommaCripto() {
+        BigDecimal t = BigDecimal.ZERO;
+        for (String[] v : Principale.MappaCryptoWallet.values()) {
+            if ("S".equalsIgnoreCase(v[33]) && Funzioni.isNumeric(v[19], false)) t = t.add(new BigDecimal(v[19]));
+        }
+        return t;
+    }
+
+    private static void ricalcola(boolean contoDerivati) {
+        DatabaseH2.Pers_Opzioni_Scrivi(ContoDerivati.OPZIONE, contoDerivati ? "SI" : "NO");
+        Calcoli_PlusvalenzeNew.InvalidaStatoIncrementale();
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+    }
+
+    @Test
+    void formaConto_laPerditaEsceDalContoERientraIlNetto() {
+        esempioPerdita();
+        String[] perdita = riga("12", Derivati.PNL);
+        assertEquals(OKXDerivati.SOTTOWALLET, perdita[4], "la perdita la paga il conto derivati");
+        assertEquals(Derivati.CAMPO18_ADDEBITO, perdita[18], "nasce classificata come ogni perdita dei derivati");
+        List<String[]> giro = Principale.MappaCryptoWallet.values().stream()
+                .filter(v -> "12".equals(v[24]) && Derivati.Tipo(v).equals(Derivati.MARGINE)).toList();
+        assertEquals(2, giro.size());
+        for (String[] v : giro) {
+            boolean entra = !v[13].isBlank();
+            assertEquals(entra ? "Principale" : OKXDerivati.SOTTOWALLET, v[4]);
+            assertEquals(0, new BigDecimal("300").compareTo(new BigDecimal(entra ? v[13] : v[10]).abs()), "rientrano 500 - 200 USDC");
+        }
+        //la perdita viene prima del giroconto in uscita, nello stesso secondo
+        assertTrue(perdita[0].compareToIgnoreCase(giro.stream().filter(v -> !v[10].isBlank()).findFirst().orElseThrow()[0]) < 0);
+    }
+
+    @Test
+    void formaConto_letturaA_ilMargineResteCriptoEIlLifoValeLaPerditaAlValore() {
+        esempioPerdita();
+        ricalcola(false);
+        assertEquals("-176.00", riga("12", Derivati.CONTRATTO)[Derivati.CAMPO_RISULTATO], "-200 USDC in LIFO a 0,88");
+        assertEquals("0.00", riga("12", Derivati.PNL)[Derivati.CAMPO_RISULTATO]);
+        assertEquals(0, new BigDecimal("-176").compareTo(sommaDerivati()), "c-quater " + sommaDerivati());
+        //-8 sui 200 USDC persi (valgono 176 e costano 184) e -32 alla vendita (704 contro 736)
+        assertEquals(0, new BigDecimal("-40").compareTo(sommaCripto()), "c-sexies " + sommaCripto());
+    }
+
+    @Test
+    void formaConto_letturaB_comeBybitEBinance_ilLifoNonPerdeLaDifferenzaFraCostoEValore() {
+        esempioPerdita();
+        ricalcola(true);
+        assertEquals("-176.00", riga("12", Derivati.CONTRATTO)[Derivati.CAMPO_RISULTATO], "-200 USDC in LIFO a 0,88");
+        //la perdita pagata dal conto vale il costo dei 200 USDC (180): sulla riga resta la differenza col valore (176)
+        assertEquals("-4.00", riga("12", Derivati.PNL)[Derivati.CAMPO_RISULTATO]);
+        String[] rientro = Principale.MappaCryptoWallet.values().stream()
+                .filter(v -> "12".equals(v[24]) && Derivati.Tipo(v).equals(Derivati.MARGINE) && !v[10].isBlank()).findFirst().orElseThrow();
+        assertEquals("-6.00", rientro[Derivati.CAMPO_RISULTATO], "300 USDC valgono 264 e nel conto costano 270");
+        assertEquals(0, new BigDecimal("-186").compareTo(sommaDerivati()), "c-quater " + sommaDerivati());
+        //-10 al passaggio al conto (450 contro 460) e -20 alla vendita (704 contro 460 + 264)
+        assertEquals(0, new BigDecimal("-30").compareTo(sommaCripto()), "c-sexies " + sommaCripto());
     }
 }

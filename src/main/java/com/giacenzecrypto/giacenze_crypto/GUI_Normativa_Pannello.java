@@ -74,6 +74,11 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
         Tabella.getSelectionModel().addListSelectionListener(e -> AggiornaDettaglio());
 
         ComboBox_Categoria.addActionListener(e -> AggiornaFiltro());
+        ComboBox_Tipo.addActionListener(e -> AggiornaFiltro());
+        ComboBox_Argomento.addActionListener(e -> AggiornaFiltro());
+        TextField_Ricerca.setToolTipText("<html>Un atto dal tipo e dal numero (\"circolare 12/E\", \"risoluzione 36\",<br>"
+                + "\"interpello 149\"), oppure parole del titolo. Con \"Cerca anche nel testo\"<br>"
+                + "cerca la frase nel testo e, se non c'\u00e8, i documenti con tutte le parole.</html>");
         CheckBox_CercaTesto.addItemListener(e -> AggiornaFiltro());
         TextField_Ricerca.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void insertUpdate(javax.swing.event.DocumentEvent e) { AggiornaFiltro(); }
@@ -101,6 +106,7 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
         try {
             Catalogo = Principale_Normativa.LeggiCatalogo();
             TestiCache.clear();
+            RiempiFiltriCatalogo();
 
             Modello().setRowCount(0);
             for (DocumentoNormativa d : Catalogo) {
@@ -118,6 +124,34 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
         AggiornaFiltro();
         AggiornaDettaglio();
         AvviaIndicizzazione();
+    }
+
+    /**
+     * Riempie le combo "Tipo di atto" e "Argomento" con i valori del catalogo appena letto,
+     * rimettendo la scelta di prima se esiste ancora. Il listener delle combo richiama
+     * {@link #AggiornaFiltro()}: durante il riempimento il filtro non deve girare, o vedrebbe
+     * una combo vuota e un modello a metà.
+     */
+    private void RiempiFiltriCatalogo() {
+        RiempiCombo(ComboBox_Tipo, Principale_Normativa.TipiAttoPresenti(Catalogo));
+        RiempiCombo(ComboBox_Argomento, Principale_Normativa.ArgomentiPresenti(Catalogo));
+    }
+
+    private void RiempiCombo(javax.swing.JComboBox<String> combo, List<String> valori) {
+        Object precedente = combo.getSelectedItem();
+        java.awt.event.ActionListener[] ascoltatori = combo.getActionListeners();
+        for (java.awt.event.ActionListener a : ascoltatori) {
+            combo.removeActionListener(a);
+        }
+        combo.removeAllItems();
+        for (String v : valori) {
+            combo.addItem(v);
+        }
+        combo.setSelectedItem(precedente != null && valori.contains(precedente.toString())
+                ? precedente : Principale_Normativa.TUTTI);
+        for (java.awt.event.ActionListener a : ascoltatori) {
+            combo.addActionListener(a);
+        }
     }
 
     /**
@@ -176,6 +210,8 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
         boolean filtraData = dal != null || al != null;
         String ricerca = TextField_Ricerca.getText().trim().toLowerCase(Locale.ITALIAN);
         boolean cercaTesto = CheckBox_CercaTesto.isSelected();
+        String tipo = (String) ComboBox_Tipo.getSelectedItem();
+        String argomento = (String) ComboBox_Argomento.getSelectedItem();
 
         Sorter.setRowFilter(new RowFilter<DefaultTableModel, Integer>() {
             @Override
@@ -184,6 +220,15 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
 
                 if (!Principale_Normativa.TUTTE_LE_CATEGORIE.equals(categoria)
                         && !categoria.equals(d.categoria())) {
+                    return false;
+                }
+
+                if (tipo != null && !Principale_Normativa.TUTTI.equals(tipo)
+                        && !tipo.equals(Principale_Normativa.TipoAtto(d))) {
+                    return false;
+                }
+                if (argomento != null && !Principale_Normativa.TUTTI.equals(argomento)
+                        && !d.argomenti().contains(argomento)) {
                     return false;
                 }
 
@@ -203,14 +248,22 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
                     //l'identificativo porta il numero/data ufficiali ("Circolare n. 30/E del 27
                     //ottobre 2023"), spesso il modo più naturale con cui si cerca un documento e
                     //quasi mai ripetuto nel titolo
+                    //"circolare 12/e" non è una sottostringa di "Circolare n. 12/E": gli estremi
+                    //si confrontano per parole (numeri interi, sigla unita), non per frase
                     boolean metadatiMatch = d.titolo().toLowerCase(Locale.ITALIAN).contains(ricerca)
-                            || d.identificativo().toLowerCase(Locale.ITALIAN).contains(ricerca);
+                            || d.identificativo().toLowerCase(Locale.ITALIAN).contains(ricerca)
+                            || Principale_Normativa.CorrispondeEstremi(d, ricerca);
                     if (!metadatiMatch) {
                         if (!cercaTesto) {
                             return false;
                         }
                         String testo = TestiCache.get(d.percorso());
-                        if (testo == null || !testo.toLowerCase(Locale.ITALIAN).contains(ricerca)) {
+                        if (testo == null) {
+                            return false;
+                        }
+                        String minuscolo = testo.toLowerCase(Locale.ITALIAN);
+                        //prima la frase com'è scritta, altrimenti tutte le parole in qualunque punto
+                        if (!minuscolo.contains(ricerca) && !Principale_Normativa.ContieneTutteLeParole(minuscolo, ricerca)) {
                             return false;
                         }
                     }
@@ -301,7 +354,19 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
         if (testo == null || testo.isBlank()) {
             return null;
         }
-        int pos = testo.toLowerCase(Locale.ITALIAN).indexOf(ricerca.toLowerCase(Locale.ITALIAN));
+        String minuscolo = testo.toLowerCase(Locale.ITALIAN);
+        int pos = minuscolo.indexOf(ricerca.toLowerCase(Locale.ITALIAN));
+        if (pos < 0) {
+            //frase assente: il documento è stato incluso perché contiene tutte le parole, si
+            //mostra il contesto della prima che si trova
+            for (String parola : ricerca.toLowerCase(Locale.ITALIAN).split("\\s+")) {
+                pos = parola.isEmpty() ? -1 : minuscolo.indexOf(parola);
+                if (pos >= 0) {
+                    ricerca = parola;
+                    break;
+                }
+            }
+        }
         if (pos < 0) {
             return null;
         }
@@ -346,6 +411,8 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
 
     private void Bottone_AzzeraFiltriActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Bottone_AzzeraFiltriActionPerformed
         ComboBox_Categoria.setSelectedItem(Principale_Normativa.TUTTE_LE_CATEGORIE);
+        ComboBox_Tipo.setSelectedItem(Principale_Normativa.TUTTI);
+        ComboBox_Argomento.setSelectedItem(Principale_Normativa.TUTTI);
         DataChooser_Dal.setDate(null);
         DataChooser_Al.setDate(null);
         TextField_Ricerca.setText("");
@@ -372,6 +439,10 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
 
         Label_Categoria = new javax.swing.JLabel();
         ComboBox_Categoria = new javax.swing.JComboBox();
+        Label_Tipo = new javax.swing.JLabel();
+        ComboBox_Tipo = new javax.swing.JComboBox();
+        Label_Argomento = new javax.swing.JLabel();
+        ComboBox_Argomento = new javax.swing.JComboBox();
         Label_Dal = new javax.swing.JLabel();
         DataChooser_Dal = new com.toedter.calendar.JDateChooser();
         Label_Al = new javax.swing.JLabel();
@@ -389,6 +460,10 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
         Bottone_ApriFonte = new javax.swing.JButton();
 
         Label_Categoria.setText("Categoria:");
+
+        Label_Tipo.setText("Tipo di atto:");
+
+        Label_Argomento.setText("Argomento:");
 
         Label_Dal.setText("Dal:");
 
@@ -490,6 +565,14 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
                         .addComponent(Bottone_AzzeraFiltri)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Bottone_Aggiorna))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(Label_Tipo)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ComboBox_Tipo, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(Label_Argomento)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ComboBox_Argomento, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(ScrollPane_Tabella, javax.swing.GroupLayout.DEFAULT_SIZE, 1160, Short.MAX_VALUE)
                     .addComponent(Label_Stato, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(ScrollPane_Dettaglio, javax.swing.GroupLayout.DEFAULT_SIZE, 1160, Short.MAX_VALUE)
@@ -515,6 +598,12 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
                     .addComponent(Bottone_AzzeraFiltri)
                     .addComponent(Bottone_Aggiorna))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Label_Tipo)
+                    .addComponent(ComboBox_Tipo, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Label_Argomento)
+                    .addComponent(ComboBox_Argomento, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(ScrollPane_Tabella, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Label_Stato)
@@ -535,13 +624,17 @@ public class GUI_Normativa_Pannello extends javax.swing.JPanel {
     private javax.swing.JButton Bottone_ApriFonte;
     private javax.swing.JButton Bottone_AzzeraFiltri;
     private javax.swing.JCheckBox CheckBox_CercaTesto;
+    private javax.swing.JComboBox ComboBox_Argomento;
     private javax.swing.JComboBox ComboBox_Categoria;
+    private javax.swing.JComboBox ComboBox_Tipo;
     private com.toedter.calendar.JDateChooser DataChooser_Al;
     private com.toedter.calendar.JDateChooser DataChooser_Dal;
     private javax.swing.JLabel Label_Al;
+    private javax.swing.JLabel Label_Argomento;
     private javax.swing.JLabel Label_Categoria;
     private javax.swing.JLabel Label_Dal;
     private javax.swing.JLabel Label_Stato;
+    private javax.swing.JLabel Label_Tipo;
     private javax.swing.JScrollPane ScrollPane_Dettaglio;
     private javax.swing.JScrollPane ScrollPane_Tabella;
     private javax.swing.JTable Tabella;

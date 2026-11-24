@@ -75,6 +75,11 @@ avvertenze sul corretto utilizzo del programma.
   [La soglia dei 51.645,69 euro nel quadro RT](calcolo-plusvalenze-opzioni.html#soglia-51645). Il resto dei
   calcoli segue le regole in vigore dal 2023.
 
+- I **derivati** (perpetui e futures) sono ancora in **versione bozza**: il calcolo dei loro redditi, il conto
+  derivati, i righi con il codice 9 del quadro W/RW e le schermate dedicate possono cambiare con le prossime
+  versioni, anche nei valori calcolati. Vedi
+  [Derivati: come vengono calcolati](calcolo-plusvalenze-opzioni.html#derivati).
+
 - Le **opzioni** (call e put) non sono ancora gestite, da nessun exchange: il loro risultato nel programma può
   essere incompleto o sbagliato. Saranno integrate in una versione futura. Vedi
   [Derivati: come vengono calcolati](calcolo-plusvalenze-opzioni.html#derivati).

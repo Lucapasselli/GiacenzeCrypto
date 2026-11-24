@@ -298,6 +298,17 @@ public final class Principale_GiroMovimento {
         }
         if (tipo.equals(Derivati.MARGINE)) {
             boolean derivati = OKXDerivati.SOTTOWALLET.equals(v[4]);
+            //Forma "conto" di OKX: il giroconto porta il netto del fill (margine, profitto o perdita, commissione)
+            if (d.containsKey("giroconto")) {
+                String giro = "Giroconto " + (entra == derivati ? "dallo spot al sotto-wallet Derivati" : "dal sotto-wallet Derivati allo spot")
+                        + ", il netto del fill fra saldo e posizione (margine, profitto o perdita, commissione)";
+                if (!ContoDerivati.Attivo()) return giro + ": nessun effetto fiscale";
+                BigDecimal r = Derivati.Risultato(v);
+                if (derivati) return giro + (entra ? ": nel conto vale il suo valore di ingresso (opzione Conto derivati)"
+                        : ": reddito da derivati pari al valore meno quello di ingresso" + (r == null ? "" : ", " + Euro(r) + " euro"));
+                return giro + (entra ? ": entra fra le cripto-attività al valore del momento (opzione Conto derivati)"
+                        : ": cessione di cripto-attività al valore del momento (opzione Conto derivati)");
+            }
             if (ContoDerivati.Attivo()) {
                 //Opzione Conto derivati (P2): il giroconto ha effetto
                 BigDecimal r = Derivati.Risultato(v);
@@ -348,6 +359,13 @@ public final class Principale_GiroMovimento {
             BigDecimal r = Derivati.Risultato(v);
             if (tipo.equals(Derivati.PNL) && r != null && r.signum() == 0 && FillConToken(v, mappa)) {
                 return nome + ": il reddito è quello in LIFO sulla riga di chiusura del token, qui resta il denaro accreditato o addebitato";
+            }
+            //Opzione Conto derivati: una perdita pagata dal conto in LIFO tiene la differenza fra il costo delle monete nel conto e il loro
+            //valore (DerivatiLifo.RisultatoAValore). Il motore le darebbe il costo intero: se il valore e' un altro, il LIFO l'ha presa
+            if (tipo.equals(Derivati.PNL) && r != null && FillConToken(v, mappa) && DerivatiLifo.AddebitoSulConto(v, ContoDerivati.Attivo(), mappa)
+                    && Funzioni.isNumeric(v[16], false) && r.compareTo(new BigDecimal(v[16]).negate().setScale(2, java.math.RoundingMode.HALF_UP)) != 0) {
+                return nome + ": il reddito è quello in LIFO sulla riga di chiusura del token, qui resta la differenza fra il costo delle monete"
+                        + " nel conto derivati e il loro valore (opzione Conto derivati), " + Euro(r) + " euro";
             }
             return nome + (r == null ? "" : ", risultato dei derivati " + Euro(r) + " euro");
         }

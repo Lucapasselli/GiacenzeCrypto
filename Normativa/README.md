@@ -23,7 +23,7 @@ Un derivato non contiene mai parole che non stiano già in un testo ufficiale: g
 riformattano, i consolidati accostano. Ma un testo accostato **non è un testo promulgato**,
 e in caso di dubbio fa fede Normattiva. Ogni file derivato lo dichiara nelle prime righe.
 
-`fonti.csv` è l'indice di provenienza di **tutti** i 119 file dell'archivio (tutto
+`fonti.csv` è l'indice di provenienza di **tutti** i 124 file dell'archivio (tutto
 quello che sta nelle quattro cartelle di documenti; non se stesso, non il README, non gli
 strumenti): chi lo pubblica, con quale
 identificativo ufficiale, da quale indirizzo, quando, e l'impronta SHA-256. È quello che

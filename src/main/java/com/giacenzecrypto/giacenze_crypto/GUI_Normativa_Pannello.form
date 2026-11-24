@@ -40,6 +40,15 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="Bottone_Aggiorna" min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <Group type="102" attributes="0">
+                      <Component id="Label_Tipo" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="ComboBox_Tipo" min="-2" pref="220" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="Label_Argomento" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="ComboBox_Argomento" min="-2" pref="260" max="-2" attributes="0"/>
+                  </Group>
                   <Component id="ScrollPane_Tabella" pref="1160" max="32767" attributes="0"/>
                   <Component id="Label_Stato" max="32767" attributes="0"/>
                   <Component id="ScrollPane_Dettaglio" pref="1160" max="32767" attributes="0"/>
@@ -70,6 +79,13 @@
                   <Component id="Bottone_Aggiorna" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="Label_Tipo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="ComboBox_Tipo" alignment="3" min="-2" pref="26" max="-2" attributes="0"/>
+                  <Component id="Label_Argomento" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="ComboBox_Argomento" alignment="3" min="-2" pref="26" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="ScrollPane_Tabella" pref="380" max="32767" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="Label_Stato" min="-2" max="-2" attributes="0"/>
@@ -92,6 +108,30 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="ComboBox_Categoria">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="0"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="Label_Tipo">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Tipo di atto:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="ComboBox_Tipo">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="0"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="Label_Argomento">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Argomento:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="ComboBox_Argomento">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
           <StringArray count="0"/>

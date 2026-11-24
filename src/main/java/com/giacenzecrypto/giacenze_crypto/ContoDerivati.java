@@ -16,7 +16,8 @@ import java.math.RoundingMode;
  *       dei lotti scaricati, senza plusvalenza cripto;</li>
  *   <li>un movimento su derivati ancora da classificare che sta sul sotto-wallet conta come accredito o addebito
  *       ({@link #DaClassificareSulConto});</li>
- *   <li>profitti, perdite, commissioni e funding sullo spot (OKX) restano con il doppio effetto (D10).</li>
+ *   <li>profitti, perdite, commissioni e funding sullo spot restano con il doppio effetto (D10): per OKX dal 22/11/2026 solo quelli
+ *       senza il margine della posizione, gli altri stanno sul sotto-wallet ({@link OKXDerivati}, forma "conto").</li>
  * </ul>
  * Logica senza Swing. Le regole sono applicate dal motore ({@code Calcoli_PlusvalenzeNew.ElaboraMovimento}).
  */

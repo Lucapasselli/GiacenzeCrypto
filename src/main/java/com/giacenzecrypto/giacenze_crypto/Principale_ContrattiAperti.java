@@ -55,19 +55,15 @@ public final class Principale_ContrattiAperti {
             if (v == null || v.length <= Derivati.CAMPO_DATI || !Derivati.IsRigaContrattoOMargine(v)) continue;
             if (Istante(v) < limite) fino.add(v);
         }
-        //Margine parcheggiato e ultima riga di token, per posizione
-        Map<String, BigDecimal> margine = new LinkedHashMap<>();
+        //Margine parcheggiato (dai dati dei token e dal funding sul conto, non dalla quantita' del giroconto, che nella forma "conto" porta
+        //anche profitto e commissione) e ultima riga di token, per posizione
+        Map<String, BigDecimal> margine = OKXDerivati.MarginiParcheggiati(movimenti, limite);
         Map<String, String[]> ultimoToken = new LinkedHashMap<>();
         for (String[] v : fino) {
             String chiave = DerivatiLifo.ChiavePosizioneDaMovimento(v);
             if (chiave == null) continue;
             chiave = chiave.toUpperCase();
-            if (Derivati.Tipo(v).equals(Derivati.MARGINE) && OKXDerivati.SOTTOWALLET.equals(v[4])) {
-                boolean entra = Funzioni.isNumeric(v[13], false) && new BigDecimal(v[13]).signum() != 0;
-                BigDecimal q = entra ? new BigDecimal(v[13]).abs()
-                        : Funzioni.isNumeric(v[10], false) ? new BigDecimal(v[10]).abs().negate() : BigDecimal.ZERO;
-                margine.merge(chiave, q, BigDecimal::add);
-            } else if (Derivati.Tipo(v).equals(Derivati.CONTRATTO)) {
+            if (Derivati.Tipo(v).equals(Derivati.CONTRATTO)) {
                 String[] prima = ultimoToken.get(chiave);
                 if (prima == null || OKXDerivati.ORDINE_ESECUZIONE.compare(prima, v) < 0) ultimoToken.put(chiave, v);
             }

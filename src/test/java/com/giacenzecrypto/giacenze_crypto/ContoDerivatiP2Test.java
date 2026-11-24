@@ -20,7 +20,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * chiusura con +300 o -300 USDT (USDT a 0,88), il 30/6 la vendita di tutti gli USDT a 0,88. Totale economico: +224 o -304 euro.</p>
  * <ul>
  *   <li>P1: profitto c-quater +264, c-sexies -40; perdita -264 e -40.</li>
- *   <li>P2 nella forma OKX (profitto e perdita sullo spot): profitto +254 e -30; perdita -274 e -30.</li>
+ *   <li>P2 nella forma "solo margine" (profitto e perdita sullo spot, l'import di OKX fino al 21/11/2026, oggi solo i fill senza margine):
+ *       profitto +254 e -30; perdita -274 e -30.</li>
  *   <li>P2 nella forma con i profitti sul conto derivati (Bybit, Binance): gli stessi totali.</li>
  * </ul>
  */
@@ -90,7 +91,7 @@ class ContoDerivatiP2Test {
 
     /**
      * L'esempio intero. Con {@code risultatoSulConto} profitto o perdita stanno sul sotto-wallet dei derivati e rientra tutto quello che
-     * c'e' (forma Bybit/Binance), altrimenti stanno sullo spot e rientra il margine parcheggiato (forma OKX).
+     * c'e' (forma Bybit/Binance, e OKX dal 22/11/2026), altrimenti stanno sullo spot e rientra il margine parcheggiato (forma "solo margine").
      */
     private static void esempio(boolean profitto, boolean risultatoSulConto) {
         String spot = "Principale", conto = OKXDerivati.SOTTOWALLET;
@@ -226,7 +227,7 @@ class ContoDerivatiP2Test {
 
     /**
      * Rigo codice 9 con P2: il conto dal primo ingresso (1/3, 500 USDT a 0,90) al giorno in cui si svuota (31/5, a 0,88), 92 giorni. Con
-     * P1 e senza le posizioni lo stesso conto da' un rigo di solo monitoraggio. Stato a fiscalita' privilegiata: IVAFE al 4 per mille.
+     * P1 e senza le posizioni lo stesso conto da' colonna 7 = conto all'ingresso, colonna 8 zero (stampata come 1), mai solo monitoraggio. Stato a fiscalita' privilegiata: IVAFE al 4 per mille.
      */
     @Test
     void ilRigoCodice9_conP2ValeIlConto_conP1SenzaPosizioniESoloMonitoraggio() {
@@ -245,12 +246,81 @@ class ContoDerivatiP2Test {
 
         Calcoli_RW_Derivati.Rigo p1 = Calcoli_RW_Derivati.Calcola("2025", MappaCryptoWallet, false, prezzo, (g, d) -> "189")
                 .values().iterator().next();
-        assertTrue(p1.soloMonitoraggio);
+        assertEquals(0, BigDecimal.ZERO.compareTo(p1.valoreFinale));
+        assertEquals("1", Calcoli_RW_Derivati.ValoreStampa(p1.valoreFinale), "lo zero si stampa come 1");
         assertEquals(0, new BigDecimal("450").compareTo(p1.valoreIniziale));
         assertEquals(0, BigDecimal.ZERO.compareTo(p1.ivafe));
-        assertTrue(p1.prospetto.get(0)[Calcoli_RW_Derivati.P_VOCE].contains("solo monitoraggio"));
+        assertEquals(92, p1.giorni, "giorni compilati come per gli altri righi");
+        assertTrue(p1.prospetto.get(0)[Calcoli_RW_Derivati.P_VOCE].contains("posizioni non disponibili"));
         assertTrue(Calcoli_RW_Derivati.Calcola("2026", MappaCryptoWallet, true, prezzo, (g, d) -> "").isEmpty(),
                 "nessun rigo in un anno senza conto");
+    }
+
+    /**
+     * Rigo codice 9 con P2 e due contratti nell'anno, ciascuno aperto e chiuso nello stesso mese, il conto vuoto in mezzo (USDT a 1 euro):
+     * marzo 1.000 di margine, +50 e -2 di commissione, rientro 1.048; luglio 2.000 di margine, -100 e -4, rientro 1.896. Due tratti
+     * sommati: colonna 7 3.000, colonna 8 2.944, giorni 31 (media pesata sui valori finali), IVAFE 1.048 x 0,2% x 31/365 + 1.896 x 0,2% x
+     * 31/365 = 0,50. Prima dei tratti: una voce dal 1/3 al 31/7, 1.000 / 1.896, 153 giorni, IVAFE 1,59. Con P1 senza posizioni il rigo
+     * resta un tratto solo, dal primo ingresso all'ultimo giorno con un saldo.
+     */
+    @Test
+    void ilRigoCodice9_conP2_unaVocePerOgniTrattoConSaldo() {
+        String spot = "Principale", conto = OKXDerivati.SOTTOWALLET;
+        movimento("20250201100000_OKX_001_001_AC", "2025-02-01 10:00", spot, "ACQUISTO CRYPTO", "EUR", "-3000", "USDT", "3000", "3000.00", "", "");
+        //marzo
+        movimento("20250301100000_OKX_901_001_TI", "2025-03-01 10:00", spot, "TRASFERIMENTO INTERNO", "USDT", "-1000", "", "", "1000.00", Derivati.MARGINE, "");
+        movimento("20250301100000_OKX_902_001_TI", "2025-03-01 10:00", conto, "TRASFERIMENTO INTERNO", "", "", "USDT", "1000", "1000.00", Derivati.MARGINE, "");
+        movimento("20250331100000_OKX_801_001_DC", "2025-03-31 10:00", conto, Derivati.CAMPO5_ACCREDITO, "", "", "USDT", "50", "50.00", Derivati.PNL, Derivati.CAMPO18_ACCREDITO);
+        movimento("20250331100000_OKX_802_001_CM", "2025-03-31 10:00", conto, "COMMISSIONI", "USDT", "-2", "", "", "2.00", Derivati.COMMISSIONE, "");
+        movimento("20250331100000_OKX_901_001_TI", "2025-03-31 10:00", conto, "TRASFERIMENTO INTERNO", "USDT", "-1048", "", "", "1048.00", Derivati.MARGINE, "");
+        movimento("20250331100000_OKX_902_001_TI", "2025-03-31 10:00", spot, "TRASFERIMENTO INTERNO", "", "", "USDT", "1048", "1048.00", Derivati.MARGINE, "");
+        //luglio
+        movimento("20250701100000_OKX_901_001_TI", "2025-07-01 10:00", spot, "TRASFERIMENTO INTERNO", "USDT", "-2000", "", "", "2000.00", Derivati.MARGINE, "");
+        movimento("20250701100000_OKX_902_001_TI", "2025-07-01 10:00", conto, "TRASFERIMENTO INTERNO", "", "", "USDT", "2000", "2000.00", Derivati.MARGINE, "");
+        movimento("20250731100000_OKX_801_001_PC", "2025-07-31 10:00", conto, Derivati.CAMPO5_ADDEBITO, "USDT", "-100", "", "", "100.00", Derivati.PNL, Derivati.CAMPO18_ADDEBITO);
+        movimento("20250731100000_OKX_802_001_CM", "2025-07-31 10:00", conto, "COMMISSIONI", "USDT", "-4", "", "", "4.00", Derivati.COMMISSIONE, "");
+        movimento("20250731100000_OKX_901_001_TI", "2025-07-31 10:00", conto, "TRASFERIMENTO INTERNO", "USDT", "-1896", "", "", "1896.00", Derivati.MARGINE, "");
+        movimento("20250731100000_OKX_902_001_TI", "2025-07-31 10:00", spot, "TRASFERIMENTO INTERNO", "", "", "USDT", "1896", "1896.00", Derivati.MARGINE, "");
+        Calcoli_RW_Derivati.Prezzo prezzo = (m, ist) -> "USDT".equals(m) ? BigDecimal.ONE : null;
+
+        Calcoli_RW_Derivati.Rigo p2 = Calcoli_RW_Derivati.Calcola("2025", MappaCryptoWallet, true, prezzo, (g, d) -> "")
+                .values().iterator().next();
+        assertEquals(2, p2.prospetto.size(), "una voce per tratto");
+        String[] marzo = p2.prospetto.get(0), luglio = p2.prospetto.get(1);
+        assertEquals("2025-03-01", marzo[Calcoli_RW_Derivati.P_DATA_INI]);
+        assertEquals("2025-03-31", marzo[Calcoli_RW_Derivati.P_DATA_FINE]);
+        assertEquals("1000.00", marzo[Calcoli_RW_Derivati.P_VAL_INI]);
+        assertEquals("1048.00", marzo[Calcoli_RW_Derivati.P_VAL_FIN]);
+        assertEquals("31", marzo[Calcoli_RW_Derivati.P_GIORNI]);
+        assertEquals(4, marzo[Calcoli_RW_Derivati.P_ID_MOVIMENTI].split(",").length, "le quattro righe del conto di marzo");
+        assertEquals("2025-07-01", luglio[Calcoli_RW_Derivati.P_DATA_INI]);
+        assertEquals("2025-07-31", luglio[Calcoli_RW_Derivati.P_DATA_FINE]);
+        assertEquals("2000.00", luglio[Calcoli_RW_Derivati.P_VAL_INI]);
+        assertEquals("1896.00", luglio[Calcoli_RW_Derivati.P_VAL_FIN]);
+        assertEquals(0, new BigDecimal("3000").compareTo(p2.valoreIniziale));
+        assertEquals(0, new BigDecimal("2944").compareTo(p2.valoreFinale));
+        assertEquals(31, p2.giorni, "i giorni a conto vuoto non contano");
+        assertEquals(0, new BigDecimal("0.50").compareTo(p2.ivafe), "IVAFE " + p2.ivafe);
+
+        //Opzione del periodo unico: una voce dal primo ingresso all'ultimo svuotamento, aprile-giugno compresi
+        Calcoli_RW_Derivati.Rigo unico = Calcoli_RW_Derivati.Calcola("2025", MappaCryptoWallet, true, true, prezzo, (g, d) -> "")
+                .values().iterator().next();
+        assertEquals(1, unico.prospetto.size());
+        assertEquals("2025-03-01", unico.prospetto.get(0)[Calcoli_RW_Derivati.P_DATA_INI]);
+        assertEquals("2025-07-31", unico.prospetto.get(0)[Calcoli_RW_Derivati.P_DATA_FINE]);
+        assertEquals(8, unico.prospetto.get(0)[Calcoli_RW_Derivati.P_ID_MOVIMENTI].split(",").length, "le righe del conto di entrambi");
+        assertEquals(0, new BigDecimal("1000").compareTo(unico.valoreIniziale));
+        assertEquals(0, new BigDecimal("1896").compareTo(unico.valoreFinale));
+        assertEquals(153, unico.giorni);
+        assertEquals(0, new BigDecimal("1.59").compareTo(unico.ivafe), "1.896 x 0,2% x 153 / 365, IVAFE " + unico.ivafe);
+
+        Calcoli_RW_Derivati.Rigo p1 = Calcoli_RW_Derivati.Calcola("2025", MappaCryptoWallet, false, prezzo, (g, d) -> "")
+                .values().iterator().next();
+        assertEquals(0, BigDecimal.ZERO.compareTo(p1.valoreFinale));
+        assertEquals(1, p1.prospetto.size());
+        assertEquals(0, new BigDecimal("1000").compareTo(p1.valoreIniziale), "valore al primo ingresso, come prima");
+        assertEquals(153, p1.giorni);
+        assertEquals("2025-07-31", p1.prospetto.get(0)[Calcoli_RW_Derivati.P_DATA_FINE]);
     }
 
     /**

@@ -1,5 +1,16 @@
 [
  {
+  "file": "Prassi_AgenziaEntrate/2011-10-25_Risoluzione_102E_redditi_diversi_compravendita_valute_forex.pdf",
+  "titolo": "Consulenza giuridica - Tassazione dei redditi diversi di natura finanziaria derivanti da compravendite di valute estere effettuate sul Foreign Exchange Market",
+  "autorita": "Agenzia delle entrate",
+  "identificativo": "Risoluzione n. 102/E del 25 ottobre 2011",
+  "data_documento": "2011-10-25",
+  "argomenti": "derivati, plusvalenze",
+  "url": "https://www.agenziaentrate.gov.it/portale/documents/20143/304825/Ris+102+del+25+10+2011_Ris+102e+del+25+10+11.pdf/58b5b712-aa87-624d-92f6-8a822179493b",
+  "scaricato_il": "2026-11-23",
+  "sha256": "8078f5a26510003358a0ccf7c790879f5ae55273f74a6b369d40d03c82247336"
+ },
+ {
   "file": "Prassi_AgenziaEntrate/2012-07-02_Circolare_28E_IVIE_IVAFE.pdf",
   "titolo": "Imposta sul valore degli immobili situati all'estero e sul valore delle attivita' finanziarie detenute all'estero. Articolo 19, commi da 13 a 23, del decreto legge 6 dicembre 2011, n. 201, convertito, con modificazioni, dalla legge 22 dicembre 2011, n. 214 e successive modificazioni. Provvedimento del Direttore dell'Agenzia delle Entrate 5 giugno 2012",
   "autorita": "Agenzia delle entrate",
@@ -31,6 +42,17 @@
   "url": "https://www.agenziaentrate.gov.it/portale/documents/20143/298247/Circolare+12E+del+8+aprile+2016_CIRCOLARE+N_12_E+DEL+08+APRILE+2016.pdf/91a08503-f57c-5832-0724-acf1ecb0700a",
   "scaricato_il": "2026-09-10",
   "sha256": "9da8e1e187c43f042d25d1854f9e932df82cfabffb0f14416c88d4a5bbfdb7bf"
+ },
+ {
+  "file": "Prassi_AgenziaEntrate/2016-09-01_Risoluzione_71E_trading_on_line_forex_opzioni_binarie.pdf",
+  "titolo": "Interpello ai sensi dell'articolo 11 della legge n. 212 del 2000 - Operazioni di trading on line",
+  "autorita": "Agenzia delle entrate",
+  "identificativo": "Risoluzione n. 71/E del 1 settembre 2016",
+  "data_documento": "2016-09-01",
+  "argomenti": "derivati, quadro RT, quadro RW, IVAFE",
+  "url": "https://www.agenziaentrate.gov.it/portale/documents/20143/302984/Risoluzione+n.+71+del+01+settembre+2016_Risoluzione+n.71E+del+01-09-2016.pdf/beb3aa45-6224-c44f-c8aa-24f9fb6b790f",
+  "scaricato_il": "2026-11-23",
+  "sha256": "28a2e3c3c03097c9041a082432b7c1585cec3de170a9780df36e5e8bd5ec1108"
  },
  {
   "file": "Prassi_AgenziaEntrate/2023-06-26_Risoluzione_36E_codici_tributo_imposte_sostitutive_cripto.pdf",

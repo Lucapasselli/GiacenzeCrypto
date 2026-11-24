@@ -515,7 +515,7 @@ private static final long serialVersionUID = 3L;
         RT_Pannello_GraficoTipologia.add(RT_GraficoTipologia, java.awt.BorderLayout.CENTER);
         //Scheda "Redditi da derivati" del quadro RT (senza .form): si riempie alla scelta dell'anno in RT_CompilaTabellaDettagli
         RT_Derivati = new GUI_RT_Derivati();
-        jTabbedPane1.addTab("Redditi da derivati", RT_Derivati);
+        jTabbedPane1.addTab("Redditi da derivati (bozza)", RT_Derivati);
         RT_Derivati.Tabella().addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseReleased(java.awt.event.MouseEvent evt) {
@@ -1154,6 +1154,7 @@ private static final long serialVersionUID = 3L;
         RW_Opzioni_Radio_Liquidita_ConIvafe = new javax.swing.JRadioButton();
         RW_Opzioni_Radio_Liquidita_SoloMonitoraggio = new javax.swing.JRadioButton();
         RW_Opzioni_CheckBox_FiatValoreFinaleMaxMedia = new javax.swing.JCheckBox();
+        RW_Opzioni_CheckBox_DerivatiPeriodoUnico = new javax.swing.JCheckBox();
         RW_Opzioni_CheckBox_FiatSpezzaApporti = new javax.swing.JCheckBox();
         RW_Opzioni_Text_FiatSogliaApporti = new javax.swing.JTextField();
         RW_Opzioni_CheckBox_FiatSpezzaPrelievi = new javax.swing.JCheckBox();
@@ -5847,6 +5848,13 @@ private static final long serialVersionUID = 3L;
         });
 
         RW_Bottone_Documentazione1.setFont(new java.awt.Font("Noto Sans", 1, 18)); // NOI18N
+        RW_Opzioni_CheckBox_DerivatiPeriodoUnico.setText("<html>Con l'opzione <b>Conto derivati</b>, nel rigo con codice 9 il conto è <b>un solo periodo</b> dal primo ingresso dell'anno all'ultimo giorno con un saldo, anche se nel mezzo resta vuoto<br>(Non attivo di default: un periodo per ogni tratto in cui il conto ha un saldo)</html>");
+        RW_Opzioni_CheckBox_DerivatiPeriodoUnico.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RW_Opzioni_CheckBox_DerivatiPeriodoUnicoActionPerformed(evt);
+            }
+        });
+
         RW_Bottone_Documentazione1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/24_Libro.png"))); // NOI18N
         RW_Bottone_Documentazione1.setText("Vedi Documentazione");
         RW_Bottone_Documentazione1.addActionListener(new java.awt.event.ActionListener() {
@@ -5884,6 +5892,7 @@ private static final long serialVersionUID = 3L;
                                     .addComponent(RW_Bottone_Documentazione1, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addComponent(jLabel16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(RW_Opzioni_CheckBox_FiatInRW, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(RW_Opzioni_CheckBox_DerivatiPeriodoUnico, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(RW_Opzioni_Label_Liquidita, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 244, Short.MAX_VALUE))
                     .addGroup(Opzioni_RW_PannelloLayout.createSequentialGroup()
@@ -5955,7 +5964,9 @@ private static final long serialVersionUID = 3L;
                 .addGroup(Opzioni_RW_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(RW_Opzioni_CheckBox_FiatSpezzaPrelievi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(RW_Opzioni_Text_FiatSogliaPrelievi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(40, 40, 40)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(RW_Opzioni_CheckBox_DerivatiPeriodoUnico, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(20, 20, 20)
                 .addComponent(RW_Bottone_Documentazione1, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -7610,6 +7621,12 @@ private void SettaIcone(){
             DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_RW_Fiat.OPZIONE_LIQUIDITA_SOLO_MONITORAGGIO,
                     Calcoli_RW_Fiat.LIQUIDITA_SOLO_MONITORAGGIO_DEFAULT);
         }
+
+        //Conto derivati nel codice 9 (solo con P2): di default un periodo per ogni tratto con un saldo.
+        String RW_DerivatiPeriodoUnico=DatabaseH2.Pers_Opzioni_Leggi(Calcoli_RW_Derivati.OPZIONE_PERIODO_UNICO);
+        if(RW_DerivatiPeriodoUnico!=null && RW_DerivatiPeriodoUnico.equalsIgnoreCase("SI")){
+            this.RW_Opzioni_CheckBox_DerivatiPeriodoUnico.setSelected(true);
+        }else DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_RW_Derivati.OPZIONE_PERIODO_UNICO, Calcoli_RW_Derivati.PERIODO_UNICO_DEFAULT);
 
         //Valore finale della liquidita' non conto corrente : di default il saldo a fine periodo.
         String RW_FiatValoreFinaleMaxMedia=DatabaseH2.Pers_Opzioni_Leggi(Calcoli_RW_Fiat.OPZIONE_VALORE_FINALE_MAX_MEDIA);
@@ -12586,7 +12603,7 @@ if (result.isAction("delete-all")) {
             String[] RWx = new String[10];
             RWx[0] = num + " ( " + alias[1] + " ) - derivati (codice 9)";
             RWx[1] = r.valoreIniziale.setScale(2, RoundingMode.HALF_UP).toPlainString();
-            RWx[2] = r.soloMonitoraggio ? "0.00" : r.valoreFinale.setScale(2, RoundingMode.HALF_UP).toPlainString();
+            RWx[2] = r.valoreFinale.setScale(2, RoundingMode.HALF_UP).toPlainString();
             RWx[3] = String.valueOf(r.giorni);
             RWx[4] = r.conErrori() ? "ERRORI" : "";
             RWx[5] = r.ivafe.setScale(2, RoundingMode.HALF_UP).toPlainString();
@@ -13710,6 +13727,14 @@ if (result.isAction("delete-all")) {
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }//GEN-LAST:event_RW_Opzioni_CheckBox_FiatValoreFinaleMaxMediaActionPerformed
 
+    private void RW_Opzioni_CheckBox_DerivatiPeriodoUnicoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RW_Opzioni_CheckBox_DerivatiPeriodoUnicoActionPerformed
+        //Conto derivati nel codice 9 come un solo periodo (solo con P2): vedi Calcoli_RW_Derivati.OPZIONE_PERIODO_UNICO
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        DatabaseH2.Pers_Opzioni_Scrivi(Calcoli_RW_Derivati.OPZIONE_PERIODO_UNICO, RW_Opzioni_CheckBox_DerivatiPeriodoUnico.isSelected() ? "SI" : "NO");
+        Funzioni_AggiornaTutto();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_RW_Opzioni_CheckBox_DerivatiPeriodoUnicoActionPerformed
+
     /**
      * Regime dichiarativo della liquidità in valuta presso intermediari esteri (righi codice bene 14
      * della parte FIAT del quadro W/RW) : con IVAFE ordinaria allo 0,20 % oppure in solo monitoraggio.
@@ -14064,7 +14089,10 @@ if (result.isAction("delete-all")) {
         if (FallimentiPiattaforme.RimborsiComePermutaNelAnno(Anno)) {
             o.put(FallimentiPiattaforme.NOME_OPZIONE_RIMBORSO, FallimentiPiattaforme.DESCRIZIONE_RIMBORSO_PERMUTA);
         }
-        if (ContoDerivati.InfluisceFinoAllAnno(Anno)) o.put(ContoDerivati.NOME_OPZIONE, ContoDerivati.DESCRIZIONE_OPZIONE);
+        if (ContoDerivati.InfluisceFinoAllAnno(Anno)) {
+            o.put(ContoDerivati.NOME_OPZIONE, ContoDerivati.DESCRIZIONE_OPZIONE);
+            o.put(Calcoli_RW_Derivati.NOME_OPZIONE_PERIODO, Calcoli_RW_Derivati.DescrizioneOpzionePeriodo(RW_Opzioni_CheckBox_DerivatiPeriodoUnico.isSelected()));
+        }
         Dichiarazioni_OpzioniComuni(o);
         return d;
     }
@@ -14550,22 +14578,23 @@ if (result.isAction("delete-all")) {
             stampa.AggiungiTestoCentrato("QUADRO " + quadro + " - CONTRATTI DERIVATI (CODICE 9) - ANNO " + AnnoDiCompetenza, Font.BOLD, 12);
         }
         StringBuilder h = new StringBuilder("<html><font size=\"2\" face=\"Courier New,Courier, mono\" >");
-        h.append(Calcoli_RW_Derivati.TestoNota(ContoDerivati.Attivo())).append("<br><br>");
+        h.append("<b>Calcolo dei derivati in versione bozza</b> : può cambiare con le prossime versioni del programma.<br><br>");
+        h.append(Calcoli_RW_Derivati.TestoNota(ContoDerivati.Attivo(), Calcoli_RW_Derivati.PeriodoUnico())).append("<br><br>");
         BigDecimal totale = BigDecimal.ZERO;
         for (Calcoli_RW_Derivati.Rigo r : Mappa_RW_Derivati.values()) {
             String[] alias = DatabaseH2.Pers_GruppoAlias_Leggi(r.gruppo);
-            String vi = r.valoreIniziale.setScale(0, RoundingMode.HALF_UP).toPlainString();
-            if (vi.equals("0")) vi = "1";   //lo zero non si trasmette: il rigo e' comunque segnalato fra gli avvisi
-            String vf = r.soloMonitoraggio ? "" : r.valoreFinale.setScale(0, RoundingMode.HALF_UP).toPlainString();
+            //Lo zero diventa 1 in entrambe le colonne (il software dell'Agenzia non lo accetta, come per le cripto); un valore
+            //iniziale zero e' comunque segnalato fra gli avvisi. Mai solo monitoraggio: nessun exchange estero paga l'IVAFE
+            String vi = Calcoli_RW_Derivati.ValoreStampa(r.valoreIniziale);
+            String vf = Calcoli_RW_Derivati.ValoreStampa(r.valoreFinale);
             boolean privilegiato = StatiEsteri.isPrivilegiato(r.stato);
             h.append("<b>").append(alias[1]).append("</b> : colonna 1 = 1, colonna 3 = 9, colonna 4 = ")
              .append(r.stato.isBlank() ? "<b>Stato estero da indicare</b>" : r.stato)
              .append(", colonna 5 = 100, colonna 6 = 1, colonna 7 = ").append(vi)
-             .append(r.soloMonitoraggio ? ", colonna 8 vuota, colonna 16 barrata (solo monitoraggio)"
-                     : ", colonna 8 = " + vf + ", colonna 10 = " + Math.min(r.giorni, 365) + ", colonna 14 = " + r.colonna14
+             .append(", colonna 8 = " + vf + ", colonna 10 = " + Math.min(r.giorni, 365) + ", colonna 14 = " + r.colonna14
                      + (privilegiato ? ", colonna 21 barrata" : "") + ", IVAFE = " + r.ivafe.setScale(0, RoundingMode.HALF_UP).toPlainString())
              .append("<br>");
-            if (!r.soloMonitoraggio) totale = totale.add(r.ivafe.setScale(0, RoundingMode.HALF_UP));
+            totale = totale.add(r.ivafe.setScale(0, RoundingMode.HALF_UP));
             for (String[] p : r.prospetto) {
                 h.append("&emsp;- ").append(p[Calcoli_RW_Derivati.P_VOCE]).append(" (").append(p[Calcoli_RW_Derivati.P_DATA_INI]).append(" / ")
                  .append(p[Calcoli_RW_Derivati.P_DATA_FINE]).append(") : valore iniziale ").append(p[Calcoli_RW_Derivati.P_VAL_INI])
@@ -22417,6 +22446,7 @@ try {
     private javax.swing.JLabel RW_Label_Definitiva;
     private javax.swing.JLabel RW_Label_SegnalaRicalcolo;
     private javax.swing.ButtonGroup RW_Liquidita;
+    private javax.swing.JCheckBox RW_Opzioni_CheckBox_DerivatiPeriodoUnico;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_FiatInRW;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_FiatSpezzaApporti;
     private javax.swing.JCheckBox RW_Opzioni_CheckBox_FiatSpezzaPrelievi;

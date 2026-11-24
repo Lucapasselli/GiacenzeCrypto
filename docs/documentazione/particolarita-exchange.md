@@ -434,7 +434,10 @@ La guida di Bybit all'esportazione è
   di questi file con una versione precedente e lo reimporta trova profitti e perdite due volte, sommati
   per giorno e riga per riga. Dalla versione 1.0.67 i movimenti nuovi nascono già classificati come derivati, con
   il loro risultato nella colonna *Risultato derivati* della tabella dei movimenti, separato dalle
-  plusvalenze delle cripto-attività. Il risultato è quello calcolato da Bybit e va nel quadro T/RT. Anche il bonus nasce classificato, come accredito, e il suo recupero come addebito: la parte
+  plusvalenze delle cripto-attività, e va nel quadro T/RT. Ogni apertura e chiusura diventa anche il token
+  del contratto (`DERIV.BTC-USDT-BYBIT.LONG`, sul sotto-wallet *Derivati*), come per OKX: il risultato di una
+  chiusura è calcolato in LIFO quando i prezzi del file ricostruiscono il profitto di Bybit, altrimenti resta
+  quello di Bybit. Reimportando i file i token si aggiungono ai movimenti già importati, senza doppioni. Anche il bonus nasce classificato, come accredito, e il suo recupero come addebito: la parte
   di bonus consumata compensa così le commissioni, il funding e le perdite che Bybit ha pagato con il
   bonus invece che con i tuoi fondi. I movimenti importati con le versioni precedenti si classificano
   con *Classifica come derivato* (menu dei movimenti, *Altre modifiche*).

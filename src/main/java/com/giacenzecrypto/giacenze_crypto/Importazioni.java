@@ -1261,7 +1261,7 @@ public class Importazioni {
         //Token e margine di una chiusura che non ha la posizione aperta fra i movimenti non si creano (OKXDerivati)
         listaDaImportare = OKXDerivati.FiltraPerSaldoAperto(listaDaImportare, Principale.MappaCryptoWallet.values());
 
-        int InsScart[] = ScriviListaSuMappaCrypto(listaDaImportare, false);
+        int InsScart[] = ScriviListaSuMappaCryptoOKX(listaDaImportare);
         TransazioniAggiunte = InsScart[0];
         TrasazioniScartate = InsScart[1];
         Transazioni = InsScart[0] + InsScart[1];
@@ -1690,7 +1690,38 @@ public class Importazioni {
      * @return array di 2 interi: {@code [0]} movimenti effettivamente aggiunti, {@code [1]} movimenti scartati
      */
     public static int[] ScriviListaSuMappaCrypto(List<String[]> lista,boolean SovrascriEsistenti,int IdDocumento){
-        return ScriviListaSuMappaCrypto(lista, SovrascriEsistenti, IdDocumento, false);
+        return ScriviListaSuMappaCrypto(lista, SovrascriEsistenti, IdDocumento, false, null);
+    }
+
+    /**
+     * Scrittura dello scaricamento API di OKX, gia' privo dei bill presenti in archivio (confronto per billId,
+     * {@link #ChiaveDedupOKX}). Il controllo dei doppioni per chiave logica ({@link #F_ritornaSoloElementiNuovi}) resta, ma una
+     * riga con un billId non si confronta con le righe di OKX dell'archivio che ne hanno un altro: sono di sicuro un altro bill.
+     * Altrimenti due fill dello stesso secondo con la stessa quantita' (token del contratto, commissione) arrivati in due
+     * scaricamenti diversi si scontravano e il secondo si perdeva. Vale per i soli derivati ({@link #ConBillOKX}), e verso le righe
+     * senza billId (un CSV) la protezione resta.
+     */
+    static int[] ScriviListaSuMappaCryptoOKX(List<String[]> lista){
+        return ScriviListaSuMappaCrypto(lista, false, DocumentoFonteCorrente, false, Importazioni::ConBillOKX);
+    }
+
+    /**
+     * Scrittura dei token dei contratti creati dai file CSV ({@link DerivatiDaCsv}): chi chiama li ha gia' confrontati con l'archivio per
+     * identificativo ({@code [3]} e {@code [24]}). Il confronto per chiave logica li confronta solo con le righe che non sono token, cosi' due
+     * esecuzioni dello stesso secondo con la stessa quantita' non si scontrano (come {@link #ConBillOKX}, bug B16).
+     */
+    static int[] ScriviListaSuMappaCryptoToken(List<String[]> lista){
+        return ScriviListaSuMappaCrypto(lista, false, DocumentoFonteCorrente, false,
+                v -> DerivatiLifo.IsRigaToken(v) && v.length > 24 && v[24] != null && !v[24].isBlank());
+    }
+
+    /**
+     * @return {@code true} se il movimento e' un derivato di OKX (token, giroconto, profitto, commissione, funding) e il suo campo 24 e' un
+     *         billId (cifre, con l'eventuale suffisso della penale). Solo i derivati: per le altre righe di OKX il confronto resta quello di sempre
+     */
+    static boolean ConBillOKX(String[] v) {
+        if (v == null || v.length <= 24 || v[3] == null || !v[3].equalsIgnoreCase("OKX") || v[24] == null || !Derivati.isDerivato(v)) return false;
+        return ChiaveDedupOKX(v[24]).matches("\\d+(-\\d+)?(" + java.util.regex.Pattern.quote(CcxtInterop.SUFFISSO_BILL_PENALE) + ")?");
     }
 
     /**
@@ -1701,7 +1732,7 @@ public class Importazioni {
      * @return come {@link #ScriviListaSuMappaCrypto(List, boolean)}: aggiunti e scartati
      */
     public static int[] ScriviListaSuMappaCryptoRiconciliando(List<String[]> lista){
-        return ScriviListaSuMappaCrypto(lista, true, DocumentoFonteCorrente, true);
+        return ScriviListaSuMappaCrypto(lista, true, DocumentoFonteCorrente, true, null);
     }
 
     /**
@@ -1749,7 +1780,8 @@ public class Importazioni {
         return restanti;
     }
 
-    private static int[] ScriviListaSuMappaCrypto(List<String[]> lista,boolean SovrascriEsistenti,int IdDocumento,boolean RiconciliaAltreFonti){
+    private static int[] ScriviListaSuMappaCrypto(List<String[]> lista,boolean SovrascriEsistenti,int IdDocumento,boolean RiconciliaAltreFonti,
+            java.util.function.Predicate<String[]> IdentificatoAParte){
         //===== 0 - IMPORTAZIONE ABBANDONATA PER MANCANZA DI CONNESSIONE: NON SI SCRIVE NULLA =====
         //Meglio non importare che importare senza prezzo. Non scrivere nulla e' anche cio' che rende
         //l'abbandono ripetibile: la prossima esecuzione riparte dallo stesso punto, esattamente come
@@ -1772,7 +1804,7 @@ public class Importazioni {
         
         //===== 2 - SE NON INDICO DI SOVRASCRIVERE GLI ESISTENTI RECUPERO LA LISTA DEI SOLO MOVIMENTI NUOVI =====
         if (!SovrascriEsistenti) {
-            lista = Importazioni.F_ritornaSoloElementiNuovi(lista);
+            lista = Importazioni.F_ritornaSoloElementiNuovi(lista, IdentificatoAParte);
         }
         //Con «sovrascrivi» la deduplica non gira: lo scaricamento API di Binance riconcilia le sue righe con l'archivio
         if (SovrascriEsistenti && RiconciliaAltreFonti) {
@@ -3356,17 +3388,33 @@ return filtrata;
  * @return Lista contenente SOLO i movimenti nuovi (non presenti in MappaCryptoWallet)
  */
 public static List<String[]> F_ritornaSoloElementiNuovi(List<String[]> lista) {
-    // STEP 1: Precalcolo TUTTE le chiavi logiche dei movimenti esistenti
-    // Stream → HashSet: lookup O(1) invece di N confronti nested loops
-    Set<String> movimentiEsistenti = Principale.MappaCryptoWallet.values().stream()
-            .map(Importazioni::F_buildKeyMovimento)  // Trasforma ogni String[] → chiave univoca
-            .collect(Collectors.toCollection(HashSet::new)); // HashSet per lookup ultra-rapido
+    return F_ritornaSoloElementiNuovi(lista, null);
+}
 
+/**
+ * Come {@link #F_ritornaSoloElementiNuovi(List)}. Con {@code IdentificatoAParte} non nullo, una riga per cui vale si confronta
+ * solo con le righe dell'archivio per cui non vale: due righe identificate a parte (per OKX, dal billId) con identificativi
+ * diversi non sono mai lo stesso movimento, anche con la stessa chiave logica. Le stesse righe le ha gia' confrontate chi
+ * chiama, per identificativo.
+ */
+static List<String[]> F_ritornaSoloElementiNuovi(List<String[]> lista, java.util.function.Predicate<String[]> IdentificatoAParte) {
+    // STEP 1: Precalcolo TUTTE le chiavi logiche dei movimenti esistenti (HashSet: lookup O(1)), e a parte quelle dei movimenti
+    // che non sono identificati a parte
     // STEP 1-bis: le forme che un movimento aveva prima di essere modificato nel programma (prelievo prima della
     // classificazione del trasferimento, versioni precedenti a Trasla Orario o a Modifica movimento) sono quelle che il
     // file riporta ancora: se ne aggiungono le chiavi, altrimenti la riga del file rientrerebbe come doppione
+    Set<String> movimentiEsistenti = new HashSet<>();
+    Set<String> esistentiNonIdentificati = IdentificatoAParte == null ? movimentiEsistenti : new HashSet<>();
     for (String[] v : Principale.MappaCryptoWallet.values()) {
-        for (String[] Forma : FormeImportate.FormePrecedenti(v)) movimentiEsistenti.add(F_buildKeyMovimento(Forma));
+        boolean aParte = IdentificatoAParte != null && IdentificatoAParte.test(v);
+        String k = F_buildKeyMovimento(v);
+        movimentiEsistenti.add(k);
+        if (!aParte) esistentiNonIdentificati.add(k);
+        for (String[] Forma : FormeImportate.FormePrecedenti(v)) {
+            String kf = F_buildKeyMovimento(Forma);
+            movimentiEsistenti.add(kf);
+            if (!aParte) esistentiNonIdentificati.add(kf);
+        }
     }
 
     List<String[]> listaNew = new ArrayList<>();  // Risultato: solo elementi nuovi
@@ -3374,7 +3422,8 @@ public static List<String[]> F_ritornaSoloElementiNuovi(List<String[]> lista) {
     // STEP 2: Per ogni riga nuova, verifica se la chiave logica esiste già
     for (String[] valoreLista : lista) {
         String chiave = F_buildKeyMovimento(valoreLista);  // Calcola chiave univoca
-        if (!movimentiEsistenti.contains(chiave)) {        // O(1) lookup!
+        Set<String> confronto = IdentificatoAParte != null && IdentificatoAParte.test(valoreLista) ? esistentiNonIdentificati : movimentiEsistenti;
+        if (!confronto.contains(chiave)) {
             listaNew.add(valoreLista);                     // Nuovo → lo tengo
         }
         // Se chiave già presente → skip (duplicato)

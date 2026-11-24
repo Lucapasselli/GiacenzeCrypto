@@ -453,6 +453,28 @@
       "type": "object",
       "description": "Solo per le configurazioni lette anche dall'import via API (Bitget): codice di tipo dell'API -> causale del CSV. Non serve per un import da file. Dalla 1.0.65.05.",
       "additionalProperties": { "type": "string" }
+    },
+    "contrattiDerivati": {
+      "type": "object",
+      "description": "Colonne delle esecuzioni dei contratti derivati: ogni esecuzione diventa il token del contratto (DERIV.<base>-<quota>-<exchange>.LONG|SHORT) e il LIFO dei contratti sostituisce il profitto dell'exchange negli episodi in cui i prezzi lo ricostruiscono. Il token non ha effetti fiscali. Dalla 1.0.67, le versioni precedenti ignorano la chiave. #contrattiderivati",
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "required": ["causali", "colonnaContratto", "colonneVerso", "versi", "colonnaQuantita", "colonnaPrezzo"],
+      "properties": {
+        "causali": { "$ref": "#/definitions/elencoCausali", "description": "Causali CSV (composte come le compone la configurazione) delle righe che sono esecuzioni di un contratto." },
+        "colonnaContratto": { "$ref": "#/definitions/indice", "description": "Simbolo del contratto (BTCUSDT, BTCUSD)." },
+        "colonneVerso": { "type": "array", "items": { "$ref": "#/definitions/indice" }, "minItems": 1, "description": "Colonne il cui testo, unito da |, e' la chiave di versi." },
+        "versi": { "type": "object", "description": "Testo delle colonne del verso -> apre long, chiude long, apre short, chiude short.", "additionalProperties": { "type": "string", "enum": ["apre long", "chiude long", "apre short", "chiude short"] } },
+        "colonnaQuantita": { "$ref": "#/definitions/indice", "description": "Contratti eseguiti (nel sottostante per i lineari, in dollari per gli inversi)." },
+        "colonnaPosizione": { "$ref": "#/definitions/indice", "description": "Posizione dopo l'esecuzione: ordina le esecuzioni dello stesso secondo." },
+        "colonnaPrezzo": { "$ref": "#/definitions/indice", "description": "Prezzo di esecuzione." },
+        "colonnaProfitto": { "$ref": "#/definitions/indice", "description": "Profitto o perdita lordi della chiusura, prima della commissione." },
+        "colonnaCommissione": { "$ref": "#/definitions/indice", "description": "Commissione dell'esecuzione." },
+        "colonnaMovimento": { "$ref": "#/definitions/indice", "description": "Colonna da cui nasce la quantita' del movimento del profitto: serve ad abbinarlo al token." },
+        "commissioneInclusa": { "type": "boolean", "default": false, "description": "Il movimento del profitto e' gia' al netto della commissione: il reddito in LIFO della chiusura si calcola al netto della stessa commissione." },
+        "colonnaIdEsecuzione": { "$ref": "#/definitions/indice", "description": "Identificativo dell'esecuzione. Senza, il programma ne calcola uno stabile dalle altre colonne." },
+        "colonnaOrdine": { "$ref": "#/definitions/indice", "description": "Identificativo dell'ordine, solo informativo." }
+      }
     }
   },
 

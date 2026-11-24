@@ -325,7 +325,7 @@ public final class OKXDerivati {
     }
 
     /** Prezzo di mercato in euro di un'unita' della moneta all'istante, {@code null} se non si trova (o nelle conversioni "a secco"). */
-    private static BigDecimal PrezzoUnitarioMoneta(String moneta, long istante) {
+    static BigDecimal PrezzoUnitarioMoneta(String moneta, long istante) {
         try {
             Moneta m = new Moneta();
             m.Moneta = moneta;
@@ -399,6 +399,8 @@ public final class OKXDerivati {
     static List<String[]> FiltraPerSaldoAperto(List<String[]> daImportare, Iterable<String[]> archivio) {
         Map<String, BigDecimal> saldo = new LinkedHashMap<>();      //contratti aperti per simbolo del token
         Map<String, BigDecimal> parcheggiato = new LinkedHashMap<>(); //margine parcheggiato ancora presente, per simbolo
+        Map<String, String> monetaPosizione = new LinkedHashMap<>();  //moneta di regolamento, per simbolo
+        Set<String> fillContatiArchivio = new HashSet<>();             //fill di cui il margine parcheggiato e' gia' contato
         List<String[]> tutte = new ArrayList<>();                     //archivio e scaricamento, per i rientri del margine
         if (archivio != null) {
             for (String[] v : archivio) {
@@ -408,34 +410,41 @@ public final class OKXDerivati {
                     saldo.merge(v[11].toUpperCase(), new BigDecimal(v[13]).abs(), BigDecimal::add);
                 } else if (Derivati.IsTokenContratto(v[8]) && Funzioni.isNumeric(v[10], false)) {
                     saldo.merge(v[8].toUpperCase(), new BigDecimal(v[10]).abs().negate(), BigDecimal::add);
-                } else if (Derivati.Tipo(v).equals(Derivati.MARGINE) && OKXDerivati.SOTTOWALLET.equals(v[4])) {
-                    String simbolo = SimboloDaDati(v);
-                    if (simbolo == null) continue;
-                    boolean entra = v[13] != null && Funzioni.isNumeric(v[13], false) && new BigDecimal(v[13]).signum() != 0;
-                    BigDecimal q = entra ? new BigDecimal(v[13]).abs()
-                            : Funzioni.isNumeric(v[10], false) ? new BigDecimal(v[10]).abs().negate() : BigDecimal.ZERO;
-                    parcheggiato.merge(simbolo, q, BigDecimal::add);
                 }
+                AggiungiParcheggiato(v, parcheggiato, monetaPosizione, fillContatiArchivio);
             }
         }
 
         int nArchivio = tutte.size();
-        List<String[]> token = new ArrayList<>();
+        //Token e funding dello scaricamento, in ordine di tempo: il funding va sul conto solo se la posizione e' aperta
+        List<String[]> eventi = new ArrayList<>();
         Map<String, List<String[]>> marginiPerFill = new LinkedHashMap<>();
+        Map<String, List<String[]>> righePerFill = new LinkedHashMap<>();  //profitto, commissione e penale di ogni fill
         for (String[] v : daImportare) {
             if (v == null || v.length <= Derivati.CAMPO_DATI) continue;
             tutte.add(v);
-            if (Derivati.Tipo(v).equals(Derivati.CONTRATTO)) token.add(v);
-            else if (Derivati.Tipo(v).equals(Derivati.MARGINE)) marginiPerFill.computeIfAbsent(v[24], k -> new ArrayList<>()).add(v);
+            String tipo = Derivati.Tipo(v);
+            if (tipo.equals(Derivati.CONTRATTO)) eventi.add(v);
+            else if (tipo.equals(Derivati.MARGINE)) marginiPerFill.computeIfAbsent(v[24], k -> new ArrayList<>()).add(v);
+            else if (tipo.equals(Derivati.FUNDING)) {
+                if (!SOTTOWALLET.equals(v[4]) && ContrattoDaNota(v[21]) != null) eventi.add(v);
+            } else if (Derivati.isDerivato(v) && v[24] != null && !v[24].isBlank() && !IsClawback(v)
+                    && (v[7] == null || !v[7].startsWith(CAUSALE_RIENTRO + "|"))) {
+                righePerFill.computeIfAbsent(ChiaveRigaFill(v), k -> new ArrayList<>()).add(v);
+            }
         }
-        token.sort(ORDINE_ESECUZIONE);
+        eventi.sort(ORDINE_EVENTI);
         Rientri rientri = new Rientri(tutte, nArchivio);
 
         Set<String> rifiutati = new HashSet<>();
         Set<String> daTogliere = new HashSet<>();   //righe di margine il cui importo riportato e' zero
         List<String[]> aggiunte = new ArrayList<>(); //depositi di rientro del margine
         boolean cambiate = false;                     //chiusure ridotte ai contratti aperti fra i token
-        for (String[] v : token) {
+        for (String[] v : eventi) {
+            if (!Derivati.Tipo(v).equals(Derivati.CONTRATTO)) {
+                PortaFundingSulConto(v, saldo, parcheggiato, monetaPosizione);
+                continue;
+            }
             boolean apre = v[11] != null && !v[11].isBlank();
             String simbolo = (apre ? v[11] : v[8]).toUpperCase();
             BigDecimal q = new BigDecimal(apre ? v[13] : v[10]).abs();
@@ -445,6 +454,8 @@ public final class OKXDerivati {
                 saldo.put(simbolo, attuale.add(q));
                 String m = dati.get("margine");
                 if (m != null && Funzioni.isNumeric(m, false)) parcheggiato.merge(simbolo, new BigDecimal(m).abs(), BigDecimal::add);
+                String moneta = dati.get("moneta");
+                if (moneta != null && !moneta.isBlank()) monetaPosizione.put(simbolo, moneta);
             } else if (attuale.compareTo(q) >= 0) {
                 BigDecimal residuo = parcheggiato.getOrDefault(simbolo, BigDecimal.ZERO).max(BigDecimal.ZERO);
                 BigDecimal riportato = q.compareTo(attuale) == 0 ? residuo
@@ -479,6 +490,16 @@ public final class OKXDerivati {
                         + (rientro != null ? "margine della forma di prima riportato con un deposito di " + rientro[13]
                                 : "nessun rientro del margine (" + rientri.motivo + ")"));
             }
+        }
+
+        //Forma "conto" (decisione dell'utente del 22/11/2026): profitto, perdita, commissione e penale di ogni fill con token e
+        //margine stanno sul sotto-wallet dei derivati, e il giroconto porta solo il netto fra saldo e posizione. Non per una
+        //chiusura ridotta ai contratti aperti fra i token (posizione aperta con la 1.0.66): li' profitto e commissione restano sullo spot
+        for (String[] t : eventi) {
+            if (!Derivati.Tipo(t).equals(Derivati.CONTRATTO) || rifiutati.contains(t[24])) continue;
+            Map<String, String> dati = Derivati.Dati(t);
+            if (dati.containsKey("contrattiBorsa")) continue;
+            if (PortaFillSulConto(t, dati, marginiPerFill.get(t[24]), righePerFill.get(ChiaveRigaFill(t)), daTogliere)) cambiate = true;
         }
         if (rifiutati.isEmpty() && daTogliere.isEmpty() && aggiunte.isEmpty() && !cambiate) return daImportare;
 
@@ -611,7 +632,8 @@ public final class OKXDerivati {
                     boolean senzaContratto = contratto.equals(c) && v[7] != null && v[7].startsWith("Sell|") && senzaToken;
                     if (formaPubblicata || senzaContratto) uscito = true;
                 }
-                if (t > daRientro && contratto.equals(c) && tipo.equals(Derivati.FUNDING)) {
+                //Il funding portato sul conto torna allo spot con il margine riportato: non si riaggiunge una seconda volta
+                if (t > daRientro && contratto.equals(c) && tipo.equals(Derivati.FUNDING) && !SOTTOWALLET.equals(v[4])) {
                     if (moneta.equalsIgnoreCase(v[11])) funding = funding.add(Numero(v[13]));
                     else if (moneta.equalsIgnoreCase(v[8])) funding = funding.add(Numero(v[10]));
                 }
@@ -681,11 +703,244 @@ public final class OKXDerivati {
                 continue;
             }
             boolean entra = m[11] != null && !m[11].isBlank();
-            String q = riportato.stripTrailingZeros().toPlainString();
-            if (entra) m[13] = q;
-            else m[10] = "-" + q;
+            ImpostaQuantita(m, entra ? riportato : riportato.negate());
         }
     }
+
+    /**
+     * Cambia la quantita' di una riga di margine e ne riporta in proporzione il valore in euro ({@code [15]}), calcolato alla creazione
+     * sulla quantita' di prima: con l'opzione Conto derivati quel valore e' la cessione e il carico del giroconto. Il prezzo unitario e'
+     * quello del campo dati se c'e', altrimenti il valore diviso la quantita' di prima.
+     *
+     * @param q la nuova quantita', negativa per la gamba in uscita
+     */
+    static void ImpostaQuantita(String[] m, BigDecimal q) {
+        boolean entra = m[11] != null && !m[11].isBlank();
+        BigDecimal prima = Numero(entra ? m[13] : m[10]).abs();
+        BigDecimal unitario = Numero(Derivati.Dati(m).get(DerivatiLifo.CHIAVE_PREZZO_MONETA));
+        if (unitario.signum() <= 0 && prima.signum() > 0) unitario = Numero(m[15]).divide(prima, 18, java.math.RoundingMode.HALF_UP);
+        String testo = q.abs().stripTrailingZeros().toPlainString();
+        if (entra) m[13] = testo;
+        else m[10] = "-" + testo;
+        if (unitario.signum() > 0) m[15] = unitario.multiply(q.abs()).setScale(2, java.math.RoundingMode.HALF_UP).toPlainString();
+    }
+
+    // =================================================================================================
+    // IL CONTO DERIVATI DI OKX (forma "conto", decisione dell'utente del 22/11/2026)
+    // =================================================================================================
+
+    /** Primo numero di movimento delle righe del conto che vengono dopo il giroconto in entrata (902). */
+    static final int NUMERO_CONTO_APERTURA = 905;
+
+    /** @return {@code true} se il movimento e' il clawback di una liquidazione OKX ({@code Clawback|<instType>}) */
+    static boolean IsClawback(String[] v) {
+        return v != null && v.length > 7 && v[7] != null && v[7].startsWith(CcxtInterop.CAUSALE_CLAWBACK_DERIVATI_OKX + "|");
+    }
+
+    /** Chiave del fill di una riga: exchange e billId, senza il suffisso della riga della penale ({@code -PEN}). */
+    static String ChiaveRigaFill(String[] v) {
+        String b = v[24] == null ? "" : v[24].trim();
+        if (b.endsWith(CcxtInterop.SUFFISSO_BILL_PENALE)) b = b.substring(0, b.length() - CcxtInterop.SUFFISSO_BILL_PENALE.length());
+        return (v[3] == null ? "" : v[3]) + "|" + b;
+    }
+
+    /** Quantita' con segno di un movimento a una gamba: positiva se entra, negativa se esce, zero se non leggibile. */
+    static BigDecimal QuantitaConSegno(String[] v) {
+        if (v[13] != null && Funzioni.isNumeric(v[13], false) && new BigDecimal(v[13]).signum() != 0) return new BigDecimal(v[13]).abs();
+        if (v[10] != null && Funzioni.isNumeric(v[10], false)) return new BigDecimal(v[10]).abs().negate();
+        return BigDecimal.ZERO;
+    }
+
+    /**
+     * Margine parcheggiato che un movimento aggiunge (positivo) o toglie (negativo) alla sua posizione, letto dai dati e mai dalla
+     * quantita' del giroconto, che nella forma "conto" porta anche profitto, perdita e commissione del fill: un'apertura aggiunge il
+     * suo margine, una chiusura toglie il margine riportato, un funding portato sul conto aggiunge o toglie la sua quantita'. Token e
+     * giroconto di un fill hanno gli stessi dati: chi somma deve contare ogni fill una volta sola ({@link #AggiungiParcheggiato}).
+     *
+     * @return la variazione, {@code null} se il movimento non tocca il margine parcheggiato
+     */
+    static BigDecimal VariazioneParcheggiato(String[] v) {
+        if (v == null || v.length <= Derivati.CAMPO_DATI) return null;
+        String tipo = Derivati.Tipo(v);
+        if (tipo.equals(Derivati.CONTRATTO) || tipo.equals(Derivati.MARGINE) && SOTTOWALLET.equals(v[4])) {
+            Map<String, String> d = Derivati.Dati(v);
+            String azione = d.get("azione");
+            if (azione == null) return null;
+            boolean apre = azione.equals("apre");
+            String m = apre ? d.get("margine") : d.getOrDefault("margineRiportato", d.get("margine"));
+            if (!Funzioni.isNumeric(m, false)) return null;
+            BigDecimal q = new BigDecimal(m).abs();
+            return apre ? q : q.negate();
+        }
+        if (tipo.equals(Derivati.FUNDING) && SOTTOWALLET.equals(v[4]) && SimboloDaDati(v) != null) return QuantitaConSegno(v);
+        return null;
+    }
+
+    /** Simbolo del token della posizione di cui {@link #VariazioneParcheggiato} legge il margine, {@code null} se non c'e'. */
+    static String SimboloParcheggiato(String[] v) {
+        if (Derivati.Tipo(v).equals(Derivati.CONTRATTO)) {
+            String s = v[11] != null && !v[11].isBlank() ? v[11] : v[8];
+            return s == null || s.isBlank() ? null : s.toUpperCase();
+        }
+        return SimboloDaDati(v);
+    }
+
+    /**
+     * Margine parcheggiato per posizione (simbolo del token, maiuscolo) dei movimenti dati, prima dell'istante limite (in
+     * millisecondi, {@code Long.MAX_VALUE} per tutti). Per i contratti aperti e il quadro W/RW.
+     */
+    static Map<String, BigDecimal> MarginiParcheggiati(Iterable<String[]> movimenti, long limite) {
+        Map<String, BigDecimal> out = new LinkedHashMap<>();
+        Set<String> fillContati = new HashSet<>();
+        for (String[] v : movimenti) {
+            if (v == null || v.length <= Derivati.CAMPO_DATI) continue;
+            String tipo = Derivati.Tipo(v);
+            if (!tipo.equals(Derivati.CONTRATTO) && !tipo.equals(Derivati.MARGINE) && !tipo.equals(Derivati.FUNDING)) continue;
+            if (limite != Long.MAX_VALUE && IstanteRiga(v) >= limite) continue;
+            AggiungiParcheggiato(v, out, null, fillContati);
+        }
+        return out;
+    }
+
+    /**
+     * Aggiunge la variazione di {@link #VariazioneParcheggiato}. Il margine di un fill si legge dal suo token o, se il token manca (riga
+     * scartata come doppione di un altro fill dello stesso secondo con la stessa quantita'), dal giroconto: {@code fillContati} fa
+     * contare ogni fill una volta sola.
+     */
+    private static void AggiungiParcheggiato(String[] v, Map<String, BigDecimal> parcheggiato, Map<String, String> monete,
+            Set<String> fillContati) {
+        BigDecimal d = VariazioneParcheggiato(v);
+        String simbolo = d == null ? null : SimboloParcheggiato(v);
+        if (simbolo == null) return;
+        if (monete != null && !Derivati.Tipo(v).equals(Derivati.FUNDING)) {
+            String m = Derivati.Dati(v).get("moneta");
+            if (m != null && !m.isBlank()) monete.put(simbolo, m);
+        }
+        if (!Derivati.Tipo(v).equals(Derivati.FUNDING) && !fillContati.add(ChiaveRigaFill(v))) return;
+        parcheggiato.merge(simbolo, d, BigDecimal::add);
+    }
+
+    /**
+     * Porta sul conto un funding dello scaricamento (non legato a un fill) se del contratto e' aperto, fra i token, un solo verso nella sua
+     * moneta: e' pagato o incassato dal margine della posizione, e si aggiunge al margine parcheggiato, che torna allo spot con le
+     * chiusure. Con i due versi aperti (modalita' long/short) non si sa a quale tocchi e resta sullo spot.
+     */
+    private static void PortaFundingSulConto(String[] v, Map<String, BigDecimal> saldo, Map<String, BigDecimal> parcheggiato,
+            Map<String, String> monetaPosizione) {
+        String contratto = ContrattoDaNota(v[21]);
+        String moneta = v[11] != null && !v[11].isBlank() ? v[11] : v[8];
+        if (contratto == null || moneta == null) return;
+        String lungo = Derivati.NomeTokenContratto(contratto, true).toUpperCase();
+        String corto = Derivati.NomeTokenContratto(contratto, false).toUpperCase();
+        boolean l = saldo.getOrDefault(lungo, BigDecimal.ZERO).signum() > 0;
+        boolean c = saldo.getOrDefault(corto, BigDecimal.ZERO).signum() > 0;
+        if (l == c) return;
+        String simbolo = l ? lungo : corto;
+        if (!moneta.equalsIgnoreCase(monetaPosizione.get(simbolo))) return;
+        v[4] = SOTTOWALLET;
+        Map<String, String> d = Derivati.Dati(v);
+        d.put("contratto", contratto);
+        d.put("verso", l ? "long" : "short");
+        d.put("moneta", moneta);
+        Derivati.ImpostaDati(v, d);
+        parcheggiato.merge(simbolo, QuantitaConSegno(v), BigDecimal::add);
+    }
+
+    /**
+     * Forma "conto" di un fill con token e margine: profitto o perdita, commissione e penale passano dal wallet principale al
+     * sotto-wallet {@value #SOTTOWALLET}, e il giroconto porta il netto che serve perche' il conto cambi del solo margine: in
+     * un'apertura il margine piu' la commissione, in una chiusura il margine riportato piu' il profitto (o meno la perdita) meno la
+     * commissione e la penale, cioe' quello che OKX accredita o addebita al saldo. Se il netto va nell'altro verso le due righe del
+     * giroconto si scambiano i wallet, se e' zero si tolgono. L'ordine nello stesso secondo lo decide {@link #Rinumera}.
+     *
+     * <p>Una liquidazione con deficit (il margine dell'exchange sotto zero) porta comunque il conto a zero: il deficit arriva dallo spot
+     * con il giroconto, e il clawback con cui OKX lo copre resta sullo spot. Cosi' nessuno dei due wallet va sotto zero, nemmeno per un
+     * istante, e la somma dei movimenti resta quella dei {@code balChg}.
+     *
+     * @return {@code true} se ha cambiato qualcosa
+     */
+    private static boolean PortaFillSulConto(String[] token, Map<String, String> dati, List<String[]> margini, List<String[]> righe,
+            Set<String> daTogliere) {
+        if (margini == null || margini.size() != 2) return false;
+        String[] uscita = null, entrata = null;
+        for (String[] m : margini) {
+            if (m[10] != null && !m[10].isBlank()) uscita = m;
+            else entrata = m;
+        }
+        String moneta = dati.get("moneta");
+        if (uscita == null || entrata == null || moneta == null) return false;
+        boolean apre = "apre".equals(dati.get("azione"));
+        String principale = SOTTOWALLET.equals(uscita[4]) ? entrata[4] : uscita[4];
+
+        BigDecimal spostato = BigDecimal.ZERO;
+        List<String[]> spostate = new ArrayList<>();
+        if (righe != null) {
+            for (String[] r : righe) {
+                if (!principale.equals(r[4])) continue;
+                String mr = r[11] != null && !r[11].isBlank() ? r[11] : r[8];
+                if (!moneta.equalsIgnoreCase(mr)) continue;
+                r[4] = SOTTOWALLET;
+                spostato = spostato.add(QuantitaConSegno(r));
+                spostate.add(r);
+            }
+        }
+        BigDecimal voluto = apre ? Numero(dati.get("margine")).abs()
+                : Numero(dati.getOrDefault("margineRiportato", dati.get("margine"))).abs().negate();
+        BigDecimal netto = voluto.subtract(spostato);
+        Rinumera(spostate, uscita[0], netto.signum() > 0);
+        dati.put("giroconto", netto.stripTrailingZeros().toPlainString());
+        String testo = Derivati.ScriviDati(dati);
+        token[Derivati.CAMPO_DATI] = testo;
+        uscita[Derivati.CAMPO_DATI] = testo;
+        entrata[Derivati.CAMPO_DATI] = testo;
+        if (netto.signum() == 0) {
+            daTogliere.add(uscita[0]);
+            daTogliere.add(entrata[0]);
+            return true;
+        }
+        daTogliere.remove(uscita[0]);
+        daTogliere.remove(entrata[0]);
+        uscita[4] = netto.signum() > 0 ? principale : SOTTOWALLET;
+        entrata[4] = netto.signum() > 0 ? SOTTOWALLET : principale;
+        ImpostaQuantita(uscita, netto.abs().negate());
+        ImpostaQuantita(entrata, netto.abs());
+        return true;
+    }
+
+    /** Primo numero di movimento delle righe del conto che vengono prima del giroconto in uscita (901). */
+    static final int NUMERO_CONTO_CHIUSURA = 801;
+
+    /**
+     * Ordine nello stesso secondo delle righe di un fill portate sul conto: con l'opzione Conto derivati il conto ha una pila sua, e un
+     * addebito che arriva prima del denaro la scaricherebbe vuota. Le righe prendono l'identificativo del giroconto (secondo segmento
+     * dell'ID: penale e commissione ne avevano uno loro, che le metteva prima o dopo a seconda dei caratteri) e un numero: dopo il
+     * giroconto in entrata (902) se il netto entra nel conto, prima di quello in uscita (901) se ne esce. Fra loro prima gli accrediti,
+     * poi gli addebiti: il conto non va mai sotto zero.
+     *
+     * @param idGiroconto l'ID di una riga del giroconto del fill
+     * @param dopoIlGiroconto {@code true} se il netto entra nel conto
+     */
+    private static void Rinumera(List<String[]> righe, String idGiroconto, boolean dopoIlGiroconto) {
+        String[] g = idGiroconto.split("_");
+        if (g.length != 5 || righe.isEmpty()) return;
+        righe.sort((a, b) -> Integer.compare(QuantitaConSegno(b).signum(), QuantitaConSegno(a).signum()));
+        int numero = dopoIlGiroconto ? NUMERO_CONTO_APERTURA : NUMERO_CONTO_CHIUSURA;
+        for (String[] r : righe) {
+            String[] p = r[0].split("_");
+            if (p.length != 5) continue;
+            r[0] = g[0] + "_" + g[1] + "_" + String.format("%03d", numero++) + "_" + p[3] + "_" + p[4];
+        }
+    }
+
+    /** Ordine di token e funding dello scaricamento: istante, poi a parita' l'ordine di esecuzione dei token. */
+    static final java.util.Comparator<String[]> ORDINE_EVENTI = (a, b) -> {
+        int c = Long.compare(IstanteRiga(a), IstanteRiga(b));
+        if (c != 0) return c;
+        boolean ta = Derivati.Tipo(a).equals(Derivati.CONTRATTO), tb = Derivati.Tipo(b).equals(Derivati.CONTRATTO);
+        if (ta && tb) return OKXDerivati.ORDINE_ESECUZIONE.compare(a, b);
+        if (ta != tb) return ta ? -1 : 1;
+        return String.valueOf(a[0]).compareTo(String.valueOf(b[0]));
+    };
 
     /**
      * Ordine di esecuzione delle righe di token: istante del fill, poi billId come numero (OKX li assegna crescenti). Uno solo per
@@ -794,6 +1049,9 @@ public final class OKXDerivati {
         for (String[] v : movimenti) {
             if (v == null || v.length <= Derivati.CAMPO_DATI || !Derivati.IsRigaContrattoOMargine(v)) continue;
             Map<String, String> d = Derivati.Dati(v);
+            //Solo i contratti di OKX: quelli dei file di altri exchange (DerivatiDaCsv) hanno il valore scritto dall'import o nessuno
+            String piattaforma = d.get("piattaforma");
+            if (piattaforma != null && !piattaforma.isBlank() && !piattaforma.equalsIgnoreCase("OKX")) continue;
             String contratto = d.get("contratto");
             String valore = d.get("valoreContratto");
             if (contratto == null || contratto.isBlank() || (valore != null && !valore.isBlank())) continue;

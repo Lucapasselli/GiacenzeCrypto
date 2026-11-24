@@ -212,6 +212,9 @@ public class ImportazioneGenerica {
         // Pre-consolidamento per (giorno, moneta) delle causali indicate (micro-interessi Bitget & c.)
         righe = consolidaCausaliPerGiorno(righe, cfg, consolidaAllUltimaRiga);
 
+        // Esecuzioni dei contratti derivati (contrattiDerivati): lette ora, prima del raggruppamento, i token si creano dopo la scrittura
+        List<DerivatiDaCsv.Esecuzione> esecuzioniDerivati = DerivatiDaCsv.Leggi(righe, cfg);
+
         if (progressb != null) {
             progressb.SetMassimo(righe.size());
             progressb.SetAvanzamento(0);
@@ -269,6 +272,12 @@ public class ImportazioneGenerica {
         // troverebbe null - stesso ordine di Importazioni.Ex_Binance_Importa/Ex_OKX_ConsolidaPerOrdine.
         if (!movimentiDifferiti.isEmpty()) {
             Importazioni.ConsolidaMovimentiDifferiti(movimentiDifferiti, sovrascriEsistenti, cfg.minutiScambioDifferito, differitiGiaEsistenti);
+        }
+
+        // Token dei contratti derivati e collegamento con le righe del profitto (DerivatiDaCsv): dopo la scrittura, anche per le righe
+        // gia' in archivio, cosi' reimportare il file aggiunge i token ai movimenti importati prima
+        if (!esecuzioniDerivati.isEmpty()) {
+            DerivatiDaCsv.Applica(esecuzioniDerivati, cfg);
         }
 
         // Anche con zero movimenti aggiunti : gira sull'intero archivio, quindi reimportare il file
@@ -2343,7 +2352,9 @@ public class ImportazioneGenerica {
                         "consolidaRigheStessaData", "tolleranzaSecondiConsolidamento", "minutiScambioDifferito",
                         "raggruppamentoPerCausale", "girocontoFiat", "walletPerCausale", "walletSpecularePerCausale",
                         "ricostruisciLordoSeFeeSuMonetaUscita", "ricostruisciLordoSeFeeSuMonetaEntrata",
-                        "gambaDoppiaConSegnoSuUscita", "rinominaMonete", "rimuoviCaseSensitive", "rimuoviDaNomeMoneta")),
+                        "gambaDoppiaConSegnoSuUscita", "rinominaMonete", "rimuoviCaseSensitive", "rimuoviDaNomeMoneta",
+                        "contrattiDerivati")),
+                Map.entry("contrattiDerivati", DerivatiDaCsv.Config.CHIAVI),
                 Map.entry("colonne", Set.of(
                         "data", "moneta", "quantita", "monetaUscita", "quantitaUscita", "segno", "causale", "causale2",
                         "causale3", "valoreEuro", "prezzo", "monetaFee", "quantitaFee", "idTransazione", "idGruppo",
@@ -2713,6 +2724,12 @@ public class ImportazioneGenerica {
          */
         public Map<String, String> causaliDerivati = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
+        /**
+         * Colonne delle esecuzioni dei contratti derivati: con questa chiave ogni esecuzione diventa il token del contratto
+         * ({@link DerivatiDaCsv}), {@code null} senza.
+         */
+        public DerivatiDaCsv.Config contrattiDerivati = null;
+
         /** @return il tipo di derivato della causale, stringa vuota se la causale non è un derivato */
         public String tipoDerivato(String causaleCSV) {
             if (causaleCSV == null) return "";
@@ -2899,6 +2916,9 @@ public class ImportazioneGenerica {
                     cfg.causaliDerivati.put(k, cd.getString(k));
                     cfg.causaliAllertaDerivati.add(k);
                 }
+            }
+            if (root.has("contrattiDerivati")) {
+                cfg.contrattiDerivati = DerivatiDaCsv.Config.Leggi(root.getJSONObject("contrattiDerivati"));
             }
 
             if (root.has("ricostruisciLordoSeFeeSuMonetaUscita")) {

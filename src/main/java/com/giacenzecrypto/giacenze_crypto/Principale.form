@@ -7183,6 +7183,7 @@
                                           </Group>
                                           <Component id="jLabel16" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="RW_Opzioni_CheckBox_FiatInRW" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="RW_Opzioni_CheckBox_DerivatiPeriodoUnico" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="RW_Opzioni_Label_Liquidita" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace min="0" pref="244" max="32767" attributes="0"/>
@@ -7267,7 +7268,9 @@
                                   <Component id="RW_Opzioni_CheckBox_FiatSpezzaPrelievi" alignment="2" min="-2" max="-2" attributes="0"/>
                                   <Component id="RW_Opzioni_Text_FiatSogliaPrelievi" alignment="2" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="RW_Opzioni_CheckBox_DerivatiPeriodoUnico" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
                               <Component id="RW_Bottone_Documentazione1" min="-2" pref="60" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
@@ -7483,6 +7486,14 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_LiFoSubMovimentiActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_DerivatiPeriodoUnico">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Con l&apos;opzione &lt;b&gt;Conto derivati&lt;/b&gt;, nel rigo con codice 9 il conto &#xe8; &lt;b&gt;un solo periodo&lt;/b&gt; dal primo ingresso dell&apos;anno all&apos;ultimo giorno con un saldo, anche se nel mezzo resta vuoto&lt;br&gt;(Non attivo di default: un periodo per ogni tratto in cui il conto ha un saldo)&lt;/html&gt;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_DerivatiPeriodoUnicoActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JButton" name="RW_Bottone_Documentazione1">

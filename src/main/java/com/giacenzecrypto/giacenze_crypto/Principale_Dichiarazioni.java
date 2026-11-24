@@ -431,7 +431,7 @@ public final class Principale_Dichiarazioni {
                             p[Calcoli_RW_Derivati.P_GIORNI], p[Calcoli_RW_Derivati.P_IVAFE], p[Calcoli_RW_Derivati.P_STATO], p[Calcoli_RW_Derivati.P_AVVISI]});
                     }
                     ScriviRiga(ws, r + 1, new Object[]{"Rigo", "", "", der.valoreIniziale.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString(), "",
-                        der.soloMonitoraggio ? "" : der.valoreFinale.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString(), der.giorni,
+                        der.valoreFinale.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString(), der.giorni,
                         der.ivafe.toPlainString(), der.stato, String.join(" - ", der.avvisi)});
                     ws.finish();
                 }

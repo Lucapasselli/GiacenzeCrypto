@@ -199,6 +199,7 @@ Una configurazione condivisa deve rispettare alcune regole in più di una person
 "girocontoFiat": { ... },
 "causaliDerivati": { ... },
 "causaliAllertaDerivati": [ ... ],
+"contrattiDerivati": { ... },
 "campiExtra": { ... },
 "centralizzato": false,
 "noteRevisione": { ... },
@@ -1304,6 +1305,57 @@ stesse causali in **entrambe** le chiavi, perché le versioni del programma più
 
 ```json
 "causaliAllertaDerivati": ["Dual Savings Purchase"]
+```
+
+### `contrattiDerivati` {#contrattiderivati}
+
+**Tipo:** oggetto | **Default:** assente | **Dalla versione:** 1.0.67
+
+Quando il file riporta per ogni esecuzione di un contratto il simbolo, il verso, la quantità e il prezzo, ogni
+esecuzione diventa anche il **token del contratto** (`DERIV.<base>-<quota>-<exchange>.LONG` o `.SHORT`) sul
+sotto-wallet *Derivati*, come per OKX. Il token non ha effetti fiscali: serve al calcolo dei redditi in LIFO per
+contratto, alle viste *Contratti aperti*, *Riepilogo contratto* e *Giro del movimento*, e ai righi con codice 9
+del quadro W/RW. Il LIFO sostituisce il profitto dell'exchange solo nelle posizioni in cui i prezzi del file
+ricostruiscono, con il prezzo medio dell'exchange, il profitto che l'exchange dichiara, altrimenti resta il
+profitto dell'exchange.
+
+I token si creano dopo la scrittura dei movimenti, anche per quelli già in archivio: reimportare un file
+importato prima aggiunge i token. Il programma collega ogni token alla riga del profitto nata dalla stessa riga
+del file (stesso secondo, moneta e quantità) scrivendo lo stesso identificativo nel campo 24, solo se è vuoto.
+Una chiusura senza riga del profitto collegata resta al profitto dell'exchange.
+
+| Chiave | Contenuto |
+|---|---|
+| `causali` | causali CSV delle righe che sono esecuzioni di un contratto, composte come le compone la configurazione (per esempio `TRADE\|OPEN`) |
+| `colonnaContratto` | simbolo del contratto (`BTCUSDT`, `BTCUSD`) |
+| `colonneVerso` | una o più colonne, il cui testo unito da `\|` è la chiave di `versi` |
+| `versi` | testo delle colonne del verso → `apre long`, `chiude long`, `apre short`, `chiude short` |
+| `colonnaQuantita` | contratti eseguiti: nel sottostante per i contratti lineari, in dollari per gli inversi |
+| `colonnaPosizione` | posizione dopo l'esecuzione, per ordinare le esecuzioni dello stesso secondo |
+| `colonnaPrezzo` | prezzo di esecuzione |
+| `colonnaProfitto` | profitto o perdita lordi della chiusura, prima della commissione |
+| `colonnaCommissione` | commissione dell'esecuzione |
+| `colonnaMovimento` | colonna da cui nasce la quantità del movimento del profitto, per abbinarlo al token |
+| `commissioneInclusa` | `true` se il movimento del profitto è già al netto della commissione: il reddito in LIFO della chiusura si calcola al netto della stessa commissione |
+| `colonnaIdEsecuzione` | identificativo dell'esecuzione. Senza, il programma ne calcola uno stabile dalle altre colonne |
+| `colonnaOrdine` | identificativo dell'ordine, solo informativo |
+
+Il simbolo si riconosce nelle forme `BTCUSDT` e `BTCUSDC` (lineari), `BTCUSD` regolato in BTC (inverso),
+`BTCUSDZ22` (futures inverso) e `BTC-27DEC24` regolato in USDC. Un simbolo diverso dà comunque il token, ma
+senza il valore del contratto, quindi quella posizione resta al profitto dell'exchange. Il margine impegnato da
+ogni posizione non è richiesto: senza, la colonna 7 del rigo con codice 9 vale zero ed è riportata come 1.
+
+```json
+"contrattiDerivati": {
+  "causali": ["trade"],
+  "colonnaContratto": 2,
+  "colonneVerso": [4],
+  "versi": { "Open Long": "apre long", "Close Long": "chiude long",
+             "Open Short": "apre short", "Close Short": "chiude short" },
+  "colonnaQuantita": 5, "colonnaPosizione": 6, "colonnaPrezzo": 7,
+  "colonnaProfitto": 10, "colonnaCommissione": 9, "colonnaMovimento": 11,
+  "commissioneInclusa": true, "colonnaIdEsecuzione": 14
+}
 ```
 
 ## 11. Campi extra {#11-campi-extra}

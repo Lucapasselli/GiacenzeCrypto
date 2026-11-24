@@ -346,6 +346,9 @@ Come si calcolano, come trattano ogni tipo di movimento e come si leggono le not
 
 ## I contratti derivati aperti {#contratti-aperti}
 
+> **Funzione in bozza.** La gestione dei derivati è ancora in versione di prova e può cambiare con le prossime
+> versioni, anche nei valori calcolati.
+
 Il pulsante **Contratti aperti**, accanto a *Costi netti*, elenca le posizioni su derivati ancora aperte alla fine della
 data scelta, con tutti i wallet: exchange, contratto, verso (long o short), contratti aperti, data del lotto aperto più
 vecchio, prezzo medio dei lotti ancora aperti, margine ancora parcheggiato nel sotto-wallet *Derivati* e moneta di

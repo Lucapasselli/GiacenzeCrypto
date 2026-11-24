@@ -18,13 +18,19 @@ import java.util.function.BiFunction;
  *       impegnati dalle aperture dell'anno, piu' quello parcheggiato al 1/1 per una posizione aperta da prima: lo zero non si
  *       trasmette. Colonna 8 = guadagno della chiusura se positivo, per una posizione aperta al 31/12 il guadagno non realizzato
  *       se positivo (prezzo a pronti del sottostante, approssimazione dichiarata).
- *       Un gruppo con il conto derivati ma senza posizioni (Bybit, Binance) ha un rigo di solo monitoraggio: colonna 7 = valore del conto
- *       all'ingresso, colonna 8 vuota.</li>
- *   <li><b>P2</b> (conto derivati come derivato): una voce per conto. Colonna 7 = valore del conto al 1/1 o al primo ingresso dell'anno,
- *       colonna 8 = valore del conto al 31/12 (o all'ultimo giorno con un saldo) piu' il guadagno non realizzato se positivo.</li>
+ *       Un gruppo con il conto derivati ma senza posizioni (Bybit, Binance) ha colonna 7 = valore del conto all'ingresso e colonna 8
+ *       zero.</li>
+ *   <li><b>P2</b> (conto derivati come derivato): una voce per ogni tratto dell'anno in cui il conto ha un saldo (il conto che si
+ *       svuota chiude il tratto, quello che torna positivo ne apre un altro). Colonna 7 = valore al 1/1 o all'ingresso del tratto,
+ *       colonna 8 = valore al 31/12 o appena prima che il conto si svuoti, piu' per l'ultimo tratto il guadagno non realizzato se
+ *       positivo. Il tratto che parte dal 1/1 con il saldo dell'anno prima ha in colonna 7 anche il guadagno non realizzato al 31/12
+ *       dell'anno prima (continuita': colonna 8 dell'anno = colonna 7 dell'anno dopo). I giorni a conto vuoto non contano. Con {@link #OPZIONE_PERIODO_UNICO} una voce sola dal primo ingresso all'ultimo
+ *       giorno con un saldo.</li>
  * </ul>
- * IVAFE = colonna 8 per l'aliquota (0,20%, 0,40% con Stato privilegiato dal 2024) per i giorni / 365. Logica senza Swing: prezzi e Stato
- * estero si passano dall'esterno.
+ * IVAFE = colonna 8 per l'aliquota (0,20%, 0,40% con Stato privilegiato dal 2024) per i giorni / 365. Mai solo monitoraggio (colonna 16):
+ * si barra solo se l'intermediario paga l'imposta, e un exchange estero non lo fa. Un valore finale zero si stampa come 1 (il software
+ * dell'Agenzia non accetta lo zero, provato sulle cripto), con i giorni e l'IVAFE (zero) come per gli altri righi. Logica senza Swing:
+ * prezzi e Stato estero si passano dall'esterno.
  */
 public final class Calcoli_RW_Derivati {
 
@@ -59,8 +65,6 @@ public final class Calcoli_RW_Derivati {
         public BigDecimal valoreFinale = BigDecimal.ZERO;
         public int giorni = 0;
         public BigDecimal ivafe = BigDecimal.ZERO;
-        /** Colonna 16: nessun valore finale, nessuna IVAFE. */
-        public boolean soloMonitoraggio = true;
         public String stato = "";
         /** Colonna 14: 3 se il gruppo ha redditi da derivati nell'anno, altrimenti 5. */
         public String colonna14 = "5";
@@ -80,13 +84,39 @@ public final class Calcoli_RW_Derivati {
         final List<String> idMovimenti = new ArrayList<>();
         BigDecimal valIni = BigDecimal.ZERO, valFin = BigDecimal.ZERO, qtaIni, qtaFine;
         int giorni;
-        boolean soloMonitoraggio;
         final List<String> avvisi = new ArrayList<>();
+    }
+
+    /**
+     * Opzione utente (in {@code personale.mv.db}), conta solo con P2: {@code "SI"} = il conto derivati e' una voce sola dal primo
+     * ingresso dell'anno all'ultimo giorno con un saldo (valore iniziale del primo ingresso, finale dell'ultimo svuotamento o del 31/12,
+     * giorni a conto vuoto compresi), {@code "NO"} (default) = una voce per ogni tratto con un saldo. Entrambe le letture stanno nelle
+     * istruzioni: la prima tratta il conto come un rapporto unico aperto per tutto il periodo, la seconda ogni periodo con un saldo come
+     * una detenzione a se'. Fuori dal motore delle plusvalenze, quindi non in {@code OpzioniRicalcolo.Epoca()}.
+     */
+    public static final String OPZIONE_PERIODO_UNICO = "RW_DerivatiContoPeriodoUnico";
+
+    /** Default di {@link #OPZIONE_PERIODO_UNICO}: una voce per tratto. */
+    public static final String PERIODO_UNICO_DEFAULT = "NO";
+
+    /** Voce delle opzioni archiviate con una dichiarazione W/RW. */
+    public static final String NOME_OPZIONE_PERIODO = "Conto derivati nel codice 9";
+
+    /** @return {@code true} se il conto derivati va in una voce sola ({@link #OPZIONE_PERIODO_UNICO}) */
+    public static boolean PeriodoUnico() {
+        return "SI".equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_PERIODO_UNICO));
+    }
+
+    /** Valore archiviato di {@link #NOME_OPZIONE_PERIODO}. */
+    public static String DescrizioneOpzionePeriodo(boolean periodoUnico) {
+        return periodoUnico ? "un solo periodo dal primo ingresso all'ultimo giorno con un saldo"
+                : "un periodo per ogni tratto con un saldo";
     }
 
     /** Righi dell'anno con i prezzi di mercato e lo Stato dei periodi FIAT del gruppo. */
     public static Map<String, Rigo> Calcola(String anno) {
-        return Calcola(anno, Principale.MappaCryptoWallet, ContoDerivati.Attivo(), PREZZO_MERCATO, Calcoli_RW_Derivati::StatoDelGruppo);
+        return Calcola(anno, Principale.MappaCryptoWallet, ContoDerivati.Attivo(), PeriodoUnico(), PREZZO_MERCATO,
+                Calcoli_RW_Derivati::StatoDelGruppo);
     }
 
     /** Prezzo di mercato in euro di un'unita', come le giacenze del quadro. */
@@ -124,6 +154,12 @@ public final class Calcoli_RW_Derivati {
      */
     static Map<String, Rigo> Calcola(String anno, Map<String, String[]> mappa, boolean p2, Prezzo prezzo,
             BiFunction<String, String, String> stato) {
+        return Calcola(anno, mappa, p2, false, prezzo, stato);
+    }
+
+    /** Come sopra, con {@code periodoUnico} = {@link #OPZIONE_PERIODO_UNICO} (solo con P2). */
+    static Map<String, Rigo> Calcola(String anno, Map<String, String[]> mappa, boolean p2, boolean periodoUnico, Prezzo prezzo,
+            BiFunction<String, String, String> stato) {
         String inizioAnno = anno + "-01-01 00:00";
         String fineAnno = anno + "-12-31 23:59";
         long istanteInizio = FunzioniDate.ConvertiDatainLongMinuto(inizioAnno);
@@ -155,21 +191,36 @@ public final class Calcoli_RW_Derivati {
             List<String[]> righeConto = conto.getOrDefault(gruppo, List.of());
             List<String[]> righeToken = token.getOrDefault(gruppo, List.of());
             if (p2) {
-                Voce c = VoceConto(righeConto, anno, inizioAnno, istanteInizio, istanteFine, prezzo);
-                if (c != null) {
-                    BigDecimal pnl = NonRealizzato(righeToken, fineAnno, istanteFine, prezzo, c.avvisi, null);
-                    if (pnl.signum() > 0) c.valFin = c.valFin.add(pnl);
+                //Una voce per tratto con un saldo (o una sola con l'opzione del periodo unico): il guadagno non realizzato va
+                //all'ultima, l'unica che puo' arrivare al 31/12
+                List<Tratto> tratti = TrattiConto(righeConto, anno, inizioAnno, istanteInizio, istanteFine);
+                //Continuita' fra gli anni: il valore finale dell'anno prima comprende il guadagno non realizzato delle posizioni aperte, quindi
+                //anche il valore iniziale del tratto che parte dal 1/1 (stessa funzione, stesso istante: i due valori coincidono per costruzione)
+                String fineAnnoPrima = (Integer.parseInt(anno) - 1) + "-12-31 23:59";
+                for (Tratto t : periodoUnico ? Unisci(tratti) : tratti) {
+                    Voce c = VoceConto(t, prezzo);
                     c.voce = VOCE_CONTO;
+                    if (t.daAnnoPrima) {
+                        BigDecimal pnlIniziale = NonRealizzato(righeToken, fineAnnoPrima, istanteInizio, prezzo, c.avvisi, null);
+                        if (pnlIniziale.signum() > 0) {
+                            c.valIni = c.valIni.add(pnlIniziale);
+                            c.avvisi.add("Valore iniziale comprensivo del guadagno non realizzato al 31/12 dell'anno prima, come il valore finale di quell'anno");
+                        }
+                    }
                     voci.add(c);
+                }
+                if (!voci.isEmpty()) {
+                    Voce ultima = voci.get(voci.size() - 1);
+                    BigDecimal pnl = NonRealizzato(righeToken, fineAnno, istanteFine, prezzo, ultima.avvisi, null);
+                    if (pnl.signum() > 0) ultima.valFin = ultima.valFin.add(pnl);
                 }
             } else if (!righeToken.isEmpty()) {
                 voci.addAll(VociContratti(righeToken, righeConto, mappa, anno, inizioAnno, fineAnno, istanteInizio, istanteFine, prezzo));
             } else {
-                Voce c = VoceConto(righeConto, anno, inizioAnno, istanteInizio, istanteFine, prezzo);
-                if (c != null) {
-                    c.voce = VOCE_CONTO + ", solo monitoraggio (posizioni non disponibili)";
+                for (Tratto t : Unisci(TrattiConto(righeConto, anno, inizioAnno, istanteInizio, istanteFine))) {
+                    Voce c = VoceConto(t, prezzo);
+                    c.voce = VOCE_CONTO + " (posizioni non disponibili, valore finale zero)";
                     c.valFin = BigDecimal.ZERO;
-                    c.soloMonitoraggio = true;
                     voci.add(c);
                 }
             }
@@ -183,66 +234,115 @@ public final class Calcoli_RW_Derivati {
     // CONTO
     // =================================================================================================
 
+    /** Un tratto del conto derivati con un saldo: dal primo ingresso (o dal 1/1) al giorno in cui si svuota (o al 31/12). */
+    private static final class Tratto {
+        String dataIni, dataFine;
+        long istIni, istFine;
+        Map<String, BigDecimal> saldoIni, saldoFine;
+        final List<String> idMovimenti = new ArrayList<>();
+        /** Il tratto parte dal 1/1 con il saldo che il conto aveva alla fine dell'anno prima (non nasce da un ingresso dell'anno). */
+        boolean daAnnoPrima;
+    }
+
     /**
-     * Il conto derivati del gruppo nell'anno: dal saldo al 1/1 (o dal primo ingresso) al saldo al 31/12 (o all'ultimo giorno con un
-     * saldo). {@code null} se nell'anno il conto non ha mai avuto un saldo.
+     * I tratti dell'anno in cui il conto derivati del gruppo ha un saldo, in ordine. Il conto che si svuota chiude il tratto (valore
+     * appena prima), il conto che torna positivo ne apre un altro: i giorni a conto vuoto non sono giorni di detenzione e il valore di
+     * ogni tratto resta nel rigo. I movimenti dell'anno fuori da ogni tratto (conto a zero o negativo) vanno al tratto seguente, quelli
+     * dopo l'ultimo all'ultimo. Lista vuota se nell'anno il conto non ha mai avuto un saldo.
      */
-    private static Voce VoceConto(List<String[]> righe, String anno, String inizioAnno, long istanteInizio, long istanteFine,
-            Prezzo prezzo) {
-        if (righe.isEmpty()) return null;
+    private static List<Tratto> TrattiConto(List<String[]> righe, String anno, String inizioAnno, long istanteInizio, long istanteFine) {
+        List<Tratto> tratti = new ArrayList<>();
+        if (righe.isEmpty()) return tratti;
         List<String[]> ordinate = new ArrayList<>(righe);
         ordinate.sort((a, b) -> a[0].compareTo(b[0]));
         Map<String, BigDecimal> saldo = new TreeMap<>();
-        Map<String, BigDecimal> ultimoPositivo = null;
-        String dataIni = null, dataFine = null;
-        long istIni = 0, istFine = 0;
-        Map<String, BigDecimal> saldoIni = null;
+        Tratto corrente = null;
+        boolean primoDellAnno = true;
+        List<String> sospesi = new ArrayList<>();
         for (String[] v : ordinate) {
             boolean nellAnno = v[1].compareTo(inizioAnno) >= 0;
-            if (nellAnno && dataIni == null && Positivo(saldo)) {
-                dataIni = anno + "-01-01";
-                istIni = istanteInizio;
-                saldoIni = new TreeMap<>(saldo);
+            if (nellAnno && primoDellAnno) {
+                primoDellAnno = false;
+                if (Positivo(saldo)) {
+                    corrente = NuovoTratto(anno + "-01-01", istanteInizio, saldo);
+                    corrente.daAnnoPrima = true;
+                }
             }
             Map<String, BigDecimal> prima = new TreeMap<>(saldo);
             Somma(saldo, v[8], v[10]);
             Somma(saldo, v[11], v[13]);
             if (!nellAnno) continue;
-            if (dataIni == null && Positivo(saldo)) {
-                dataIni = v[1].substring(0, 10);
-                istIni = FunzioniDate.ConvertiDataIDinLong(v[0].substring(0, 14));
-                saldoIni = new TreeMap<>(saldo);
+            if (corrente == null && Positivo(saldo)) {
+                corrente = NuovoTratto(v[1].substring(0, 10), FunzioniDate.ConvertiDataIDinLong(v[0].substring(0, 14)), saldo);
             }
-            if (dataIni != null && Positivo(prima) && !Positivo(saldo)) {
-                //il conto si svuota: fine del periodo di detenzione, valore appena prima
-                dataFine = v[1].substring(0, 10);
-                istFine = FunzioniDate.ConvertiDataIDinLong(v[0].substring(0, 14));
-                ultimoPositivo = prima;
+            if (corrente == null) {
+                sospesi.add(v[0]);
+                continue;
+            }
+            corrente.idMovimenti.addAll(sospesi);
+            sospesi.clear();
+            corrente.idMovimenti.add(v[0]);
+            if (Positivo(prima) && !Positivo(saldo)) {
+                corrente.dataFine = v[1].substring(0, 10);
+                corrente.istFine = FunzioniDate.ConvertiDataIDinLong(v[0].substring(0, 14));
+                corrente.saldoFine = prima;
+                tratti.add(corrente);
+                corrente = null;
             }
         }
-        if (dataIni == null && Positivo(saldo)) {
+        if (primoDellAnno && Positivo(saldo)) {
             //saldo dagli anni prima e nessun movimento nell'anno
-            dataIni = anno + "-01-01";
-            istIni = istanteInizio;
-            saldoIni = new TreeMap<>(saldo);
+            corrente = NuovoTratto(anno + "-01-01", istanteInizio, saldo);
+            corrente.daAnnoPrima = true;
         }
-        if (dataIni == null) return null;
-        Map<String, BigDecimal> saldoFine;
-        if (Positivo(saldo)) {
-            dataFine = anno + "-12-31";
-            istFine = istanteFine;
-            saldoFine = saldo;
-        } else {
-            saldoFine = ultimoPositivo == null ? saldo : ultimoPositivo;
+        if (corrente != null) {
+            corrente.dataFine = anno + "-12-31";
+            corrente.istFine = istanteFine;
+            corrente.saldoFine = saldo;
+            tratti.add(corrente);
         }
+        if (!tratti.isEmpty()) tratti.get(tratti.size() - 1).idMovimenti.addAll(sospesi);
+        return tratti;
+    }
+
+    private static Tratto NuovoTratto(String data, long istante, Map<String, BigDecimal> saldo) {
+        Tratto t = new Tratto();
+        t.dataIni = data;
+        t.istIni = istante;
+        t.saldoIni = new TreeMap<>(saldo);
+        return t;
+    }
+
+    /**
+     * Un solo tratto dal primo ingresso all'ultimo giorno con un saldo, con i valori del primo e dell'ultimo, giorni a conto vuoto
+     * compresi: il rigo di solo monitoraggio di P1 (gruppo senza posizioni) e, con {@link #OPZIONE_PERIODO_UNICO}, quello di P2.
+     */
+    private static List<Tratto> Unisci(List<Tratto> tratti) {
+        if (tratti.size() <= 1) return tratti;
+        Tratto u = new Tratto();
+        Tratto primo = tratti.get(0), ultimo = tratti.get(tratti.size() - 1);
+        u.dataIni = primo.dataIni;
+        u.istIni = primo.istIni;
+        u.saldoIni = primo.saldoIni;
+        u.daAnnoPrima = primo.daAnnoPrima;
+        u.dataFine = ultimo.dataFine;
+        u.istFine = ultimo.istFine;
+        u.saldoFine = ultimo.saldoFine;
+        for (Tratto t : tratti) u.idMovimenti.addAll(t.idMovimenti);
+        return List.of(u);
+    }
+
+    /** La voce del prospetto di un tratto, con i valori di mercato al primo e all'ultimo istante. */
+    private static Voce VoceConto(Tratto t, Prezzo prezzo) {
         Voce c = new Voce();
-        for (String[] v : ordinate) if (v[1].startsWith(anno)) c.idMovimenti.add(v[0]);
-        c.dataIni = dataIni;
-        c.dataFine = dataFine;
-        c.moneta = String.join(", ", saldoFine.keySet().isEmpty() ? saldoIni.keySet() : SoloPositivi(saldoFine).keySet());
-        c.valIni = Valore(saldoIni, istIni, prezzo, c.avvisi);
-        c.valFin = Valore(saldoFine, istFine, prezzo, c.avvisi);
-        c.giorni = Giorni(dataIni, dataFine);
+        c.idMovimenti.addAll(t.idMovimenti);
+        c.dataIni = t.dataIni;
+        c.dataFine = t.dataFine;
+        Map<String, BigDecimal> positivi = SoloPositivi(t.saldoFine);
+        c.moneta = String.join(", ", positivi.isEmpty() ? SoloPositivi(t.saldoIni).keySet() : positivi.keySet());
+        c.valIni = Valore(t.saldoIni, t.istIni, prezzo, c.avvisi);
+        c.valFin = Valore(t.saldoFine, t.istFine, prezzo, c.avvisi);
+        c.giorni = Giorni(t.dataIni, t.dataFine);
         return c;
     }
 
@@ -311,24 +411,25 @@ public final class Calcoli_RW_Derivati {
                 for (String[] v : righe) {
                     if (!v[13].isBlank() && v[1].compareTo(inizioAnno) >= 0 && v[1].compareTo(fineAnno) <= 0) apertureAnno.add(v[24]);
                 }
+                //Il margine si legge dal campo dati: il giroconto dell'apertura porta anche la commissione (forma "conto" di OKXDerivati),
+                //il suo valore unitario e' quello del giroconto
                 for (String[] m : righeConto) {
                     if (Derivati.Tipo(m).equals(Derivati.MARGINE) && OKXDerivati.SOTTOWALLET.equals(m[4]) && apertureAnno.contains(m[24])
-                            && !m[13].isBlank() && Funzioni.isNumeric(m[15], false)) {
-                        c.valIni = c.valIni.add(new BigDecimal(m[15]));
+                            && Funzioni.isNumeric(m[13], false) && Funzioni.isNumeric(m[15], false)
+                            && Funzioni.isNumeric(Derivati.Dati(m).get("margine"), false) && new BigDecimal(m[13]).signum() != 0) {
+                        BigDecimal unitario = new BigDecimal(m[15]).divide(new BigDecimal(m[13]).abs(), 18, java.math.RoundingMode.HALF_UP);
+                        c.valIni = c.valIni.add(unitario.multiply(new BigDecimal(Derivati.Dati(m).get("margine")).abs())
+                                .setScale(2, java.math.RoundingMode.HALF_UP));
                     }
                 }
                 if (primo.compareTo(inizioAnno) >= 0) {
                     c.dataIni = primo.substring(0, 10);
                 } else {
                     c.dataIni = anno + "-01-01";
-                    BigDecimal parcheggiato = BigDecimal.ZERO;
-                    for (String[] m : righeConto) {
-                        if (m[1].compareTo(inizioAnno) >= 0 || !Derivati.Tipo(m).equals(Derivati.MARGINE) || !OKXDerivati.SOTTOWALLET.equals(m[4])) continue;
-                        String k = DerivatiLifo.ChiavePosizioneDaMovimento(m);
-                        if (k == null || !k.equalsIgnoreCase(chiave)) continue;
-                        if (!m[13].isBlank() && Funzioni.isNumeric(m[13], false)) parcheggiato = parcheggiato.add(new BigDecimal(m[13]));
-                        if (!m[10].isBlank() && Funzioni.isNumeric(m[10], false)) parcheggiato = parcheggiato.add(new BigDecimal(m[10]));
-                    }
+                    List<String[]> primaDellAnno = new ArrayList<>(righe);
+                    primaDellAnno.addAll(righeConto);
+                    BigDecimal parcheggiato = OKXDerivati.MarginiParcheggiati(primaDellAnno, istanteInizio)
+                            .getOrDefault(chiave.toUpperCase(), BigDecimal.ZERO);
                     BigDecimal pr = prezzo.euro(p.moneta, istanteInizio);
                     if (pr == null) c.avvisi.add("ERRORE: prezzo mancante di " + p.moneta + " al " + anno + "-01-01");
                     else c.valIni = c.valIni.add(parcheggiato.max(BigDecimal.ZERO).multiply(pr));
@@ -346,7 +447,15 @@ public final class Calcoli_RW_Derivati {
                     c.valFin = pnl.max(BigDecimal.ZERO);
                     c.avvisi.add("Guadagno non realizzato al 31/12 stimato con il prezzo a pronti del sottostante");
                 }
-                if (c.valIni.signum() == 0) c.avvisi.add("ERRORE: margine impegnato non trovato, il valore iniziale zero non si trasmette");
+                if (c.valIni.signum() == 0) {
+                    //I file di Bybit (DerivatiDaCsv) non dicono il margine di ogni posizione: colonna 7 zero, stampata come 1 (decisione
+                    //dell'utente del 22/11/2026), senza errore. Per OKX il margine c'e' sempre, mancarlo e' un errore
+                    if (DerivatiLifo.RichiedeRigaProfitto(righe.get(0))) {
+                        c.avvisi.add("Margine della posizione non disponibile nel file dell'exchange: valore iniziale zero, riportato come 1");
+                    } else {
+                        c.avvisi.add("ERRORE: margine impegnato non trovato, il valore iniziale zero non si trasmette");
+                    }
+                }
                 c.giorni = Giorni(c.dataIni, c.dataFine);
                 voci.add(c);
             }
@@ -457,7 +566,7 @@ public final class Calcoli_RW_Derivati {
             p[P_GRUPPO_FINE] = gruppo;
             p[P_MONETA_FINE] = v.moneta;
             p[P_DATA_FINE] = v.dataFine == null ? "" : v.dataFine;
-            p[P_VAL_FIN] = v.soloMonitoraggio ? "" : Due(v.valFin);
+            p[P_VAL_FIN] = Due(v.valFin);
             p[P_GIORNI] = String.valueOf(v.giorni);
             p[P_VOCE] = v.voce;
             p[P_ID_APERTURA] = v.idApertura;
@@ -468,8 +577,6 @@ public final class Calcoli_RW_Derivati {
             p[P_STATO] = r.stato;
             r.prospetto.add(p);
         }
-        r.soloMonitoraggio = r.valoreFinale.setScale(0, RoundingMode.HALF_UP).signum() == 0;
-        if (r.soloMonitoraggio) r.ivafe = BigDecimal.ZERO;
         //Giorni: media ponderata sui valori finali (sui valori iniziali se non ce ne sono), come per i prodotti omogenei
         if (pesoFin.signum() > 0) r.giorni = giorniFin.divide(pesoFin, 0, RoundingMode.HALF_UP).intValue();
         else if (pesoIni.signum() > 0) r.giorni = giorniIni.divide(pesoIni, 0, RoundingMode.HALF_UP).intValue();
@@ -489,15 +596,33 @@ public final class Calcoli_RW_Derivati {
         return b.setScale(2, RoundingMode.HALF_UP).toPlainString();
     }
 
+    /** Valore da stampare in una colonna del rigo: all'euro, e 1 al posto dello zero (il software dell'Agenzia non lo accetta). */
+    public static String ValoreStampa(BigDecimal valore) {
+        String v = valore.setScale(0, RoundingMode.HALF_UP).toPlainString();
+        return v.equals("0") || v.equals("-0") ? "1" : v;
+    }
+
+    private static final String NOTA_ZERO = " Un valore iniziale o finale zero è riportato come 1, perché il software dell'Agenzia delle "
+            + "entrate non accetta lo zero.";
+
     /** Testo della nota del quadro W/RW quando ci sono righi codice 9. Dice l'effetto, mai come trattare il caso. */
-    public static String TestoNota(boolean p2) {
+    public static String TestoNota(boolean p2, boolean periodoUnico) {
+        if (p2 && periodoUnico) {
+            return "Il rigo con codice 9 di ogni exchange riporta il conto derivati (opzione Conto derivati attiva) come un solo periodo "
+                    + "dal primo ingresso dell'anno all'ultimo giorno con un saldo: colonna 7 il valore al 1° gennaio o al primo ingresso, "
+                    + "colonna 8 il valore alla fine dell'anno o appena prima dell'ultimo svuotamento, più il guadagno non realizzato se "
+                    + "positivo. Un periodo che parte dal 1° gennaio con posizioni aperte ha in colonna 7 anche il guadagno non realizzato al 31 dicembre dell'anno prima, come nel valore finale di quell'anno. I giorni comprendono quelli a conto vuoto. Il conto non compare fra i righi delle cripto-attività." + NOTA_ZERO;
+        }
         return p2
-                ? "Il rigo con codice 9 di ogni exchange riporta il conto derivati (opzione Conto derivati attiva): colonna 7 il valore del "
-                + "conto al 1° gennaio o al primo ingresso dell'anno, colonna 8 il valore del conto alla fine dell'anno o del periodo di "
-                + "detenzione più il guadagno non realizzato se positivo. Il conto non compare fra i righi delle cripto-attività."
+                ? "Il rigo con codice 9 di ogni exchange riporta il conto derivati (opzione Conto derivati attiva), sommando i periodi "
+                + "dell'anno in cui il conto ha un saldo: colonna 7 i valori al 1° gennaio o all'ingresso di ciascun periodo, colonna 8 i "
+                + "valori alla fine dell'anno o appena prima che il conto si svuoti, più il guadagno non realizzato se positivo, giorni "
+                + "come media ponderata sui valori finali. Un periodo che parte dal 1° gennaio con posizioni aperte ha in colonna 7 anche il guadagno non realizzato al 31 dicembre dell'anno prima, come nel valore finale di quell'anno. I giorni a conto vuoto non contano. Il conto non compare fra i righi delle "
+                + "cripto-attività." + NOTA_ZERO
                 : "Il rigo con codice 9 di ogni exchange somma i contratti derivati dell'anno: colonna 7 il margine impegnato dalle aperture "
                 + "dell'anno più quello ancora vincolato al 1° gennaio (lo zero non si trasmette), colonna 8 il guadagno della chiusura o il guadagno non realizzato al 31 "
-                + "dicembre, se positivi. Il margine resta fra le cripto-attività. Per gli exchange di cui il programma non conosce le "
-                + "posizioni (Bybit, Binance) il rigo è di solo monitoraggio, con il valore del conto derivati all'ingresso.";
+                + "dicembre, se positivi, altrimenti zero. Il margine resta fra le cripto-attività. Per gli exchange di cui il programma non "
+                + "conosce le posizioni (Bybit, Binance) la colonna 7 è il valore del conto derivati all'ingresso e la colonna 8 è zero."
+                + NOTA_ZERO;
     }
 }

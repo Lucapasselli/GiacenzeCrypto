@@ -107,7 +107,10 @@ public class GUI_RiepilogoContratto extends JDialog {
         JLabel nota = new JLabel("<html><div style='width:820px'>" + esito
                 + "Il reddito dei derivati di una chiusura è il differenziale in LIFO (art. 67 comma 1-bis del TUIR) per il prezzo della moneta, "
                 + "scritto sulla chiusura del token. Il profitto dell'exchange, che usa il prezzo medio, resta il movimento di denaro e conta zero come reddito. "
-                + "Dove il LIFO non si calcola il reddito resta quello dell'exchange." + conguagli + "</div></html>");
+                + "Dove il LIFO non si calcola il reddito resta quello dell'exchange."
+                + (ContoDerivati.Attivo() ? " Con l'opzione Conto derivati una perdita pagata dal conto conta in più, sulla sua riga, la differenza"
+                        + " fra il costo delle monete nel conto e il loro valore." : "")
+                + conguagli + "</div></html>");
         JPanel basso = new JPanel(new BorderLayout());
         basso.add(nota, BorderLayout.CENTER);
         JButton chiudi = new JButton("Chiudi");

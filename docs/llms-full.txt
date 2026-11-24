@@ -418,6 +418,9 @@ scambi non rilevanti. Il 01/04 si realizza quindi una plusvalenza di **20.000 �
 
 ## Derivati: come vengono calcolati
 
+> **Funzione in bozza.** La gestione dei derivati è ancora in versione di prova e può cambiare con le prossime
+> versioni, anche nei valori calcolati.
+
 I redditi da contratti derivati (perpetui, futures), anche quando il sottostante è una cripto-attività, sono
 redditi diversi di natura finanziaria (art. 67, comma 1, lettera c-quater, del TUIR, circolare 30/E del
 27/10/2023, paragrafo 2.3.2) e non si compensano con le plusvalenze da cripto-attività.
@@ -428,8 +431,11 @@ si classificano con la voce *Classifica come derivato* del menu dei movimenti. S
 in un anno con una dichiarazione definitiva archiviata resta da classificare, per non cambiare i valori di
 quell'anno, e alla fine dell'importazione il programma chiede se classificarlo comunque. Il risultato dei derivati va nella
 colonna *Risultato derivati* della tabella dei movimenti, separato dalle plusvalenze delle cripto-attività, e
-compare nel **quadro T/RT** (vedi [Derivati nei quadri T e RT](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/calcolo-plusvalenze-opzioni.html#derivati-quadri)), non nel quadro W/RW. Per i perpetui e i futures di OKX il reddito è il differenziale
-calcolato in LIFO sulla chiusura di ogni posizione.
+compare nel **quadro T/RT** (vedi [Derivati nei quadri T e RT](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/calcolo-plusvalenze-opzioni.html#derivati-quadri)), non nel quadro W/RW. Per i perpetui e i futures di OKX e di Bybit (conto Derivati e
+Unified Trading Account) il reddito è il differenziale calcolato in LIFO sulla chiusura di ogni posizione, nelle
+posizioni in cui i prezzi di esecuzione ricostruiscono il profitto che l'exchange dichiara. Altrimenti, per esempio
+con prezzi in un'unità diversa o con una chiusura di una posizione aperta prima del primo file, resta il profitto
+dell'exchange. Per Bybit serve reimportare i file: i token dei contratti si aggiungono ai movimenti già importati.
 
 Un derivato regolato in euro o in un'altra valuta FIAT (il profitto o la perdita accreditati o addebitati direttamente in
 valuta) si classifica allo stesso modo: il suo risultato è il valore in euro del movimento e va nella colonna *Risultato
@@ -552,9 +558,9 @@ margine rientra. Il 30 giugno si vendono tutti i 1.300 USDT a 0,88 € (1.144 �
 | | Senza l'opzione | Con l'opzione |
 |---|---|---|
 | 1° marzo, margine al conto | nessun effetto | cessione: 500 USDT valgono 450 € e costano 460 €, minusvalenza cripto di 10 € |
-| 31 maggio, profitto | reddito da derivati di 264 € (300 × 0,88), i 300 USDT entrano a 264 € | uguale |
-| 31 maggio, rientro del margine | nessun effetto | reddito da derivati: 500 USDT valgono 440 € e nel conto costano 450 €, quindi −10 € |
-| 30 giugno, vendita | 1.144 € meno 1.184 € (300 USDT a 264 €, 1.000 a 920 €): −40 € | 1.144 € meno 1.164 € (500 a 440 €, 300 a 264 €, 500 a 460 €): −20 € |
+| 31 maggio, profitto | reddito da derivati di 264 € (300 × 0,88), i 300 USDT entrano a 264 € | uguale, i 300 USDT entrano nel conto a 264 € |
+| 31 maggio, rientro dal conto | nessun effetto | reddito da derivati: tornano 800 USDT, valgono 704 € e nel conto costano 714 € (450 + 264), quindi −10 € |
+| 30 giugno, vendita | 1.144 € meno 1.184 € (300 USDT a 264 €, 1.000 a 920 €): −40 € | 1.144 € meno 1.164 € (800 a 704 €, 500 a 460 €): −20 € |
 | **Totale derivati** | **+264 €** | **+254 €** |
 | **Totale cripto-attività** | **−40 €** | **−30 €** |
 
@@ -562,11 +568,21 @@ In tutti e due i casi il totale è 1.144 − 920 = **+224 €**. Cambia dove cad
 tutto fra le cripto-attività senza l'opzione, fra i derivati durante la permanenza nel conto con l'opzione. Dal 2023
 le due parti non si compensano fra loro, quindi l'imposta può essere diversa.
 
+Con una **perdita** di 200 USDT alla chiusura la perdita esce dal conto e tornano 300 USDT. Con l'opzione la perdita vale
+il costo dei 200 USDT nel conto, 180 € (200 × 0,90), senza cessione cripto, e il rientro dei 300 USDT dà 264 − 270 = −6 €:
+derivati **−186 €**, cripto-attività −10 € al passaggio al conto e −20 € alla vendita (704 € contro 460 + 264), **−30 €**.
+Senza l'opzione la perdita vale 176 € (200 × 0,88) fra i derivati e i 200 USDT sono anche una cessione cripto (176 € contro
+un costo di 184 €): derivati **−176 €**, cripto-attività **−40 €**. In tutti e due i casi il totale è **−216 €**.
+
 Dove si applica:
 
-- **OKX**: il margine di ogni posizione passa dal wallet principale al sotto-wallet **Derivati** e torna alla chiusura.
-  Profitti, perdite, commissioni e funding restano sul wallet principale, come li registra OKX, con il loro doppio
-  effetto: la commissione d'apertura e il funding pagati producono anche una piccola cessione cripto.
+- **OKX**: il margine di ogni posizione passa dal wallet principale al sotto-wallet **Derivati**, e lì stanno anche
+  profitti, perdite, commissioni e funding della posizione, come nei conti futures di Bybit e Binance. Il giroconto fra i
+  due wallet porta solo quello che OKX toglie o aggiunge al saldo: all'apertura il margine più la commissione, alla
+  chiusura il margine con il profitto o meno la perdita e la commissione. Così una perdita non esce mai da un conto spot
+  che non ha più la moneta. Restano sul wallet principale, con il loro doppio effetto, profitto e commissione delle
+  operazioni di cui OKX non dà il margine (margine cross, archivio trimestrale in CSV) e delle posizioni aperte con la
+  versione 1.0.66, e il funding quando sono aperti insieme un long e uno short dello stesso contratto.
 - **Bybit** (conto Derivati) e **Binance** (conti futures): dalla versione 1.0.67 il conto è il sotto-wallet
   **Derivati** e i giroconti con gli altri conti diventano trasferimenti interni. I movimenti importati con le
   versioni precedenti stanno sul wallet principale: la voce *Marca come derivato* (menu dei movimenti, *Altre
@@ -603,6 +619,9 @@ fra loro.
 
 ### Derivati nei quadri T e RT
 
+> **Funzione in bozza.** La gestione dei derivati è ancora in versione di prova e può cambiare con le prossime
+> versioni, anche nei valori calcolati.
+
 I redditi da derivati vanno nella **sezione II-A del quadro RT** (modello Redditi Persone fisiche) e nella **sezione II
 del quadro T** (modello 730), insieme agli altri redditi diversi di natura finanziaria tassati al 26%. Il programma
 riporta i movimenti classificati come derivati. Quelli non classificati restano cripto-attività.
@@ -630,7 +649,9 @@ Esempio con cifre inventate, anno 2025:
 
 Colonna 1 = 300 + 5 + 80 = **385**, colonna 2 = 100 + 15 + 10 + 250 + 5 + 30 + 2 = **412**, risultato = minusvalenza di
 **27**. Per una chiusura di OKX calcolata in LIFO il valore sta sulla riga del token, mentre la riga del profitto di OKX
-vale 0,00 e non sposta nulla.
+vale 0,00 e non sposta nulla. Con l'opzione *Conto derivati* una perdita pagata dal conto vale il costo delle monete nel
+conto, mentre il LIFO la valuta al valore del momento: la differenza resta sulla riga della perdita (nell'esempio del conto
+derivati −4 €, cioè 180 € di costo contro 176 € di valore).
 
 **Righi compilati, che cambiano con il modello dell'anno:**
 
@@ -1269,6 +1290,9 @@ Come si calcolano, come trattano ogni tipo di movimento e come si leggono le not
 **[Costo medio netto in Giacenze a data](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/costo-medio-netto.html)**.
 
 ## I contratti derivati aperti
+
+> **Funzione in bozza.** La gestione dei derivati è ancora in versione di prova e può cambiare con le prossime
+> versioni, anche nei valori calcolati.
 
 Il pulsante **Contratti aperti**, accanto a *Costi netti*, elenca le posizioni su derivati ancora aperte alla fine della
 data scelta, con tutti i wallet: exchange, contratto, verso (long o short), contratti aperti, data del lotto aperto più
@@ -2594,6 +2618,9 @@ quella scheda, ed è completo solo se il file del Fiat Wallet copre tutta la sto
 
 ## Contratti derivati (codice 9)
 
+> **Funzione in bozza.** La gestione dei derivati è ancora in versione di prova e può cambiare con le prossime
+> versioni, anche nei valori calcolati.
+
 I contratti derivati presso un exchange estero vanno nel quadro con il **codice 9** ("contratti derivati e altri
 rapporti finanziari stipulati al di fuori del territorio dello Stato") e pagano l'IVAFE: 0,20%, o 0,40% dal 2024 se lo
 Stato dell'intermediario è a fiscalità privilegiata. Il programma produce **un rigo per exchange** (gruppo wallet) e
@@ -2610,15 +2637,57 @@ Excel. Lo Stato estero è quello indicato nei periodi FIAT del gruppo, come per 
   realizzato** al 31 dicembre, se positivo, per una posizione ancora aperta. Il guadagno non realizzato è stimato
   con il prezzo a pronti della cripto sottostante, perché il programma non ha il prezzo di riferimento
   dell'exchange,
-- con un valore finale zero il rigo è di solo monitoraggio (colonna 16).
+- con tutti i contratti in perdita la colonna 8 è zero.
 
-Per gli exchange di cui il programma non conosce le singole posizioni (Bybit, Binance) il rigo è di **solo
-monitoraggio**, con il valore del conto derivati all'ingresso in colonna 7.
+Per gli exchange di cui il programma non conosce le singole posizioni (Bybit, Binance) la colonna 7 è il valore del
+conto derivati all'ingresso e la colonna 8 è zero.
 
-**Con l'opzione Conto derivati** il rigo riporta il conto: colonna 7 il valore del conto al 1° gennaio o al primo
-ingresso dell'anno, colonna 8 il valore alla fine dell'anno, o all'ultimo giorno in cui il conto aveva un saldo, più
-il guadagno non realizzato delle posizioni aperte se positivo. Il conto non compare fra i righi delle
-cripto-attività.
+Il rigo con codice 9 non è mai di solo monitoraggio: la colonna 16 si barra solo quando l'intermediario paga
+l'imposta, e un exchange estero non lo fa. Un valore iniziale o finale zero è riportato come **1**, perché il
+software dell'Agenzia delle entrate non accetta lo zero, con i giorni e l'IVAFE (zero) compilati come negli altri
+righi.
+
+**Con l'opzione Conto derivati** il rigo riporta il conto, diviso nei periodi dell'anno in cui ha un saldo: un
+periodo finisce quando il conto si svuota e ne comincia un altro quando torna ad avere un saldo. Per ogni periodo la
+colonna 7 è il valore del conto al 1° gennaio o all'ingresso, la colonna 8 il valore alla fine dell'anno o appena
+prima che il conto si svuoti, e per l'ultimo periodo si aggiunge il guadagno non realizzato delle posizioni aperte se
+positivo. Il rigo somma i periodi e prende come giorni la media ponderata sui valori finali, quindi i giorni in cui il
+conto è vuoto non contano. Il conto non compare fra i righi delle cripto-attività.
+
+Il periodo che comincia il 1° gennaio con delle posizioni ancora aperte dall'anno prima ha in colonna 7 anche il guadagno
+non realizzato al 31 dicembre dell'anno prima, se positivo, calcolato come nella colonna 8 di quell'anno. Il valore
+finale di un anno e il valore iniziale dell'anno dopo coincidono, e il guadagno non realizzato non sparisce al
+passaggio d'anno.
+
+Un esempio con due contratti, uno aperto il 1° marzo e chiuso il 31 marzo, l'altro aperto il 1° luglio e chiuso il
+31 luglio, con il conto vuoto in mezzo:
+
+| Periodo | Colonna 7 | Colonna 8 | Giorni | IVAFE (0,20%) |
+|---|---|---|---|---|
+| Marzo | 1.000 | 1.048 | 31 | 0,18 |
+| Luglio | 2.000 | 1.896 | 31 | 0,32 |
+| **Rigo** | **3.000** | **2.944** | **31** | **0,50** |
+
+Chi apre e chiude molte posizioni svuotando ogni volta il conto ha molti periodi brevi: le colonne 7 e 8 diventano la
+somma di tutti i periodi, mentre i giorni e l'IVAFE restano quelli dei periodi in cui il conto aveva un saldo.
+
+In alternativa, la spunta *Con l'opzione Conto derivati, nel rigo con codice 9 il conto è un solo periodo* (in fondo
+alla scheda *Opzioni Calcolo RW/W*, non attiva di default) tratta il conto come un rapporto unico aperto per tutto
+l'anno: un solo periodo dal primo ingresso all'ultimo giorno con un saldo, con il valore del primo ingresso in colonna
+7 e quello di fine anno, o di appena prima dell'ultimo svuotamento, in colonna 8. I giorni in cui il conto è vuoto
+contano come giorni di detenzione. Nell'esempio sopra il rigo diventa colonna 7 1.000, colonna 8 1.896, 153 giorni,
+IVAFE 1,59. La scelta compare fra le opzioni della dichiarazione archiviata negli anni con il conto derivati.
+
+**Cosa dice l'Agenzia delle entrate.** La circolare 12/E dell'8 aprile 2016 (paragrafo 14.1) tratta il rapporto con
+l'intermediario come un rapporto finanziario unitario: vanno indicati il valore iniziale e il valore finale di
+detenzione del rapporto nel suo complesso, e le singole variazioni della sua composizione non contano. Il periodo si
+spezza solo con un apporto di capitale, come un versamento di contanti o il conferimento di titoli, che richiede un
+nuovo rigo. La circolare risponde a un quesito sulla sanzione per omessa compilazione e porta l'esempio di un singolo
+titolo, non parla dei contratti derivati. Non dice che il periodo finisce quando il saldo va a zero, e non dice nulla
+sui prelievi. Le due opzioni sono quindi due letture della stessa regola: il periodo unico tratta il conto come il
+rapporto unitario della circolare, mentre un periodo per ogni tratto con un saldo lo divide anche quando il conto si
+svuota, perché i giorni a conto vuoto non sono giorni di detenzione. Il programma non spezza il periodo unico per gli
+apporti successivi al primo.
 
 L'IVAFE dei righi con codice 9 non entra nell'imposta sulle cripto-attività del report. Nella stampa i righi
 stanno in una pagina a parte, con i valori da riportare colonna per colonna.
@@ -3758,7 +3827,10 @@ La guida di Bybit all'esportazione è
   di questi file con una versione precedente e lo reimporta trova profitti e perdite due volte, sommati
   per giorno e riga per riga. Dalla versione 1.0.67 i movimenti nuovi nascono già classificati come derivati, con
   il loro risultato nella colonna *Risultato derivati* della tabella dei movimenti, separato dalle
-  plusvalenze delle cripto-attività. Il risultato è quello calcolato da Bybit e va nel quadro T/RT. Anche il bonus nasce classificato, come accredito, e il suo recupero come addebito: la parte
+  plusvalenze delle cripto-attività, e va nel quadro T/RT. Ogni apertura e chiusura diventa anche il token
+  del contratto (`DERIV.BTC-USDT-BYBIT.LONG`, sul sotto-wallet *Derivati*), come per OKX: il risultato di una
+  chiusura è calcolato in LIFO quando i prezzi del file ricostruiscono il profitto di Bybit, altrimenti resta
+  quello di Bybit. Reimportando i file i token si aggiungono ai movimenti già importati, senza doppioni. Anche il bonus nasce classificato, come accredito, e il suo recupero come addebito: la parte
   di bonus consumata compensa così le commissioni, il funding e le perdite che Bybit ha pagato con il
   bonus invece che con i tuoi fondi. I movimenti importati con le versioni precedenti si classificano
   con *Classifica come derivato* (menu dei movimenti, *Altre modifiche*).
@@ -5262,6 +5334,7 @@ Una configurazione condivisa deve rispettare alcune regole in più di una person
 "girocontoFiat": { ... },
 "causaliDerivati": { ... },
 "causaliAllertaDerivati": [ ... ],
+"contrattiDerivati": { ... },
 "campiExtra": { ... },
 "centralizzato": false,
 "noteRevisione": { ... },
@@ -6369,6 +6442,57 @@ stesse causali in **entrambe** le chiavi, perché le versioni del programma più
 "causaliAllertaDerivati": ["Dual Savings Purchase"]
 ```
 
+### `contrattiDerivati`
+
+**Tipo:** oggetto | **Default:** assente | **Dalla versione:** 1.0.67
+
+Quando il file riporta per ogni esecuzione di un contratto il simbolo, il verso, la quantità e il prezzo, ogni
+esecuzione diventa anche il **token del contratto** (`DERIV.<base>-<quota>-<exchange>.LONG` o `.SHORT`) sul
+sotto-wallet *Derivati*, come per OKX. Il token non ha effetti fiscali: serve al calcolo dei redditi in LIFO per
+contratto, alle viste *Contratti aperti*, *Riepilogo contratto* e *Giro del movimento*, e ai righi con codice 9
+del quadro W/RW. Il LIFO sostituisce il profitto dell'exchange solo nelle posizioni in cui i prezzi del file
+ricostruiscono, con il prezzo medio dell'exchange, il profitto che l'exchange dichiara, altrimenti resta il
+profitto dell'exchange.
+
+I token si creano dopo la scrittura dei movimenti, anche per quelli già in archivio: reimportare un file
+importato prima aggiunge i token. Il programma collega ogni token alla riga del profitto nata dalla stessa riga
+del file (stesso secondo, moneta e quantità) scrivendo lo stesso identificativo nel campo 24, solo se è vuoto.
+Una chiusura senza riga del profitto collegata resta al profitto dell'exchange.
+
+| Chiave | Contenuto |
+|---|---|
+| `causali` | causali CSV delle righe che sono esecuzioni di un contratto, composte come le compone la configurazione (per esempio `TRADE\|OPEN`) |
+| `colonnaContratto` | simbolo del contratto (`BTCUSDT`, `BTCUSD`) |
+| `colonneVerso` | una o più colonne, il cui testo unito da `\|` è la chiave di `versi` |
+| `versi` | testo delle colonne del verso → `apre long`, `chiude long`, `apre short`, `chiude short` |
+| `colonnaQuantita` | contratti eseguiti: nel sottostante per i contratti lineari, in dollari per gli inversi |
+| `colonnaPosizione` | posizione dopo l'esecuzione, per ordinare le esecuzioni dello stesso secondo |
+| `colonnaPrezzo` | prezzo di esecuzione |
+| `colonnaProfitto` | profitto o perdita lordi della chiusura, prima della commissione |
+| `colonnaCommissione` | commissione dell'esecuzione |
+| `colonnaMovimento` | colonna da cui nasce la quantità del movimento del profitto, per abbinarlo al token |
+| `commissioneInclusa` | `true` se il movimento del profitto è già al netto della commissione: il reddito in LIFO della chiusura si calcola al netto della stessa commissione |
+| `colonnaIdEsecuzione` | identificativo dell'esecuzione. Senza, il programma ne calcola uno stabile dalle altre colonne |
+| `colonnaOrdine` | identificativo dell'ordine, solo informativo |
+
+Il simbolo si riconosce nelle forme `BTCUSDT` e `BTCUSDC` (lineari), `BTCUSD` regolato in BTC (inverso),
+`BTCUSDZ22` (futures inverso) e `BTC-27DEC24` regolato in USDC. Un simbolo diverso dà comunque il token, ma
+senza il valore del contratto, quindi quella posizione resta al profitto dell'exchange. Il margine impegnato da
+ogni posizione non è richiesto: senza, la colonna 7 del rigo con codice 9 vale zero ed è riportata come 1.
+
+```json
+"contrattiDerivati": {
+  "causali": ["trade"],
+  "colonnaContratto": 2,
+  "colonneVerso": [4],
+  "versi": { "Open Long": "apre long", "Close Long": "chiude long",
+             "Open Short": "apre short", "Close Short": "chiude short" },
+  "colonnaQuantita": 5, "colonnaPosizione": 6, "colonnaPrezzo": 7,
+  "colonnaProfitto": 10, "colonnaCommissione": 9, "colonnaMovimento": 11,
+  "commissioneInclusa": true, "colonnaIdEsecuzione": 14
+}
+```
+
 ## 11. Campi extra
 
 ### `campiExtra`
@@ -6730,6 +6854,11 @@ avvertenze sul corretto utilizzo del programma.
   antecedenti al 2023, solo nel quadro T/RT e con le regole descritte in
   [La soglia dei 51.645,69 euro nel quadro RT](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/calcolo-plusvalenze-opzioni.html#soglia-51645). Il resto dei
   calcoli segue le regole in vigore dal 2023.
+
+- I **derivati** (perpetui e futures) sono ancora in **versione bozza**: il calcolo dei loro redditi, il conto
+  derivati, i righi con il codice 9 del quadro W/RW e le schermate dedicate possono cambiare con le prossime
+  versioni, anche nei valori calcolati. Vedi
+  [Derivati: come vengono calcolati](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/calcolo-plusvalenze-opzioni.html#derivati).
 
 - Le **opzioni** (call e put) non sono ancora gestite, da nessun exchange: il loro risultato nel programma può
   essere incompleto o sbagliato. Saranno integrate in una versione futura. Vedi

@@ -156,6 +156,31 @@ scambio e del trasferimento sul wallet di destinazione. Scambio e trasferimento 
 del movimento di deposito, e sarà quello il momento in cui il costo di carico passerà dal token di
 origine a quello di destinazione.
 
+Se il deposito è anteriore al prelievo (per esempio uno scambio OTC in cui la controparte paga per primo
+e le cripto vengono spedite dopo), lo scambio resta alla data del deposito, cioè al momento in cui si
+incassa e si realizza la plusvalenza. Fra le due date la moneta ceduta è però ancora nel wallet, e il
+programma la tiene in vista con un token di possesso, per esempio `ETH.DA_CONSEGNARE`:
+- all'ingresso della moneta ricevuta, alla data del deposito, entra il token `ETH.DA_CONSEGNARE` con la
+  quantità ceduta, mentre lo scambio scarica gli ETH veri con la loro plusvalenza
+- il prelievo originale esce come `ETH.DA_CONSEGNARE` alla sua data, senza altra plusvalenza, perché lo
+  scambio l'ha già realizzata
+- scambio, uscita e ingresso stanno sul wallet del prelievo e portano una nota che spiega il token, e i cinque
+  movimenti sono collegati fra loro come in ogni scambio differito.
+
+Il token non ha lotti LIFO e non porta plusvalenza. Nel quadro RT e in *Giacenze a data* ha costo di carico
+uguale al valore, quindi plusvalenza latente zero, e il suo valore entra comunque nelle rimanenze. Si prezza come
+la moneta di cui è la copia. Nel quadro W/RW resta in vista dal deposito al prelievo (Rilevanza A con la giacenza,
+metodi B, C e D con un lotto che si apre al deposito e si chiude al prelievo), così il quadro non perde la moneta
+ancora nel wallet. Se mancano gli ETH al momento del deposito e li si compra dopo, il saldo negativo compare
+sugli ETH, non sul token. La forma con il token vale solo per due monete cripto: con una gamba in euro, con una
+moneta SCAM, con i derivati o con piattaforme particolari come *Dual Savings* resta la piattaforma di scambio
+creata dal programma, con l'ingresso alla data del deposito. Lo stesso vale se deposito e prelievo cadono nello
+stesso giorno e al momento del deposito la moneta ceduta è già nel wallet, per esempio i pochi secondi di scarto
+di certe conversioni: il token non serve e non compare nessuna riga in più nel quadro W/RW. Se invece la moneta
+ceduta arriva dopo il deposito, anche nello stesso giorno, si usa il token, così il saldo negativo si vede sulla
+moneta. Annullando la classificazione il prelievo torna alla
+sua moneta.
+
 Un'altra casistica in cui è opportuno usare questa opzione è l'utilizzo di **bridge** per passare da una
 rete a un'altra, dando ad esempio ETH per ricevere BNB.
 

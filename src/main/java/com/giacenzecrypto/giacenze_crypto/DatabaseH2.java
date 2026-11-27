@@ -158,6 +158,17 @@ public class DatabaseH2 {
                         "PRIMARY KEY (symbol, ora, exchange)" +
                         ")");
             
+            //Mark price dei contratti derivati (OKX, Bybit) a un minuto, per il non realizzato delle posizioni aperte al 31/12 nel quadro W/RW
+            //(MarkPriceDerivati). Solo cache di una lettura riuscita: il prezzo e' una stringa per non perdere cifre. Non e' un prezzo di
+            //PrezziNew e nessun'altra valorizzazione lo legge.
+            EseguiDDL(connectionPrezzi, "CREATE TABLE IF NOT EXISTS PrezziMarkDerivati (" +
+                        "piattaforma VARCHAR(30) NOT NULL, " +
+                        "simbolo VARCHAR(100) NOT NULL, " +
+                        "minuto BIGINT NOT NULL, " +
+                        "prezzo VARCHAR(40) NOT NULL, " +
+                        "PRIMARY KEY (piattaforma, simbolo, minuto)" +
+                        ")");
+
             //Prezzi personalizzati (inseriti a mano dall'utente). A differenza della cache in
             //prezzi.mv.db, qui `gruppo` sta in una colonna sua invece di essere incollato dentro
             //`exchange` come "Personalizzato (TUTTI)": la colonna serve alla preferenza prezzi per

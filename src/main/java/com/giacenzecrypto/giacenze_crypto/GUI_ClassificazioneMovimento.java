@@ -2489,6 +2489,14 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
      * @return {@code false} se non è stato fatto nulla (movimenti inesistenti o nessun ID univoco
      *         disponibile per i movimenti generati), vedi {@link #IDScambioDifferito}
      */
+    //Descrizioni (campo 5) dei movimenti dello scambio differito: il ruolo per primo, perché la colonna le tronca, e la stessa coda per tutte,
+    //così un filtro sul testo le raccoglie. Il testo è solo mostrato, nessun calcolo lo legge. Lo scambio (MS) resta SCAMBIO/VENDITA/ACQUISTO CRYPTO
+    static final String DESCRIZIONE_DIFFERITO_CONSEGNA="CONSEGNA PER SCAMBIO DIFFERITO";//prelievo originale
+    static final String DESCRIZIONE_DIFFERITO_INCASSO="INCASSO PER SCAMBIO DIFFERITO";//deposito originale
+    static final String DESCRIZIONE_DIFFERITO_INGRESSO="INGRESSO TECNICO PER SCAMBIO DIFFERITO";//MT1 con la piattaforma
+    static final String DESCRIZIONE_DIFFERITO_POSSESSO="POSSESSO DA CONSEGNARE PER SCAMBIO DIFFERITO";//MT1 con il token X.DA_CONSEGNARE
+    static final String DESCRIZIONE_DIFFERITO_USCITA="USCITA TECNICA PER SCAMBIO DIFFERITO";//MT2
+
     public static boolean CreaMovimentiScambioCryptoDifferito(String IDPrelievo,String IDDeposito){
         return CreaMovimentiScambioCryptoDifferito(IDPrelievo, IDDeposito, "Piattaforma di scambio");
     }
@@ -2528,8 +2536,8 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         //Vado avanti solo se la qta prelevata è maggiore o uguale di quelòla ricevuta
      //   if (QtaPrelievoValoreAssoluto.compareTo(QtaDepositoValoreAssoluto)>=0){
             
-        MovimentoPrelievo[5]="TRASFERIMENTO PER SCAMBIO";
-        MovimentoDeposito[5]="TRASFERIMENTO PER SCAMBIO";
+        MovimentoPrelievo[5]=DESCRIZIONE_DIFFERITO_CONSEGNA;
+        MovimentoDeposito[5]=DESCRIZIONE_DIFFERITO_INCASSO;
         
         
 
@@ -2551,7 +2559,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         /*System.out.println(IDTrasferimento1);
         System.out.println(IDScambio);
         System.out.println(IDTrasferimento2);*/
-        MT1[1]=MovimentoPrelievo[1];
+        MT1[1]=IstanteDepositoPrecedente(IDPrelievo, IDDeposito)?MovimentoDeposito[1]:MovimentoPrelievo[1];
         MS[1]=MovimentoDeposito[1];
         MT2[1]=MovimentoDeposito[1];
         MT1[2]="1 di 1";
@@ -2563,7 +2571,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         MT1[4]=WalletPiattaforma;//da mettere defi se il movimento è in defi
         MS[4]=WalletPiattaforma;//da mettere defi se il movimento è in defi
         MT2[4]=WalletPiattaforma;//da mettere defi se il movimento è in defi
-        MT1[5]="TRASFERIMENTO PER SCAMBIO";
+        MT1[5]=DESCRIZIONE_DIFFERITO_INGRESSO;
         MS[5]="SCAMBIO CRYPTO";
         if (DepositoFIAT)
         {
@@ -2573,7 +2581,7 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         {
             MS[5]="ACQUISTO CRYPTO";
         }
-        MT2[5]="TRASFERIMENTO PER SCAMBIO";
+        MT2[5]=DESCRIZIONE_DIFFERITO_USCITA;
         String MonetaUscita=MovimentoPrelievo[8];
         if (!MovimentoPrelievo[25].isBlank())MonetaUscita=MovimentoPrelievo[25];
         String MonetaEntrata=MovimentoDeposito[11];
@@ -2657,7 +2665,8 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             MS[26]=MovimentoPrelievo[26];//Esce
             MS[25]=MovimentoPrelievo[25];
             MS[29]=MovimentoPrelievo[29];
-            MT1[29]=MovimentoPrelievo[29];  
+            //Con il deposito anteriore MT1 ha l'istante del deposito: [29] (timestamp, solo informativo) lo segue
+            MT1[29]=IstanteDepositoPrecedente(IDPrelievo, IDDeposito)&&MovimentoDeposito.length>29?MovimentoDeposito[29]:MovimentoPrelievo[29];  
         //    System.out.println(MovimentoPrelievo[25]+" - "+MovimentoPrelievo[26]);
         }
 
@@ -2679,6 +2688,38 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             String ChiavePrelievo=CommissioniCollegate.Chiave(MovimentoPrelievo);
             MS[CommissioniCollegate.CAMPO]=ChiavePrelievo.isEmpty()?CommissioniCollegate.Chiave(MovimentoDeposito):ChiavePrelievo;
 
+            //Deposito prima del prelievo: forma con il token di possesso X.DA_CONSEGNARE (vedi UsaTokenDaConsegnare)
+            if (UsaTokenDaConsegnare(MovimentoPrelievo, MovimentoDeposito, WalletPiattaforma)) {
+                String DaConsegnare=TokenDaConsegnare.Di(MonetaUscita);
+                //Il prelievo esce come X.DA_CONSEGNARE: il motore lo tratta come prima (PTW di scambio differito, nessun effetto sulla pila)
+                MovimentoPrelievo[8]=TokenDaConsegnare.Di(MovimentoPrelievo[8]);
+                //MT1 fa entrare i token di possesso alla data del deposito, quando la cessione si realizza (principio di cassa)
+                MT1[11]=MovimentoPrelievo[8];
+                //Scambio e trasferimenti stanno sul wallet del prelievo, non su una piattaforma fittizia: la moneta ricevuta
+                //(MT2 la fa uscire dal wallet del prelievo come ogni scambio differito) e quella ceduta sono lì davvero
+                MT1[4]=MovimentoPrelievo[4];
+                MS[4]=MovimentoPrelievo[4];
+                MT2[4]=MovimentoPrelievo[4];
+                //Il valore è quello della moneta ceduta (non quello della moneta ricevuta che prezza MS) alla data dello scambio, non a quella
+                //del prelievo: è la moneta che resta nel wallet e che il RW e Giacenze a data valorizzano. Senza prezzo si ripiega sul valore dello scambio
+                String ValoreCeduta=Prezzi.DammiPrezzoTransazione(M1, null, DatalongDeposito, "0", true, 2, Rete,"");
+                MT1[15]=new BigDecimal(ValoreCeduta).signum()==0?MS[15]:ValoreCeduta;
+                MT1[5]=DESCRIZIONE_DIFFERITO_POSSESSO;
+                MT1[21]="Entrata dei "+MonetaUscita+" già ceduti con lo scambio del "+MovimentoDeposito[1]+" e ancora nel wallet fino al prelievo del "
+                        +MovimentoPrelievo[1]+" (token fittizio "+DaConsegnare+", senza costo né plusvalenza: la plusvalenza è nello scambio, per cassa alla data del deposito)";
+                MS[21]="Scambio alla data del deposito (principio di cassa): i "+MonetaUscita+" escono ora con la plusvalenza ma restano nel wallet fino al prelievo del "
+                        +MovimentoPrelievo[1]+", che li scarica dal token "+DaConsegnare;
+                //MT2 non ha un'utilità propria: compensa l'ingresso dei BTC che MS ha già fatto sul wallet del prelievo, perché il
+                //deposito reale li registra una seconda volta. Con wallet diversi li sposta anche, con lo stesso wallet è solo la compensazione
+                if (MovimentoPrelievo[3].equals(MovimentoDeposito[3])) {
+                    MT2[21]="Uscita tecnica dei "+MonetaEntrata+" ricevuti: compensa l'ingresso fatto dallo scambio, perché il deposito reale che segue li registra sullo stesso wallet. "
+                            +"Nessun trasferimento vero, il saldo finale è quello del deposito";
+                } else {
+                    MT2[21]="Uscita dei "+MonetaEntrata+" ricevuti dal wallet del prelievo: compensa l'ingresso fatto dallo scambio, i "+MonetaEntrata
+                            +" risultano ricevuti sul wallet del deposito reale che segue";
+                }
+            }
+
             Importazioni.RiempiVuotiArray(MT1);
             Importazioni.RiempiVuotiArray(MS);
             Importazioni.RiempiVuotiArray(MT2);
@@ -2693,6 +2734,71 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
       //   }
         return true;
+    }
+
+    /**
+     * Se lo scambio differito va fatto nella forma con il token di possesso {@code X.DA_CONSEGNARE}: il deposito è
+     * strettamente anteriore al prelievo (OTC visto da chi incassa prima di spedire), entrambe le gambe sono
+     * cripto, la moneta ceduta non è SCAM né già un DA_CONSEGNARE, i movimenti stanno sul wallet normale (non sul conto
+     * derivati, che ha pila propria con P2, né marcati come derivati) e lo scambio ha la piattaforma predefinita
+     * (non "Dual Savings"). Negli altri casi resta la forma con la piattaforma fittizia, e lo stesso vale per uno scarto
+     * nello stesso giorno con la moneta ceduta già nel wallet al deposito ({@link #MonetaPresenteAlDeposito}).
+     *
+     * <p>Con il token la moneta ceduta entra alla data del deposito (MT1) ed esce al prelievo, e il suo possesso si
+     * vede nel wallet fra le due date senza saldi negativi, senza pila e senza plusvalenza latente di fine anno.
+     * @param Prelievo movimento di prelievo originale, prima della classificazione
+     * @param Deposito movimento di deposito originale, prima della classificazione
+     * @param WalletPiattaforma sotto-wallet richiesto per i movimenti sintetici
+     */
+    static boolean UsaTokenDaConsegnare(String[] Prelievo, String[] Deposito, String WalletPiattaforma) {
+        if (!MovimentiCollegati.WALLET_PIATTAFORMA_PREDEFINITO.equals(WalletPiattaforma)) return false;
+        if (!IstanteDepositoPrecedente(Prelievo[0], Deposito[0])) return false;
+        if (!Prelievo[0].split("_")[4].equalsIgnoreCase("PC") || !Deposito[0].split("_")[4].equalsIgnoreCase("DC")) return false;
+        String Moneta=Prelievo[25].isBlank()?Prelievo[8]:Prelievo[25];
+        if (Moneta.isBlank()||Funzioni.isSCAM(Moneta)||TokenDaConsegnare.Is(Moneta)||Funzioni.isSCAM(Prelievo[8])||TokenDaConsegnare.Is(Prelievo[8])) return false;
+        if (Funzioni.isSCAM(Deposito[11])||TokenDaConsegnare.Is(Deposito[11])) return false;
+        if (Derivati.isDerivato(Prelievo)||Derivati.isDerivato(Deposito)) return false;
+        if (ContoDerivati.SulContoP2(Prelievo, MappaCryptoWallet)||ContoDerivati.SulContoP2(Deposito, MappaCryptoWallet)) return false;
+        //Scarto breve (stesso giorno) con la moneta ceduta già nel wallet: il token non serve, basta la forma con la piattaforma, con l'ingresso
+        //alla data del deposito. Il controllo sulla giacenza è la parte che conta: se la moneta ceduta NON c'è ancora al deposito (si compra dopo,
+        //prima del prelievo) la pila non ha niente da vendere e il LiFo mancante comparirebbe senza un saldo negativo che lo spieghi: con il token
+        //il negativo è dichiarato sulla moneta. Stesso giorno vuol dire anche che l'anno non cambia fra le due date.
+        if (Prelievo[0].substring(0,8).equals(Deposito[0].substring(0,8))
+                &&MonetaPresenteAlDeposito(Prelievo, Deposito[0])) return false;
+        return true;
+    }
+
+    /**
+     * Se, alla data del deposito, il wallet e il sotto-wallet del prelievo hanno già almeno la quantità di moneta che il prelievo spedirà
+     * (somma delle quantità dei movimenti anteriori alla data del deposito, prelievo escluso, la stessa chiave
+     * {@code exchange;sotto-wallet;moneta} di {@link Funzioni#ControllaSaldiNegativi}).
+     * @return {@code false} se la quantità non basta o non si riesce a leggere: nel dubbio si usa il token
+     */
+    static boolean MonetaPresenteAlDeposito(String[] Prelievo, String IDDeposito) {
+        try {
+            String Moneta=Prelievo[8];
+            BigDecimal Richiesta=new BigDecimal(Prelievo[10]).abs();
+            BigDecimal Saldo=BigDecimal.ZERO;
+            for (String[] v : MappaCryptoWallet.values()) {
+                if (v[0].equals(Prelievo[0])||v[0].compareTo(IDDeposito)>=0) continue;
+                if (!v[3].equals(Prelievo[3])||!v[4].equals(Prelievo[4])) continue;
+                if (Moneta.equals(v[8])&&!v[10].isBlank()) Saldo=Saldo.add(new BigDecimal(v[10]));
+                if (Moneta.equals(v[11])&&!v[13].isBlank()) Saldo=Saldo.add(new BigDecimal(v[13]));
+            }
+            return Saldo.compareTo(Richiesta)>=0;
+        } catch (NumberFormatException | NullPointerException ex) {
+            return false;
+        }
+    }
+
+    /**
+     * @return {@code true} se l'istante del deposito (primo segmento dell'ID, aaaaMMggHHmmss) è strettamente
+     *         anteriore a quello del prelievo: lo scambio differito è visto dal lato di chi riceve prima di spedire
+     */
+    static boolean IstanteDepositoPrecedente(String IDPrelievo, String IDDeposito) {
+        String p=IDPrelievo.split("_")[0];
+        String d=IDDeposito.split("_")[0];
+        return d.compareTo(p)<0;
     }
 
     /**
@@ -2721,7 +2827,12 @@ setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         boolean DepositoFIAT=IDSpezzatoDeposito[4].equalsIgnoreCase("DF");
         String Coda="_"+IDSpezzato[2]+"_"+IDSpezzato[3];
         String IDPrelievoNuovo=IDSpezzato[0]+"_00"+IDSpezzato[1]+Coda+"_"+IDSpezzato[4];
-        String IDTrasferimento1=IDSpezzato[0]+"_01"+IDSpezzato[1]+Coda+(PrelievoFIAT?"_DF":"_DC");
+        //Se il deposito PRECEDE il prelievo (OTC visto da chi incassa prima di spedire) lo scambio cade alla data del
+        //deposito, quando la cessione si realizza per cassa. L'entrata sulla piattaforma della moneta ceduta deve
+        //quindi stare alla stessa data, non a quella del prelievo: altrimenti lo scambio vende una moneta non ancora
+        //entrata (saldo negativo della piattaforma) e a fine anno la moneta ceduta, ancora nel wallet, non comparirebbe
+        String IstanteTrasferimento1=IstanteDepositoPrecedente(IDPrelievo, IDDeposito)?IDSpezzatoDeposito[0]:IDSpezzato[0];
+        String IDTrasferimento1=IstanteTrasferimento1+"_01"+IDSpezzato[1]+Coda+(PrelievoFIAT?"_DF":"_DC");
         String CategoriaScambio=PrelievoFIAT?"_AC":DepositoFIAT?"_VC":"_SC";
         String IDScambio=IDSpezzatoDeposito[0]+"_02"+IDSpezzato[1]+Coda+CategoriaScambio;
         String IDTrasferimento2=IDSpezzatoDeposito[0]+"_03"+IDSpezzato[1]+Coda+(DepositoFIAT?"_PF":"_PC");
@@ -2912,6 +3023,8 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
                     //ovvero sistemare un pò di qta e prezzo transazione (posizione 10 e 15)
 
                     attuale[5] = "PRELIEVO CRYPTO";
+                    //Scambio differito con token di possesso: il prelievo torna alla sua moneta
+                    attuale[8] = TokenDaConsegnare.Base(attuale[8]);
                     
                    // System.out.println("Prelievo "+attuale[18]+" - "+attuale[19]);
                     if (QtaCommissione != null) {
@@ -3051,13 +3164,16 @@ public static String RiportaTransazioniASituazioneIniziale(String IDPartiConvolt
         if (Spezzato.length < 5 || !(Spezzato[4].equalsIgnoreCase("PC") || Spezzato[4].equalsIgnoreCase("PF"))) return null;
         try {
             BigDecimal Generati[] = GeneratiDaCompensare((Movimento[0] + "," + Movimento[20]).split(","), Movimenti);
-            if (Generati[0] == null && Generati[2] == null) return null;
+            //Il prelievo di uno scambio differito con token di possesso porta X.DA_CONSEGNARE: prima della classificazione era X
+            boolean DaConsegnare = TokenDaConsegnare.Is(Movimento[8]);
+            if (Generati[0] == null && Generati[2] == null && !DaConsegnare) return null;
             BigDecimal Qta = new BigDecimal(Movimento[10]);
             if (Generati[0] != null) Qta = Qta.add(Generati[0]);
             //La reward si restituisce solo a un prelievo crypto, come nell'annullamento
             if (Generati[2] != null && Spezzato[4].equalsIgnoreCase("PC")) Qta = Qta.add(Generati[2]);
             String Copia[] = Movimento.clone();
             Copia[10] = Qta.toPlainString();
+            Copia[8] = TokenDaConsegnare.Base(Copia[8]);
             return Copia;
         } catch (NumberFormatException ex) {
             return null;

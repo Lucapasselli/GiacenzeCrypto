@@ -1487,6 +1487,11 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                                 ) {
                             ChiudiRWFR(Monete[0], CryptoStack, GruppoWallet, Data, Valore, "Trasferimento su altro Wallet", IDTransazione);
 
+                        } else if (TokenDaConsegnare.IsConsegnaRW(v[18], Monete[0].Moneta)) {
+                            //Scambio differito con deposito PRIMA del prelievo: il token X.DA_CONSEGNARE (aperto alla data del deposito
+                            //da MT1) esce davvero dal wallet adesso, alla data del prelievo e al suo valore. Lo scambio aveva già chiuso
+                            //il lotto della moneta ceduta, ma quella moneta è rimasta nel wallet fino a qui.
+                            ChiudiRWFR(Monete[0], CryptoStack, GruppoWallet, Data, Valore, TokenDaConsegnare.CAUSALE_RW_CONSEGNA, IDTransazione);
                         }
 
                     }else if (v[18].contains("DAC")||v[18].contains("DDO")||v[18].contains(Derivati.MARCATORE_ACCREDITO)
@@ -1694,6 +1699,25 @@ public static void StackLIFO_InserisciValoreFR(Map<String, ArrayDeque<ElementiSt
                                 }
                             }
 
+                        } else if (TokenDaConsegnare.IsIngressoRW(v[18], Monete[1].Moneta)) {
+                            //Scambio differito con deposito PRIMA del prelievo: entrata del token X.DA_CONSEGNARE alla data del deposito.
+                            //La moneta ceduta è già stata scambiata (lo scambio ha chiuso il suo lotto) ma resta nel wallet fino al
+                            //prelievo: apro un lotto che la tiene nel quadro, valorizzato alla data del deposito (v[15] di MT1 è il valore
+                            //dello scambio). Si chiude al prelievo originale (ramo PTW - Scambio Differito).
+                            ElementiStack el = new ElementiStack();
+                            el.IDOri = IDTransazione;//ID del movimento da cui tutto ha avuto origine
+                            el.CostoOri = Valore;//Costo di partenza: il valore alla data del deposito
+                            el.MonOri = Monete[1].Moneta;
+                            el.QtaOri = Monete[1].Qta;
+                            el.DataOri = Data;
+                            el.GruppoWalletOri = GruppoWallet;
+                            el.Moneta = Monete[1].Moneta;
+                            el.Qta = Monete[1].Qta;
+                            el.TipoMonetaOri=Monete[1].Tipo;
+                            el.Tipo=Monete[1].Tipo;
+                            el.GruppoWallet=GruppoWallet;
+                            el.Data =Data;
+                            StackLIFO_InserisciValoreFR(CryptoStack,GruppoWallet,el);
                         }
                     } else {                       
                         System.out.println("Attenzione movimento di deposito o prelievo non classificato nella funzione AggiornaRW() in CalcoliRW");

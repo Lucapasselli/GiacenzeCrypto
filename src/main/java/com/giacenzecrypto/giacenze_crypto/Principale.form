@@ -2629,7 +2629,11 @@
                                       <Component id="GiacenzeaData_Totali_Label" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_Totali_TextField" min="-2" pref="117" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="83" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
+                                      <Component id="GiacenzeaData_TotaliDerivati_Label" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="GiacenzeaData_TotaliDerivati_TextField" min="-2" pref="117" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
                                       <Component id="GiacenzeaData_Label_Aggiornare" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace pref="251" max="32767" attributes="0"/>
                                       <Component id="GiacenzeaData_Bottone_RettificaQta" min="-2" pref="190" max="-2" attributes="0"/>
@@ -2770,6 +2774,8 @@
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="GiacenzeaData_Totali_Label" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_Totali_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="GiacenzeaData_TotaliDerivati_Label" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
+                                  <Component id="GiacenzeaData_TotaliDerivati_TextField" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_Bottone_RettificaQta" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="GiacenzeaData_Label_Aggiornare" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
@@ -2960,10 +2966,23 @@
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                           <Font name="Noto Sans" size="12" style="1"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="TOTALE in EURO : "/>
+                        <Property name="text" type="java.lang.String" value="TOTALE CRIPTO in EURO : "/>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="GiacenzeaData_Totali_TextField">
+                      <Properties>
+                        <Property name="editable" type="boolean" value="false"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="GiacenzeaData_TotaliDerivati_Label">
+                      <Properties>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Noto Sans" size="12" style="1"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="TOTALE DERIVATI in EURO : "/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="GiacenzeaData_TotaliDerivati_TextField">
                       <Properties>
                         <Property name="editable" type="boolean" value="false"/>
                       </Properties>
@@ -5376,14 +5395,17 @@
                         <Component class="javax.swing.JTable" name="RT_Tabella_Principale">
                           <Properties>
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                              <Table columnCount="7" rowCount="0">
+                              <Table columnCount="10" rowCount="0">
                                 <Column editable="false" title="Anno" type="java.lang.Object"/>
                                 <Column editable="false" title="Totale dei Costi o Valori di Acquisto" type="java.lang.Object"/>
                                 <Column editable="false" title="Totale dei Corrispettivi" type="java.lang.Object"/>
                                 <Column editable="false" title="Plusvalenze Realizzate" type="java.lang.Object"/>
-                                <Column editable="false" title="Plusvalenze Latenti" type="java.lang.Object"/>
-                                <Column editable="false" title="Valore di Fine Anno" type="java.lang.Object"/>
+                                <Column editable="false" title="Plusvalenze Latenti Cripto" type="java.lang.Object"/>
+                                <Column editable="false" title="Valore di Fine Anno Cripto" type="java.lang.Object"/>
                                 <Column editable="false" title="Errori" type="java.lang.Object"/>
+                                <Column editable="false" title="Plusvalenze Realizzate Derivati" type="java.lang.Object"/>
+                                <Column editable="false" title="Plusvalenze Latenti Derivati" type="java.lang.Object"/>
+                                <Column editable="false" title="Valore di Fine Anno Derivati" type="java.lang.Object"/>
                               </Table>
                             </Property>
                             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -6938,6 +6960,7 @@
                                                   <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero" alignment="0" min="-2" max="-2" attributes="0"/>
                                                   <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" alignment="0" min="-2" max="-2" attributes="0"/>
                                                   <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023Soglia" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="Plusvalenze_Opzioni_CheckBox_SogliaContoDerivati" alignment="0" min="-2" max="-2" attributes="0"/>
                                               </Group>
                                               <EmptySpace min="32" pref="244" max="32767" attributes="0"/>
                                           </Group>
@@ -6991,6 +7014,8 @@
                               <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Plusvalenze_Opzioni_CheckBox_Pre2023Soglia" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="Plusvalenze_Opzioni_CheckBox_SogliaContoDerivati" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="Plusvalenze_Opzioni_NonConsiderareMovimentiNC" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -7027,6 +7052,15 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Plusvalenze_Opzioni_CheckBox_Pre2023SogliaActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="Plusvalenze_Opzioni_CheckBox_SogliaContoDerivati">
+                      <Properties>
+                        <Property name="selected" type="boolean" value="true"/>
+                        <Property name="text" type="java.lang.String" value="Fino al 31-12-2022 nella verifica della soglia conta anche la giacenza sul conto derivati (margine e saldo sul sotto-wallet Derivati)"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Plusvalenze_Opzioni_CheckBox_SogliaContoDerivatiActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="Opzioni_GruppoWallet_CheckBox_PlusXWallet">
@@ -7134,7 +7168,7 @@
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="Plusvalenze_Opzioni_CheckBox_ContoDerivati">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Conto derivati : &lt;/b&gt;Tratta il conto derivati come parte del derivato: il margine che passa dallo spot al conto derivati &#xe8; una cessione al valore del momento e il suo rientro d&#xe0; un reddito da derivati. Vale per OKX, per il conto Derivati di Bybit e per i futures di Binance, non per l&apos;Unified Trading Account di Bybit&lt;br&gt;(Non attivo di default: il margine resta una cripto-attivit&#xe0;. Cambia i valori anche degli anni gi&#xe0; dichiarati con movimenti su derivati)&lt;/html&gt;"/>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;Conto derivati : &lt;/b&gt;Tratta il conto derivati come parte del derivato: il margine che passa dallo spot al conto derivati &#xe8; una cessione al valore del momento e il suo rientro d&#xe0; un reddito da derivati. Vale per OKX, per il conto Derivati di Bybit e per i futures di Binance, non per l&apos;Unified Trading Account di Bybit&lt;br&gt;(Attivo di default. Spento, il margine resta una cripto-attivit&#xe0;. Cambia i valori anche degli anni gi&#xe0; dichiarati con movimenti su derivati)&lt;/html&gt;"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Plusvalenze_Opzioni_CheckBox_ContoDerivatiActionPerformed"/>
@@ -7490,7 +7524,7 @@
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="RW_Opzioni_CheckBox_DerivatiPeriodoUnico">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Con l&apos;opzione &lt;b&gt;Conto derivati&lt;/b&gt;, nel rigo con codice 9 il conto &#xe8; &lt;b&gt;un solo periodo&lt;/b&gt; dal primo ingresso dell&apos;anno all&apos;ultimo giorno con un saldo, anche se nel mezzo resta vuoto&lt;br&gt;(Non attivo di default: un periodo per ogni tratto in cui il conto ha un saldo)&lt;/html&gt;"/>
+                        <Property name="text" type="java.lang.String" value="&lt;html&gt;Nel rigo con codice 9 il conto derivati &#xe8; &lt;b&gt;un solo periodo&lt;/b&gt; dal primo ingresso dell&apos;anno all&apos;ultimo giorno con un saldo, anche se nel mezzo resta vuoto&lt;br&gt;(Non attivo di default: un periodo per ogni tratto in cui il conto ha un saldo)&lt;/html&gt;"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RW_Opzioni_CheckBox_DerivatiPeriodoUnicoActionPerformed"/>

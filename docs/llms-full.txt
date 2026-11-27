@@ -529,14 +529,13 @@ cripto −5,00 €. I totali sono gli stessi: derivati +95,00 € − 90,00 € 
 Fra la chiusura e il recupero i 50 USDC di bonus restano nel LIFO e nelle giacenze, anche se non sono
 prelevabili.
 
-### Il conto derivati: margine cripto o parte del derivato
+### Il conto derivati
 
-Il margine con cui si apre una posizione resta una **cripto-attività**: è denaro dell'utente vincolato a garanzia,
-come dice la circolare 165/E sui margini, e il suo passaggio al conto derivati non ha effetti fiscali. È
-l'impostazione predefinita.
-
-Con l'opzione **Conto derivati** (in *Opzioni* – *Opzioni di Calcolo*) il conto derivati conta invece come
-parte del derivato:
+Il programma tratta il conto derivati come **parte del derivato**, e non c'è un'opzione per cambiare. Un'altra lettura
+considera il margine con cui si apre una posizione una **cripto-attività**, denaro dell'utente vincolato a garanzia
+(circolare 165/E sui margini), con il passaggio al conto derivati senza effetti fiscali: il programma la sa calcolare ma
+per ora non la offre, perché dà un quadro W/RW più difficile da sostenere. Il conto derivati conta come parte del derivato
+così:
 
 - il passaggio di cripto-attività dal conto spot al conto derivati è una **cessione** al valore del momento, con
   la sua plusvalenza o minusvalenza cripto,
@@ -548,14 +547,14 @@ parte del derivato:
 - un movimento su derivati del conto ancora da classificare (per esempio uno importato in un anno con la dichiarazione
   definitiva, che il programma lascia da classificare) conta già come accredito o addebito da derivati: il conto è parte
   del derivato, quindi quello che vi entra o esce non è una cripto-attività. Una commissione conta sempre, un deposito o un
-  prelievo solo se i movimenti non classificati entrano nel calcolo, come ogni altro movimento da classificare. Senza
-  l'opzione, e per i movimenti fuori dal conto, un movimento da classificare resta una cripto-attività.
+  prelievo solo se i movimenti non classificati entrano nel calcolo, come ogni altro movimento da classificare. Fuori
+  dal conto un movimento da classificare resta una cripto-attività.
 
 **Esempio.** 1.000 USDT comprati a 0,92 € (920 €). Il 1° marzo 500 USDT passano al conto derivati come margine
 (1 USDT vale 0,90 €). Il 31 maggio la posizione si chiude con un profitto di 300 USDT (1 USDT vale 0,88 €) e il
 margine rientra. Il 30 giugno si vendono tutti i 1.300 USDT a 0,88 € (1.144 €).
 
-| | Senza l'opzione | Con l'opzione |
+| | Se il margine restasse una cripto-attività (non usato) | Metodo del programma |
 |---|---|---|
 | 1° marzo, margine al conto | nessun effetto | cessione: 500 USDT valgono 450 € e costano 460 €, minusvalenza cripto di 10 € |
 | 31 maggio, profitto | reddito da derivati di 264 € (300 × 0,88), i 300 USDT entrano a 264 € | uguale, i 300 USDT entrano nel conto a 264 € |
@@ -565,13 +564,13 @@ margine rientra. Il 30 giugno si vendono tutti i 1.300 USDT a 0,88 € (1.144 �
 | **Totale cripto-attività** | **−40 €** | **−30 €** |
 
 In tutti e due i casi il totale è 1.144 − 920 = **+224 €**. Cambia dove cade l'effetto del cambio sul margine:
-tutto fra le cripto-attività senza l'opzione, fra i derivati durante la permanenza nel conto con l'opzione. Dal 2023
+tutto fra le cripto-attività se il margine restasse una cripto-attività, fra i derivati durante la permanenza nel conto con il metodo del programma. Dal 2023
 le due parti non si compensano fra loro, quindi l'imposta può essere diversa.
 
-Con una **perdita** di 200 USDT alla chiusura la perdita esce dal conto e tornano 300 USDT. Con l'opzione la perdita vale
+Con una **perdita** di 200 USDT alla chiusura la perdita esce dal conto e tornano 300 USDT. Con il metodo del programma la perdita vale
 il costo dei 200 USDT nel conto, 180 € (200 × 0,90), senza cessione cripto, e il rientro dei 300 USDT dà 264 − 270 = −6 €:
 derivati **−186 €**, cripto-attività −10 € al passaggio al conto e −20 € alla vendita (704 € contro 460 + 264), **−30 €**.
-Senza l'opzione la perdita vale 176 € (200 × 0,88) fra i derivati e i 200 USDT sono anche una cessione cripto (176 € contro
+Se il margine restasse una cripto-attività la perdita varrebbe 176 € (200 × 0,88) fra i derivati e i 200 USDT sono anche una cessione cripto (176 € contro
 un costo di 184 €): derivati **−176 €**, cripto-attività **−40 €**. In tutti e due i casi il totale è **−216 €**.
 
 Dove si applica:
@@ -589,14 +588,13 @@ Dove si applica:
   modifiche*) li sposta sul sotto-wallet, e reimportando **dopo** gli stessi file entrano i giroconti. L'ordine conta:
   il controllo dei doppioni non guarda il sotto-wallet, quindi reimportando prima dello spostamento i movimenti vecchi
   resterebbero sul wallet principale.
-- **Bybit Unified Trading Account**: resta sempre come senza l'opzione. Nel conto unificato il collaterale non si
+- **Bybit Unified Trading Account**: il margine resta una cripto-attività. Nel conto unificato il collaterale non si
   sposta mai, e il file non dice quanto margine impegna ogni posizione.
 - Le posizioni aperte con la versione 1.0.66 e abbinate al loro rientro (*Abbina rientro del margine*) seguono la
   stessa regola: il collaterale di allora fa da conto derivati.
 
-L'opzione cambia anche il quadro W/RW: il conto derivati esce dai righi delle cripto-attività e diventa un rigo con
-codice 9 (vedi [Contratti derivati](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/opzioni-calcolo-rw.html#contratti-derivati-codice-9)). Cambia i valori anche degli
-anni già dichiarati che hanno movimenti su derivati.
+Questo metodo vale anche per il quadro W/RW: il conto derivati esce dai righi delle cripto-attività e diventa un rigo con
+codice 9 (vedi [Contratti derivati](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/opzioni-calcolo-rw.html#contratti-derivati-codice-9)). 
 
 ### Dual Investment
 
@@ -649,7 +647,7 @@ Esempio con cifre inventate, anno 2025:
 
 Colonna 1 = 300 + 5 + 80 = **385**, colonna 2 = 100 + 15 + 10 + 250 + 5 + 30 + 2 = **412**, risultato = minusvalenza di
 **27**. Per una chiusura di OKX calcolata in LIFO il valore sta sulla riga del token, mentre la riga del profitto di OKX
-vale 0,00 e non sposta nulla. Con l'opzione *Conto derivati* una perdita pagata dal conto vale il costo delle monete nel
+vale 0,00 e non sposta nulla. Una perdita pagata dal conto derivati vale il costo delle monete nel
 conto, mentre il LIFO la valuta al valore del momento: la differenza resta sulla riga della perdita (nell'esempio del conto
 derivati −4 €, cioè 180 € di costo contro 176 € di valore).
 
@@ -759,6 +757,10 @@ Come viene calcolata la giacenza:
   mezzo sono continui.
 - **Cosa conta**: cripto, stablecoin, NFT e dollari. Non contano l'euro, le altre valute e i token
   marcati SCAM. Un saldo negativo (movimento mancante) vale zero.
+- **Conto derivati**: il margine e il saldo sul sotto-wallet *Derivati* di un exchange contano nella soglia, perché la
+  circolare 30/E parla di giacenza di tutti i wallet. È la lettura prudenziale e la casella *Fino al 31-12-2022 nella verifica della soglia conta
+  anche la giacenza sul conto derivati*, in *Opzioni di Calcolo*, è spuntata di default. Se la togli quel conto resta fuori dalla soglia.
+  La scelta è tua: la circolare non dice nulla sul conto di un derivato.
 - **Valore al 1° gennaio**: ogni token è valorizzato per tutto l'anno al prezzo delle 00:00 del 1° gennaio, mai
   al prezzo del giorno, anche se quel giorno non lo avevi in portafoglio. I dollari sono convertiti col cambio
   della Banca d'Italia di quel giorno (o dell'ultimo giorno utile prima).
@@ -1051,8 +1053,18 @@ Ogni riga è un token. Le colonne sono:
 | **Errori** | cosa non va nella riga, per esempio *Token senza prezzo* |
 | **Qta Blockchain** (o *Qta OKX*, *Qta Binance*) | la quantità letta da blockchain o da exchange, solo quando si confronta, vedi [Confronto](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#confronto) |
 
-In fondo, a sinistra, **TOTALE in EURO** è la somma dei valori delle righe mostrate. Comprende anche le righe FIAT (in
-questo esempio gli euro) e le righe con quantità negativa, che riducono il totale.
+In fondo, a sinistra, **TOTALE CRIPTO in EURO** è la somma dei valori delle righe mostrate, escluse quelle del conto derivati
+(vedi sotto). Comprende anche le righe FIAT (in questo esempio gli euro) e le righe con quantità negativa, che riducono il totale.
+Accanto, **TOTALE DERIVATI in EURO** somma il valore delle sole righe del conto derivati.
+
+Se un token sta in parte sul conto derivati di un exchange (il sotto-wallet *Derivati*), compare su **due righe**: quella del token
+e quella con il nome seguito da **.DERIVATI**. Ognuna ha la sua quantità, il suo costo di carico e la sua plus/minus latente, come
+nel quadro RT, dove il LIFO dei derivati è separato da quello delle cripto. Il dettaglio dei movimenti di una riga mostra solo i
+movimenti di quella riga. La riga del conto non si può rinominare né marcare come SCAM (si fa dalla riga del token).
+
+Il confronto con il saldo dell'exchange non si fa per la riga del conto: il saldo di OKX non comprende il margine di una posizione
+(esce dal saldo all'apertura e rientra alla chiusura) e quello di Binance, Spot, Funding ed Earn, non comprende il conto dei futures. Si
+confronta quindi con la sola riga del token, che grazie alla separazione ora coincide anche mentre una posizione è aperta.
 
 Cose da sapere sulle righe:
 
@@ -1080,9 +1092,14 @@ la plusvalenza è 5.500 − 4.260 = 1.240 €. Quello che resta ha costo 4.706,1
 
 Il plus/minus latente è il valore attuale meno questo costo: per il BTC 8.159,53 − 4.706,10 = 3.453,43.
 
-Con un wallet selezionato, il costo di carico mostrato è quello dei lotti **più recenti** che coprono la quantità di quel
-wallet. I giroconti fra i propri wallet non portano con sé nessun costo e non lo fanno sparire: la pila dei lotti resta
-quella dell'insieme dei wallet.
+Lo stesso token può comparire su più righe, una per rete (per esempio ETH su Ethereum e su Base). Il LIFO però ragiona sul
+token intero, come nel calcolo delle plusvalenze: il costo di carico del token si **divide fra le righe in proporzione alla
+quantità**, quindi ogni riga ha lo stesso costo unitario e la somma delle righe è il costo di carico del token. Il costo
+non dipende da dove si è venduto o da dove sono arrivati i lotti.
+
+Con un wallet selezionato che ha **tutta** la quantità di una riga vale la stessa quota. Se il wallet ne ha solo una parte, il
+costo di carico mostrato è quello dei lotti **più recenti** che coprono la quantità di quel wallet. I giroconti fra i propri
+wallet non portano con sé nessun costo e non lo fanno sparire: la pila dei lotti resta quella dell'insieme dei wallet.
 
 ## Token senza prezzo e prezzi da correggere
 
@@ -1180,7 +1197,7 @@ Cose da sapere con un wallet selezionato:
 
 - **Valore** e **Plus/Minus Latente** sono quelli della quantità di quel wallet,
 - il pulsante dei [costi netti](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/giacenze-a-data.html#costi-netti) si spegne: vale solo per **tutti i wallet** insieme,
-- il **TOTALE in EURO** somma i valori di quel solo wallet.
+- i **totali in euro** sommano i valori di quel solo wallet.
 
 ## Correggere una giacenza
 
@@ -1318,7 +1335,12 @@ acquisto o un trasferimento, oppure un'importazione è incompleta. Il dettaglio 
 il primo movimento in cui il saldo diventa negativo.
 
 **Perché il costo di carico di un wallet non coincide con quello che si aspetta?** Perché il LIFO ragiona sull'insieme dei
-wallet: con un solo wallet selezionato il costo mostrato è quello dei lotti più recenti che coprono la sua quantità.
+wallet: con un wallet che ha solo una parte della quantità di una riga il costo mostrato è quello dei lotti più recenti che
+coprono la sua quantità.
+
+**Perché lo stesso token ha lo stesso costo unitario su reti diverse?** Perché il LIFO è unico per token e il costo si divide
+fra le righe in proporzione alla quantità. Non esiste un costo di carico "della rete": vendere su una rete o su un'altra non
+cambia né la plusvalenza né il costo di quello che resta.
 
 **Il valore di un token è zero ma il token ha un prezzo.** Controlla la colonna *Errori*: se compare *Token senza prezzo*
 puoi assegnare un prezzo con *Modifica Valore*. Se compare un prezzo ma il valore è zero, la quantità del wallet scelto è zero.
@@ -2628,35 +2650,24 @@ per anno: le istruzioni permettono di sommare i prodotti con lo stesso codice e 
 media ponderata, e il prospetto dei singoli valori si vede scegliendo il rigo, nella tabella dei dettagli, e nel file
 Excel. Lo Stato estero è quello indicato nei periodi FIAT del gruppo, come per la liquidità.
 
-**Senza l'opzione Conto derivati** (il margine resta una cripto-attività) il rigo somma i contratti:
-
-- colonna 7: il **margine impegnato**, cioè la somma dei margini di tutte le aperture dell'anno (una posizione
-  costruita in più volte impegna il margine di ognuna), più quello ancora vincolato al 1° gennaio. Il valore zero
-  non si può trasmettere (le specifiche tecniche scartano un rigo con il valore iniziale vuoto), e il margine è il valore più vicino a quello di un contratto per cui non si paga un prezzo,
-- colonna 8: il **guadagno della chiusura**, se positivo, per una posizione chiusa nell'anno, o il **guadagno non
-  realizzato** al 31 dicembre, se positivo, per una posizione ancora aperta. Il guadagno non realizzato è stimato
-  con il prezzo a pronti della cripto sottostante, perché il programma non ha il prezzo di riferimento
-  dell'exchange,
-- con tutti i contratti in perdita la colonna 8 è zero.
-
-Per gli exchange di cui il programma non conosce le singole posizioni (Bybit, Binance) la colonna 7 è il valore del
-conto derivati all'ingresso e la colonna 8 è zero.
-
 Il rigo con codice 9 non è mai di solo monitoraggio: la colonna 16 si barra solo quando l'intermediario paga
 l'imposta, e un exchange estero non lo fa. Un valore iniziale o finale zero è riportato come **1**, perché il
 software dell'Agenzia delle entrate non accetta lo zero, con i giorni e l'IVAFE (zero) compilati come negli altri
 righi.
 
-**Con l'opzione Conto derivati** il rigo riporta il conto, diviso nei periodi dell'anno in cui ha un saldo: un
+Il rigo riporta il conto derivati, diviso nei periodi dell'anno in cui ha un saldo: un
 periodo finisce quando il conto si svuota e ne comincia un altro quando torna ad avere un saldo. Per ogni periodo la
 colonna 7 è il valore del conto al 1° gennaio o all'ingresso, la colonna 8 il valore alla fine dell'anno o appena
-prima che il conto si svuoti, e per l'ultimo periodo si aggiunge il guadagno non realizzato delle posizioni aperte se
-positivo. Il rigo somma i periodi e prende come giorni la media ponderata sui valori finali, quindi i giorni in cui il
+prima che il conto si svuoti, e per l'ultimo periodo si aggiunge il risultato non realizzato delle posizioni aperte, con il suo
+segno (guadagno o perdita), senza scendere sotto zero. Si valuta con il **mark price** dell'exchange, cioè il
+prezzo con cui calcola il suo "PnL non realizzato" per quel contratto (letto da OKX e da Bybit, e conservato per ritrovare
+lo stesso numero anche senza rete). Se non si trova, perché manca la rete, il future OKX è già scaduto o l'exchange non è
+OKX né Bybit, si ripiega sul prezzo a pronti della cripto sottostante: il prospetto dice quale dei due è stato usato. Il rigo somma i periodi e prende come giorni la media ponderata sui valori finali, quindi i giorni in cui il
 conto è vuoto non contano. Il conto non compare fra i righi delle cripto-attività.
 
-Il periodo che comincia il 1° gennaio con delle posizioni ancora aperte dall'anno prima ha in colonna 7 anche il guadagno
-non realizzato al 31 dicembre dell'anno prima, se positivo, calcolato come nella colonna 8 di quell'anno. Il valore
-finale di un anno e il valore iniziale dell'anno dopo coincidono, e il guadagno non realizzato non sparisce al
+Il periodo che comincia il 1° gennaio con delle posizioni ancora aperte dall'anno prima ha in colonna 7 anche il risultato
+non realizzato al 31 dicembre dell'anno prima, calcolato come nella colonna 8 di quell'anno. Il valore
+finale di un anno e il valore iniziale dell'anno dopo coincidono, e il risultato non realizzato non sparisce al
 passaggio d'anno.
 
 Un esempio con due contratti, uno aperto il 1° marzo e chiuso il 31 marzo, l'altro aperto il 1° luglio e chiuso il
@@ -2671,7 +2682,7 @@ Un esempio con due contratti, uno aperto il 1° marzo e chiuso il 31 marzo, l'al
 Chi apre e chiude molte posizioni svuotando ogni volta il conto ha molti periodi brevi: le colonne 7 e 8 diventano la
 somma di tutti i periodi, mentre i giorni e l'IVAFE restano quelli dei periodi in cui il conto aveva un saldo.
 
-In alternativa, la spunta *Con l'opzione Conto derivati, nel rigo con codice 9 il conto è un solo periodo* (in fondo
+In alternativa, la spunta *Nel rigo con codice 9 il conto derivati è un solo periodo* (in fondo
 alla scheda *Opzioni Calcolo RW/W*, non attiva di default) tratta il conto come un rapporto unico aperto per tutto
 l'anno: un solo periodo dal primo ingresso all'ultimo giorno con un saldo, con il valore del primo ingresso in colonna
 7 e quello di fine anno, o di appena prima dell'ultimo svuotamento, in colonna 8. I giorni in cui il conto è vuoto
@@ -2993,6 +3004,31 @@ Il programma simulerà quindi il caricamento del token su una piattaforma DeFi c
 scambio e del trasferimento sul wallet di destinazione. Scambio e trasferimento avranno la stessa data
 del movimento di deposito, e sarà quello il momento in cui il costo di carico passerà dal token di
 origine a quello di destinazione.
+
+Se il deposito è anteriore al prelievo (per esempio uno scambio OTC in cui la controparte paga per primo
+e le cripto vengono spedite dopo), lo scambio resta alla data del deposito, cioè al momento in cui si
+incassa e si realizza la plusvalenza. Fra le due date la moneta ceduta è però ancora nel wallet, e il
+programma la tiene in vista con un token di possesso, per esempio `ETH.DA_CONSEGNARE`:
+- all'ingresso della moneta ricevuta, alla data del deposito, entra il token `ETH.DA_CONSEGNARE` con la
+  quantità ceduta, mentre lo scambio scarica gli ETH veri con la loro plusvalenza
+- il prelievo originale esce come `ETH.DA_CONSEGNARE` alla sua data, senza altra plusvalenza, perché lo
+  scambio l'ha già realizzata
+- scambio, uscita e ingresso stanno sul wallet del prelievo e portano una nota che spiega il token, e i cinque
+  movimenti sono collegati fra loro come in ogni scambio differito.
+
+Il token non ha lotti LIFO e non porta plusvalenza. Nel quadro RT e in *Giacenze a data* ha costo di carico
+uguale al valore, quindi plusvalenza latente zero, e il suo valore entra comunque nelle rimanenze. Si prezza come
+la moneta di cui è la copia. Nel quadro W/RW resta in vista dal deposito al prelievo (Rilevanza A con la giacenza,
+metodi B, C e D con un lotto che si apre al deposito e si chiude al prelievo), così il quadro non perde la moneta
+ancora nel wallet. Se mancano gli ETH al momento del deposito e li si compra dopo, il saldo negativo compare
+sugli ETH, non sul token. La forma con il token vale solo per due monete cripto: con una gamba in euro, con una
+moneta SCAM, con i derivati o con piattaforme particolari come *Dual Savings* resta la piattaforma di scambio
+creata dal programma, con l'ingresso alla data del deposito. Lo stesso vale se deposito e prelievo cadono nello
+stesso giorno e al momento del deposito la moneta ceduta è già nel wallet, per esempio i pochi secondi di scarto
+di certe conversioni: il token non serve e non compare nessuna riga in più nel quadro W/RW. Se invece la moneta
+ceduta arriva dopo il deposito, anche nello stesso giorno, si usa il token, così il saldo negativo si vede sulla
+moneta. Annullando la classificazione il prelievo torna alla
+sua moneta.
 
 Un'altra casistica in cui è opportuno usare questa opzione è l'utilizzo di **bridge** per passare da una
 rete a un'altra, dando ad esempio ETH per ricevere BNB.
@@ -3836,9 +3872,8 @@ La guida di Bybit all'esportazione è
   con *Classifica come derivato* (menu dei movimenti, *Altre modifiche*).
 - **Il conto Derivati è un sotto-wallet a parte** dalla versione 1.0.67: i suoi movimenti stanno sul
   sotto-wallet **Derivati** di Bybit, e i giroconti con gli altri conti (*transferIn*, *transferOut* e il
-  passaggio all'UTA) diventano trasferimenti interni. Serve all'opzione *Conto derivati* (vedi
-  [Il conto derivati](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/calcolo-plusvalenze-opzioni.html#conto-derivati)), e con l'opzione spenta non cambia
-  nessun calcolo. Il file va importato **dal primo anno del conto**: se il conto aveva già un saldo prima
+  passaggio all'UTA) diventano trasferimenti interni. Serve al conto derivati (vedi
+  [Il conto derivati](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/calcolo-plusvalenze-opzioni.html#conto-derivati)). Il file va importato **dal primo anno del conto**: se il conto aveva già un saldo prima
   della prima riga del file, quel saldo non viene ricostruito e il sotto-wallet risulta negativo fra gli
   errori. L'Unified Trading Account resta sul wallet principale: lì il collaterale non si sposta.
   Se il conto Derivati era già stato importato con una versione precedente, i suoi movimenti stanno sul wallet

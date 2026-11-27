@@ -1,5 +1,6 @@
 package com.giacenzecrypto.giacenze_crypto;
 
+import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.util.Arrays;
 import org.junit.jupiter.api.AfterAll;
@@ -189,11 +190,12 @@ class Principale_GiacenzeaDataCostoCaricoTest {
     }
 
     /**
-     * Lo stesso simbolo su due reti diverse è due righe distinte nella tabella: se condividessero
-     * la pila, ognuna delle due leggerebbe il lotto dell'altra e il costo verrebbe contato due volte.
+     * Lo stesso simbolo su due reti e' due righe distinte nella tabella, ma la pila e' una sola (come nel motore) e il suo
+     * costo si ripartisce per quantita': due righe da 1000 hanno lo stesso costo unitario e la loro somma e' il costo della
+     * pila (1850), non il doppio e non due costi diversi. Prima ogni riga leggeva i suoi lotti (900 e 950).
      */
     @Test
-    void loStessoSimboloSuDueRetiHaDuePileDistinte() {
+    void loStessoSimboloSuDueReteDividePerQuantitaIlCostoDellaPila() {
         String[] eth = acquisto("2024-01-01 10:00", "USDT", "1000", "900");
         eth[34] = "ethereum";
         eth[28] = "0xAAA";
@@ -205,10 +207,82 @@ class Principale_GiacenzeaDataCostoCaricoTest {
 
         Principale_GiacenzeaData.CostiCaricoRimanenze costi =
                 Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(fineGiornata("2024-12-31"));
-        assertEquals("900.00", costi.CostoDelleRimanenze("Tutti",
+        assertEquals("925.00", costi.CostoDelleRimanenze("Tutti",
                 Principale_GiacenzeaData.ChiaveRiga("USDT", "Crypto", "0xAAA", "ethereum"), "1000"));
-        assertEquals("950.00", costi.CostoDelleRimanenze("Tutti",
+        assertEquals("925.00", costi.CostoDelleRimanenze("Tutti",
                 Principale_GiacenzeaData.ChiaveRiga("USDT", "Crypto", "0xBBB", "bsc"), "1000"));
+    }
+
+    /**
+     * Il caso che ha fatto cambiare la lettura: 1 ETH a 100 su BASE e 1 ETH a 2000 su ARB, poi la vendita di 1 ETH. Il motore
+     * toglie il lotto piu' recente del simbolo (2000), residuo 100, <b>su qualunque rete si venda</b>. La tabella dava 2000
+     * vendendo su BASE (consumava i lotti di BASE) e 100 vendendo su ARB. Ora il costo residuo e' quello del motore in entrambi
+     * i casi e va tutto sulla riga che ha ancora la quantita'.
+     */
+    @Test
+    void ilCostoResiduoNonDipendeDaDoveSiVende() {
+        for (String reteVendita : new String[]{"BASE", "ARB"}) {
+            Principale.MappaCryptoWallet.clear();
+            Calcoli_PlusvalenzeNew.InvalidaStatoIncrementale();
+            String[] base = acquisto("2024-01-01 10:00", "WalletBase", "ETH", "1", "100");
+            base[34] = "BASE";
+            String[] arb = acquisto("2024-02-01 10:00", "WalletArb", "ETH", "1", "2000");
+            arb[34] = "ARB";
+            String[] v = movimento("2024-03-01 10:00", reteVendita.equals("BASE") ? "WalletBase" : "WalletArb", "VC", "", "VENDITA",
+                    "ETH", "Crypto", "-1", "EUR", "FIAT", "2500", "2500");
+            v[34] = reteVendita;
+
+            Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+            assertEquals("2000.00", v[16], "il motore vende il lotto piu' recente, su " + reteVendita);
+
+            Principale_GiacenzeaData.CostiCaricoRimanenze costi =
+                    Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(fineGiornata("2024-12-31"));
+            String chiaveBase = Principale_GiacenzeaData.ChiaveRiga("ETH", "Crypto", "", "BASE");
+            String chiaveArb = Principale_GiacenzeaData.ChiaveRiga("ETH", "Crypto", "", "ARB");
+            //La riga su cui si e' venduto resta a zero (qta 0 -> costo 0), l'altra porta tutto il residuo del motore
+            String qtaBase = reteVendita.equals("BASE") ? "0" : "1";
+            String qtaArb = reteVendita.equals("ARB") ? "0" : "1";
+            BigDecimal somma = new BigDecimal(costi.CostoDelleRimanenze("Tutti", chiaveBase, qtaBase))
+                    .add(new BigDecimal(costi.CostoDelleRimanenze("Tutti", chiaveArb, qtaArb)));
+            assertEquals(0, new BigDecimal("100.00").compareTo(somma), "residuo del motore vendendo su " + reteVendita);
+        }
+    }
+
+    /** Senza vendite le due righe dividono il costo della pila in proporzione alla quantita', non 1 a 1. */
+    @Test
+    void leRigheDelloStessoSimboloDividonoLaPilaInProporzioneAllaQuantita() {
+        String[] a = acquisto("2024-01-01 10:00", "WalletA", "ETH", "1", "100");
+        a[34] = "BASE";
+        String[] b = acquisto("2024-02-01 10:00", "WalletB", "ETH", "3", "2700");
+        b[34] = "ARB";
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        Principale_GiacenzeaData.CostiCaricoRimanenze costi =
+                Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(fineGiornata("2024-12-31"));
+        //Pila 2800 su 4 ETH : 700 per ETH
+        assertEquals("700.00", costi.CostoDelleRimanenze("Tutti", Principale_GiacenzeaData.ChiaveRiga("ETH", "Crypto", "", "BASE"), "1"));
+        assertEquals("2100.00", costi.CostoDelleRimanenze("Tutti", Principale_GiacenzeaData.ChiaveRiga("ETH", "Crypto", "", "ARB"), "3"));
+    }
+
+    /**
+     * Una riga con giacenza negativa (uscita su una riga che non ha ricevuto i lotti) non porta via costo all'altra: la giacenza
+     * netta del simbolo e' quella che il motore ha, e la pila si legge per quella.
+     */
+    @Test
+    void unaRigaNegativaNonFaMostrareIlCostoDiLottiGiaConsumati() {
+        String[] a = acquisto("2024-01-01 10:00", "WalletA", "ETH", "2", "200");
+        a[34] = "BASE";
+        String[] v = movimento("2024-02-01 10:00", "WalletB", "VC", "", "VENDITA", "ETH", "Crypto", "-1", "EUR", "FIAT", "300", "300");
+        v[34] = "ARB";
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        Principale_GiacenzeaData.CostiCaricoRimanenze costi =
+                Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(fineGiornata("2024-12-31"));
+        //Netto 1 ETH : il motore ha tolto 100 dal lotto, restano 100. BASE ha 2 ETH, ARB -1
+        assertEquals("100.00", costi.CostoDelleRimanenze("Tutti", Principale_GiacenzeaData.ChiaveRiga("ETH", "Crypto", "", "BASE"), "2"));
+        assertEquals("0.00", costi.CostoDelleRimanenze("Tutti", Principale_GiacenzeaData.ChiaveRiga("ETH", "Crypto", "", "ARB"), "-1"));
     }
 
     /**
@@ -773,6 +847,26 @@ class Principale_GiacenzeaDataCostoCaricoTest {
             assertNull(vuoto[1]);
             assertNull(vuoto[2]);
         }
+    }
+
+    @Test
+    void loSwapNonRicalcolatoPortaLaQuantitaMaNonIlCostoEIlRicalcoloLoRimette() {
+        //Calcolo manuale delle plusvalenze (swap weETH -> ETH non rilevante, costo del weETH 100): finche' il motore non e' passato
+        //v[17] e' vuoto, la tabella carica la quantita' ricevuta ma nessun lotto e il costo dell'ETH resta zero.
+        //E' il motivo per cui "Giacenze a data" allinea le plusvalenze prima di leggere i costi (Principale.Funzioni_AllineaPlusvalenzeSeManuale)
+        acquisto("2026-01-01 10:00", "weETH", "0.5", "100");
+        String[] swap = movimento("2026-01-02 10:00", "TestWallet", "SC", "", "SCAMBIO",
+                "weETH", "Crypto", "-0.5", "ETH", "Crypto", "0.5", "1500");
+        assertEquals("", swap[17], "prima del motore il costo della gamba in entrata non c'e'");
+
+        String senzaRicalcolo = costo(fineGiornata("2026-01-02"), "Tutti", "ETH", "0.5");
+        assertEquals("0.00", senzaRicalcolo, "senza ricalcolo l'ETH ricevuto risulta a costo zero");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+
+        assertEquals("100.00", Principale_GiacenzeaData.CostoCaricoMovimento(swap, true));
+        assertEquals("100.00", costo(fineGiornata("2026-01-02"), "Tutti", "ETH", "0.5"),
+                "dopo il ricalcolo il costo del weETH e' passato all'ETH");
     }
 
     @Test

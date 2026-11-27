@@ -153,7 +153,9 @@ final class DerivatiDaCsv {
             long istante = cfg.convertiDataInMillis(Testo(r, cfg.colonnaData));
             if (verso == null || !verso.matches("(apre|chiude) (long|short)") || moneta.isEmpty() || simbolo.isEmpty() || qta == null
                     || qta.signum() == 0 || prezzo == null || prezzo.signum() <= 0 || istante <= 0) {
-                LoggerGC.logInfo("Derivati da CSV: riga di contratto non letta (" + String.join(",", r) + ")");
+                //Niente contenuto della riga nel log: ha ID di esecuzione e importi, e il log puo' finire in "Invia log"
+                LoggerGC.logInfo("Derivati da CSV: riga di contratto non letta (" + r.length + " colonne, verso "
+                        + (verso == null ? "non riconosciuto" : "riconosciuto") + ")");
                 continue;
             }
             Esecuzione e = new Esecuzione();

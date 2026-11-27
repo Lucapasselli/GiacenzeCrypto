@@ -196,7 +196,12 @@ public final class SogliaGiacenzaAnte2023 {
      */
     static List<Gamba> GambeDaArchivio() {
         List<Gamba> gambe = new ArrayList<>();
+        //Opzione: se la giacenza sul conto derivati non conta, i movimenti del conto (margine, risultati, commissioni) non entrano nella soglia
+        boolean contoConta = Principale_RT_Soglia.contoDerivatiConta();
         for (String[] v : MappaCryptoWallet.values()) {
+            if (!contoConta && ContoDerivati.SulContoP2(v, MappaCryptoWallet)) {
+                continue;
+            }
             LocalDate giorno = LocalDate.parse(v[1].substring(0, 10));
             Moneta[] monete = Funzioni.RitornaMoneteDaID(v[0]);
             BigDecimal valore = v.length > 15 ? quantita(v[15]) : null;

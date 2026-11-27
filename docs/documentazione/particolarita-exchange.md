@@ -443,9 +443,8 @@ La guida di Bybit all'esportazione è
   con *Classifica come derivato* (menu dei movimenti, *Altre modifiche*).
 - **Il conto Derivati è un sotto-wallet a parte** dalla versione 1.0.67: i suoi movimenti stanno sul
   sotto-wallet **Derivati** di Bybit, e i giroconti con gli altri conti (*transferIn*, *transferOut* e il
-  passaggio all'UTA) diventano trasferimenti interni. Serve all'opzione *Conto derivati* (vedi
-  [Il conto derivati](calcolo-plusvalenze-opzioni.html#conto-derivati)), e con l'opzione spenta non cambia
-  nessun calcolo. Il file va importato **dal primo anno del conto**: se il conto aveva già un saldo prima
+  passaggio all'UTA) diventano trasferimenti interni. Serve al conto derivati (vedi
+  [Il conto derivati](calcolo-plusvalenze-opzioni.html#conto-derivati)). Il file va importato **dal primo anno del conto**: se il conto aveva già un saldo prima
   della prima riga del file, quel saldo non viene ricostruito e il sotto-wallet risulta negativo fra gli
   errori. L'Unified Trading Account resta sul wallet principale: lì il collaterale non si sposta.
   Se il conto Derivati era già stato importato con una versione precedente, i suoi movimenti stanno sul wallet

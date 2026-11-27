@@ -219,16 +219,22 @@ public class Calcoli_RT {
             String IDTS[]=v[0].split("_");
             String Data=v[1];
             Moneta Monete[]=Moneta.RitornaMoneteDaMov(v);
+            //P2: un movimento sul conto derivati ha la sua pila, come nel motore. Qui sta nella stessa mappa del gruppo con la moneta
+            //col suffisso (chiave interna: Mon.Moneta resta il simbolo vero, per prezzi e alias)
+            boolean SulConto = ContoP2 && ContoDerivati.SulContoP2(v, Principale.MappaCryptoWallet);
+            String ChiaveU = ContoDerivati.ChiaveMoneta(Monete[Uscita].Moneta, SulConto);
+            String ChiaveE = ContoDerivati.ChiaveMoneta(Monete[Entrata].Moneta, SulConto);
             
 
             for (int i = 0; i < 2; i++) {
+                String ChiaveI = i == Uscita ? ChiaveU : ChiaveE;
                 //Se l moneata ha un tipo e quel tipo è divers da fiat vado avanti
                 if (!Monete[i].Tipo.isBlank() && !Monete[i].Tipo.equalsIgnoreCase("FIAT")) {
-                    if(!PlusXWallet)ritorno.AggiungiQtaGruppo(GruppoReale,Monete[i].Moneta,Monete[i].Qta);
+                    if(!PlusXWallet&&!SulConto)ritorno.AggiungiQtaGruppo(GruppoReale,Monete[i].Moneta,Monete[i].Qta);
                     //PARTE 1
                     //Faccio la somma delle qta e le scrivo nella mappa
                     //Questa parte va fatta senza filtri perchè per le quantità conto tutte le uscite e le entrate      
-                    if (MappaMoneta_PlusXMoneta.get(Monete[i].Moneta) == null) {
+                    if (MappaMoneta_PlusXMoneta.get(ChiaveI) == null) {
                         //Se non ho ancora codificato la moneta nella mappa delle qta la inserisco
                         //e la inserisco nella mappa dei dettagli delle moneta
                         PlusXMoneta PlusXm = new PlusXMoneta();
@@ -236,10 +242,10 @@ public class Calcoli_RT {
                         PlusXm.CompilaCampiDaMoneta(Monete[i]);
                        // PlusXm.Put_Anno(Anno);
                       //  PlusXm.Put_Wallet(GruppoWallet);
-                        MappaMoneta_PlusXMoneta.put(Monete[i].Moneta, PlusXm);
+                        MappaMoneta_PlusXMoneta.put(ChiaveI, PlusXm);
                     } else {
                         //adesso faccio la somma della qta nuova sulla vecchia                
-                        PlusXMoneta PlusXm = MappaMoneta_PlusXMoneta.get(Monete[i].Moneta);
+                        PlusXMoneta PlusXm = MappaMoneta_PlusXMoneta.get(ChiaveI);
                         PlusXm.movimentatoAnno=true;
                         BigDecimal Qta = PlusXm.Get_Giacenza();
                         Qta = Qta.add(new BigDecimal(Monete[i].Qta));
@@ -251,8 +257,8 @@ public class Calcoli_RT {
                     //PARTE 2
                     //SISTEMO GLI SCAMBI TRA WALLET
                     //Con P2 una gamba del giroconto del margine scarica (uscita) e carica al valore (entrata) anche se e' TI o PTW/DTW.
-                    //Le pile qui sono per gruppo: spot e conto derivati stanno nella stessa, quindi il costo delle rimanenze per moneta
-                    //puo' scostarsi di poco dal motore (che le tiene separate), il totale delle plusvalenze no (viene da v[19])
+                    //Le pile qui sono per gruppo e, per il conto derivati, per moneta col suffisso (ChiaveMoneta): come il motore, spot e conto
+                    //hanno pile e giacenze separate. Il totale delle plusvalenze comunque non viene dalle pile (v[19])
                     boolean GirocontoP2 = ContoP2 && ContoDerivati.IsGirocontoP2(v, Principale.MappaCryptoWallet);
                     if (i==Uscita&&!Monete[Uscita].CostoCarico.isBlank()&&((!v[18].contains("PTW")&&!IDTS[4].equalsIgnoreCase("TI"))||GirocontoP2)){
                         //I movimenti interni (TI) non voglio vengano considerati
@@ -260,13 +266,13 @@ public class Calcoli_RT {
                         //e solo se si è deciso di distinguere le plusvalenze per gruppo wallet altrimenti vengono considerati alla stregua di un trasferimento interno
                         //PTW sono prelievi che vanno ad altro wallet di proprietà
                         //in ogni caso non vanno trasferiti in questa sezione
-                        StackLIFO_TogliQta(MappaMoneta_PlusXMoneta,Monete[Uscita].Moneta,Monete[Uscita].Qta,true);
+                        StackLIFO_TogliQta(MappaMoneta_PlusXMoneta,ChiaveU,Monete[Uscita].Qta,true);
                     }
                     
                     if (i == Entrata && !Monete[Entrata].CostoCarico.isBlank()) {
                         if (!IDTS[4].equalsIgnoreCase("TI") || GirocontoP2) {
                             if (!v[18].contains("DTW") || GirocontoP2) {
-                                StackLIFO_InserisciValore(MappaMoneta_PlusXMoneta, Monete[Entrata].Moneta, Monete[Entrata].Qta, Monete[Entrata].CostoCarico,Data,v[0]);
+                                StackLIFO_InserisciValore(MappaMoneta_PlusXMoneta, ChiaveE, Monete[Entrata].Qta, Monete[Entrata].CostoCarico,Data,v[0]);
                             } else {
                                 //Se è un DTW devo quindi anche scaricare il movimento PTW contrario
                                 //se è attiva la funzione delle divisione delle plusvalenze per gruppo
@@ -278,10 +284,10 @@ public class Calcoli_RT {
                                 //IDControparte è null se i wallet di origine e destinazione sono uguali o se
                                 //non è attiva la funzione per separare le plusvalenze per wallet
                                 if (IDControparte != null) {
-                                    StackLIFO_InserisciValore(MappaMoneta_PlusXMoneta, Monete[Entrata].Moneta, Monete[Entrata].Qta, Monete[Entrata].CostoCarico,Data,v[0]);
+                                    StackLIFO_InserisciValore(MappaMoneta_PlusXMoneta, ChiaveE, Monete[Entrata].Qta, Monete[Entrata].CostoCarico,Data,v[0]);
                                     Map<String, PlusXMoneta> CryptoStack2 = MappaGrWallet_MappaMoneta_PlusXMoneta.get(WalletControparte);
                                     String Mov[] = Principale.MappaCryptoWallet.get(IDControparte);
-                                    StackLIFO_TogliQta(CryptoStack2, Mov[8], Mov[10], true);
+                                    StackLIFO_TogliQta(CryptoStack2, ContoDerivati.ChiaveMoneta(Mov[8], ContoP2 && ContoDerivati.SulContoP2(Mov, Principale.MappaCryptoWallet)), Mov[10], true);
                                 }
 
                             }
@@ -302,14 +308,14 @@ public class Calcoli_RT {
             if (v[33].equals("S")) {
                 //Un deposito FIAT che realizza (rimborso da fallimento oltre il credito, FallimentiPiattaforme) non ha
                 //una voce per moneta, perche' la PARTE 1 salta i FIAT: gliene do una a giacenza zero, per la plusvalenza
-                if (Monete[Uscita].Moneta.isBlank() && MappaMoneta_PlusXMoneta.get(Monete[Entrata].Moneta) == null) {
+                if (Monete[Uscita].Moneta.isBlank() && MappaMoneta_PlusXMoneta.get(ChiaveE) == null) {
                     PlusXMoneta PlusXm = new PlusXMoneta();
                     PlusXm.movimentatoAnno = true;
                     Moneta m = Monete[Entrata].ClonaMoneta();
                     m.Qta = "0";
                     m.Prezzo = "0.00";
                     PlusXm.CompilaCampiDaMoneta(m);
-                    MappaMoneta_PlusXMoneta.put(Monete[Entrata].Moneta, PlusXm);
+                    MappaMoneta_PlusXMoneta.put(ChiaveE, PlusXm);
                 }
                 if(!PlusXWallet){
                     //Stessa moneta su cui il blocco qui sotto scrive vendite, costi e plusvalenza
@@ -323,7 +329,7 @@ public class Calcoli_RT {
                 BigDecimal PlusAnno[];
                 if (PlusvalenzeXAnno.get(Anno)==null)
                 {
-                    PlusAnno=new BigDecimal[7];   
+                    PlusAnno=new BigDecimal[9];   
                     //System.out.println(Anno);
                     PlusAnno[0]=new BigDecimal(Anno);//Anno
                     PlusAnno[1]=new BigDecimal(0);//Costo Carico
@@ -332,6 +338,8 @@ public class Calcoli_RT {
                     PlusAnno[4]=new BigDecimal(0);//Plusvalenza Latente
                     PlusAnno[5]=new BigDecimal(0);//Valore Rimanenze
                     PlusAnno[6]=new BigDecimal(Errori);//Errori
+                    PlusAnno[7]=new BigDecimal(0);//Plusvalenza Latente del conto derivati
+                    PlusAnno[8]=new BigDecimal(0);//Valore Rimanenze del conto derivati
                     PlusvalenzeXAnno.put(Anno, PlusAnno);
                     
                     
@@ -353,24 +361,24 @@ public class Calcoli_RT {
                         PlusVal=MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta
                             .get(Anno)
                             .get(GruppoWallet)
-                            .get(Monete[Entrata].Moneta)
+                            .get(ChiaveE)
                             .Get_PlusRealizzata().add(new BigDecimal(v[19]));
                         MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta
                             .get(Anno)
                             .get(GruppoWallet)
-                            .get(Monete[Entrata].Moneta)
+                            .get(ChiaveE)
                             .Put_PlusRealizzata(PlusVal.toPlainString());
                     }
                     else{
                         PlusVal=MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta
                             .get(Anno)
                             .get(GruppoWallet)
-                            .get(Monete[Uscita].Moneta)
+                            .get(ChiaveU)
                             .Get_PlusRealizzata().add(new BigDecimal(v[19]));
                         MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta
                             .get(Anno)
                             .get(GruppoWallet)
-                            .get(Monete[Uscita].Moneta)
+                            .get(ChiaveU)
                             .Put_PlusRealizzata(PlusVal.toPlainString());
                     
                     }
@@ -390,24 +398,24 @@ public class Calcoli_RT {
                         ValVen=MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta
                             .get(Anno)
                             .get(GruppoWallet)
-                            .get(Monete[Entrata].Moneta)
+                            .get(ChiaveE)
                             .Get_ValVendite().add(new BigDecimal(v[15]));
                         MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta
                             .get(Anno)
                             .get(GruppoWallet)
-                            .get(Monete[Entrata].Moneta)
+                            .get(ChiaveE)
                             .Put_ValVendite(ValVen.toPlainString());
                     }
                     else{
                         ValVen=MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta
                             .get(Anno)
                             .get(GruppoWallet)
-                            .get(Monete[Uscita].Moneta)
+                            .get(ChiaveU)
                             .Get_ValVendite().add(new BigDecimal(v[15]));
                         MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta
                             .get(Anno)
                             .get(GruppoWallet)
-                            .get(Monete[Uscita].Moneta)
+                            .get(ChiaveU)
                             .Put_ValVendite(ValVen.toPlainString());
                     }
                 }
@@ -424,24 +432,24 @@ public class Calcoli_RT {
                         ValCosto=MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta
                             .get(Anno)
                             .get(GruppoWallet)
-                            .get(Monete[Entrata].Moneta)
+                            .get(ChiaveE)
                             .Get_ValCosto().add(new BigDecimal(v[16]));
                         MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta
                             .get(Anno)
                             .get(GruppoWallet)
-                            .get(Monete[Entrata].Moneta)
+                            .get(ChiaveE)
                             .Put_ValCosto(ValCosto.toPlainString());
                     }
                     else{
                         ValCosto=MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta
                             .get(Anno)
                             .get(GruppoWallet)
-                            .get(Monete[Uscita].Moneta)
+                            .get(ChiaveU)
                             .Get_ValCosto().add(new BigDecimal(v[16]));
                         MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta
                             .get(Anno)
                             .get(GruppoWallet)
-                            .get(Monete[Uscita].Moneta)
+                            .get(ChiaveU)
                             .Put_ValCosto(ValCosto.toPlainString());
                     }
                 }
@@ -480,7 +488,7 @@ public class Calcoli_RT {
         * senza movimenti, la mappa viene clonata e la chiusura richiamata ricorsivamente su
         * quegli anni "vuoti" così da avere comunque un rigo per ciascuno.
         *
-        * @param PlusvalenzeXAnno mappa anno → totali RT ({@code BigDecimal[7]}: anno, costo carico, realizzato, plusvalenza, plusvalenza latente, valore rimanenze, errori), aggiornata in place
+        * @param PlusvalenzeXAnno mappa anno → totali RT ({@code BigDecimal[9]}: anno, costo carico, realizzato, plusvalenza, plusvalenza latente, valore rimanenze, errori, plusvalenza latente e valore rimanenze del conto derivati), aggiornata in place
         * @param Anno anno da chiudere; se {@code null} non fa nulla e ritorna {@code true} (buco tra un anno e il successivo)
         * @param MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta mappa completa anno/gruppo wallet/moneta con lo stato LIFO RT
         * @param progress finestra di progresso/interruzione, controllata a ogni moneta elaborata
@@ -503,7 +511,7 @@ public class Calcoli_RT {
             //Recupero i dati dell'anno da analizzare
                 BigDecimal PlusAnno[]=PlusvalenzeXAnno.get(Anno);
                 if (PlusAnno==null){
-                    PlusAnno=new BigDecimal[7];   
+                    PlusAnno=new BigDecimal[9];   
                     //System.out.println(Anno);
                     PlusAnno[0]=new BigDecimal(Anno);//Anno
                     PlusAnno[1]=new BigDecimal(0);//Costo Carico
@@ -512,6 +520,8 @@ public class Calcoli_RT {
                     PlusAnno[4]=new BigDecimal(0);//Plusvalenza Latente
                     PlusAnno[5]=new BigDecimal(0);//Valore Rimanenze
                     PlusAnno[6]=new BigDecimal(0);//Errori
+                    PlusAnno[7]=new BigDecimal(0);//Plusvalenza Latente del conto derivati
+                    PlusAnno[8]=new BigDecimal(0);//Valore Rimanenze del conto derivati
                     PlusvalenzeXAnno.put(Anno, PlusAnno);
                 }
                 //BigDecimal PluvalenzaLatente=PlusAnno[4];
@@ -566,6 +576,10 @@ public class Calcoli_RT {
                             
                             //System.out.println(mon.Moneta+"-"+mon.MonetaAddress+"-"+mon.Qta+"-"+mon.Rete+"-"+d);
                             BigDecimal PrezzoV = new BigDecimal(Prezzi.DammiPrezzoTransazione(mon, null, d, "0", false, 2, mon.Rete,""));
+                            //Token X.DA_CONSEGNARE: la moneta è già stata ceduta con lo scambio e la sua plusvalenza è realizzata alla data
+                            //del deposito, quindi qui il costo è il valore di fine anno: la riga resta visibile, il valore entra nelle
+                            //rimanenze e la plusvalenza latente è zero (senza lotti, il costo zero darebbe una latente pari all'intero valore)
+                            CostoCarico = TokenDaConsegnare.CostoDiCarico(mon.Moneta, PrezzoV, CostoCarico);
                             
                             MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Mon.Prezzo=PrezzoV.toPlainString();
                           //  System.out.println(Anno+" - "+MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Mon.Prezzo);
@@ -576,7 +590,7 @@ public class Calcoli_RT {
                             System.out.println("-------");*/
                             //System.out.println(MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Mon.Prezzo);
                             //BigDecimal PrezzoV = new BigDecimal(Prezzi.DammiPrezzoTransazione(mon, null, d, null, true, 15, null));
-                            PlusAnno[5] = PlusAnno[5].add(PrezzoV);
+                            PlusAnno[ContoDerivati.IsChiaveConto(Moneta) ? 8 : 5] = PlusAnno[ContoDerivati.IsChiaveConto(Moneta) ? 8 : 5].add(PrezzoV);
                             /*if (Anno.equals("2023")&&Moneta.equalsIgnoreCase("ETH")) {
                                 System.out.println(mon.Moneta + " - " + Wallet+" - "+mon.Qta+" - "+Anno+" - "+PrezzoV);
                                 System.out.println(mon.Rete + " - " + Wallet+" - "+mon.MonetaAddress+" - "+Anno+" - "+PrezzoV);
@@ -586,7 +600,7 @@ public class Calcoli_RT {
                             BigDecimal PluvalenzaLatente = PrezzoV.subtract(CostoCarico);                          
                             MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Put_PlusLatente(PluvalenzaLatente.toPlainString());
                             MappaAnno_MappaGrWallet_MappaMoneta_PlusXMoneta.get(Anno).get(Wallet).get(Moneta).Put_PMC(CostoCarico.divide(qta,5,RoundingMode.HALF_UP).stripTrailingZeros().toPlainString());
-                            PlusAnno[4] = PlusAnno[4].add(PluvalenzaLatente);
+                            PlusAnno[ContoDerivati.IsChiaveConto(Moneta) ? 7 : 4] = PlusAnno[ContoDerivati.IsChiaveConto(Moneta) ? 7 : 4].add(PluvalenzaLatente);
                             /*if (Moneta.equalsIgnoreCase("CRO")){
                             System.out.println(Wallet+" - "+qta+" - "+Anno+" - "+PluvalenzaLatente);
                         }*/
@@ -815,7 +829,8 @@ public class Calcoli_RT {
    * Nessun effetto sui totali: il loro costo, corrispettivo e plusvalenza sono sempre zero.
    */
   static boolean NonMostrare(String Moneta) {
-      return Funzioni.isSCAM(Moneta) || Derivati.IsTokenContratto(Moneta);
+      String Simbolo = ContoDerivati.SimboloDaChiave(Moneta);
+      return Funzioni.isSCAM(Simbolo) || Derivati.IsTokenContratto(Simbolo);
   }
 
   void AccumulaRealizzatoGruppo(String Anno, String Gruppo, String Moneta, BigDecimal Vendite, BigDecimal Costi, BigDecimal Plus){
@@ -932,7 +947,8 @@ public class Calcoli_RT {
           boolean presente=false;
           Map<String, PlusXMoneta> MappaMoneta_PlusXMoneta=MappaGrWallet_MappaMoneta_PlusXMoneta.get(Wallet);
           for(String Moneta : MappaMoneta_PlusXMoneta.keySet()){
-              if (NonMostrare(Moneta)) continue;
+              //Il conto derivati non e' una cripto-attivita': le sue righe restano nella tabella per token, fuori dai totali del gruppo
+              if (NonMostrare(Moneta)||ContoDerivati.IsChiaveConto(Moneta)) continue;
               PlusXMoneta plus=MappaMoneta_PlusXMoneta.get(Moneta);
               BigDecimal qta=new BigDecimal(plus.Mon.Qta);
               if (!plus.movimentatoAnno&&qta.compareTo(BigDecimal.ZERO)==0) continue;

@@ -5,6 +5,90 @@ programma all'avvio di una beta, ed è la descrizione della beta su GitHub. L'el
 in preparazione è nella sezione "in lavorazione" di docs/documentazione/changelog.md, dove ogni voce di questo file
 compare con lo stesso titolo. Questo file non è una pagina del sito.
 
+## Versione 1.0.66.07
+
+Questa versione porta i derivati (OKX, Bybit, Binance) nei calcoli e nei quadri. La parte dei derivati è ancora in versione di prova e può cambiare con le prossime versioni, anche nei valori calcolati.
+
+**Nuove implementazioni**
+
+- **Derivati segnati come bozza**: la parte dei derivati è in versione di prova e può cambiare con le prossime versioni, anche nei valori calcolati. La scheda del quadro RT si chiama *Redditi da derivati (bozza)* e le stampe lo dicono.
+
+- **Derivati nella tabella dei movimenti**: due colonne nuove, *Derivato* (il tipo: contratto, margine, profitto o perdita, funding, commissione) e *Risultato derivati*, nascoste di default, e il totale dei redditi da derivati accanto al numero di righe.
+
+- **Derivati, classificazione e risultato separato**: la voce *Classifica come derivato* del menu dei movimenti (*Altre modifiche*) dà ai movimenti già marcati come derivati un risultato calcolato a parte, senza toccare le plusvalenze delle cripto-attività, e si può annullare.
+
+- **Derivati, marcatura dei movimenti vecchi**: la voce *Marca come derivato* riconosce come derivati i movimenti importati prima, dai file dei conti di derivati di OKX, Bybit e Binance.
+
+- **Derivati, i movimenti nuovi nascono già classificati**: profitti, perdite, funding, commissioni, rimborsi e bonus sui derivati importati da ora in poi sono già classificati, tranne quelli datati in un anno con dichiarazione definitiva archiviata, che attendono la scelta dell'utente.
+
+- **Derivati in anni già dichiarati**: un movimento su derivati con la data in un anno che ha una dichiarazione definitiva archiviata non nasce più classificato. Al termine dell'importazione il programma chiede se classificarlo.
+
+- **Derivati, quando conta il funding**: le note dei quadri T e RT e il manuale dichiarano che il funding conta nell'anno in cui è pagato o incassato.
+
+- **Derivati OKX, riepilogo di un contratto**: sotto *Analizza* la voce *Riepilogo contratto derivato* mostra il riepilogo di un contratto con il reddito calcolato in LIFO.
+
+- **Il giro di un movimento**: la voce *Mostra il giro del movimento* apre l'elenco dei movimenti legati a quello selezionato, con la spiegazione di ogni riga. È di sola consultazione.
+
+- **Contratti derivati aperti**: in *Giacenze a data* il pulsante *Contratti aperti* elenca le posizioni su derivati ancora aperte alla data scelta, con contratti, prezzo medio e margine.
+
+- **Derivati regolati in euro o in altre valute FIAT**: un profitto, una perdita o una commissione di un derivato accreditati o addebitati in valuta sono ora classificabili come derivati e ne seguono il risultato, senza effetti sulle cripto-attività.
+
+- **Bybit, LIFO dei contratti derivati**: dai file del conto Derivati e dell'Unified Trading Account di Bybit ogni apertura e chiusura di perpetuo diventa anche il token del contratto, e il reddito è calcolato in LIFO.
+
+- **Bybit, derivati: profitti e perdite un movimento per riga**: nei file di Bybit profitti e perdite non sono più sommati per giorno, ma importati un movimento per riga.
+
+- **Binance, futures dal file delle transazioni**: profitto o perdita, funding, commissioni e rimborsi dei conti *USD-M* e *COIN-M Futures* sono importati come derivati.
+
+- **Binance, file CSV e API insieme senza doppioni**: sullo stesso conto si possono usare le due fonti senza duplicare i movimenti già presenti. L'esistente non viene mai modificato.
+
+- **OKX, liquidazioni, ADL e consegna dei futures**: una posizione chiusa da una liquidazione, da una riduzione automatica (ADL) o dalla consegna di un future è ora importata, con la penale della liquidazione e il recupero del deficit come righe a parte.
+
+- **Conto derivati come parte del derivato e righi con codice 9 nel quadro W/RW**: il programma tratta il conto derivati come parte del derivato. Il quadro W/RW ha un rigo con codice 9 per exchange, con l'IVAFE, e il non realizzato si valuta con il mark price dell'exchange. L'altra lettura (margine come cripto-attività) non si può più scegliere.
+
+- **Quadro RT, conto derivati separato dal conto spot**: nel quadro RT le monete del conto derivati hanno pila e giacenza proprie, righe distinte e totali separati *Cripto* e *Derivati*, con tre colonne in più nella tabella degli anni.
+
+- **Soglia dei 51.645,69 euro e conto derivati**: la nuova casella *Fino al 31-12-2022 nella verifica della soglia conta anche la giacenza sul conto derivati* in *Opzioni – Opzioni di calcolo* (attiva di default) decide se il saldo del conto derivati entra nella giacenza confrontata con la soglia. Agisce solo sulla riga stampata del quadro RT fino al 2022.
+
+- **Giacenze a data, conto derivati su righe separate**: le monete del conto derivati hanno una riga propria (simbolo seguito da *.DERIVATI*), con due totali e il costo di carico della pila del conto.
+
+- **Quadri T e RT, redditi da derivati**: i movimenti classificati come derivati entrano nella sezione dei redditi diversi di natura finanziaria, e la scheda *Redditi da derivati* mostra righi, risultato e perdite dei quattro anni prima.
+
+- **Quadro RT dell'anno 2023 sul modello giusto**: il quadro RT del 2023 usa ora il modello di quell'anno e non più quello dell'anno dopo.
+
+- **Archivio delle dichiarazioni, avviso sui derivati**: l'avviso salvato con una dichiarazione dice quanti movimenti su derivati sono classificati e quanti trattati come cripto-attività.
+
+- **Guida, come vengono calcolati i derivati**: la pagina *Calcolo delle plusvalenze e opzioni* ha una sezione nuova su doppio effetto, LIFO dei contratti e conto derivati.
+
+- **Dual Investment trattati come cripto-attività, per scelta dichiarata**: i Dual Investment restano cripto-attività e non compaiono più fra gli avvisi sui derivati non classificati.
+
+- **Cancellazione di movimenti da un elenco CSV**: in *Opzioni – Varie* il pulsante *Cancella movimenti da un elenco CSV* legge un file che indica quali movimenti togliere, mostra l'anteprima e chiede conferma.
+
+- **Normative, ricerca di un atto dal numero**: nel tab *Normative* basta scrivere «circolare 12/E» per trovare l'atto, senza ricopiare la frase esatta del testo.
+
+- **Costi netti, le donazioni ricevute contano al costo di carico**: nel dialogo *Costi netti* una donazione ricevuta entra ora al costo di carico indicato in classificazione e non più a zero. Il dialogo è informativo.
+
+**Correzione di bug**
+
+- **OKX dalle API, futures e perpetui**: i trade del conto Trading su perpetui, futures e opzioni non sono più importati come prelievo e deposito del margine, ma come profitto o perdita e commissione marcati come derivati.
+
+- **OKX, perpetui e futures: posizione e margine visibili**: di ogni operazione con i dati del margine l'importazione crea anche il token del contratto e il margine parcheggiato, per vedere la posizione aperta.
+
+- **Derivati OKX, il LIFO si applica solo dove i dati lo reggono**: prima del LIFO il programma ricostruisce il profitto di OKX con il suo metodo e usa il LIFO solo per le posizioni che tornano.
+
+- **Derivati OKX, la verifica dei prezzi vale per posizione**: una chiusura il cui profitto non torna toglie il LIFO solo alla sua posizione e non a tutto il token.
+
+- **Derivati OKX, valore del contratto**: se all'importazione il valore di un contratto non si legge, il primo scaricamento OKX successivo lo completa.
+
+- **Derivati OKX, posizioni aperte prima dell'aggiornamento**: le posizioni aperte con le versioni precedenti e chiuse dopo l'aggiornamento sono gestite, e il margine rientrato si abbina al prelievo vecchio dalla voce *Abbina rientro del margine*.
+
+- **Quadro W/RW e ISEE senza i token dei contratti**: il token che rappresenta una posizione su un derivato non è una cripto-attività e non compare più nei righi del W/RW né nell'ISEE.
+
+- **Giacenze a data, il costo di carico dello stesso token su reti diverse**: un token presente su più righe (per esempio ETH su Ethereum e su Base) ha ora lo stesso costo unitario su ogni riga, quello del calcolo delle plusvalenze. Solo visualizzazione.
+
+- **Scambio differito con il deposito prima del prelievo**: quando il deposito precede il prelievo (per esempio in uno scambio OTC) lo scambio resta alla data del deposito e la moneta ceduta è tenuta in vista dal token di possesso `X.DA_CONSEGNARE`, senza saldi negativi. Il LIFO non cambia.
+
+- **Giacenze a data con il calcolo manuale delle plusvalenze**: con *Non ricalcolare automaticamente* attivo, un movimento nuovo portava nella tabella la quantità ma non il costo di carico, e il latente saliva come con costo zero. Ora tabella e dettaglio allineano le plusvalenze prima di leggerle, e *Raggruppa exchange noti* accende il pulsante *Ricalcola Plusvalenze*.
+
 ## Versione 1.0.66.06
 
 **Nuove implementazioni**

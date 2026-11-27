@@ -41,6 +41,7 @@ class OKXDerivatiTest {
 
     @AfterAll
     static void chiudeDatabase() throws Exception {
+        ContoDerivati.P1Disponibile = false;
         DatabaseH2.connection.close();
         DatabaseH2.connectionPersonale.close();
         DatabaseH2.connectionPrezzi.close();
@@ -58,6 +59,9 @@ class OKXDerivatiTest {
         DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_Pre2023ScambiRilevanti", "NO");
         DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_ScambiSempreRilevanti", "NO");
         DatabaseH2.Pers_Opzioni_Scrivi("CashBackComeFIAT", "NO");
+        //Questi test fissano il comportamento con P1 (margine cripto-attivita'): il predefinito dal 24/11/2026 e' P2, quindi lo si imposta
+        ContoDerivati.P1Disponibile = true;   //P2 e' l'unico metodo valido: questi test provano anche P1
+        DatabaseH2.Pers_Opzioni_Scrivi(ContoDerivati.OPZIONE, "NO");
         OKXDerivati.AzzeraCacheValore();
         ValoriContratti.ImpostaPerTest(java.util.List.of());   //le regole vere hanno una prova a parte
         OKXDerivati.FonteValoreContratto = id -> "0.0001";

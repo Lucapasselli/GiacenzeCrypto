@@ -38,6 +38,7 @@ class DerivatiDaCsvTest {
 
     @AfterAll
     static void chiude() throws Exception {
+        ContoDerivati.P1Disponibile = false;
         Funzioni.ReteDisabilitataPerTest = false;
         System.clearProperty("prezzi.servizio.abilitato");
         DatabaseH2.connection.close();
@@ -52,6 +53,7 @@ class DerivatiDaCsvTest {
         DatabaseH2.Pers_Opzioni_Scrivi("PL_CosiderareMovimentiNC", "SI");
         DatabaseH2.Pers_Opzioni_Scrivi("PlusXWallet", "NO");
         DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_NoPlusvalenzeCommissioni", "NO");
+        ContoDerivati.P1Disponibile = true;   //P2 e' l'unico metodo valido: questi test provano anche P1
         DatabaseH2.Pers_Opzioni_Scrivi(ContoDerivati.OPZIONE, "NO");
     }
 

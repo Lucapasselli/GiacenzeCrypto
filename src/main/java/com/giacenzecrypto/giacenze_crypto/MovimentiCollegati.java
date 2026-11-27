@@ -225,7 +225,9 @@ public final class MovimentiCollegati {
             String Wallet = WALLET_PIATTAFORMA_PREDEFINITO;
             for (String c : Citati(p)) {
                 String[] m = MappaCryptoWallet.get(c);
-                if (m != null && "AU".equalsIgnoreCase(m[22]) && m[18].contains("DTW") && Cita(m, p[0]) && !m[4].isBlank()) Wallet = m[4];
+                if (m != null && "AU".equalsIgnoreCase(m[22]) && m[18].contains("DTW") && Cita(m, p[0]) && !m[4].isBlank()
+                        //Con il token di possesso MT1 sta sul wallet del prelievo: la piattaforma resta quella predefinita
+                        && !TokenDaConsegnare.Is(m[11])) Wallet = m[4];
             }
             String Descrizione = "scambio " + p[8] + " -> " + s[11] + " del " + s[1] + " (" + p[3] + ")";
             EsitoRiparazione E = RiparaScambioDifferito(p, s, Wallet);

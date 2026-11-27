@@ -275,6 +275,17 @@ C-DC-RW -> da finire di compilare, ma verrà fatto in un secondo momento e poi �
         così i tipi di segnalazione non si sovrascrivono a vicenda.
         Il conteggio/filtro "LiFo mancante" in Principale considera solo la "A". */
 
+    /**
+     * Il valore del movimento ({@code v[15]}) ha due decimali: l'importo di un giroconto di frazioni di centesimo (il deficit di una liquidazione,
+     * 0,0009 USDC) vale "0.00" pur avendo un prezzo, e non e' un valore mancante. Lo si distingue col prezzo unitario salvato nel movimento
+     * ({@code v[40]}), l'unica fonte che non costa letture: senza prezzo il movimento resta segnalato.
+     */
+    private static boolean ValoreSoloArrotondatoAZero(String[] v) {
+        boolean uscita = !v[8].isBlank();
+        BigDecimal prezzo = Principale_GiacenzeaData.PrezzoUnitarioNelMovimento(v, uscita ? v[8] : v[11], uscita ? v[10] : v[13], false);
+        return prezzo != null && prezzo.signum() > 0;
+    }
+
     //Aggiunge la lettera di anomalia indicata al campo 38 senza toccare le altre
     private static void AggiungiFlagAnomalia(String[] mov, String lettera) {
         if (mov != null && !mov[38].contains(lettera)) mov[38] = mov[38] + lettera;
@@ -895,7 +906,7 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
         boolean UscitaCripto = TipoME.isBlank() && !TipoMU.isBlank() && !TipoMU.equalsIgnoreCase("FIAT");
         boolean EntrataCripto = TipoMU.isBlank() && !TipoME.isBlank() && !TipoME.equalsIgnoreCase("FIAT");
         //Con P2 il valore del giroconto e' quello della cessione e del carico: senza valore il movimento si segnala (errore dati)
-        if (GirocontoP2 && toBigDecimalSicuro(Valore, IDTransazione).signum() <= 0) AggiungiFlagAnomalia(v, "E");
+        if (GirocontoP2 && toBigDecimalSicuro(Valore, IDTransazione).signum() <= 0 && !ValoreSoloArrotondatoAZero(v)) AggiungiFlagAnomalia(v, "E");
         if (GirocontoP2 && UscitaCripto) {
             VecchioPrezzoCarico = StackLIFO_TogliQta(CryptoStack, MonetaU, QtaU, true, IDTransazione);
             NuovoPrezzoCarico = "";

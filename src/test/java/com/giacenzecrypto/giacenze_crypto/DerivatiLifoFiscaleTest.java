@@ -41,6 +41,7 @@ class DerivatiLifoFiscaleTest {
 
     @AfterAll
     static void chiudeDatabase() throws Exception {
+        ContoDerivati.P1Disponibile = false;
         DatabaseH2.connection.close();
         DatabaseH2.connectionPersonale.close();
         DatabaseH2.connectionPrezzi.close();
@@ -54,6 +55,7 @@ class DerivatiLifoFiscaleTest {
         DatabaseH2.Pers_Opzioni_Scrivi("PL_CosiderareMovimentiNC", "SI");
         DatabaseH2.Pers_Opzioni_Scrivi("PlusXWallet", "NO");
         DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_NoPlusvalenzeCommissioni", "NO");
+        ContoDerivati.P1Disponibile = true;   //P2 e' l'unico metodo valido: questi test provano anche P1
         DatabaseH2.Pers_Opzioni_Scrivi(ContoDerivati.OPZIONE, "NO");
         OKXDerivati.AzzeraCacheValore();
         ValoriContratti.ImpostaPerTest(java.util.List.of());   //le regole vere hanno una prova a parte
@@ -227,12 +229,100 @@ class DerivatiLifoFiscaleTest {
                 "valore finale " + dic.valoreFinale + " e valore iniziale dell'anno dopo " + gen.valoreIniziale);
         assertEquals(0, new BigDecimal("13500").add(new BigDecimal("31500")).compareTo(gen.valoreIniziale),
                 "35.000 USDC ancora nel conto al 1/1 (31.500) piu' il non realizzato (13.500): " + gen.valoreIniziale);
-        assertTrue(gen.prospetto.get(0)[Calcoli_RW_Derivati.P_AVVISI].contains("guadagno non realizzato al 31/12 dell'anno prima"));
+        assertTrue(gen.prospetto.get(0)[Calcoli_RW_Derivati.P_AVVISI].contains("risultato non realizzato al 31/12 dell'anno prima"));
 
         //Il primo anno non ha niente prima: il valore iniziale non cambia
         Calcoli_RW_Derivati.Rigo p1 = Calcoli_RW_Derivati.Calcola(annoChiusura, Principale.MappaCryptoWallet, false, prezzo, (g, d) -> "")
                 .values().iterator().next();
         assertEquals(0, new BigDecimal("31500").compareTo(p1.valoreIniziale), "P1 invariato: solo il margine");
+    }
+
+    /**
+     * Rigo codice 9 con P2 (24/11/2026): il risultato non realizzato delle posizioni aperte al 31/12 entra nel valore finale con il suo segno,
+     * come il fair value del conto. Stessi fill di d3: con BTC a 45.000 il contratto aperto a 30.000 vale +15.000 USDC (13.500 euro), con BTC a
+     * 20.000 vale -10.000 USDC (-9.000 euro), quindi i due valori finali distano 22.500 euro.
+     */
+    @Test
+    void ilRigoCodice9ConP2_ilNonRealizzatoNegativoSiSottraeAlValoreFinale() {
+        acquistoUsdc();
+        importa(true, d3().toArray(new JSONObject[0]));
+        for (String[] v : Principale.MappaCryptoWallet.values()) {
+            if (Derivati.Tipo(v).equals(Derivati.MARGINE)) {
+                String q = !v[13].isBlank() ? v[13] : v[10];
+                v[15] = new BigDecimal(q).abs().multiply(new BigDecimal("0.9")).setScale(2, java.math.RoundingMode.HALF_UP).toPlainString();
+            }
+        }
+        Calcoli_PlusvalenzeNew.InvalidaStatoIncrementale();
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        java.util.function.Function<String, Calcoli_RW_Derivati.Prezzo> conBtc = btc -> (m, ist) -> switch (m) {
+            case "BTC" -> new BigDecimal(btc);
+            case "USD" -> BigDecimal.ONE;
+            case "USDC" -> new BigDecimal("0.9");
+            default -> null;
+        };
+        String annoApertura = riga("1", Derivati.CONTRATTO)[1].substring(0, 4);
+        Calcoli_RW_Derivati.Rigo su = Calcoli_RW_Derivati.Calcola(annoApertura, Principale.MappaCryptoWallet, true, conBtc.apply("45000"), (g, d) -> "")
+                .values().iterator().next();
+        Calcoli_RW_Derivati.Rigo giu = Calcoli_RW_Derivati.Calcola(annoApertura, Principale.MappaCryptoWallet, true, conBtc.apply("20000"), (g, d) -> "")
+                .values().iterator().next();
+        assertEquals(0, new BigDecimal("22500").compareTo(su.valoreFinale.subtract(giu.valoreFinale)),
+                "con BTC a 45.000 " + su.valoreFinale + ", con BTC a 20.000 " + giu.valoreFinale);
+        assertTrue(giu.valoreFinale.signum() > 0);
+        assertTrue(giu.prospetto.get(giu.prospetto.size() - 1)[Calcoli_RW_Derivati.P_AVVISI].contains("risultato non realizzato"));
+
+    }
+
+    /**
+     * Con P2 il non realizzato delle posizioni aperte al 31/12 si valuta con il mark price dell'exchange (OKX, simbolo nativo dal campo dati) e solo
+     * se manca, o l'exchange non e' supportato, con lo spot del sottostante, e l'avviso dice quale dei due. Stessi fill di d3: con BTC a 45.000 il
+     * contratto aperto a 30.000 vale +15.000 USDC, con un mark price di 40.000 +10.000: 4.500 euro in meno nel valore finale.
+     */
+    @Test
+    void ilRigoCodice9ConP2_ilNonRealizzatoUsaIlMarkPriceDellExchange() throws Exception {
+        acquistoUsdc();
+        importa(true, d3().toArray(new JSONObject[0]));
+        for (String[] v : Principale.MappaCryptoWallet.values()) {
+            if (Derivati.Tipo(v).equals(Derivati.MARGINE)) {
+                String q = !v[13].isBlank() ? v[13] : v[10];
+                v[15] = new BigDecimal(q).abs().multiply(new BigDecimal("0.9")).setScale(2, java.math.RoundingMode.HALF_UP).toPlainString();
+            }
+        }
+        Calcoli_PlusvalenzeNew.InvalidaStatoIncrementale();
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        Calcoli_RW_Derivati.Prezzo prezzo = (m, ist) -> switch (m) {
+            case "BTC" -> new BigDecimal("45000");
+            case "USD" -> BigDecimal.ONE;
+            case "USDC" -> new BigDecimal("0.9");
+            default -> null;
+        };
+        String annoApertura = riga("1", Derivati.CONTRATTO)[1].substring(0, 4);
+        MarkPriceDerivati.Fonte originale = MarkPriceDerivati.FONTE;
+        try {
+            MarkPriceDerivati.AzzeraMemoria();
+            Calcoli_RW_Derivati.Rigo spot = Calcoli_RW_Derivati.Calcola(annoApertura, Principale.MappaCryptoWallet, true, prezzo, (g, d) -> "")
+                    .values().iterator().next();
+            assertTrue(spot.avvisi.stream().anyMatch(t -> t.contains("prezzo a pronti del sottostante")), "senza mark price lo spot, e lo dice");
+            assertTrue(spot.avvisi.stream().anyMatch(t -> t.contains("mark price non disponibile")), "OKX e' supportato: il mark price manca");
+
+            java.util.List<String> chieste = new java.util.ArrayList<>();
+            MarkPriceDerivati.FONTE = (p, s, inverso, minuto) -> {
+                chieste.add(p + " " + s);
+                return MarkPriceDerivati.Esito.trovato(new BigDecimal("40000"));
+            };
+            Calcoli_RW_Derivati.Rigo mark = Calcoli_RW_Derivati.Calcola(annoApertura, Principale.MappaCryptoWallet, true, prezzo, (g, d) -> "")
+                    .values().iterator().next();
+            assertEquals(0, new BigDecimal("4500").compareTo(spot.valoreFinale.subtract(mark.valoreFinale)),
+                    "spot " + spot.valoreFinale + ", mark price " + mark.valoreFinale);
+            assertTrue(mark.avvisi.stream().anyMatch(t -> t.contains("valutato con il mark price di OKX")), mark.avvisi.toString());
+            assertFalse(chieste.isEmpty());
+            assertTrue(chieste.get(0).startsWith("OKX " + CONTRATTO), "il simbolo e' quello nativo: " + chieste);
+        } finally {
+            MarkPriceDerivati.FONTE = originale;
+            MarkPriceDerivati.AzzeraMemoria();
+            try (java.sql.Statement st = DatabaseH2.connectionPrezzi.createStatement()) {
+                st.execute("DELETE FROM PrezziMarkDerivati");
+            }
+        }
     }
 
     /** Con la vista filtrata sul solo wallet Principale il reddito in LIFO (sulle righe del token, nel sotto-wallet) resta fuori: la nota lo conta. */

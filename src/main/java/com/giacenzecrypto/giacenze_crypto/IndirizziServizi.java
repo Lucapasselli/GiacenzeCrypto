@@ -35,6 +35,8 @@ final class IndirizziServizi {
     static final String TRONSCAN = "tronScan";
     /** API pubblica di OKX senza firma: oggi solo il valore dei contratti derivati ({@code /api/v5/public/instruments}). */
     static final String OKX_PUBBLICO = "okxPubblico";
+    /** API pubblica di Bybit senza firma: oggi solo le candele del mark price dei derivati ({@code /v5/market/mark-price-kline}). */
+    static final String BYBIT_PUBBLICO = "bybitPubblico";
 
     /** Solo https, solo host e percorso: niente parametri, niente credenziali nell'indirizzo, niente barra finale. */
     private static final String FORMATO = "https://[a-z0-9.-]+(:\\d{1,5})?(/[A-Za-z0-9._~-]+)*";

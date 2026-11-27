@@ -920,6 +920,8 @@ private static final long serialVersionUID = 3L;
         GiacenzeaData_Tabella = new javax.swing.JTable();
         GiacenzeaData_Totali_Label = new javax.swing.JLabel();
         GiacenzeaData_Totali_TextField = new javax.swing.JTextField();
+        GiacenzeaData_TotaliDerivati_Label = new javax.swing.JLabel();
+        GiacenzeaData_TotaliDerivati_TextField = new javax.swing.JTextField();
         GiacenzeaData_Bottone_Calcola = new javax.swing.JButton();
         GiacenzeaData_TabbedDettaglio = new javax.swing.JTabbedPane();
         GiacenzeaData_ScrollPaneDettaglioMovimenti = new javax.swing.JScrollPane();
@@ -1122,6 +1124,7 @@ private static final long serialVersionUID = 3L;
         Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero = new javax.swing.JCheckBox();
         Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti = new javax.swing.JCheckBox();
         Plusvalenze_Opzioni_CheckBox_Pre2023Soglia = new javax.swing.JCheckBox();
+        Plusvalenze_Opzioni_CheckBox_SogliaContoDerivati = new javax.swing.JCheckBox();
         Opzioni_GruppoWallet_CheckBox_PlusXWallet = new javax.swing.JCheckBox();
         jScrollPane6 = new javax.swing.JScrollPane();
         jTextArea2 = new javax.swing.JTextArea();
@@ -2939,9 +2942,14 @@ private static final long serialVersionUID = 3L;
         Tabelle.ColoraRigheTabella0GiacenzeaData(GiacenzeaData_Tabella);
 
         GiacenzeaData_Totali_Label.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
-        GiacenzeaData_Totali_Label.setText("TOTALE in EURO : ");
+        GiacenzeaData_Totali_Label.setText("TOTALE CRIPTO in EURO : ");
 
         GiacenzeaData_Totali_TextField.setEditable(false);
+
+        GiacenzeaData_TotaliDerivati_Label.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
+        GiacenzeaData_TotaliDerivati_Label.setText("TOTALE DERIVATI in EURO : ");
+
+        GiacenzeaData_TotaliDerivati_TextField.setEditable(false);
 
         GiacenzeaData_Bottone_Calcola.setBackground(new java.awt.Color(255, 240, 195));
         GiacenzeaData_Bottone_Calcola.setForeground(new java.awt.Color(51, 51, 51));
@@ -3231,7 +3239,11 @@ private static final long serialVersionUID = 3L;
                         .addComponent(GiacenzeaData_Totali_Label)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(GiacenzeaData_Totali_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(83, 83, 83)
+                        .addGap(24, 24, 24)
+                        .addComponent(GiacenzeaData_TotaliDerivati_Label)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(GiacenzeaData_TotaliDerivati_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(40, 40, 40)
                         .addComponent(GiacenzeaData_Label_Aggiornare)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 251, Short.MAX_VALUE)
                         .addComponent(GiacenzeaData_Bottone_RettificaQta, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -3350,6 +3362,8 @@ private static final long serialVersionUID = 3L;
                 .addGroup(GiacenzeaDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(GiacenzeaData_Totali_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(GiacenzeaData_Totali_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(GiacenzeaData_TotaliDerivati_Label, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(GiacenzeaData_TotaliDerivati_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(GiacenzeaData_Bottone_RettificaQta, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(GiacenzeaData_Label_Aggiornare))
                 .addGap(7, 7, 7))
@@ -4559,11 +4573,11 @@ private static final long serialVersionUID = 3L;
 
             },
             new String [] {
-                "Anno", "Totale dei Costi o Valori di Acquisto", "Totale dei Corrispettivi", "Plusvalenze Realizzate", "Plusvalenze Latenti", "Valore di Fine Anno", "Errori"
+                "Anno", "Totale dei Costi o Valori di Acquisto", "Totale dei Corrispettivi", "Plusvalenze Realizzate", "Plusvalenze Latenti Cripto", "Valore di Fine Anno Cripto", "Errori", "Plusvalenze Realizzate Derivati", "Plusvalenze Latenti Derivati", "Valore di Fine Anno Derivati"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -5528,6 +5542,14 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Plusvalenze_Opzioni_CheckBox_SogliaContoDerivati.setSelected(true);
+        Plusvalenze_Opzioni_CheckBox_SogliaContoDerivati.setText("Fino al 31-12-2022 nella verifica della soglia conta anche la giacenza sul conto derivati (margine e saldo sul sotto-wallet Derivati)");
+        Plusvalenze_Opzioni_CheckBox_SogliaContoDerivati.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Plusvalenze_Opzioni_CheckBox_SogliaContoDerivatiActionPerformed(evt);
+            }
+        });
+
         Opzioni_GruppoWallet_CheckBox_PlusXWallet.setText("<html><b>Plusvalenze : </b>Abilita Calcolo Plusvalenze per Gruppo Wallet </html>");
         Opzioni_GruppoWallet_CheckBox_PlusXWallet.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -5602,7 +5624,7 @@ private static final long serialVersionUID = 3L;
             }
         });
 
-        Plusvalenze_Opzioni_CheckBox_ContoDerivati.setText("<html><b>Conto derivati : </b>Tratta il conto derivati come parte del derivato: il margine che passa dallo spot al conto derivati è una cessione al valore del momento e il suo rientro dà un reddito da derivati. Vale per OKX, per il conto Derivati di Bybit e per i futures di Binance, non per l'Unified Trading Account di Bybit<br>(Non attivo di default: il margine resta una cripto-attività. Cambia i valori anche degli anni già dichiarati con movimenti su derivati)</html>");
+        Plusvalenze_Opzioni_CheckBox_ContoDerivati.setText("<html><b>Conto derivati : </b>Tratta il conto derivati come parte del derivato: il margine che passa dallo spot al conto derivati è una cessione al valore del momento e il suo rientro dà un reddito da derivati. Vale per OKX, per il conto Derivati di Bybit e per i futures di Binance, non per l'Unified Trading Account di Bybit<br>(Attivo di default. Spento, il margine resta una cripto-attività. Cambia i valori anche degli anni già dichiarati con movimenti su derivati)</html>");
         Plusvalenze_Opzioni_CheckBox_ContoDerivati.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Plusvalenze_Opzioni_CheckBox_ContoDerivatiActionPerformed(evt);
@@ -5625,7 +5647,8 @@ private static final long serialVersionUID = 3L;
                                     .addComponent(Opzioni_GruppoWallet_CheckBox_PlusXWallet, javax.swing.GroupLayout.PREFERRED_SIZE, 1088, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero)
                                     .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti)
-                                    .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023Soglia))
+                                    .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023Soglia)
+                                    .addComponent(Plusvalenze_Opzioni_CheckBox_SogliaContoDerivati))
                                 .addGap(32, 244, Short.MAX_VALUE))
                             .addGroup(Opzioni_Calcolo_PannelloLayout.createSequentialGroup()
                                 .addGroup(Opzioni_Calcolo_PannelloLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -5669,6 +5692,8 @@ private static final long serialVersionUID = 3L;
                 .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023ScambiRilevanti)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Plusvalenze_Opzioni_CheckBox_Pre2023Soglia)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Plusvalenze_Opzioni_CheckBox_SogliaContoDerivati)
                 .addGap(18, 18, 18)
                 .addComponent(Plusvalenze_Opzioni_NonConsiderareMovimentiNC)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -5848,7 +5873,7 @@ private static final long serialVersionUID = 3L;
         });
 
         RW_Bottone_Documentazione1.setFont(new java.awt.Font("Noto Sans", 1, 18)); // NOI18N
-        RW_Opzioni_CheckBox_DerivatiPeriodoUnico.setText("<html>Con l'opzione <b>Conto derivati</b>, nel rigo con codice 9 il conto è <b>un solo periodo</b> dal primo ingresso dell'anno all'ultimo giorno con un saldo, anche se nel mezzo resta vuoto<br>(Non attivo di default: un periodo per ogni tratto in cui il conto ha un saldo)</html>");
+        RW_Opzioni_CheckBox_DerivatiPeriodoUnico.setText("<html>Nel rigo con codice 9 il conto derivati è <b>un solo periodo</b> dal primo ingresso dell'anno all'ultimo giorno con un saldo, anche se nel mezzo resta vuoto<br>(Non attivo di default: un periodo per ogni tratto in cui il conto ha un saldo)</html>");
         RW_Opzioni_CheckBox_DerivatiPeriodoUnico.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 RW_Opzioni_CheckBox_DerivatiPeriodoUnicoActionPerformed(evt);
@@ -7506,6 +7531,7 @@ private void SettaIcone(){
 
         //Verifica della soglia dei 51.645,69 euro nel quadro RT (anni fino al 2022): manca = attiva
         Plusvalenze_Opzioni_CheckBox_Pre2023Soglia.setSelected(Principale_RT_Soglia.attiva());
+        Plusvalenze_Opzioni_CheckBox_SogliaContoDerivati.setSelected(Principale_RT_Soglia.contoDerivatiConta());
 
         //Default "NO": senza questa opzione il comportamento resta quello di sempre (lo scambio fra
         //cripto con le medesime caratteristiche e funzioni non genera plusvalenza).
@@ -7517,8 +7543,9 @@ private void SettaIcone(){
         }
         Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti.setSelected("SI".equalsIgnoreCase(Plusvalenze_ScambiSempreRilevanti));
 
-        //Conto derivati rilevante (P2 di D15): manca = NO, il margine resta una cripto-attivita'
+        //Conto derivati rilevante (P2 di D15): dal 24/11/2026 e' l'unico metodo valido, la casella non si vede (vedi ContoDerivati.P1Disponibile)
         Plusvalenze_Opzioni_CheckBox_ContoDerivati.setSelected(ContoDerivati.Attivo());
+        Plusvalenze_Opzioni_CheckBox_ContoDerivati.setVisible(ContoDerivati.P1Disponibile);
 
         //Log verboso dei JSON scaricati: allineo sia il checkbox che il flag condiviso letto dalle
         //funzioni di importazione/prezzatura, che devono avere il valore corretto anche se l'utente
@@ -9249,6 +9276,15 @@ private void SettaIcone(){
         //Intervallo coperto dalla cache dei prezzi: i movimenti che stanno fuori non la interrogano nemmeno
         Principale_GiacenzeaData.AggiornaCoperturaPrezzi();
         java.util.List<RigaPrezzoDaCompletare> PrezziDaCompletare = new java.util.ArrayList<>();
+        //Costi di carico letti dai movimenti : con il calcolo manuale vanno allineati prima (vedi la funzione)
+        if (Opzioni_GruppoWallet_CheckBox_PlusManuali.isSelected()) {
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            try {
+                Funzioni_AllineaPlusvalenzeSeManuale();
+            } finally {
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
+        }
         
         //Gestisco i bottoni
         GiacenzeaData_Bottone_RettificaQta.setEnabled(false);
@@ -9266,7 +9302,10 @@ private void SettaIcone(){
         //ANALISI E PROPOSTA
         if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
             int rigaselezionata = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
-            String mon = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            String monRiga = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            //La riga del conto derivati porta il suffisso nella colonna del simbolo: i movimenti si cercano col simbolo vero e solo quelli del conto
+            final boolean RigaConto = ContoDerivati.IsChiaveConto(monRiga);
+            String mon = ContoDerivati.SimboloDaChiave(monRiga);
             String ErroreSegnalato = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 10).toString();
             String Rete="";
             if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1)!=null)
@@ -9318,7 +9357,7 @@ private void SettaIcone(){
             GiacenzeBlockchain.Richiesta MonetaBlockchain = WalletBlockchain == null ? null : GiacenzeBlockchain.RichiestaDettaglio(
                     mon, GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 3).toString(), Address, Rete, WalletBlockchain[1]);
             //Wallet OKX (tutti i sotto-wallet): la stessa colonna, con la giacenza di OKX a fine di ogni secondo dai bill scaricati
-            final boolean ConfrontoOKX = MonetaBlockchain == null
+            final boolean ConfrontoOKX = MonetaBlockchain == null && !RigaConto
                     && GiacenzeExchange.OKX.equals(GiacenzeExchange.ExchangeDaLeggere(Wallet, SottoWallet))
                     && GiacenzeExchange.OKXDisponibile();
             java.util.List<GiacenzeBlockchain.RigaDettaglio> RigheBlockchain = new java.util.ArrayList<>();
@@ -9330,7 +9369,7 @@ private void SettaIcone(){
             //Le pile LIFO per il costo di carico della qta residua : scorrono TUTTI i movimenti, anche quelli
             //che il filtro wallet qui sotto scarta (un giroconto interno non porta costo con sé)
             Principale_GiacenzeaData.CostiDettaglioToken CostiResidui = new Principale_GiacenzeaData.CostiDettaglioToken(
-                    Wallet, mon, GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 3).toString(), Address, Rete);
+                    Wallet, monRiga, GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 3).toString(), Address, Rete);
             // do una sequenza alle giacenze negative trovate
             int NumNegativi=0;
             //Per le colonne della tabella dei movimenti in coda (dalla 19): gli alias una volta sola, e l'operazione di
@@ -9344,6 +9383,7 @@ private void SettaIcone(){
                 long DataMovimento = FunzioniDate.ConvertiDatainLong(movimento[1]);
                 if (DataMovimento < DataRiferimento) {
                         CostiResidui.Avanza(movimento);
+                        final boolean DelConto = ContoDerivati.RigaSulConto(movimento, MappaCryptoWallet);
                         String gruppoWallet="";
                         if (Wallet.contains("Gruppo :"))gruppoWallet=Wallet.split(" : ")[1].split("\\(")[0].trim();
                         String AddressU = movimento[26];
@@ -9363,7 +9403,7 @@ private void SettaIcone(){
                                 ||(Wallet.equalsIgnoreCase(movimento[3].trim())&&SottoWallet.equalsIgnoreCase(movimento[4].trim()))//Se wallet e sottowasllet corrispondono a quelli analizzati proseguo
                                 ||DatabaseH2.Pers_GruppoWallet_Leggi(movimento[3],true).equals(gruppoWallet)//Se il Wallet fa parte del Gruppo Selezionato proseguo l'analisi
                                 ) { 
-                        if (movimento[8].equals(mon) && AddressU.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
+                        if (movimento[8].equals(mon) && DelConto == RigaConto && AddressU.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
                             TotaleQta = TotaleQta.add(new BigDecimal(movimento[10])).stripTrailingZeros();
                             //Le colonne 10-12 restano vuote (le usa solo il tooltip delle altre tabelle) e le colonne dei costi stanno in coda,
                             //seguite da quelle della tabella dei movimenti
@@ -9404,7 +9444,7 @@ private void SettaIcone(){
                                         ConfrontoOKX ? 0 : GiacenzeBlockchain.BloccoMovimento(movimento), RigaModello, riga[7]));
                             }
                         }
-                        if (movimento[11].equals(mon) && AddressE.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
+                        if (movimento[11].equals(mon) && DelConto == RigaConto && AddressE.equalsIgnoreCase(Address)&&Rete.equals(ReteMov)) {
                             TotaleQta = TotaleQta.add(new BigDecimal(movimento[13])).stripTrailingZeros();
                             String riga[] = new String[Principale_GiacenzeaData.DETTAGLIO_COLONNE];
                             riga[0] = Funzioni.getOradaID(movimento[0]);
@@ -9851,6 +9891,10 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
         AccendiLabelRicalcolo();
         if (!Opzioni_GruppoWallet_CheckBox_PlusManuali.isSelected()) {
             Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        } else {
+            //Calcolo manuale: il cambio di gruppo sposta le pile LIFO ma qui non si ricalcola, e non passando da
+            //Funzioni_AggiornaTutto il pulsante non compariva: i numeri restavano vecchi senza nessun avviso
+            Funzioni_SegnalaPlusvalenzeDaRicalcolare();
         }
         Opzioni_GruppoWallet_CaricaGruppiWallet();
         Messaggi.InfoMessage("Wallet raggruppati", sb.toString(), this);
@@ -10783,7 +10827,7 @@ testColumn2.setCellEditor(new DefaultCellEditor(CheckBox));
                
                 int rigaXRipristino = GiacenzeaData_Tabella.getSelectedRow();
                 int rigaselezionata=Tabelle.Funzioni_getRigaSelezionata(GiacenzeaData_Tabella);
-                String mon = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+                String mon = ContoDerivati.SimboloDaChiave(GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString());//il prezzo e' del token, anche se la riga e' quella del conto derivati
                 String Rete = null;
                 if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1) != null) {
                     Rete = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1).toString();
@@ -11348,6 +11392,11 @@ GiacenzeaData_CompilaTabellaToken(true);
          if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
             int rigaselezionata = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
             mon = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            if (ContoDerivati.IsChiaveConto(mon)) {
+                //Il suffisso e' solo l'identita' della riga: rinominare o marcare SCAM un simbolo che non esiste scriverebbe dati sbagliati
+                Messaggi.WarningMessage("Riga del conto derivati", "Questa riga e' la parte del token sul conto derivati: per identificarlo come SCAM o rinominarlo seleziona la riga del token.", this);
+                return;
+            }
             Rete="";
             if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1)!=null)
                 {
@@ -12357,6 +12406,34 @@ if (result.isAction("delete-all")) {
         }    
     
     }
+
+    /**
+     * Con il calcolo manuale delle plusvalenze i costi di carico scritti nei movimenti ({@code v[16]}/{@code v[17]}) possono essere
+     * vecchi: una modifica li lascia com'erano finché non si preme <i>Ricalcola Plusvalenze</i> o <i>Salva</i>. "Giacenze a data" li legge
+     * così come sono e, per un movimento non ancora ricalcolato, mostrava la quantità ma non il costo (lo swap che cedeva costo a
+     * una cripto appena ricevuta la faceva comparire a costo zero). Si allinea quindi prima di leggerli. A movimenti invariati il
+     * ricalcolo incrementale ritorna subito, e non tocca la tabella dei movimenti: il pulsante di ricalcolo resta com'era.
+     * Con il calcolo automatico non fa nulla, le plusvalenze sono già aggiornate. Sicuro da un thread qualunque
+     * ({@code AggiornaPlusvalenze} è sincronizzato).
+     */
+    private void Funzioni_AllineaPlusvalenzeSeManuale() {
+        if (Opzioni_GruppoWallet_CheckBox_PlusManuali.isSelected()) {
+            Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        }
+    }
+
+    /**
+     * Con il calcolo manuale, una modifica che cambia le plusvalenze senza passare da {@link #Funzioni_AggiornaTutto()} (che accende il
+     * pulsante tramite {@code TransazioniCrypto_Funzioni_AbilitaBottoneSalva}) deve almeno far comparire il pulsante
+     * <i>Ricalcola Plusvalenze</i>, altrimenti l'utente non ha modo di sapere che i numeri sono vecchi. Con il calcolo automatico non fa nulla.
+     */
+    private void Funzioni_SegnalaPlusvalenzeDaRicalcolare() {
+        if (Opzioni_GruppoWallet_CheckBox_PlusManuali.isSelected()) {
+            TransazioniCrypto_RicalcolaPlusvalenze_Label.setVisible(true);
+            TransazioniCrypto_RicalcolaPlusvalenze_Bottone.setVisible(true);
+            TransazioniCrypto_RicalcolaPlusvalenze_Bottone.setEnabled(true);
+        }
+    }
     
     /**
      * Svuota le tabelle del quadro W/RW senza ricalcolare, quando i valori mostrati non sono più dell'anno
@@ -13143,6 +13220,12 @@ if (result.isAction("delete-all")) {
         DatabaseH2.Pers_Opzioni_Scrivi(Principale_RT_Soglia.OPZIONE, Plusvalenze_Opzioni_CheckBox_Pre2023Soglia.isSelected() ? "SI" : "NO");
         if (RT_Tabella_Principale.getRowCount() > 0) RT_Label_Avviso.setVisible(true);
     }//GEN-LAST:event_Plusvalenze_Opzioni_CheckBox_Pre2023SogliaActionPerformed
+
+    private void Plusvalenze_Opzioni_CheckBox_SogliaContoDerivatiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Plusvalenze_Opzioni_CheckBox_SogliaContoDerivatiActionPerformed
+        //Come la soglia stessa: agisce solo sulla riga mostrata e stampata del quadro RT, non sul motore
+        DatabaseH2.Pers_Opzioni_Scrivi(Principale_RT_Soglia.OPZIONE_CONTO_DERIVATI, Plusvalenze_Opzioni_CheckBox_SogliaContoDerivati.isSelected() ? "SI" : "NO");
+        if (RT_Tabella_Principale.getRowCount() > 0) RT_Label_Avviso.setVisible(true);
+    }//GEN-LAST:event_Plusvalenze_Opzioni_CheckBox_SogliaContoDerivatiActionPerformed
 
     private void Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevantiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevantiActionPerformed
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -15033,8 +15116,8 @@ if (result.isAction("delete-all")) {
         else{
         Map<String, BigDecimal[]> PlusvalenzeXAnno = APlus.Get_TabellaPlusXAnno();
         for (BigDecimal[] Valori : PlusvalenzeXAnno.values()) {
-            String Val[]=new String[7];
-            for (int va=0;va<Valori.length;va++){
+            String Val[]=new String[10];
+            for (int va=0;va<7;va++){
                 switch (va) {
                     case 6 -> {
                         String errori=Valori[va].toPlainString();
@@ -15050,6 +15133,11 @@ if (result.isAction("delete-all")) {
                     default -> Val[va]=Valori[va].toPlainString();
                 }
             }
+            //Il conto derivati ha i suoi totali: risultato dei derivati dell'anno (somma di [46], la stessa del riquadro "Redditi da derivati",
+            //ai centesimi) e latente e valore di fine anno del conto, che il calcolo tiene fuori dalle colonne cripto
+            Val[7]=Principale_RT_Derivati.Calcola(Val[0]).risultatoCentesimi().toPlainString();
+            Val[8]=Valori[7].toPlainString();
+            Val[9]=Valori[8].toPlainString();
             //Movimenti su derivati (Derivati.DaSegnalare): non sono un errore da correggere. Il loro risultato va nella
             //sezione II-A (Principale_RT_Derivati), quelli non classificati restano cripto-attivita'. Stanno nella
             //stessa colonna perche' e' li' che l'utente guarda prima di stampare; il pulsante di stampa distingue le due cose.
@@ -17026,7 +17114,7 @@ if (erroreScelto != null) {
 
                 int rigaselezionata = Tabelle.Funzioni_getRigaSelezionata(GiacenzeaData_Tabella);
 
-                String mon = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+                String mon = ContoDerivati.SimboloDaChiave(GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString());//il prezzo e' del token, anche se la riga e' quella del conto derivati
                 String Qta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 4).toString();
                 String Rete = null;
 
@@ -18635,6 +18723,17 @@ if (erroreScelto != null) {
         bozza.Totali.put(Principale_Dichiarazioni.TOT_RT_PLUS, Dichiarazioni_Testo(m.getValueAt(Rigo, 3)));
         bozza.Totali.put("Plusvalenze latenti", Dichiarazioni_Testo(m.getValueAt(Rigo, 4)));
         bozza.Totali.put("Valore di fine anno", Dichiarazioni_Testo(m.getValueAt(Rigo, 5)));
+        //Latente e valore del conto derivati (colonne 8 e 9): solo se l'anno ne ha, o ogni definitiva gia' archiviata risulterebbe diversa
+        //(il risultato dei derivati, colonna 7, e' gia' fra i totali di AggiungiTotaliDerivati)
+        for (int c = 8; c <= 9 && c < m.getColumnCount(); c++) {
+            String Testo = Dichiarazioni_Testo(m.getValueAt(Rigo, c));
+            try {
+                if (new BigDecimal(Testo.trim()).signum() == 0) continue;
+            } catch (NumberFormatException ex) {
+                continue;
+            }
+            bozza.Totali.put(c == 8 ? "Plusvalenze latenti derivati" : "Valore di fine anno derivati", Testo);
+        }
         String AvvisoArchivio = Derivati.TestoAvvisoArchivio(bozza.Anno);
         if (!AvvisoArchivio.isEmpty()) {
             bozza.Totali.put(Principale_Dichiarazioni.TOT_AVVISO, AvvisoArchivio);
@@ -18656,6 +18755,12 @@ if (erroreScelto != null) {
         if (soglia != null && soglia.azzerato()) {
             bozza.Totali.put(Principale_RT_Soglia.TOTALE_NOTA, soglia.nota);
             o.put(Principale_RT_Soglia.NOME_OPZIONE, "attiva");
+        }
+        //Con la lettura prudenziale (il conto conta) la dichiarazione non porta nulla: l'opzione si scrive solo se e' spenta e puo' cambiare l'esito
+        //della soglia dell'anno (fino al 2022, soglia attiva, movimenti sul conto derivati fino a quell'anno)
+        if (!Principale_RT_Soglia.contoDerivatiConta() && Principale_RT_Soglia.attiva() && bozza.Anno.compareTo("2023") < 0
+                && ContoDerivati.InfluisceFinoAllAnno(bozza.Anno)) {
+            o.put(Principale_RT_Soglia.NOME_OPZIONE_CONTO_DERIVATI, "attiva");
         }
         o.put("LiFo", Opzioni_GruppoWallet_CheckBox_PlusXWallet.isSelected() ? "per gruppo wallet" : "sulla totalità dei wallet");
         o.put("Scambi fra cripto-attività con medesime caratteristiche", Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti.isSelected()
@@ -19543,6 +19648,11 @@ if (result != null && result.isAction("rename-wallet-token")) {
         if (GiacenzeaData_Tabella.getSelectedRow() >= 0) {
             int rigaselezionata = GiacenzeaData_Tabella.getRowSorter().convertRowIndexToModel(GiacenzeaData_Tabella.getSelectedRow());
             String NomeMoneta = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 0).toString();
+            if (ContoDerivati.IsChiaveConto(NomeMoneta)) {
+                //Il suffisso e' solo l'identita' della riga: rinominare o marcare SCAM un simbolo che non esiste scriverebbe dati sbagliati
+                Messaggi.WarningMessage("Riga del conto derivati", "Questa riga e' la parte del token sul conto derivati: per identificarlo come SCAM o rinominarlo seleziona la riga del token.", this);
+                return;
+            }
             String Address = GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 2).toString();
             String Rete="";
             if (GiacenzeaData_Tabella.getModel().getValueAt(rigaselezionata, 1)!=null)
@@ -20092,13 +20202,17 @@ try {
                         DataRiferimento = DatadiOggi;
                     }
                 }
+                //Con il calcolo manuale delle plusvalenze i costi di carico dei movimenti possono essere vecchi : li allineo prima di leggerli
+                progress.SetLabel("Aggiornamento delle plusvalenze in corso....");
+                Funzioni_AllineaPlusvalenzeSeManuale();
                 //FASE 2 THREAD : CREO LA NUOVA MAPPA DI APPOGGIO PER L'ANALISI DEI TOKEN
                 String Wallet = GiacenzeaData_WalletScelto().trim();
                 String SottoWallet = GiacenzeaData_Wallet2_ComboBox.getSelectedItem().toString().trim();
                 final String FiltriDelCalcolo = GiacenzeaData_FiltriAttuali();
                 //La somma e' in Principale_GiacenzeaData.SommaQuantitaAData, la stessa che usano i test
+                //Spot e conto derivati dello stesso token sono due righe (la seconda col suffisso .DERIVATI), come nel quadro RT
                 Map<String, Moneta> QtaCrypto = Principale_GiacenzeaData.SommaQuantitaAData(MappaCryptoWallet.values(),
-                        DataRiferimento, Wallet, SottoWallet);
+                        DataRiferimento, Wallet, SottoWallet, true);
 
                 //Adesso elenco tutte le monete e le metto in tabella
                 progress.SetMassimo(QtaCrypto.size());
@@ -20118,7 +20232,7 @@ try {
                 //data e' una sola, quindi si chiedono tutte le quotazioni in un lotto solo invece di
                 //lasciare che il ciclo qui sotto lanci un processo Node per ogni moneta non in cache.
                 //Non cambia QUALE prezzo viene scelto: riempie la cache che il ciclo interroga.
-                Prezzi.PreScaricaPrezziMonete(QtaCrypto.values(), DataRiferimento, progress, "giacenze a data");
+                Prezzi.PreScaricaPrezziMonete(Principale_GiacenzeaData.MoneteDaPrezzare(QtaCrypto.values()), DataRiferimento, progress, "giacenze a data");
 
                 //Il massimo torna quello dei token: il pre-scarico ha usato la stessa finestra con un
                 //massimo diverso (le quotazioni), e SetMassimo non azzera il valore corrente.
@@ -20142,6 +20256,7 @@ try {
 
                 int i = 0;
                 BigDecimal TotEuro = new BigDecimal(0);
+                BigDecimal TotEuroDerivati = new BigDecimal(0);
                 for (String moneta : QtaCrypto.keySet()) {
                     
                     i++;
@@ -20155,6 +20270,7 @@ try {
                             Tabelle.Tabelle_getSommeColonne(GiacenzeaData_Tabella);
                         }
                         GiacenzeaData_Totali_TextField.setText("");
+                        GiacenzeaData_TotaliDerivati_TextField.setText("");
                         Messaggi.WarningMessage("Attenzione", "Elaborazione Interrotta!", SwingUtilities.getWindowAncestor(progress));
                         //Elaborazione interrotta: si esce, senza riempire il resto della tabella. (Prima qui c'era un
                         //this.join() sul thread stesso, che non tornava mai: il thread restava appeso per sempre)
@@ -20164,6 +20280,13 @@ try {
                         progress.SetAvanzamento(i);
                     }
                     Moneta M1 = QtaCrypto.get(moneta);
+                    //Riga del conto derivati: il simbolo porta il suffisso (identita' della riga), prezzi e alias usano quello vero
+                    final boolean RigaConto = ContoDerivati.IsChiaveConto(M1.Moneta);
+                    Moneta MPrezzo = M1;
+                    if (RigaConto) {
+                        MPrezzo = M1.ClonaMoneta();
+                        MPrezzo.Moneta = ContoDerivati.SimboloDaChiave(M1.Moneta);
+                    }
                     String Rete = M1.Rete;
                     String Address = M1.MonetaAddress;
                     Object riga[] = new Object[13];
@@ -20188,7 +20311,7 @@ try {
                         if (M1.Qta.equals("0")) {
                             riga[5] = "0.00";
                         } else {
-                            Prezzi.InfoPrezzo IP=Prezzi.DammiPrezzoInfoTransazione(M1, null, DataRiferimento, Rete,Gruppo);
+                            Prezzi.InfoPrezzo IP=Prezzi.DammiPrezzoInfoTransazione(MPrezzo, null, DataRiferimento, Rete,Gruppo);
                            /* if(M1.Moneta.contains("PORN")){
                                 System.out.println(M1.Moneta+"-"+M1.MonetaAddress+"-"+Rete+"-"+Gruppo+"-"+DataRiferimento+"-"+IP.prezzoQta);
                                     }*/
@@ -20213,6 +20336,8 @@ try {
                         BigDecimal CostoEsatto = CostiCarico.CostoEsattoDelleRimanenze(Wallet,
                                 Principale_GiacenzeaData.ChiaveRiga(M1.Moneta, M1.Tipo, Address, Rete),
                                 M1.Qta);
+                        //Token X.DA_CONSEGNARE: senza lotti, costo = valore (plusvalenza già realizzata con lo scambio), come nel RT
+                        CostoEsatto = TokenDaConsegnare.CostoRigaGiacenze(M1.Moneta, M1.Qta, PrezzoUnitario, CostoEsatto);
                         riga[6] = Double.valueOf(CostoEsatto.setScale(2, RoundingMode.HALF_UP).toPlainString());
                         //Valore unitario, costo unitario e differenza valore - costo (vuoti se non calcolabili)
                         Double Derivati[] = Principale_GiacenzeaData.ValoriDerivatiRiga(M1.Tipo, M1.Qta,
@@ -20222,7 +20347,10 @@ try {
                         riga[9] = Derivati[2];
 
                         //Giacenza sulla blockchain : la riga si segna "in lettura", la legge un thread a tabella pronta
-                        if (WalletBlockchain != null) {
+                        if (RigaConto) {
+                            //Il saldo sulla blockchain o sull'exchange non ha un conto derivati: nessun confronto per questa riga
+                            riga[12] = "";
+                        } else if (WalletBlockchain != null) {
                             String ChiaveBlockchain = Principale_GiacenzeaData.ChiaveRiga(M1.Moneta, M1.Tipo, Address, Rete);
                             GiacenzeBlockchain.Richiesta Richiesta = new GiacenzeBlockchain.Richiesta(ChiaveBlockchain,
                                     M1.Moneta, M1.Tipo, Address);
@@ -20232,6 +20360,8 @@ try {
                                 RichiesteBlockchain.add(Richiesta);
                             }
                         } else if (ExchangeConfronto != null) {
+                            //Il saldo dell'exchange non comprende il conto derivati (OKX: il margine di una posizione isolata esce dal saldo all'apertura e
+                            //rientra alla chiusura, verificato sui bill; Binance: Spot, Funding ed Earn senza i futures): si confronta con la sola riga spot
                             riga[12] = GiacenzeBlockchain.IN_LETTURA;
                             RichiesteBlockchain.add(new GiacenzeBlockchain.Richiesta(
                                     Principale_GiacenzeaData.ChiaveRiga(M1.Moneta, M1.Tipo, Address, Rete), M1.Moneta, M1.Tipo, Address));
@@ -20248,11 +20378,18 @@ try {
                             });
                            // GiacenzeaData_ModelloTabella.addRow(riga);
                         }
-                        TotEuro = TotEuro.add(new BigDecimal((Double) riga[5]));
-                        GiacenzeaData_Totali_TextField.setText(TotEuro.setScale(2, RoundingMode.HALF_UP).toString());
+                        if (RigaConto) {
+                            TotEuroDerivati = TotEuroDerivati.add(new BigDecimal((Double) riga[5]));
+                            GiacenzeaData_TotaliDerivati_TextField.setText(TotEuroDerivati.setScale(2, RoundingMode.HALF_UP).toString());
+                        } else {
+                            TotEuro = TotEuro.add(new BigDecimal((Double) riga[5]));
+                            GiacenzeaData_Totali_TextField.setText(TotEuro.setScale(2, RoundingMode.HALF_UP).toString());
+                        }
                     }
 
                 }
+                //Senza righe del conto derivati il totale dei derivati e' zero, non vuoto
+                GiacenzeaData_TotaliDerivati_TextField.setText(TotEuroDerivati.setScale(2, RoundingMode.HALF_UP).toString());
                 //Le righe entrano nel modello una alla volta con invokeLater, mentre la somma partita da Tabelle_FiltroColonne
                 //all'inizio della funzione vedeva la tabella ancora vuota: la rifaccio qui, accodata dopo l'ultimo addRow
                 if (CompiloTabella) {
@@ -22245,6 +22382,8 @@ try {
     private javax.swing.JTable GiacenzeaData_TabellaDettaglioMovimenti;
     private javax.swing.JLabel GiacenzeaData_Totali_Label;
     private javax.swing.JTextField GiacenzeaData_Totali_TextField;
+    private javax.swing.JLabel GiacenzeaData_TotaliDerivati_Label;
+    private javax.swing.JTextField GiacenzeaData_TotaliDerivati_TextField;
     private javax.swing.JComboBox<String> GiacenzeaData_Gruppo_ComboBox;
     private javax.swing.JLabel GiacenzeaData_Gruppo_Label;
     private javax.swing.JComboBox<String> GiacenzeaData_Wallet2_ComboBox;
@@ -22398,6 +22537,7 @@ try {
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023Soglia;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_RicalcoloIncrementale;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_ScambiSempreRilevanti;
+    private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_SogliaContoDerivati;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_ContoDerivati;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_NonConsiderareMovimentiNC;
     private javax.swing.JPopupMenu PopupMenu;

@@ -179,6 +179,7 @@ def main():
         with open(percorso, "w", encoding="utf-8") as f:
             json.dump(sorted(precedenti.values(), key=lambda r: r["file"]), f,
                       ensure_ascii=False, indent=1)
+            f.write("\n")
         print(f"\n{len(righe_manifest)} file scaricati; "
               f"{len(precedenti)} registrati in Strumenti/manifest_normattiva.json")
 

@@ -46,6 +46,7 @@ class ContoDerivatiP2Test {
 
     @AfterAll
     static void chiude() throws Exception {
+        ContoDerivati.P1Disponibile = false;
         DatabaseH2.connection.close();
         DatabaseH2.connectionPersonale.close();
         DatabaseH2.connectionPrezzi.close();
@@ -58,6 +59,7 @@ class ContoDerivatiP2Test {
         DatabaseH2.Pers_Opzioni_Scrivi("PL_CosiderareMovimentiNC", "SI");
         DatabaseH2.Pers_Opzioni_Scrivi("PlusXWallet", "NO");
         DatabaseH2.Pers_Opzioni_Scrivi("Plusvalenze_NoPlusvalenzeCommissioni", "NO");
+        ContoDerivati.P1Disponibile = true;   //P2 e' l'unico metodo valido: questi test provano anche P1
         DatabaseH2.Pers_Opzioni_Scrivi(ContoDerivati.OPZIONE, "NO");
     }
 
@@ -208,21 +210,95 @@ class ContoDerivatiP2Test {
 
     /**
      * Il costo delle rimanenze di "Giacenze a data" ricostruisce le pile come il motore: con P2, a posizione aperta, 500 USDT restano
-     * nello spot a 460 e 500 sono nel conto a 450 (il valore del giroconto). Con P1 i 1.000 USDT costano ancora 920.
+     * nello spot a 460 e 500 sono nel conto a 450 (il valore del giroconto). Dal 2026-11-27 sono <b>due righe</b>, USDT e USDT.DERIVATI,
+     * ognuna col suo costo (prima una riga sola da 1.000 USDT a 910). Con P1 il conto non e' una riga a parte e i 1.000 USDT costano 920.
      */
     @Test
     void costoDelleRimanenze_seguitoLaPilaDelConto() {
         esempio(true, false);
         long aprile = FunzioniDate.ConvertiDatainLong("2025-04-01");
-        String chiave = Principale_GiacenzeaData.ChiaveRiga("USDT", "Crypto", "", "");
+        String spot = Principale_GiacenzeaData.ChiaveRiga("USDT", "Crypto", "", "");
+        String conto = Principale_GiacenzeaData.ChiaveRiga("USDT" + ContoDerivati.SUFFISSO_CHIAVE, "Crypto", "", "");
         calcola(true);
-        assertEquals("910.00", Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(aprile, null).CostoDelleRimanenze("Tutti", chiave, "1000"));
-        //Dopo la chiusura: 500 USDT a 460, 500 rientrati a 440, 300 di profitto a 264
+        Principale_GiacenzeaData.CostiCaricoRimanenze costi = Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(aprile, null);
+        assertEquals("460.00", costi.CostoDelleRimanenze("Tutti", spot, "500"));
+        assertEquals("450.00", costi.CostoDelleRimanenze("Tutti", conto, "500"));
+        //Due righe anche nella somma delle quantita' della tabella
+        java.util.Map<String, Moneta> righe = Principale_GiacenzeaData.SommaQuantitaAData(MappaCryptoWallet.values(), aprile, "Tutti", "Tutti", true);
+        assertEquals(0, new BigDecimal("500").compareTo(new BigDecimal(righe.get(spot).Qta)), "spot");
+        assertEquals(0, new BigDecimal("500").compareTo(new BigDecimal(righe.get(conto).Qta)), "conto");
+        assertEquals("USDT" + ContoDerivati.SUFFISSO_CHIAVE, righe.get(conto).Moneta);
+        //Chi non separa (Costi netti, confronto con i nodi) vede ancora un token solo
+        assertEquals(0, new BigDecimal("1000").compareTo(new BigDecimal(
+                Principale_GiacenzeaData.SommaQuantitaAData(MappaCryptoWallet.values(), aprile, "Tutti", "Tutti").get(spot).Qta)));
+        //Dopo la chiusura: 500 USDT a 460, 500 rientrati a 440, 300 di profitto a 264, tutto sullo spot e il conto vuoto
         long giugno = FunzioniDate.ConvertiDatainLong("2025-06-15");
-        assertEquals("1164.00", Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(giugno, null).CostoDelleRimanenze("Tutti", chiave, "1300"));
+        costi = Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(giugno, null);
+        assertEquals("1164.00", costi.CostoDelleRimanenze("Tutti", spot, "1300"));
+        assertEquals("0.00", costi.CostoDelleRimanenze("Tutti", conto, "0"));
         calcola(false);
-        assertEquals("920.00", Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(aprile, null).CostoDelleRimanenze("Tutti", chiave, "1000"));
-        assertEquals("1184.00", Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(giugno, null).CostoDelleRimanenze("Tutti", chiave, "1300"));
+        costi = Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(aprile, null);
+        assertEquals("920.00", costi.CostoDelleRimanenze("Tutti", spot, "1000"));
+        assertEquals("1184.00", Principale_GiacenzeaData.CalcolaCostiCaricoRimanenze(giugno, null).CostoDelleRimanenze("Tutti", spot, "1300"));
+    }
+
+    private static String[][] girocontoMinuscolo(String prezzo) {
+        String spot = "Principale", conto = OKXDerivati.SOTTOWALLET;
+        movimento(ACQUISTO, "2025-02-01 10:00", spot, "ACQUISTO CRYPTO", "EUR", "-920", "USDT", "1000", "920.00", "", "");
+        //0,0009 USDT valgono meno di un centesimo: v[15] (due decimali) e' "0.00", come per il deficit di una liquidazione
+        String[] esce = movimento(MARGINE_ESCE, "2025-03-01 10:00", spot, "TRASFERIMENTO INTERNO", "USDT", "-0.0009", "", "", "0.00", Derivati.MARGINE, "");
+        String[] entra = movimento(MARGINE_ENTRA, "2025-03-01 10:00", conto, "TRASFERIMENTO INTERNO", "", "", "USDT", "0.0009", "0.00", Derivati.MARGINE, "");
+        if (prezzo != null) {
+            esce[40] = "USDT|1740823200000|" + prezzo + "|binance";
+            entra[40] = esce[40];
+        }
+        return new String[][]{esce, entra};
+    }
+
+    /** Un giroconto di frazioni di centesimo con il suo prezzo non e' un errore dati: il valore arrotondato e' zero ma il prezzo c'e'. */
+    @Test
+    void unGirocontoDiFrazioniDiCentesimoConPrezzoNonEUnErroreDati() {
+        String[][] g = girocontoMinuscolo("0.92");
+        calcola(true);
+        assertFalse(g[0][38].contains("E"), "uscita: " + g[0][38]);
+        assertFalse(g[1][38].contains("E"), "entrata: " + g[1][38]);
+    }
+
+    /** Senza il prezzo il valore zero resta una segnalazione: il movimento non e' valorizzabile. */
+    @Test
+    void unGirocontoSenzaValoreNeAPrezzoEUnErroreDati() {
+        String[][] g = girocontoMinuscolo(null);
+        calcola(true);
+        assertTrue(g[0][38].contains("E"), "uscita: " + g[0][38]);
+        assertTrue(g[1][38].contains("E"), "entrata: " + g[1][38]);
+    }
+
+    /**
+     * Il dettaglio dei movimenti di una riga ha le stesse pile della tabella: l'ultimo costo residuo della riga spot e di quella del conto
+     * (col suffisso) coincide con quello della tabella principale, ognuna sui propri movimenti.
+     */
+    @Test
+    void dettaglioDelleDueRighe_coincideConLaTabellaPrincipale() {
+        esempio(true, false);
+        calcola(true);
+        long aprile = FunzioniDate.ConvertiDatainLong("2025-04-01");
+        Principale_GiacenzeaData.CostiDettaglioToken spot = new Principale_GiacenzeaData.CostiDettaglioToken("Tutti", "USDT", "Crypto", "", "");
+        Principale_GiacenzeaData.CostiDettaglioToken conto = new Principale_GiacenzeaData.CostiDettaglioToken("Tutti",
+                "USDT" + ContoDerivati.SUFFISSO_CHIAVE, "Crypto", "", "");
+        for (String[] v : MappaCryptoWallet.values()) {
+            if (FunzioniDate.ConvertiDatainLong(v[1]) >= aprile) continue;
+            spot.Avanza(v);
+            conto.Avanza(v);
+        }
+        assertEquals("460.00", spot.CostoResiduo("500"));
+        assertEquals("450.00", conto.CostoResiduo("500"));
+        //Il dettaglio di un movimento: ogni gamba del giroconto e' nella sua riga
+        java.util.List<Principale_GiacenzeaData.GiacenzeMoneta> usciti = Principale_GiacenzeaData.GiacenzeAttornoAlMovimento(MARGINE_ESCE);
+        java.util.List<Principale_GiacenzeaData.GiacenzeMoneta> entrati = Principale_GiacenzeaData.GiacenzeAttornoAlMovimento(MARGINE_ENTRA);
+        assertEquals("USDT", usciti.get(0).Moneta, "la gamba in uscita e' dello spot");
+        assertEquals("USDT" + ContoDerivati.SUFFISSO_CHIAVE, entrati.get(0).Moneta, "la gamba in entrata e' del conto");
+        assertEquals(0, new BigDecimal("500").compareTo(entrati.get(0).QtaDopo[Principale_GiacenzeaData.LIVELLO_GLOBALE]),
+                "il conto aveva zero e ha 500, non 1.500");
     }
 
     /**
@@ -230,7 +306,7 @@ class ContoDerivatiP2Test {
      * P1 e senza le posizioni lo stesso conto da' colonna 7 = conto all'ingresso, colonna 8 zero (stampata come 1), mai solo monitoraggio. Stato a fiscalita' privilegiata: IVAFE al 4 per mille.
      */
     @Test
-    void ilRigoCodice9_conP2ValeIlConto_conP1SenzaPosizioniESoloMonitoraggio() {
+    void ilRigoCodice9_conP2ValeIlConto_conP1SenzaPosizioniColonna8Zero() {
         esempio(true, false);
         calcola(true);
         Calcoli_RW_Derivati.Prezzo prezzo = (m, ist) -> "USDT".equals(m)

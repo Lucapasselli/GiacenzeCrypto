@@ -514,7 +514,7 @@ private static final long serialVersionUID = 8L;
         long sulConto = !ContoDerivati.Attivo() ? 0
                 : inAttesa.stream().filter(v -> ContoDerivati.CalcolatoComeDerivato(v, Principale.MappaCryptoWallet)).count();
         String notaConto = sulConto == 0 ? ""
-                : "\n\nCon l'opzione Conto derivati attiva " + (sulConto == n ? (n == 1 ? "questo movimento sta" : "questi movimenti stanno")
+                : "\n\n" + (sulConto == n ? (n == 1 ? "Questo movimento sta" : "Questi movimenti stanno")
                 : sulConto + " di questi movimenti stanno") + " sul conto derivati e contano già come derivati anche da classificare: "
                 + "il loro risultato va nella colonna Risultato derivati e la classificazione non lo cambia.";
         AppDialog.DialogResult r = AppDialog.builder(this)

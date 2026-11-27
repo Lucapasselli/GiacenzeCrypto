@@ -659,10 +659,13 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
      * nessun costo ({@code v[16]} e {@code v[17]} sono entrambi vuoti quando la controparte è dello stesso
      * gruppo), quindi una pila costruita sui soli movimenti del wallet selezionato mostrerebbe quantità
      * positive a costo zero per ogni moneta arrivata da un giroconto.</li>
-     * <li><b>La pila è per gruppo wallet, come nel motore, ma la chiave della moneta è quella della riga
-     * della tabella</b> ({@code Moneta;Tipo;Address;Rete}) e non il solo simbolo: due righe con lo stesso
-     * simbolo su reti diverse sono due righe distinte e leggendo entrambe dalla stessa pila si conterebbe
-     * due volte lo stesso lotto.</li>
+     * <li><b>La pila è per gruppo wallet e per simbolo, esattamente come nel motore</b> (dal 2026-11-27: prima
+     * era per riga della tabella, {@code Moneta;Tipo;Address;Rete}, e una vendita su una rete consumava i lotti
+     * di quella rete mentre il motore toglie sempre i più recenti del simbolo, quindi il residuo mostrato
+     * dipendeva da dove si vendeva). Le righe di uno stesso simbolo (reti e address diversi) <b>si dividono il
+     * costo della pila in proporzione alla quantità</b>: leggendo ogni riga dalla stessa pila senza dividere si
+     * conterebbe più volte lo stesso lotto. La quantità di ogni riga nella pila del suo gruppo si tiene a parte
+     * ({@code TracciaQuantita}, tutti i wallet e tutte le gambe, anche i giroconti senza costo).</li>
      * </ul>
      *
      * @param DataRiferimento istante (escluso) fino al quale considerare i movimenti, come nel ciclo che riempie la tabella
@@ -713,14 +716,16 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
      * @param Simboli se non {@code null}, solo le monete con uno di questi simboli toccano le pile
      */
     private static void ElaboraLotti(CostiCaricoRimanenze Costi, String[] v, java.util.Set<String> Simboli) {
+        //Le quantita' per riga servono a ripartire il costo della pila del simbolo, e contano TUTTE le gambe, anche i giroconti senza costo
+        TracciaQuantita(Costi, v, Simboli);
         //P2 (ContoDerivati): una gamba del giroconto fra spot e conto derivati scarica la pila da cui esce e carica al valore quella in cui
         //entra, come nel motore, anche se e' un trasferimento interno o un PTW/DTW (blocco e sblocco di un rientro della 1.0.66)
         if (Costi.ContoP2 && ContoDerivati.IsGirocontoP2(v, MappaCryptoWallet)) {
             boolean Esce = !v[9].isBlank() && !v[9].equalsIgnoreCase("FIAT") && !v[16].isBlank() && (Simboli == null || Simboli.contains(v[8]));
-            if (Esce) Costi.TogliLotti(Costi.GruppoDi(v), ChiaveRiga(v[8], v[9], v[26], Funzioni.TrovaReteDaIMovimento(v)), v[10]);
+            if (Esce) Costi.TogliLotti(Costi.GruppoDi(v), v[8], v[10]);
             boolean Entra = !v[12].isBlank() && !v[12].equalsIgnoreCase("FIAT") && !v[17].isBlank();
             if (Entra && (Simboli == null || Simboli.contains(v[11]))) {
-                Costi.InserisciLotto(Costi.GruppoDi(v), ChiaveRiga(v[11], v[12], v[28], Funzioni.TrovaReteDaIMovimento(v)), v[13], v[17], v[0]);
+                Costi.InserisciLotto(Costi.GruppoDi(v), v[11], v[13], v[17], v[0]);
             }
             return;
         }
@@ -728,12 +733,8 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                 && !v[18].contains("PTW") && (Simboli == null || Simboli.contains(v[8]));
         boolean Entrata = !v[12].isBlank() && !v[12].equalsIgnoreCase("FIAT") && !v[17].isBlank();
         if (!Uscita && !Entrata) {
-            //Deposito da un wallet proprio dello STESSO gruppo : il motore non scrive nessun costo sul
-            //movimento (un'unica pila per simbolo), ma qui le pile sono per riga della tabella
-            if (v[18].contains("DTW") && !v[12].isBlank() && !v[12].equalsIgnoreCase("FIAT")
-                    && (Simboli == null || Simboli.contains(v[11]))) {
-                SpostaLottiTraRigheStessoGruppo(Costi, v);
-            }
+            //Deposito da un wallet proprio dello STESSO gruppo : il motore non scrive nessun costo sul movimento e la pila
+            //(una per simbolo, come nel motore) non cambia : la quota delle righe la dicono le quantita' tracciate
             return;
         }
         String IDTS[] = v[0].split("_");
@@ -741,15 +742,13 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
             //Movimento interno : non tocca le pile
             return;
         }
-        String Rete = null;
         String Gruppo = null;
 
         //USCITA : scarico i lotti, tranne che per i movimenti interni e per i PTW (prelievi verso un
         //wallet proprio), che vengono scaricati dal DTW corrispondente quando arrivano a destinazione
         if (Uscita) {
-            Rete = Funzioni.TrovaReteDaIMovimento(v);
             Gruppo = Costi.GruppoDi(v);
-            Costi.TogliLotti(Gruppo, ChiaveRiga(v[8], v[9], v[26], Rete), v[10]);
+            Costi.TogliLotti(Gruppo, v[8], v[10]);
         }
 
         //ENTRATA : carico il lotto al costo di carico scritto dal motore delle plusvalenze
@@ -757,10 +756,9 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
             if (!v[18].contains("DTW")) {
                 if (Simboli == null || Simboli.contains(v[11])) {
                     if (Gruppo == null) {
-                        Rete = Funzioni.TrovaReteDaIMovimento(v);
                         Gruppo = Costi.GruppoDi(v);
                     }
-                    Costi.InserisciLotto(Gruppo, ChiaveRiga(v[11], v[12], v[28], Rete), v[13], v[17], v[0]);
+                    Costi.InserisciLotto(Gruppo, v[11], v[13], v[17], v[0]);
                 }
             } else {
                 //Deposito da un wallet proprio : se la controparte sta in un gruppo diverso il costo di
@@ -784,15 +782,13 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                 if (Controparte[0] != null) {
                     if (CaricoQui) {
                         if (Gruppo == null) {
-                            Rete = Funzioni.TrovaReteDaIMovimento(v);
                             Gruppo = Costi.GruppoDi(v);
                         }
-                        Costi.InserisciLotto(Gruppo, ChiaveRiga(v[11], v[12], v[28], Rete), v[13], v[17], v[0]);
+                        Costi.InserisciLotto(Gruppo, v[11], v[13], v[17], v[0]);
                     }
                     Mov = MappaCryptoWallet.get(Controparte[0]);
                     if (Mov != null && (Simboli == null || Simboli.contains(Mov[8]))) {
-                        String ReteControparte = Funzioni.TrovaReteDaIMovimento(Mov);
-                        Costi.TogliLotti(Controparte[1], ChiaveRiga(Mov[8], Mov[9], Mov[26], ReteControparte), Mov[10]);
+                        Costi.TogliLotti(Controparte[1], Mov[8], Mov[10]);
                     }
                 }
             }
@@ -800,32 +796,41 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
     }
 
     /**
-     * Trasferimento fra due wallet dello stesso gruppo che nella tabella finiscono su righe diverse
-     * (tipicamente un exchange, senza rete né address, e il wallet on-chain dello stesso token): il motore
-     * delle plusvalenze ha una pila per simbolo e il costo "segue" da solo, qui le pile sono per riga
-     * ({@code Moneta;Tipo;Address;Rete}) e senza questo passaggio i lotti resterebbero sulla riga di
-     * partenza, lasciando a costo zero la quantità arrivata. Si sposta, a parità di gruppo, la quantità
-     * uscita dal PTW collegato (la stessa del deposito, commissioni escluse) dalla pila della riga di partenza a
-     * quella di arrivo, mantenendo costo, ID di origine e ordine dei lotti. Con lo stesso gruppo non c'è
-     * nessun effetto sul costo complessivo: se il gruppo è diverso ci pensa il ramo del DTW con costo scritto.
+     * Tiene il conto della quantita' di ogni riga della tabella ({@code Moneta;Tipo;Address;Rete}) dentro la pila del suo
+     * gruppo, <b>su tutti i wallet</b> e a prescindere dal costo: e' il denominatore con cui {@link CostiCaricoRimanenze}
+     * ripartisce il costo della pila del simbolo fra le righe. Conta anche i giroconti interni e i PTW (che non toccano i lotti),
+     * perche' una riga ha la giacenza che ha, con o senza costo. Uscita con segno meno, entrata con segno piu'
+     * a prescindere da come e' scritta la stringa. Le gambe FIAT non hanno pile.
+     * <p>
+     * Esisteva un passaggio che spostava i lotti da una riga all'altra a ogni trasferimento dello stesso gruppo
+     * ({@code SpostaLottiTraRigheStessoGruppo}, per avere sulla riga di arrivo il costo e non zero): con la pila per simbolo
+     * il costo non ha una riga di appartenenza e quel passaggio non serve piu'.
      */
-    private static void SpostaLottiTraRigheStessoGruppo(CostiCaricoRimanenze Costi, String[] v) {
-        String Gruppo = Costi.GruppoDelMovimento(v[3]);
-        String Rete = Funzioni.TrovaReteDaIMovimento(v);
-        String ChiaveA = ChiaveRiga(v[11], v[12], v[28], Rete);
-        for (String IdC : v[20].split(",")) {
-            String C[] = IdC.isBlank() ? null : MappaCryptoWallet.get(IdC);
-            if (C == null || !C[18].contains("PTW") || !C[8].equals(v[11]) || !C[9].equalsIgnoreCase(v[12])) {
+    private static void TracciaQuantita(CostiCaricoRimanenze Costi, String[] v, java.util.Set<String> Simboli) {
+        int[][] Gambe = {{8, 9, 10, 26}, {11, 12, 13, 28}};
+        String Rete = null;
+        String Gruppo = null;
+        for (int[] g : Gambe) {
+            String Simbolo = v[g[0]];
+            String Tipo = v[g[1]];
+            if (Simbolo.isBlank() || Tipo.isBlank() || Tipo.equalsIgnoreCase("FIAT")
+                    || (Simboli != null && !Simboli.contains(Simbolo))) {
                 continue;
             }
-            if (!java.util.Objects.equals(Gruppo, Costi.GruppoDelMovimento(C[3]))) {
+            BigDecimal Qta;
+            try {
+                Qta = new BigDecimal(v[g[2]].trim()).abs();
+            } catch (NumberFormatException ex) {
                 continue;
             }
-            String ChiaveDa = ChiaveRiga(C[8], C[9], C[26], Funzioni.TrovaReteDaIMovimento(C));
-            if (!ChiaveDa.equals(ChiaveA)) {
-                Costi.SpostaLotti(Gruppo, ChiaveDa, ChiaveA, C[10]);
+            if (Qta.signum() == 0) {
+                continue;
             }
-            return;
+            if (Gruppo == null) {
+                Rete = Funzioni.TrovaReteDaIMovimento(v);
+                Gruppo = Costi.GruppoDi(v);
+            }
+            Costi.TracciaQuantita(Gruppo, ChiaveRigaGamba(v, g[0] == 8 ? 0 : 1, Rete), g[0] == 8 ? Qta.negate() : Qta);
         }
     }
 
@@ -943,9 +948,9 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
             if (Mov[g[0]].isBlank()) {
                 continue;
             }
-            String Chiave = ChiaveRiga(Mov[g[0]], Mov[g[1]], Mov[g[3]], ReteMov);
+            String Chiave = ChiaveRigaGamba(Mov, g[0] == 8 ? 0 : 1, ReteMov);
             if (!Monete.containsKey(Chiave)) {
-                Monete.put(Chiave, new GiacenzeMoneta(Mov[g[0]], Mov[g[1]], Chiave,
+                Monete.put(Chiave, new GiacenzeMoneta(ContoDerivati.ChiaveMoneta(Mov[g[0]], ContoDerivati.RigaSulConto(Mov, MappaCryptoWallet)), Mov[g[1]], Chiave,
                         PrezzoUnitarioNelMovimento(Mov, Mov[g[0]], Mov[g[2]])));
                 Simboli.add(Mov[g[0]]);
             }
@@ -974,12 +979,12 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
             String IDTS[] = Mov[0].split("_");
             boolean Interno = IDTS.length > 4 && IDTS[4].equalsIgnoreCase("TI");
             if (Mov[16].isBlank() && isCrypto(Mov[8], Mov[9])) {
-                Dettaglio.CostoInformativo[0] = Costi.CostoDelGruppo(Gruppo,
-                        ChiaveRiga(Mov[8], Mov[9], Mov[26], ReteMov), QtaAssoluta(Mov[10]));
+                Dettaglio.CostoInformativo[0] = Costi.CostoLottiPiuRecentiDelMovimento(Mov,
+                        ChiaveRigaGamba(Mov, 0, ReteMov), QtaAssoluta(Mov[10]));
             }
             if (Mov[17].isBlank() && isCrypto(Mov[11], Mov[12]) && (Interno || Mov[18].contains("DTW"))) {
-                Dettaglio.CostoInformativo[1] = Costi.CostoDelGruppo(Gruppo,
-                        ChiaveRiga(Mov[11], Mov[12], Mov[28], ReteMov), QtaAssoluta(Mov[13]));
+                Dettaglio.CostoInformativo[1] = Costi.CostoLottiPiuRecentiDelMovimento(Mov,
+                        ChiaveRigaGamba(Mov, 1, ReteMov), QtaAssoluta(Mov[13]));
             }
         }
         SommaQuantita(Mov, Simboli, Correnti, Gruppo, Wallet);
@@ -1021,7 +1026,7 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
             if (v[g[0]].isBlank() || !Simboli.contains(v[g[0]])) {
                 continue;
             }
-            BigDecimal Contatori[] = Correnti.get(ChiaveRiga(v[g[0]], v[g[1]], v[g[3]], Rete));
+            BigDecimal Contatori[] = Correnti.get(ChiaveRigaGamba(v, g[0] == 8 ? 0 : 1, Rete));
             if (Contatori == null) {
                 continue;
             }
@@ -1409,6 +1414,20 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
 
 
     /**
+     * La chiave di riga di una gamba di un movimento, con il suffisso del conto derivati
+     * ({@link ContoDerivati#SUFFISSO_CHIAVE}) se il movimento sta sul conto: <b>l'unico punto</b> in cui si costruisce una chiave a
+     * partire da un movimento. Spot e conto derivati dello stesso token sono righe distinte (dal 2026-11-27).
+     * @param v il movimento
+     * @param gamba {@code 0} uscita ({@code v[8]}, {@code v[9]}, {@code v[26]}), {@code 1} entrata ({@code v[11]}, {@code v[12]}, {@code v[28]})
+     * @param rete la rete del movimento
+     */
+    static String ChiaveRigaGamba(String[] v, int gamba, String rete) {
+        int s = gamba == 0 ? 8 : 11;
+        return ChiaveRiga(ContoDerivati.ChiaveMoneta(v[s], ContoDerivati.RigaSulConto(v, MappaCryptoWallet)), v[s + 1],
+                v[gamba == 0 ? 26 : 28], rete);
+    }
+
+    /**
      * Compone la chiave con cui una moneta è identificata nella tabella "Giacenze a data", con la stessa
      * regola del ciclo che riempie la tabella: se la rete manca, manca anche l'address (i due vanno a
      * braccetto e tenerne uno solo spezzerebbe in due righe la stessa giacenza).
@@ -1433,13 +1452,30 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
     }
 
     /**
-     * Le pile LIFO dei lotti ancora in giacenza, per gruppo wallet e per riga della tabella
-     * "Giacenze a data". Si costruisce con {@link #CalcolaCostiCaricoRimanenze(long)}.
+     * Le pile LIFO dei lotti ancora in giacenza, <b>per gruppo wallet e per simbolo</b> (la stessa pila del motore delle
+     * plusvalenze), con la quantita' di ogni riga della tabella "Giacenze a data" ({@code Moneta;Tipo;Address;Rete}) dentro
+     * la pila del suo gruppo. Si costruisce con {@link #CalcolaCostiCaricoRimanenze(long)}.
+     * <p>
+     * <b>Il costo di una riga e' una quota del costo della pila del simbolo, in proporzione alla quantita'</b>: ETH su due reti
+     * hanno lo stesso costo unitario, e la somma delle righe e' il costo residuo del motore, qualunque sia la rete su cui si e'
+     * venduto. Prima ogni riga aveva i suoi lotti e una vendita su una rete consumava quelli della sua riga, mentre il motore
+     * toglie sempre i lotti piu' recenti del simbolo: il residuo mostrato dipendeva da dove si vendeva
+     * ({@code nocommit/Documentazione/Analisi_Costo_Carico_Righe_Giacenze.md}).
      */
     public static final class CostiCaricoRimanenze {
 
-        /** Gruppo wallet → chiave di riga → pila dei lotti residui ({@code {quantità, costo, ID movimento}}). */
+        /** Gruppo wallet → simbolo → pila dei lotti residui ({@code {quantità, costo, ID movimento}}), come nel motore. */
         private final Map<String, Map<String, ArrayDeque<String[]>>> Pile = new TreeMap<>();
+
+        /** Gruppo wallet → simbolo → chiave di riga → quantita' della riga nel gruppo (tutti i wallet, tutte le gambe non FIAT). */
+        private final Map<String, Map<String, Map<String, BigDecimal>>> QtaRighe = new TreeMap<>();
+
+        /**
+         * Costo della pila di un simbolo in un gruppo ({@code gruppo\u0000simbolo}), calcolato su richiesta. Ogni carico, scarico
+         * o quantita' tracciata lo svuota: nella passata della tabella non ci sono letture, nel dettaglio ce ne sono dopo
+         * ogni movimento e la mappa fa da cache fra una riga e l'altra dello stesso passo.
+         */
+        private final Map<String, BigDecimal> CostoSimbolo = new java.util.HashMap<>();
 
         /**
          * Quantità e costo dei lotti già convertiti in {@link BigDecimal}, per identità del lotto. Il costo di una
@@ -1465,6 +1501,7 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
 
         /** Mette un lotto in cima alla pila tenendo aggiornati i totali. */
         private void MettiLotto(ArrayDeque<String[]> Pila, String[] Lotto) {
+            CostoSimbolo.clear();
             Pila.push(Lotto);
             BigDecimal[] N = NumeriDelLotto(Lotto);
             BigDecimal[] T = TotaliPila.computeIfAbsent(Pila, p -> new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
@@ -1474,6 +1511,7 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
 
         /** Toglie il lotto in cima alla pila tenendo aggiornati i totali. */
         private String[] PrendiLotto(ArrayDeque<String[]> Pila) {
+            CostoSimbolo.clear();
             String[] Lotto = Pila.pop();
             BigDecimal[] N = NumeriDelLotto(Lotto);
             BigDecimal[] T = TotaliPila.get(Pila);
@@ -1523,7 +1561,7 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
          * lotto; un costo non numerico vale zero (il lotto deve comunque esistere, o la quantità
          * successivamente scaricata non troverebbe nulla e si sfalserebbe tutto il resto della pila).
          */
-        private void InserisciLotto(String Gruppo, String Chiave, String Qta, String Costo, String ID) {
+        private void InserisciLotto(String Gruppo, String Simbolo, String Qta, String Costo, String ID) {
             if (Gruppo == null || Qta == null || Qta.isBlank()) {
                 return;
             }
@@ -1543,7 +1581,7 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                 CostoLotto = BigDecimal.ZERO;
             }
             MettiLotto(Pile.computeIfAbsent(Gruppo, k -> new TreeMap<>())
-                    .computeIfAbsent(Chiave, k -> new ArrayDeque<>()),
+                    .computeIfAbsent(Simbolo, k -> new ArrayDeque<>()),
                     new String[]{QtaLotto.toPlainString(), CostoLotto.toPlainString(), ID});
         }
 
@@ -1553,7 +1591,7 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
          * Se la pila finisce prima non si segnala nulla: la mancanza è già contata dal motore delle
          * plusvalenze ("parte del LiFo mancante") e la riga si vede comunque in rosso per la giacenza negativa.
          */
-        private void TogliLotti(String Gruppo, String Chiave, String Qta) {
+        private void TogliLotti(String Gruppo, String Simbolo, String Qta) {
             if (Gruppo == null || Qta == null || Qta.isBlank()) {
                 return;
             }
@@ -1561,7 +1599,7 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
             if (PerChiave == null) {
                 return;
             }
-            ArrayDeque<String[]> Pila = PerChiave.get(Chiave);
+            ArrayDeque<String[]> Pila = PerChiave.get(Simbolo);
             if (Pila == null) {
                 return;
             }
@@ -1590,61 +1628,95 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
             }
         }
 
-        /**
-         * Sposta, dalla pila di una riga a quella di un'altra dello stesso gruppo, i lotti che coprono la
-         * quantità indicata (dall'ultimo entrato, come uno scarico). Costo, ID di origine e ordine restano:
-         * un lotto più capiente del necessario si divide col costo proporzionato. Se la pila di partenza
-         * finisce prima non si segnala nulla, come in {@link #TogliLotti}.
-         */
-        private void SpostaLotti(String Gruppo, String ChiaveDa, String ChiaveA, String Qta) {
-            if (Gruppo == null || Qta == null || Qta.isBlank()) {
+        /** Somma la quantita' (con segno) di una gamba alla riga {@code ChiaveRiga} dentro la pila del gruppo. */
+        private void TracciaQuantita(String Gruppo, String ChiaveRiga, BigDecimal Qta) {
+            if (Gruppo == null) {
                 return;
             }
-            Map<String, ArrayDeque<String[]>> PerChiave = Pile.get(Gruppo);
-            ArrayDeque<String[]> Da = PerChiave == null ? null : PerChiave.get(ChiaveDa);
-            if (Da == null) {
-                return;
-            }
-            BigDecimal Rimanente;
-            try {
-                Rimanente = new BigDecimal(Qta.trim()).abs();
-            } catch (NumberFormatException ex) {
-                return;
-            }
-            List<String[]> Mossi = new ArrayList<>();
-            while (Rimanente.signum() > 0 && !Da.isEmpty()) {
-                String Lotto[] = PrendiLotto(Da);
-                BigDecimal[] Numeri = NumeriDelLotto(Lotto);
-                if (Numeri[0].compareTo(Rimanente) <= 0) {
-                    Rimanente = Rimanente.subtract(Numeri[0]);
-                    Mossi.add(Lotto);
-                } else {
-                    BigDecimal QtaResidua = Numeri[0].subtract(Rimanente);
-                    BigDecimal CostoResiduo = Numeri[1]
-                            .divide(Numeri[0], VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP)
-                            .multiply(QtaResidua)
-                            .setScale(VarStatiche.DecimaliCalcoli, RoundingMode.HALF_UP);
-                    MettiLotto(Da, new String[]{QtaResidua.toPlainString(), CostoResiduo.toPlainString(), Lotto[2]});
-                    Mossi.add(new String[]{Rimanente.toPlainString(),
-                        Numeri[1].subtract(CostoResiduo).toPlainString(), Lotto[2]});
-                    Rimanente = BigDecimal.ZERO;
-                }
-            }
-            //Rimessi dal più vecchio al più recente : in cima alla pila di arrivo resta il lotto più recente
-            ArrayDeque<String[]> A = Pile.get(Gruppo).computeIfAbsent(ChiaveA, k -> new ArrayDeque<>());
-            for (int i = Mossi.size() - 1; i >= 0; i--) {
-                MettiLotto(A, Mossi.get(i));
-            }
+            CostoSimbolo.clear();
+            QtaRighe.computeIfAbsent(Gruppo, k -> new TreeMap<>())
+                    .computeIfAbsent(Simbolo(ChiaveRiga), k -> new TreeMap<>())
+                    .merge(ChiaveRiga, Qta, BigDecimal::add);
+        }
+
+        /** @return il simbolo di una chiave di riga, che e' anche la chiave della pila */
+        private static String Simbolo(String ChiaveRiga) {
+            int Fine = ChiaveRiga.indexOf(';');
+            //La riga del conto derivati porta il suffisso, la pila (anche quella del conto, che e' un gruppo a parte) il simbolo vero
+            return ContoDerivati.SimboloDaChiave(Fine < 0 ? ChiaveRiga : ChiaveRiga.substring(0, Fine));
+        }
+
+        /** @return {@code true} se la chiave di riga e' di una moneta FIAT, che non ha lotti */
+        private static boolean IsFiat(String ChiaveRiga) {
+            String[] Parti = ChiaveRiga.split(";", -1);
+            return Parti.length > 1 && Parti[1].equalsIgnoreCase("FIAT");
+        }
+
+        /** @return le quantita' per riga del simbolo nel gruppo, vuota se non ce ne sono */
+        private Map<String, BigDecimal> RigheDelSimbolo(String Gruppo, String Simbolo) {
+            Map<String, Map<String, BigDecimal>> PerSimbolo = QtaRighe.get(Gruppo);
+            Map<String, BigDecimal> Righe = PerSimbolo == null ? null : PerSimbolo.get(Simbolo);
+            return Righe == null ? Map.of() : Righe;
         }
 
         /**
-         * Costo di carico dei lotti che coprono la giacenza mostrata su una riga della tabella.
+         * Costo della pila di un simbolo in un gruppo, per la giacenza netta che il simbolo ha nel gruppo (somma delle sue
+         * righe, negative comprese): la pila intera se la giacenza la copre, altrimenti i lotti piu' recenti che la coprono,
+         * come fa il quadro RT a fine anno. Con giacenza netta nulla o negativa non ci sono rimanenze da valorizzare.
+         */
+        private BigDecimal CostoDelSimbolo(String Gruppo, String Simbolo) {
+            return CostoSimbolo.computeIfAbsent(Gruppo + "\u0000" + Simbolo, k -> {
+                Map<String, ArrayDeque<String[]>> PerSimbolo = Pile.get(Gruppo);
+                ArrayDeque<String[]> Pila = PerSimbolo == null ? null : PerSimbolo.get(Simbolo);
+                if (Pila == null || Pila.isEmpty()) {
+                    return BigDecimal.ZERO;
+                }
+                BigDecimal Netta = BigDecimal.ZERO;
+                for (BigDecimal Q : RigheDelSimbolo(Gruppo, Simbolo).values()) {
+                    Netta = Netta.add(Q);
+                }
+                if (Netta.signum() <= 0) {
+                    return BigDecimal.ZERO;
+                }
+                BigDecimal[] Totali = TotaliPila.get(Pila);
+                if (Totali == null) {
+                    return BigDecimal.ZERO;
+                }
+                if (Netta.compareTo(Totali[0]) >= 0) {
+                    return Totali[1];
+                }
+                //La pila e' dal lotto piu' recente al piu' vecchio (push in testa) : stessa lettura LIFO del motore
+                BigDecimal Costo = BigDecimal.ZERO;
+                for (String[] Lotto : Pila) {
+                    if (Netta.signum() <= 0) {
+                        break;
+                    }
+                    BigDecimal[] Numeri = NumeriDelLotto(Lotto);
+                    if (Numeri[0].compareTo(Netta) <= 0) {
+                        Netta = Netta.subtract(Numeri[0]);
+                        Costo = Costo.add(Numeri[1]);
+                    } else {
+                        Costo = Costo.add(Numeri[1].divide(Numeri[0], VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP)
+                                .multiply(Netta));
+                        Netta = BigDecimal.ZERO;
+                    }
+                }
+                return Costo;
+            });
+        }
+
+        /**
+         * Costo di carico delle rimanenze mostrate su una riga della tabella.
          * <p>
-         * I lotti dei gruppi wallet in gioco vengono uniti e riordinati per ID del movimento di origine —
-         * che è cronologico, visto che l'ID comincia con {@code yyyyMMddHHmmss} — così la lettura è la
-         * stessa qualunque sia l'ampiezza della selezione: su un gruppo intero, o su "Tutti", la quantità
-         * mostrata copre l'intera pila e il costo è quello di tutte le rimanenze; su un singolo wallet copre
-         * solo la parte più recente, che è la lettura LIFO della domanda "quanto è costato quello che resta".
+         * Se la selezione contiene <b>tutta</b> la quantita' della riga nei gruppi letti ("Tutti", un gruppo, un wallet che da solo
+         * ha tutta la riga) il costo e' la <b>quota della riga</b> sul costo della pila di ogni gruppo: costo della pila del simbolo
+         * per quantita' della riga diviso la somma delle quantita' positive delle righe di quel simbolo. Due righe dello stesso
+         * simbolo hanno quindi lo stesso costo unitario e la somma delle righe e' il costo residuo del motore
+         * ({@link #CostoDelSimbolo}).
+         * <p>
+         * Se invece la quantita' mostrata e' <b>solo una parte</b> di quella della riga (un wallet fra piu' wallet sulla stessa
+         * riga) vale la lettura LIFO di sempre, scelta e documentata: i lotti piu' recenti del simbolo che la coprono, uniti fra
+         * i gruppi e riordinati per ID del movimento di origine (cronologico, l'ID comincia con {@code yyyyMMddHHmmss}).
          *
          * @param Wallet selezione della combo wallet ("Tutti", un nome di wallet, o "Gruppo : X ( alias )")
          * @param Chiave chiave della riga, da {@link Principale_GiacenzeaData#ChiaveRiga(String, String, String, String)}
@@ -1662,6 +1734,24 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
          */
         public String CostoDelGruppo(String Gruppo, String Chiave, String Qta) {
             return CostoDaiGruppi(PlusXWallet ? ConConto(Gruppo) : Pile.keySet(), Chiave, Qta);
+        }
+
+        /**
+         * Come {@link #CostoLottiPiuRecentiDelGruppo}, ma sulla pila del movimento: quella del suo gruppo, o quella del conto derivati del
+         * gruppo se il movimento sta sul conto. Il giroconto di un token sul conto non legge i lotti dello spot e viceversa.
+         */
+        public String CostoLottiPiuRecentiDelMovimento(String[] Movimento, String Chiave, String Qta) {
+            return CostoLottiPiuRecenti(List.of(GruppoDi(Movimento)), Chiave, Qta).setScale(2, RoundingMode.HALF_UP).toPlainString();
+        }
+
+        /**
+         * Il costo dei lotti piu' recenti del simbolo che coprono la quantita' indicata, <b>senza</b> ripartirlo per riga: la
+         * lettura del costo di una quantita' che si sta muovendo (un giroconto), che il motore fa con la pila del gruppo.
+         * Con {@code PlusXWallet} spenta la pila e' una sola.
+         */
+        public String CostoLottiPiuRecentiDelGruppo(String Gruppo, String Chiave, String Qta) {
+            Collection<String> Gruppi = PlusXWallet ? ConConto(Gruppo) : Pile.keySet();
+            return CostoLottiPiuRecenti(Gruppi, Chiave, Qta).setScale(2, RoundingMode.HALF_UP).toPlainString();
         }
 
         /**
@@ -1685,18 +1775,60 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
             } catch (NumberFormatException | NullPointerException ex) {
                 return BigDecimal.ZERO;
             }
-            if (Richiesta.signum() <= 0) {
+            if (Richiesta.signum() <= 0 || IsFiat(Chiave)) {
                 return BigDecimal.ZERO;
             }
+            //Quanto della riga c'e' nei gruppi letti, e la sua quota del costo della pila di ciascuno
+            String Simbolo = Simbolo(Chiave);
+            BigDecimal QtaRiga = BigDecimal.ZERO;
+            BigDecimal Quota = BigDecimal.ZERO;
+            for (String Gruppo : Gruppi) {
+                Map<String, BigDecimal> Righe = RigheDelSimbolo(Gruppo, Simbolo);
+                BigDecimal QtaQui = Righe.get(Chiave);
+                if (QtaQui == null || QtaQui.signum() <= 0) {
+                    continue;
+                }
+                BigDecimal Positive = BigDecimal.ZERO;
+                for (BigDecimal Q : Righe.values()) {
+                    if (Q.signum() > 0) {
+                        Positive = Positive.add(Q);
+                    }
+                }
+                QtaRiga = QtaRiga.add(QtaQui);
+                Quota = Quota.add(CostoDelSimbolo(Gruppo, Simbolo).multiply(QtaQui)
+                        .divide(Positive, VarStatiche.DecimaliCalcoli + 10, RoundingMode.HALF_UP));
+            }
+            //La selezione ha tutta la riga : la sua quota
+            if (QtaRiga.signum() > 0 && Richiesta.compareTo(QtaRiga) >= 0) {
+                return Quota;
+            }
+            //Una parte soltanto della riga : i lotti piu' recenti che la coprono
+            return CostoLottiPiuRecenti(Gruppi, Chiave, Richiesta);
+        }
+
+        private BigDecimal CostoLottiPiuRecenti(Collection<String> Gruppi, String Chiave, String Qta) {
+            try {
+                return CostoLottiPiuRecenti(Gruppi, Chiave, new BigDecimal(Qta.trim()));
+            } catch (NumberFormatException | NullPointerException ex) {
+                return BigDecimal.ZERO;
+            }
+        }
+
+        /** I lotti piu' recenti del simbolo della chiave, nei gruppi indicati, che coprono la quantita' (la pila intera se non basta). */
+        private BigDecimal CostoLottiPiuRecenti(Collection<String> Gruppi, String Chiave, BigDecimal Richiesta) {
+            if (Richiesta.signum() <= 0 || IsFiat(Chiave)) {
+                return BigDecimal.ZERO;
+            }
+            String Simbolo = Simbolo(Chiave);
             List<String[]> Lotti = new ArrayList<>();
             BigDecimal QtaTotale = BigDecimal.ZERO;
             BigDecimal CostoTotale = BigDecimal.ZERO;
             for (String Gruppo : Gruppi) {
-                Map<String, ArrayDeque<String[]>> PerChiave = Pile.get(Gruppo);
-                if (PerChiave == null) {
+                Map<String, ArrayDeque<String[]>> PerSimbolo = Pile.get(Gruppo);
+                if (PerSimbolo == null) {
                     continue;
                 }
-                ArrayDeque<String[]> Pila = PerChiave.get(Chiave);
+                ArrayDeque<String[]> Pila = PerSimbolo.get(Simbolo);
                 if (Pila != null) {
                     Lotti.addAll(Pila);
                     BigDecimal[] T = TotaliPila.get(Pila);
@@ -1837,6 +1969,7 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
         private final java.util.Set<String> Simboli;
         private final String Chiave;
         private final Collection<String> Gruppi;
+        private final boolean DaConsegnare;
 
         /**
          * @param Wallet selezione della combo wallet ("Tutti", un wallet, "Gruppo : X ( alias )")
@@ -1846,7 +1979,9 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
          * @param Rete rete del token, o vuota
          */
         public CostiDettaglioToken(String Wallet, String Moneta, String Tipo, String Address, String Rete) {
-            Simboli = java.util.Set.of(Moneta);
+            //Moneta puo' essere quella di una riga del conto derivati (col suffisso): i movimenti si filtrano per il simbolo vero, le righe per la chiave
+            Simboli = java.util.Set.of(ContoDerivati.SimboloDaChiave(Moneta));
+            DaConsegnare = TokenDaConsegnare.Is(Moneta);
             Chiave = ChiaveRiga(Moneta, Tipo, Address, Rete);
             //Con "Tutti" è la vista viva delle chiavi della pila: si aggiorna da sola man mano che i lotti arrivano
             Gruppi = Costi.GruppiInSelezione(Wallet);
@@ -1920,6 +2055,9 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
         Ris[3] = Costi.CostoResiduo(QtaResidua);
         //Qui solo le fonti che non leggono nulla: gli altri prezzi si completano dopo, in background (PrezzoDaCompletare)
         CompletaColonnePrezzo(Ris, PrezzoUnitarioNelMovimento(Movimento, Movimento[Entrata ? 11 : 8], Qta, false), QtaResidua);
+        if (Costi.DaConsegnare) {
+            TokenDaConsegnare.AdattaColonneDettaglio(Ris);
+        }
         return Ris;
     }
 
@@ -2124,6 +2262,17 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
      */
     public static Map<String, Moneta> SommaQuantitaAData(java.util.Collection<String[]> Movimenti, long DataRiferimento,
             String Wallet, String SottoWallet) {
+        return SommaQuantitaAData(Movimenti, DataRiferimento, Wallet, SottoWallet, false);
+    }
+
+    /**
+     * Come {@link #SommaQuantitaAData(java.util.Collection, long, String, String)}; con {@code SeparaConto} le monete dei movimenti sul conto
+     * derivati ({@link ContoDerivati#SulContoP2}) hanno una riga a parte, col simbolo col suffisso {@link ContoDerivati#SUFFISSO_CHIAVE}
+     * (chiave e {@code Moneta.Moneta}): e' la forma della tabella "Giacenze a data", come i totali del quadro RT. Chi non separa (<i>Costi
+     * netti</i>, confronto con i nodi, fallimenti) continua a vedere un token solo, spot e conto insieme.
+     */
+    public static Map<String, Moneta> SommaQuantitaAData(java.util.Collection<String[]> Movimenti, long DataRiferimento,
+            String Wallet, String SottoWallet, boolean SeparaConto) {
         Map<String, Moneta> QtaCrypto = new java.util.TreeMap<>();//nel primo oggetto metto l'ID, come secondo oggetto metto il bigdecimal con la qta
         for (String[] movimento : Movimenti) {
             //Come prima cosa devo verificare che la data del movimento sia inferiore o uguale alla data scritta in alto
@@ -2160,6 +2309,10 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
                     Monete[1].Tipo = movimento[12];
                     Monete[1].Qta = movimento[13];
                     Monete[1].Rete = Rete;
+                    if (SeparaConto && ContoDerivati.RigaSulConto(movimento, MappaCryptoWallet)) {
+                        Monete[0].Moneta = ContoDerivati.ChiaveMoneta(Monete[0].Moneta, true);
+                        Monete[1].Moneta = ContoDerivati.ChiaveMoneta(Monete[1].Moneta, true);
+                    }
                     //Se non c'è l'address della moneta allora la rete non la metto visto che non è importante
                     //Stessa cosa se non ho la rete non mi serve mettere l'address
                     if (Rete == null||Rete.isBlank()){
@@ -2198,6 +2351,24 @@ String m = result.isAction("confirm") ? result.getInputValue() : null;
             }
         }
         return QtaCrypto;
+    }
+
+    /**
+     * Le monete della tabella con il simbolo vero, per chiedere i prezzi in blocco: una riga del conto derivati porta il suffisso
+     * ({@link ContoDerivati#SUFFISSO_CHIAVE}), che e' solo l'identita' della riga e non una moneta con un prezzo.
+     */
+    public static List<Moneta> MoneteDaPrezzare(java.util.Collection<Moneta> Righe) {
+        List<Moneta> Ris = new ArrayList<>();
+        for (Moneta M : Righe) {
+            if (ContoDerivati.IsChiaveConto(M.Moneta)) {
+                Moneta C = M.ClonaMoneta();
+                C.Moneta = ContoDerivati.SimboloDaChiave(M.Moneta);
+                Ris.add(C);
+            } else {
+                Ris.add(M);
+            }
+        }
+        return Ris;
     }
 
     /** Soglia minima (in euro) del valore di un movimento perché il suo prezzo unitario sia considerato affidabile. */

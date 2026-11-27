@@ -5,7 +5,7 @@ import java.math.RoundingMode;
 
 /**
  * Il conto derivati come derivato: l'opzione <b>P2</b> della decisione D15 ({@code nocommit/Documentazione/Decisioni_Derivati.md},
- * piano in {@code Analisi_P2_ContoDerivati.md}). Con P1 (predefinita) il margine resta una cripto-attività e nulla cambia. Con P2 il
+ * piano in {@code Analisi_P2_ContoDerivati.md}). Con P1 il margine resta una cripto-attività e nulla cambia. Con P2 (dal 24/11/2026 l'unico metodo valido, {@link #P1Disponibile}) il
  * sotto-wallet {@value OKXDerivati#SOTTOWALLET} di ogni exchange ha una pila LIFO sua, e:
  * <ul>
  *   <li>il giroconto del margine (righe marcate {@link Derivati#MARGINE}) dallo spot al sotto-wallet è una <b>cessione</b> di
@@ -29,12 +29,54 @@ public final class ContoDerivati {
     /** Opzione personale: {@code SI} = P2 (il conto derivati conta come derivato), altrimenti P1. */
     public static final String OPZIONE = "Derivati_ContoRilevante";
 
+    /** Valore di {@link #OPZIONE} quando l'utente non l'ha mai salvata: P2 (scelta dell'utente, 24/11/2026). */
+    public static final String OPZIONE_PREDEFINITA = "SI";
+
     /** Suffisso della chiave della pila del sotto-wallet nella mappa delle pile del motore. */
     static final String SUFFISSO_PILA = "|" + OKXDerivati.SOTTOWALLET;
 
-    /** @return {@code true} con P2 */
+    /**
+     * Dal 24/11/2026 P2 è l'unico metodo valido (scelta dell'utente: i problemi del quadro W/RW con P1): l'opzione non si vede più e
+     * {@link #Attivo()} dà sempre {@code true}. Il codice di P1 resta, a {@code true} {@link #Attivo()} torna a leggere l'opzione
+     * (i test che provano P1 lo impostano). Per riaprire P1 all'utente basta renderlo {@code true} e mostrare la casella.
+     */
+    static boolean P1Disponibile = false;
+
+    /** @return {@code true} con P2: sempre, finché {@link #P1Disponibile} è {@code false} */
     public static boolean Attivo() {
-        return "SI".equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(OPZIONE, "NO"));
+        if (!P1Disponibile) return true;
+        return "SI".equalsIgnoreCase(DatabaseH2.Pers_Opzioni_Leggi(OPZIONE, OPZIONE_PREDEFINITA));
+    }
+
+    /**
+     * Suffisso della chiave interna con cui una moneta del conto derivati si distingue da quella spot nelle mappe che hanno il simbolo
+     * come chiave (quadro RT, righe di "Giacenze a data"). E' solo una chiave: non si salva in nessun movimento, e il simbolo vero
+     * (prezzi, alias, SCAM, scritture) si ricava con {@link #SimboloDaChiave}.
+     */
+    public static final String SUFFISSO_CHIAVE = ".DERIVATI";
+
+    /**
+     * Il movimento ha una riga a parte, quella del conto derivati, nelle tabelle per simbolo: sta sul conto ({@link #SulContoP2}) e P2 e'
+     * il metodo in uso (con P1, ora solo nei test, il conto e' un sotto-wallet qualunque e le pile sono quelle di sempre).
+     */
+    public static boolean RigaSulConto(String[] v, java.util.Map<String, String[]> mappa) {
+        return Attivo() && SulContoP2(v, mappa);
+    }
+
+    /** @return la chiave della moneta: il simbolo, col suffisso se il movimento sta sul conto derivati ({@link #SulContoP2}) */
+    public static String ChiaveMoneta(String moneta, boolean sulConto) {
+        //Il token di un contratto (DERIV.*) e' gia' un derivato: nessun suffisso
+        return sulConto && moneta != null && !moneta.isBlank() && !Derivati.IsTokenContratto(moneta) ? moneta + SUFFISSO_CHIAVE : moneta;
+    }
+
+    /** @return {@code true} se la chiave e' quella di una moneta del conto derivati */
+    public static boolean IsChiaveConto(String chiave) {
+        return chiave != null && chiave.endsWith(SUFFISSO_CHIAVE);
+    }
+
+    /** @return il simbolo vero di una chiave (senza il suffisso del conto) */
+    public static String SimboloDaChiave(String chiave) {
+        return IsChiaveConto(chiave) ? chiave.substring(0, chiave.length() - SUFFISSO_CHIAVE.length()) : chiave;
     }
 
     /** @return {@code true} se il sotto-wallet è quello dei derivati */

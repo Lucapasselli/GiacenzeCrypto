@@ -525,14 +525,13 @@ cripto −5,00 €. I totali sono gli stessi: derivati +95,00 € − 90,00 € 
 Fra la chiusura e il recupero i 50 USDC di bonus restano nel LIFO e nelle giacenze, anche se non sono
 prelevabili.
 
-### Il conto derivati: margine cripto o parte del derivato {#conto-derivati}
+### Il conto derivati {#conto-derivati}
 
-Il margine con cui si apre una posizione resta una **cripto-attività**: è denaro dell'utente vincolato a garanzia,
-come dice la circolare 165/E sui margini, e il suo passaggio al conto derivati non ha effetti fiscali. È
-l'impostazione predefinita.
-
-Con l'opzione **Conto derivati** (in *Opzioni* – *Opzioni di Calcolo*) il conto derivati conta invece come
-parte del derivato:
+Il programma tratta il conto derivati come **parte del derivato**, e non c'è un'opzione per cambiare. Un'altra lettura
+considera il margine con cui si apre una posizione una **cripto-attività**, denaro dell'utente vincolato a garanzia
+(circolare 165/E sui margini), con il passaggio al conto derivati senza effetti fiscali: il programma la sa calcolare ma
+per ora non la offre, perché dà un quadro W/RW più difficile da sostenere. Il conto derivati conta come parte del derivato
+così:
 
 - il passaggio di cripto-attività dal conto spot al conto derivati è una **cessione** al valore del momento, con
   la sua plusvalenza o minusvalenza cripto,
@@ -544,14 +543,14 @@ parte del derivato:
 - un movimento su derivati del conto ancora da classificare (per esempio uno importato in un anno con la dichiarazione
   definitiva, che il programma lascia da classificare) conta già come accredito o addebito da derivati: il conto è parte
   del derivato, quindi quello che vi entra o esce non è una cripto-attività. Una commissione conta sempre, un deposito o un
-  prelievo solo se i movimenti non classificati entrano nel calcolo, come ogni altro movimento da classificare. Senza
-  l'opzione, e per i movimenti fuori dal conto, un movimento da classificare resta una cripto-attività.
+  prelievo solo se i movimenti non classificati entrano nel calcolo, come ogni altro movimento da classificare. Fuori
+  dal conto un movimento da classificare resta una cripto-attività.
 
 **Esempio.** 1.000 USDT comprati a 0,92 € (920 €). Il 1° marzo 500 USDT passano al conto derivati come margine
 (1 USDT vale 0,90 €). Il 31 maggio la posizione si chiude con un profitto di 300 USDT (1 USDT vale 0,88 €) e il
 margine rientra. Il 30 giugno si vendono tutti i 1.300 USDT a 0,88 € (1.144 €).
 
-| | Senza l'opzione | Con l'opzione |
+| | Se il margine restasse una cripto-attività (non usato) | Metodo del programma |
 |---|---|---|
 | 1° marzo, margine al conto | nessun effetto | cessione: 500 USDT valgono 450 € e costano 460 €, minusvalenza cripto di 10 € |
 | 31 maggio, profitto | reddito da derivati di 264 € (300 × 0,88), i 300 USDT entrano a 264 € | uguale, i 300 USDT entrano nel conto a 264 € |
@@ -561,13 +560,13 @@ margine rientra. Il 30 giugno si vendono tutti i 1.300 USDT a 0,88 € (1.144 �
 | **Totale cripto-attività** | **−40 €** | **−30 €** |
 
 In tutti e due i casi il totale è 1.144 − 920 = **+224 €**. Cambia dove cade l'effetto del cambio sul margine:
-tutto fra le cripto-attività senza l'opzione, fra i derivati durante la permanenza nel conto con l'opzione. Dal 2023
+tutto fra le cripto-attività se il margine restasse una cripto-attività, fra i derivati durante la permanenza nel conto con il metodo del programma. Dal 2023
 le due parti non si compensano fra loro, quindi l'imposta può essere diversa.
 
-Con una **perdita** di 200 USDT alla chiusura la perdita esce dal conto e tornano 300 USDT. Con l'opzione la perdita vale
+Con una **perdita** di 200 USDT alla chiusura la perdita esce dal conto e tornano 300 USDT. Con il metodo del programma la perdita vale
 il costo dei 200 USDT nel conto, 180 € (200 × 0,90), senza cessione cripto, e il rientro dei 300 USDT dà 264 − 270 = −6 €:
 derivati **−186 €**, cripto-attività −10 € al passaggio al conto e −20 € alla vendita (704 € contro 460 + 264), **−30 €**.
-Senza l'opzione la perdita vale 176 € (200 × 0,88) fra i derivati e i 200 USDT sono anche una cessione cripto (176 € contro
+Se il margine restasse una cripto-attività la perdita varrebbe 176 € (200 × 0,88) fra i derivati e i 200 USDT sono anche una cessione cripto (176 € contro
 un costo di 184 €): derivati **−176 €**, cripto-attività **−40 €**. In tutti e due i casi il totale è **−216 €**.
 
 Dove si applica:
@@ -585,14 +584,13 @@ Dove si applica:
   modifiche*) li sposta sul sotto-wallet, e reimportando **dopo** gli stessi file entrano i giroconti. L'ordine conta:
   il controllo dei doppioni non guarda il sotto-wallet, quindi reimportando prima dello spostamento i movimenti vecchi
   resterebbero sul wallet principale.
-- **Bybit Unified Trading Account**: resta sempre come senza l'opzione. Nel conto unificato il collaterale non si
+- **Bybit Unified Trading Account**: il margine resta una cripto-attività. Nel conto unificato il collaterale non si
   sposta mai, e il file non dice quanto margine impegna ogni posizione.
 - Le posizioni aperte con la versione 1.0.66 e abbinate al loro rientro (*Abbina rientro del margine*) seguono la
   stessa regola: il collaterale di allora fa da conto derivati.
 
-L'opzione cambia anche il quadro W/RW: il conto derivati esce dai righi delle cripto-attività e diventa un rigo con
-codice 9 (vedi [Contratti derivati](opzioni-calcolo-rw.html#contratti-derivati-codice-9)). Cambia i valori anche degli
-anni già dichiarati che hanno movimenti su derivati.
+Questo metodo vale anche per il quadro W/RW: il conto derivati esce dai righi delle cripto-attività e diventa un rigo con
+codice 9 (vedi [Contratti derivati](opzioni-calcolo-rw.html#contratti-derivati-codice-9)). 
 
 ### Dual Investment {#dual-investment}
 
@@ -645,7 +643,7 @@ Esempio con cifre inventate, anno 2025:
 
 Colonna 1 = 300 + 5 + 80 = **385**, colonna 2 = 100 + 15 + 10 + 250 + 5 + 30 + 2 = **412**, risultato = minusvalenza di
 **27**. Per una chiusura di OKX calcolata in LIFO il valore sta sulla riga del token, mentre la riga del profitto di OKX
-vale 0,00 e non sposta nulla. Con l'opzione *Conto derivati* una perdita pagata dal conto vale il costo delle monete nel
+vale 0,00 e non sposta nulla. Una perdita pagata dal conto derivati vale il costo delle monete nel
 conto, mentre il LIFO la valuta al valore del momento: la differenza resta sulla riga della perdita (nell'esempio del conto
 derivati −4 €, cioè 180 € di costo contro 176 € di valore).
 
@@ -755,6 +753,10 @@ Come viene calcolata la giacenza:
   mezzo sono continui.
 - **Cosa conta**: cripto, stablecoin, NFT e dollari. Non contano l'euro, le altre valute e i token
   marcati SCAM. Un saldo negativo (movimento mancante) vale zero.
+- **Conto derivati**: il margine e il saldo sul sotto-wallet *Derivati* di un exchange contano nella soglia, perché la
+  circolare 30/E parla di giacenza di tutti i wallet. È la lettura prudenziale e la casella *Fino al 31-12-2022 nella verifica della soglia conta
+  anche la giacenza sul conto derivati*, in *Opzioni di Calcolo*, è spuntata di default. Se la togli quel conto resta fuori dalla soglia.
+  La scelta è tua: la circolare non dice nulla sul conto di un derivato.
 - **Valore al 1° gennaio**: ogni token è valorizzato per tutto l'anno al prezzo delle 00:00 del 1° gennaio, mai
   al prezzo del giorno, anche se quel giorno non lo avevi in portafoglio. I dollari sono convertiti col cambio
   della Banca d'Italia di quel giorno (o dell'ultimo giorno utile prima).

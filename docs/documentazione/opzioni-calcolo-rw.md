@@ -916,35 +916,24 @@ per anno: le istruzioni permettono di sommare i prodotti con lo stesso codice e 
 media ponderata, e il prospetto dei singoli valori si vede scegliendo il rigo, nella tabella dei dettagli, e nel file
 Excel. Lo Stato estero è quello indicato nei periodi FIAT del gruppo, come per la liquidità.
 
-**Senza l'opzione Conto derivati** (il margine resta una cripto-attività) il rigo somma i contratti:
-
-- colonna 7: il **margine impegnato**, cioè la somma dei margini di tutte le aperture dell'anno (una posizione
-  costruita in più volte impegna il margine di ognuna), più quello ancora vincolato al 1° gennaio. Il valore zero
-  non si può trasmettere (le specifiche tecniche scartano un rigo con il valore iniziale vuoto), e il margine è il valore più vicino a quello di un contratto per cui non si paga un prezzo,
-- colonna 8: il **guadagno della chiusura**, se positivo, per una posizione chiusa nell'anno, o il **guadagno non
-  realizzato** al 31 dicembre, se positivo, per una posizione ancora aperta. Il guadagno non realizzato è stimato
-  con il prezzo a pronti della cripto sottostante, perché il programma non ha il prezzo di riferimento
-  dell'exchange,
-- con tutti i contratti in perdita la colonna 8 è zero.
-
-Per gli exchange di cui il programma non conosce le singole posizioni (Bybit, Binance) la colonna 7 è il valore del
-conto derivati all'ingresso e la colonna 8 è zero.
-
 Il rigo con codice 9 non è mai di solo monitoraggio: la colonna 16 si barra solo quando l'intermediario paga
 l'imposta, e un exchange estero non lo fa. Un valore iniziale o finale zero è riportato come **1**, perché il
 software dell'Agenzia delle entrate non accetta lo zero, con i giorni e l'IVAFE (zero) compilati come negli altri
 righi.
 
-**Con l'opzione Conto derivati** il rigo riporta il conto, diviso nei periodi dell'anno in cui ha un saldo: un
+Il rigo riporta il conto derivati, diviso nei periodi dell'anno in cui ha un saldo: un
 periodo finisce quando il conto si svuota e ne comincia un altro quando torna ad avere un saldo. Per ogni periodo la
 colonna 7 è il valore del conto al 1° gennaio o all'ingresso, la colonna 8 il valore alla fine dell'anno o appena
-prima che il conto si svuoti, e per l'ultimo periodo si aggiunge il guadagno non realizzato delle posizioni aperte se
-positivo. Il rigo somma i periodi e prende come giorni la media ponderata sui valori finali, quindi i giorni in cui il
+prima che il conto si svuoti, e per l'ultimo periodo si aggiunge il risultato non realizzato delle posizioni aperte, con il suo
+segno (guadagno o perdita), senza scendere sotto zero. Si valuta con il **mark price** dell'exchange, cioè il
+prezzo con cui calcola il suo "PnL non realizzato" per quel contratto (letto da OKX e da Bybit, e conservato per ritrovare
+lo stesso numero anche senza rete). Se non si trova, perché manca la rete, il future OKX è già scaduto o l'exchange non è
+OKX né Bybit, si ripiega sul prezzo a pronti della cripto sottostante: il prospetto dice quale dei due è stato usato. Il rigo somma i periodi e prende come giorni la media ponderata sui valori finali, quindi i giorni in cui il
 conto è vuoto non contano. Il conto non compare fra i righi delle cripto-attività.
 
-Il periodo che comincia il 1° gennaio con delle posizioni ancora aperte dall'anno prima ha in colonna 7 anche il guadagno
-non realizzato al 31 dicembre dell'anno prima, se positivo, calcolato come nella colonna 8 di quell'anno. Il valore
-finale di un anno e il valore iniziale dell'anno dopo coincidono, e il guadagno non realizzato non sparisce al
+Il periodo che comincia il 1° gennaio con delle posizioni ancora aperte dall'anno prima ha in colonna 7 anche il risultato
+non realizzato al 31 dicembre dell'anno prima, calcolato come nella colonna 8 di quell'anno. Il valore
+finale di un anno e il valore iniziale dell'anno dopo coincidono, e il risultato non realizzato non sparisce al
 passaggio d'anno.
 
 Un esempio con due contratti, uno aperto il 1° marzo e chiuso il 31 marzo, l'altro aperto il 1° luglio e chiuso il
@@ -959,7 +948,7 @@ Un esempio con due contratti, uno aperto il 1° marzo e chiuso il 31 marzo, l'al
 Chi apre e chiude molte posizioni svuotando ogni volta il conto ha molti periodi brevi: le colonne 7 e 8 diventano la
 somma di tutti i periodi, mentre i giorni e l'IVAFE restano quelli dei periodi in cui il conto aveva un saldo.
 
-In alternativa, la spunta *Con l'opzione Conto derivati, nel rigo con codice 9 il conto è un solo periodo* (in fondo
+In alternativa, la spunta *Nel rigo con codice 9 il conto derivati è un solo periodo* (in fondo
 alla scheda *Opzioni Calcolo RW/W*, non attiva di default) tratta il conto come un rapporto unico aperto per tutto
 l'anno: un solo periodo dal primo ingresso all'ultimo giorno con un saldo, con il valore del primo ingresso in colonna
 7 e quello di fine anno, o di appena prima dell'ultimo svuotamento, in colonna 8. I giorni in cui il conto è vuoto

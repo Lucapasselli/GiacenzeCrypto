@@ -148,6 +148,22 @@ public final class Principale_RT_Soglia {
         }
     }
 
+    /** Opzione: la giacenza sul conto derivati conta nella soglia (default si', per prudenza). */
+    public static final String OPZIONE_CONTO_DERIVATI = "Plusvalenze_SogliaContoDerivati";
+
+    /** Nome con cui l'opzione, se spenta, compare fra quelle archiviate con la dichiarazione. */
+    public static final String NOME_OPZIONE_CONTO_DERIVATI = "Nella soglia dei 51.645,69 euro non conta la giacenza sul conto derivati";
+
+    /**
+     * {@code true} se nel calcolo della soglia conta anche la giacenza sul conto derivati (margine e saldo sul sotto-wallet {@code Derivati}):
+     * manca = conta. E' la lettura prudenziale: la circolare 30/E (par. 2.3.1) parla di giacenza di tutti i wallet, e con P2 il conto e'
+     * parte del derivato ma resta un saldo in cripto presso l'exchange. La scelta e' dell'utente.
+     */
+    public static boolean contoDerivatiConta() {
+        String v = DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_CONTO_DERIVATI);
+        return v == null || !v.equalsIgnoreCase("NO");
+    }
+
     /** {@code true} se l'opzione è attiva: manca = attiva. */
     public static boolean attiva() {
         String v = DatabaseH2.Pers_Opzioni_Leggi(OPZIONE);

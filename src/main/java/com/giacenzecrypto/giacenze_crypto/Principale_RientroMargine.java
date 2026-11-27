@@ -374,7 +374,7 @@ public final class Principale_RientroMargine {
         sb.append("Margine rientrato (").append(p.rientri.size()).append(p.rientri.size() == 1 ? " rientro" : " rientri").append("): ")
                 .append(Fmt(a.rientrato)).append(m).append("\n\n");
         if (ContoDerivati.Attivo()) {
-            sb.append("I prelievi diventano un blocco di collaterale e i rientri uno sblocco. Con l'opzione Conto derivati attiva il "
+            sb.append("I prelievi diventano un blocco di collaterale e i rientri uno sblocco. Il "
                     + "collaterale fa da conto derivati: il blocco è una cessione di cripto-attività al valore di allora, lo sblocco dà un "
                     + "reddito da derivati pari al valore meno quello del blocco, e il margine non rientrato vale il suo costo nel conto.\n");
         } else {

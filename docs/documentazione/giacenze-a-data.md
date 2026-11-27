@@ -106,8 +106,18 @@ Ogni riga è un token. Le colonne sono:
 | **Errori** | cosa non va nella riga, per esempio *Token senza prezzo* |
 | **Qta Blockchain** (o *Qta OKX*, *Qta Binance*) | la quantità letta da blockchain o da exchange, solo quando si confronta, vedi [Confronto](#confronto) |
 
-In fondo, a sinistra, **TOTALE in EURO** è la somma dei valori delle righe mostrate. Comprende anche le righe FIAT (in
-questo esempio gli euro) e le righe con quantità negativa, che riducono il totale.
+In fondo, a sinistra, **TOTALE CRIPTO in EURO** è la somma dei valori delle righe mostrate, escluse quelle del conto derivati
+(vedi sotto). Comprende anche le righe FIAT (in questo esempio gli euro) e le righe con quantità negativa, che riducono il totale.
+Accanto, **TOTALE DERIVATI in EURO** somma il valore delle sole righe del conto derivati.
+
+Se un token sta in parte sul conto derivati di un exchange (il sotto-wallet *Derivati*), compare su **due righe**: quella del token
+e quella con il nome seguito da **.DERIVATI**. Ognuna ha la sua quantità, il suo costo di carico e la sua plus/minus latente, come
+nel quadro RT, dove il LIFO dei derivati è separato da quello delle cripto. Il dettaglio dei movimenti di una riga mostra solo i
+movimenti di quella riga. La riga del conto non si può rinominare né marcare come SCAM (si fa dalla riga del token).
+
+Il confronto con il saldo dell'exchange non si fa per la riga del conto: il saldo di OKX non comprende il margine di una posizione
+(esce dal saldo all'apertura e rientra alla chiusura) e quello di Binance, Spot, Funding ed Earn, non comprende il conto dei futures. Si
+confronta quindi con la sola riga del token, che grazie alla separazione ora coincide anche mentre una posizione è aperta.
 
 Cose da sapere sulle righe:
 
@@ -135,9 +145,14 @@ la plusvalenza è 5.500 − 4.260 = 1.240 €. Quello che resta ha costo 4.706,1
 
 Il plus/minus latente è il valore attuale meno questo costo: per il BTC 8.159,53 − 4.706,10 = 3.453,43.
 
-Con un wallet selezionato, il costo di carico mostrato è quello dei lotti **più recenti** che coprono la quantità di quel
-wallet. I giroconti fra i propri wallet non portano con sé nessun costo e non lo fanno sparire: la pila dei lotti resta
-quella dell'insieme dei wallet.
+Lo stesso token può comparire su più righe, una per rete (per esempio ETH su Ethereum e su Base). Il LIFO però ragiona sul
+token intero, come nel calcolo delle plusvalenze: il costo di carico del token si **divide fra le righe in proporzione alla
+quantità**, quindi ogni riga ha lo stesso costo unitario e la somma delle righe è il costo di carico del token. Il costo
+non dipende da dove si è venduto o da dove sono arrivati i lotti.
+
+Con un wallet selezionato che ha **tutta** la quantità di una riga vale la stessa quota. Se il wallet ne ha solo una parte, il
+costo di carico mostrato è quello dei lotti **più recenti** che coprono la quantità di quel wallet. I giroconti fra i propri
+wallet non portano con sé nessun costo e non lo fanno sparire: la pila dei lotti resta quella dell'insieme dei wallet.
 
 ## Token senza prezzo e prezzi da correggere {#prezzi}
 
@@ -235,7 +250,7 @@ Cose da sapere con un wallet selezionato:
 
 - **Valore** e **Plus/Minus Latente** sono quelli della quantità di quel wallet,
 - il pulsante dei [costi netti](#costi-netti) si spegne: vale solo per **tutti i wallet** insieme,
-- il **TOTALE in EURO** somma i valori di quel solo wallet.
+- i **totali in euro** sommano i valori di quel solo wallet.
 
 ## Correggere una giacenza {#rettifica}
 
@@ -373,7 +388,12 @@ acquisto o un trasferimento, oppure un'importazione è incompleta. Il dettaglio 
 il primo movimento in cui il saldo diventa negativo.
 
 **Perché il costo di carico di un wallet non coincide con quello che si aspetta?** Perché il LIFO ragiona sull'insieme dei
-wallet: con un solo wallet selezionato il costo mostrato è quello dei lotti più recenti che coprono la sua quantità.
+wallet: con un wallet che ha solo una parte della quantità di una riga il costo mostrato è quello dei lotti più recenti che
+coprono la sua quantità.
+
+**Perché lo stesso token ha lo stesso costo unitario su reti diverse?** Perché il LIFO è unico per token e il costo si divide
+fra le righe in proporzione alla quantità. Non esiste un costo di carico "della rete": vendere su una rete o su un'altra non
+cambia né la plusvalenza né il costo di quello che resta.
 
 **Il valore di un token è zero ma il token ha un prezzo.** Controlla la colonna *Errori*: se compare *Token senza prezzo*
 puoi assegnare un prezzo con *Modifica Valore*. Se compare un prezzo ma il valore è zero, la quantità del wallet scelto è zero.

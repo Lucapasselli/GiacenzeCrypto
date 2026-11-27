@@ -1653,6 +1653,10 @@ public class Prezzi {
                     && MonOri[k].Moneta != null
                     && !MonOri[k].Moneta.isBlank()) {
                 mon[k] = MonOri[k].ClonaMoneta();
+                //ETH.DA_CONSEGNARE (scambio differito con deposito prima del prelievo) è ETH ancora nel wallet: si
+                //prezza come ETH, e questo va fatto prima di ogni lettura (anche dei prezzi personalizzati, che
+                //l'utente ha inserito col simbolo ETH)
+                mon[k].Moneta = TokenDaConsegnare.Base(mon[k].Moneta);
             }
         }
 

@@ -22,8 +22,8 @@ import java.util.function.BiFunction;
  *       zero.</li>
  *   <li><b>P2</b> (conto derivati come derivato): una voce per ogni tratto dell'anno in cui il conto ha un saldo (il conto che si
  *       svuota chiude il tratto, quello che torna positivo ne apre un altro). Colonna 7 = valore al 1/1 o all'ingresso del tratto,
- *       colonna 8 = valore al 31/12 o appena prima che il conto si svuoti, piu' per l'ultimo tratto il guadagno non realizzato se
- *       positivo. Il tratto che parte dal 1/1 con il saldo dell'anno prima ha in colonna 7 anche il guadagno non realizzato al 31/12
+ *       colonna 8 = valore al 31/12 o appena prima che il conto si svuoti, piu' per l'ultimo tratto il risultato non realizzato
+ *       delle posizioni aperte con il suo segno (mai sotto zero in totale). Il tratto che parte dal 1/1 con il saldo dell'anno prima ha in colonna 7 anche il risultato non realizzato al 31/12
  *       dell'anno prima (continuita': colonna 8 dell'anno = colonna 7 dell'anno dopo). I giorni a conto vuoto non contano. Con {@link #OPZIONE_PERIODO_UNICO} una voce sola dal primo ingresso all'ultimo
  *       giorno con un saldo.</li>
  * </ul>
@@ -191,10 +191,10 @@ public final class Calcoli_RW_Derivati {
             List<String[]> righeConto = conto.getOrDefault(gruppo, List.of());
             List<String[]> righeToken = token.getOrDefault(gruppo, List.of());
             if (p2) {
-                //Una voce per tratto con un saldo (o una sola con l'opzione del periodo unico): il guadagno non realizzato va
+                //Una voce per tratto con un saldo (o una sola con l'opzione del periodo unico): il risultato non realizzato va
                 //all'ultima, l'unica che puo' arrivare al 31/12
                 List<Tratto> tratti = TrattiConto(righeConto, anno, inizioAnno, istanteInizio, istanteFine);
-                //Continuita' fra gli anni: il valore finale dell'anno prima comprende il guadagno non realizzato delle posizioni aperte, quindi
+                //Continuita' fra gli anni: il valore finale dell'anno prima comprende il risultato non realizzato delle posizioni aperte, quindi
                 //anche il valore iniziale del tratto che parte dal 1/1 (stessa funzione, stesso istante: i due valori coincidono per costruzione)
                 String fineAnnoPrima = (Integer.parseInt(anno) - 1) + "-12-31 23:59";
                 for (Tratto t : periodoUnico ? Unisci(tratti) : tratti) {
@@ -202,9 +202,9 @@ public final class Calcoli_RW_Derivati {
                     c.voce = VOCE_CONTO;
                     if (t.daAnnoPrima) {
                         BigDecimal pnlIniziale = NonRealizzato(righeToken, fineAnnoPrima, istanteInizio, prezzo, c.avvisi, null);
-                        if (pnlIniziale.signum() > 0) {
-                            c.valIni = c.valIni.add(pnlIniziale);
-                            c.avvisi.add("Valore iniziale comprensivo del guadagno non realizzato al 31/12 dell'anno prima, come il valore finale di quell'anno");
+                        if (pnlIniziale.signum() != 0) {
+                            c.valIni = c.valIni.add(pnlIniziale).max(BigDecimal.ZERO);
+                            c.avvisi.add("Valore iniziale comprensivo del risultato non realizzato al 31/12 dell'anno prima, come il valore finale di quell'anno");
                         }
                     }
                     voci.add(c);
@@ -212,7 +212,11 @@ public final class Calcoli_RW_Derivati {
                 if (!voci.isEmpty()) {
                     Voce ultima = voci.get(voci.size() - 1);
                     BigDecimal pnl = NonRealizzato(righeToken, fineAnno, istanteFine, prezzo, ultima.avvisi, null);
-                    if (pnl.signum() > 0) ultima.valFin = ultima.valFin.add(pnl);
+                    //Il risultato non realizzato conta con il suo segno (fair value del conto), senza scendere sotto zero
+                    if (pnl.signum() != 0) {
+                        ultima.valFin = ultima.valFin.add(pnl).max(BigDecimal.ZERO);
+                        ultima.avvisi.add("Valore finale comprensivo del risultato non realizzato al 31/12 delle posizioni aperte (stima, vedi la fonte del prezzo)");
+                    }
                 }
             } else if (!righeToken.isEmpty()) {
                 voci.addAll(VociContratti(righeToken, righeConto, mappa, anno, inizioAnno, fineAnno, istanteInizio, istanteFine, prezzo));
@@ -445,7 +449,7 @@ public final class Calcoli_RW_Derivati {
                     c.dataFine = anno + "-12-31";
                     BigDecimal pnl = NonRealizzato(righe, fineAnno, istanteFine, prezzo, c.avvisi, p);
                     c.valFin = pnl.max(BigDecimal.ZERO);
-                    c.avvisi.add("Guadagno non realizzato al 31/12 stimato con il prezzo a pronti del sottostante");
+                    c.avvisi.add("Guadagno non realizzato al 31/12 stimato (vedi la fonte del prezzo)");
                 }
                 if (c.valIni.signum() == 0) {
                     //I file di Bybit (DerivatiDaCsv) non dicono il margine di ogni posizione: colonna 7 zero, stampata come 1 (decisione
@@ -485,7 +489,7 @@ public final class Calcoli_RW_Derivati {
     }
 
     /**
-     * Guadagno non realizzato in euro delle posizioni aperte alla fine dell'anno, con il prezzo a pronti del sottostante. Con
+     * Risultato non realizzato in euro (guadagno o perdita) delle posizioni aperte alla fine dell'anno, con il prezzo a pronti del sottostante. Con
      * {@code sola} solo quella posizione, altrimenti tutte quelle delle righe.
      */
     private static BigDecimal NonRealizzato(List<String[]> righeToken, String fineAnno, long istanteFine, Prezzo prezzo,
@@ -497,17 +501,29 @@ public final class Calcoli_RW_Derivati {
         for (DerivatiLifo.Posizione p : DerivatiLifo.Calcola(fino).values()) {
             if (sola != null && !p.token.equalsIgnoreCase(sola.token)) continue;
             if (p.contrattiAperti().signum() <= 0) continue;
-            String[] parti = p.contratto.split("-");
-            String base = parti.length > 0 ? parti[0] : "";
-            String quotazione = parti.length > 1 ? parti[1].split("_")[0] : "";
-            BigDecimal pBase = prezzo.euro(base, istanteFine);
-            BigDecimal pQuot = prezzo.euro(quotazione, istanteFine);
             BigDecimal pMoneta = prezzo.euro(p.moneta, istanteFine);
-            if (pBase == null || pQuot == null || pQuot.signum() == 0 || pMoneta == null) {
+            //Il prezzo del contratto: prima il mark price dell'exchange (il prezzo con cui calcola il suo non realizzato, per quel contratto),
+            //poi, se non si legge o l'exchange non e' supportato (Binance, future OKX scaduti), lo spot del sottostante
+            String[] origine = OrigineContratto(fino, p);
+            BigDecimal mark = origine == null ? null : MarkPriceDerivati.Mark(origine[0], origine[1], p.inverso, istanteFine);
+            String giorno = fineAnno.substring(0, 10);
+            if (mark != null) {
+                avvisi.add("Non realizzato di " + p.contratto + " al " + giorno + " valutato con il mark price di " + origine[0]);
+            } else {
+                String[] parti = p.contratto.split("-");
+                String base = parti.length > 0 ? parti[0] : "";
+                String quotazione = parti.length > 1 ? parti[1].split("_")[0] : "";
+                BigDecimal pBase = prezzo.euro(base, istanteFine);
+                BigDecimal pQuot = prezzo.euro(quotazione, istanteFine);
+                if (pBase == null || pQuot == null || pQuot.signum() == 0) pMoneta = null;
+                else mark = pBase.divide(pQuot, MathContext.DECIMAL64);
+                avvisi.add("Non realizzato di " + p.contratto + " al " + giorno + " stimato con il prezzo a pronti del sottostante"
+                        + (origine != null ? " (mark price non disponibile)" : ""));
+            }
+            if (pMoneta == null || mark == null) {
                 avvisi.add("ERRORE: prezzo al 31/12 mancante per il contratto " + p.contratto);
                 continue;
             }
-            BigDecimal mark = pBase.divide(pQuot, MathContext.DECIMAL64);
             for (DerivatiLifo.Lotto l : p.aperti) {
                 BigDecimal ctVal = ValoreContratto(l.idApertura, fino);
                 BigDecimal diff = DerivatiLifo.Differenziale(p, l.contratti, l.prezzo, mark, ctVal);
@@ -519,6 +535,22 @@ public final class Calcoli_RW_Derivati {
             }
         }
         return t;
+    }
+
+    /**
+     * Piattaforma ({@code OKX} o {@code BYBIT}) e simbolo nativo del contratto di una posizione, dal campo dati delle sue righe di token
+     * ({@code contratto} per OKX, {@code simbolo} per i file CSV); {@code null} se l'exchange non ha il mark price o manca il simbolo.
+     */
+    private static String[] OrigineContratto(List<String[]> righe, DerivatiLifo.Posizione p) {
+        for (String[] v : righe) {
+            if (!p.token.equalsIgnoreCase(v[8]) && !p.token.equalsIgnoreCase(v[11])) continue;
+            Map<String, String> d = Derivati.Dati(v);
+            String piattaforma = MarkPriceDerivati.Normalizza(d.get("piattaforma"));
+            if (piattaforma == null) return null;
+            String simbolo = piattaforma.equals("OKX") ? d.get("contratto") : d.get("simbolo");
+            return simbolo == null || simbolo.isBlank() ? null : new String[]{piattaforma, simbolo.trim()};
+        }
+        return null;
     }
 
     private static BigDecimal ValoreContratto(String idApertura, List<String[]> righe) {
@@ -608,16 +640,16 @@ public final class Calcoli_RW_Derivati {
     /** Testo della nota del quadro W/RW quando ci sono righi codice 9. Dice l'effetto, mai come trattare il caso. */
     public static String TestoNota(boolean p2, boolean periodoUnico) {
         if (p2 && periodoUnico) {
-            return "Il rigo con codice 9 di ogni exchange riporta il conto derivati (opzione Conto derivati attiva) come un solo periodo "
+            return "Il rigo con codice 9 di ogni exchange riporta il conto derivati come un solo periodo "
                     + "dal primo ingresso dell'anno all'ultimo giorno con un saldo: colonna 7 il valore al 1° gennaio o al primo ingresso, "
-                    + "colonna 8 il valore alla fine dell'anno o appena prima dell'ultimo svuotamento, più il guadagno non realizzato se "
-                    + "positivo. Un periodo che parte dal 1° gennaio con posizioni aperte ha in colonna 7 anche il guadagno non realizzato al 31 dicembre dell'anno prima, come nel valore finale di quell'anno. I giorni comprendono quelli a conto vuoto. Il conto non compare fra i righi delle cripto-attività." + NOTA_ZERO;
+                    + "colonna 8 il valore alla fine dell'anno o appena prima dell'ultimo svuotamento, più il risultato non realizzato "
+                    + "delle posizioni aperte (anche negativo). Un periodo che parte dal 1° gennaio con posizioni aperte ha in colonna 7 anche il risultato non realizzato al 31 dicembre dell'anno prima, come nel valore finale di quell'anno. I giorni comprendono quelli a conto vuoto. Il conto non compare fra i righi delle cripto-attività." + NOTA_ZERO;
         }
         return p2
-                ? "Il rigo con codice 9 di ogni exchange riporta il conto derivati (opzione Conto derivati attiva), sommando i periodi "
+                ? "Il rigo con codice 9 di ogni exchange riporta il conto derivati, sommando i periodi "
                 + "dell'anno in cui il conto ha un saldo: colonna 7 i valori al 1° gennaio o all'ingresso di ciascun periodo, colonna 8 i "
-                + "valori alla fine dell'anno o appena prima che il conto si svuoti, più il guadagno non realizzato se positivo, giorni "
-                + "come media ponderata sui valori finali. Un periodo che parte dal 1° gennaio con posizioni aperte ha in colonna 7 anche il guadagno non realizzato al 31 dicembre dell'anno prima, come nel valore finale di quell'anno. I giorni a conto vuoto non contano. Il conto non compare fra i righi delle "
+                + "valori alla fine dell'anno o appena prima che il conto si svuoti, più il risultato non realizzato delle posizioni aperte (anche negativo), giorni "
+                + "come media ponderata sui valori finali. Un periodo che parte dal 1° gennaio con posizioni aperte ha in colonna 7 anche il risultato non realizzato al 31 dicembre dell'anno prima, come nel valore finale di quell'anno. I giorni a conto vuoto non contano. Il conto non compare fra i righi delle "
                 + "cripto-attività." + NOTA_ZERO
                 : "Il rigo con codice 9 di ogni exchange somma i contratti derivati dell'anno: colonna 7 il margine impegnato dalle aperture "
                 + "dell'anno più quello ancora vincolato al 1° gennaio (lo zero non si trasmette), colonna 8 il guadagno della chiusura o il guadagno non realizzato al 31 "

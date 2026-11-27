@@ -45,3 +45,6 @@ buildNumber.properties
 /ServizioPrezzi/
 # Istruzioni per Claude Code: citano cartelle e documenti volutamente fuori dal repository (nocommit/, test/)
 /CLAUDE.md
+# Bytecode generato da Python (gli script di Normativa/Strumenti), si ricrea da solo
+__pycache__/
+*.pyc

@@ -17,6 +17,7 @@ java.desktop
 java.sql
 java.management
 java.naming
+java.net.http
 java.prefs
 java.scripting
 java.compiler

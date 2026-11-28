@@ -542,19 +542,8 @@
                                   </Group>
                                   <Component id="TransazioniCrypto_Label_Plusvalenza" alignment="0" min="-2" pref="277" max="-2" attributes="0"/>
                                   <Component id="TransazioniCrypto_Text_Plusvalenza" min="-2" pref="277" max="-2" attributes="0"/>
-                                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
-                                      <Group type="102" attributes="0">
-                                          <Component id="TransazioniCrypto_Text_CostiCarico" min="-2" pref="112" max="-2" attributes="0"/>
-                                          <EmptySpace max="32767" attributes="0"/>
-                                          <Component id="TransazioniCrypto_Text_Vendite" min="-2" pref="115" max="-2" attributes="0"/>
-                                      </Group>
-                                      <Group type="102" attributes="0">
-                                          <Component id="jLabel11" min="-2" pref="121" max="-2" attributes="0"/>
-                                          <EmptySpace max="32767" attributes="0"/>
-                                          <Component id="jLabel12" min="-2" pref="115" max="-2" attributes="0"/>
-                                      </Group>
-                                      <Component id="jLabel10" min="-2" pref="277" max="-2" attributes="0"/>
-                                  </Group>
+                                  <Component id="TransazioniCrypto_Label_Derivati" alignment="0" min="-2" pref="277" max="-2" attributes="0"/>
+                                  <Component id="TransazioniCrypto_Text_Derivati" min="-2" pref="277" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -604,17 +593,9 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="TransazioniCrypto_Text_Plusvalenza" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="jLabel10" min="-2" max="-2" attributes="0"/>
+                              <Component id="TransazioniCrypto_Label_Derivati" min="-2" pref="31" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="jLabel11" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="jLabel12" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="TransazioniCrypto_Text_CostiCarico" min="-2" max="-2" attributes="0"/>
-                                  <Component id="TransazioniCrypto_Text_Vendite" min="-2" max="-2" attributes="0"/>
-                              </Group>
+                              <Component id="TransazioniCrypto_Text_Derivati" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="54" max="-2" attributes="0"/>
                               <Component id="TransazioniCrypto_Bottone_AggiorbaVersione" min="-2" max="-2" attributes="0"/>
                               <EmptySpace pref="49" max="32767" attributes="0"/>
@@ -1021,7 +1002,7 @@
                   <Font name="Noto Sans" size="14" style="1"/>
                 </Property>
                 <Property name="horizontalAlignment" type="int" value="0"/>
-                <Property name="text" type="java.lang.String" value="Plusvalenze della tabella : "/>
+                <Property name="text" type="java.lang.String" value="Plusvalenze cripto della tabella : "/>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="TransazioniCrypto_Text_Plusvalenza">
@@ -1305,37 +1286,26 @@
                 </Container>
               </SubComponents>
             </Container>
-            <Component class="javax.swing.JLabel" name="jLabel10">
+            <Component class="javax.swing.JLabel" name="TransazioniCrypto_Label_Derivati">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Noto Sans" size="12" style="1"/>
+                  <Font name="Noto Sans" size="14" style="1"/>
                 </Property>
                 <Property name="horizontalAlignment" type="int" value="0"/>
-                <Property name="text" type="java.lang.String" value="Movimenti fiscalmente rilevanti su periodo"/>
+                <Property name="text" type="java.lang.String" value="Derivati della tabella : "/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JLabel" name="jLabel11">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Tot. Costi di Carico:"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JLabel" name="jLabel12">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Tot. Corrispettivi :"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JTextField" name="TransazioniCrypto_Text_CostiCarico">
+            <Component class="javax.swing.JTextField" name="TransazioniCrypto_Text_Derivati">
               <Properties>
                 <Property name="editable" type="boolean" value="false"/>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="33" green="33" red="33" type="rgb"/>
+                </Property>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                  <Font name="Noto Sans" size="24" style="1"/>
+                </Property>
+                <Property name="horizontalAlignment" type="int" value="0"/>
               </Properties>
-            </Component>
-            <Component class="javax.swing.JTextField" name="TransazioniCrypto_Text_Vendite">
-              <Properties>
-                <Property name="editable" type="boolean" value="false"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TransazioniCrypto_Text_VenditeActionPerformed"/>
-              </Events>
             </Component>
             <Component class="javax.swing.JButton" name="Bottone_Errori">
               <Properties>
@@ -7560,7 +7530,10 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="Opzioni_Varie_Checkbox_TemaScuro" min="-2" pref="474" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="Opzioni_Varie_Checkbox_TemaScuro" min="-2" pref="474" max="-2" attributes="0"/>
+                                  <Component id="Opzioni_Varie_Checkbox_TemaBlu" min="-2" pref="474" max="-2" attributes="0"/>
+                              </Group>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
@@ -7570,6 +7543,8 @@
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="Opzioni_Varie_Checkbox_TemaScuro" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="Opzioni_Varie_Checkbox_TemaBlu" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
@@ -7582,6 +7557,14 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_Checkbox_TemaScuroActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="Opzioni_Varie_Checkbox_TemaBlu">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Usa Tema Blu"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Opzioni_Varie_Checkbox_TemaBluActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>

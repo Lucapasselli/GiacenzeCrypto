@@ -560,6 +560,10 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
        //Il tipo di un token credito nei rimborsi trattati come permuta viene dal registro: lo costruisco una volta qui
        if (Opzioni.RimborsoFallimentoComePermuta) FallimentiPiattaforme.Ricostruisci();
 
+       //Il token di un contratto ha la tipologia Derivato (Derivati.TIPOLOGIA): le righe arrivate da un file delle beta, per un percorso
+       //che non passa dal caricamento, si portano alla forma attuale prima di calcolare le impronte
+       Derivati.NormalizzaTipologie(MappaCryptoWallet.values());
+
        Map<String, Long> Impronte = CalcolaImpronte();
 
        String Ripartenza = null;   //chiave da cui rielaborare; null = passata completa
@@ -679,6 +683,20 @@ while (qtaRimanente.compareTo(BigDecimal.ZERO) > 0 && !stack.isEmpty()) {
     public static synchronized void InvalidaStatoIncrementale() {
         ImpronteUltimaPassata = null;
         Checkpoint.clear();
+    }
+
+    /**
+     * Vero se la prossima {@link #AggiornaPlusvalenze()} avrebbe del lavoro da fare, cioe' se non ritornerebbe subito con
+     * "nessuna modifica": non c'e' uno stato valido, le opzioni sono cambiate o almeno un movimento ha un'impronta diversa
+     * da quella dell'ultima passata. Sola lettura (non tocca mappe, impronte ne' checkpoint), costa quanto il confronto delle
+     * impronte che {@code AggiornaPlusvalenze} fa comunque per prima cosa. Serve a chi gira sul thread grafico per decidere se
+     * mettere il lavoro in un thread con la finestra di avanzamento, invece di bloccare la finestra.
+     */
+    public static synchronized boolean PassataNecessaria() {
+        if (DatabaseH2.Pers_Opzioni_Leggi(OPZIONE_INCREMENTALE, "SI").equalsIgnoreCase("NO")) return true;
+        if (ImpronteUltimaPassata == null) return true;
+        if (new OpzioniRicalcolo().Epoca() != EpocaUltimaPassata) return true;
+        return ChiaveSporcaMinima(CalcolaImpronte()) != null;
     }
 
     /**

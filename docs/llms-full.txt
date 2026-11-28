@@ -152,7 +152,7 @@ I **prestiti** (borrowing) sono gestiti dal programma tramite le apposite voci d
 depositi e dei prelievi — ricezione dei fondi, messa a collaterale, sblocco del collaterale e
 liquidazione forzata: vedi
 [Classificazione dei movimenti](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/classificazioni-movimenti.html). I derivati e i futures seguono altre
-regole e sono gestiti solo in parte: vedi [Derivati: come vengono calcolati](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/calcolo-plusvalenze-opzioni.html#derivati).
+regole, descritte in [Derivati: come vengono calcolati](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/calcolo-plusvalenze-opzioni.html#derivati).
 
 ### Proventi da detenzione
 
@@ -425,13 +425,13 @@ I redditi da contratti derivati (perpetui, futures), anche quando il sottostante
 redditi diversi di natura finanziaria (art. 67, comma 1, lettera c-quater, del TUIR, circolare 30/E del
 27/10/2023, paragrafo 2.3.2) e non si compensano con le plusvalenze da cripto-attività.
 
-Il programma li gestisce **solo in parte**. Profitti, perdite, funding, commissioni e bonus dei derivati appena
+Il programma li gestisce come derivati (le opzioni non sono ancora gestite). Profitti, perdite, funding, commissioni e bonus dei derivati appena
 importati nascono già **classificati come derivati** (accredito o addebito da derivati), quelli già in archivio
 si classificano con la voce *Classifica come derivato* del menu dei movimenti. Se un movimento importato ha la data
 in un anno con una dichiarazione definitiva archiviata resta da classificare, per non cambiare i valori di
 quell'anno, e alla fine dell'importazione il programma chiede se classificarlo comunque. Il risultato dei derivati va nella
 colonna *Risultato derivati* della tabella dei movimenti, separato dalle plusvalenze delle cripto-attività, e
-compare nel **quadro T/RT** (vedi [Derivati nei quadri T e RT](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/calcolo-plusvalenze-opzioni.html#derivati-quadri)), non nel quadro W/RW. Per i perpetui e i futures di OKX e di Bybit (conto Derivati e
+compare nel **quadro T/RT** (vedi [Derivati nei quadri T e RT](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/calcolo-plusvalenze-opzioni.html#derivati-quadri)), mentre il valore del conto derivati compare nel quadro W/RW con il codice 9 (vedi [Il conto derivati](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/calcolo-plusvalenze-opzioni.html#conto-derivati)). Per i perpetui e i futures di OKX e di Bybit (conto Derivati e
 Unified Trading Account) il reddito è il differenziale calcolato in LIFO sulla chiusura di ogni posizione, nelle
 posizioni in cui i prezzi di esecuzione ricostruiscono il profitto che l'exchange dichiara. Altrimenti, per esempio
 con prezzi in un'unità diversa o con una chiusura di una posizione aperta prima del primo file, resta il profitto
@@ -917,8 +917,8 @@ Affinché i calcoli risultino corretti è necessario:
 
 Si ricorda inoltre che:
 
-1. derivati, futures e simili seguono altre regole e sono gestiti solo in parte: il risultato di quelli classificati
-   compare nel quadro T/RT, quelli non classificati restano cripto-attività, e le opzioni non sono ancora gestite (vedi
+1. derivati, futures e simili seguono altre regole: il risultato di quelli classificati compare nel quadro T/RT, quelli
+   non classificati restano cripto-attività, e le opzioni non sono ancora gestite (vedi
    [Derivati: come vengono calcolati](https://lucapasselli.github.io/GiacenzeCrypto/documentazione/calcolo-plusvalenze-opzioni.html#derivati));
 2. quanto scritto in questa documentazione, così come il funzionamento del programma, è frutto di
    ricerche e di un'interpretazione personale, quindi soggetto a possibili errori.

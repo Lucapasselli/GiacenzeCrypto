@@ -591,9 +591,9 @@ private static final long serialVersionUID = 8L;
                 .bodyTitle("Movimenti su strumenti derivati")
                 .showTitleInBody(true)
                 .theme()
-                .type(AppDialog.DialogType.WARNING)
-                .message("Alcuni dei movimenti importati riguardano strumenti derivati, che il programma gestisce "
-                        + "solo in parte.")
+                .type(AppDialog.DialogType.INFO)
+                .message("Alcuni dei movimenti importati riguardano strumenti derivati: il programma li classifica "
+                        + "come tali e ne calcola il risultato a parte dalle plusvalenze delle cripto-attività.")
                 .details(avvisoDerivati)
                 .action(AppDialog.DialogAction.builder("ok", "Ho capito")
                         .role(AppDialog.ActionRole.PRIMARY).build())

@@ -5,6 +5,26 @@ programma all'avvio di una beta, ed è la descrizione della beta su GitHub. L'el
 in preparazione è nella sezione "in lavorazione" di docs/documentazione/changelog.md, dove ogni voce di questo file
 compare con lo stesso titolo. Questo file non è una pagina del sito.
 
+## Versione 1.0.66.08
+
+Questa versione aggiunge la scheda Dashboard e il tema Blu, cambia la tipologia dei contratti derivati e corregge un avviso dopo l'importazione OKX. Per i derivati vale ancora quanto detto nella 1.0.66.07: sono in versione di prova e possono cambiare, anche nei valori calcolati.
+
+**Nuove implementazioni**
+
+- **Dashboard**: nuova scheda *Dashboard*, la prima fra le schede principali, con il riepilogo di ogni anno del registro: costi di carico, corrispettivi, plusvalenze e minusvalenze, redditi da derivati, movimenti, errori e valore delle cripto-attività a inizio e fine anno. Una tabella di tutti gli anni e un grafico a barre permettono di scegliere l'anno, e con un doppio clic si aprono le *Transazioni Crypto* di quell'anno. È un quadro informativo: il quadro RT ha la sua elaborazione.
+
+- **Totale dei derivati nella tabella dei movimenti**: in basso a destra nella scheda *Transazioni Crypto* c'è un secondo riquadro con il reddito da derivati delle righe mostrate, a parte dalla plusvalenza delle cripto-attività. I riquadri dei costi di carico e dei corrispettivi sono stati tolti, gli stessi numeri sono nel dialogo che si apre cliccando il riquadro della plusvalenza.
+
+- **Contratti derivati non più "Crypto"**: il token di un contratto derivato ha ora la tipologia *Derivato* e non *Crypto*. I movimenti già in archivio si portano da soli alla nuova forma al primo avvio, con la copia di sicurezza del file dei movimenti, e nessun calcolo cambia. In *Modifica movimento* i menu della tipologia hanno la voce *Derivato*, ammessa solo per i token dei contratti. Per questi token la *Rettifica di giacenza* di *Giacenze a data* non è più offerta.
+
+- **Avviso sui derivati**: l'avviso dopo l'importazione di movimenti su derivati non dice più che il programma li gestisce "solo in parte". Dice che li classifica come derivati e ne calcola il risultato a parte, e che il valore del conto derivati va nel quadro W/RW con il codice 9.
+
+- **Tema Blu**: in *Opzioni – Temi* c'è un terzo tema, chiaro, con una tavolozza blu e le schede staccate come pastiglie arrotondate. Dopo ogni cambio di tema il programma chiede se riavviarsi subito per applicarlo del tutto. Il pulsante con il nome e la versione in alto segue il tema, anche con il tema Scuro.
+
+**Correzione di bug**
+
+- **Recupero dei movimenti dai documenti: penale di liquidazione OKX**: dopo uno scaricamento OKX con liquidazioni il dialogo dei movimenti recuperabili proponeva come mancante la penale di liquidazione, anche se era già stata importata. Ora non compare più per questo caso.
+
 ## Versione 1.0.66.07
 
 Questa versione porta i derivati (OKX, Bybit, Binance) nei calcoli e nei quadri. La parte dei derivati è ancora in versione di prova e può cambiare con le prossime versioni, anche nei valori calcolati.

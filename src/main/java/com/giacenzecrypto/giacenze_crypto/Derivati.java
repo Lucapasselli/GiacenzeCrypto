@@ -98,6 +98,57 @@ public final class Derivati {
     }
 
     /**
+     * La tipologia (campi {@code [9]} in uscita e {@code [12]} in entrata, {@code Moneta.Tipo}) del token di un contratto: non è una
+     * cripto-attività ma un contratto derivato. Dal 27/11/2026; i movimenti scritti prima, con {@code Crypto}, si portano a questa forma al
+     * caricamento ({@link #NormalizzaTipologie}). Il motore e le tabelle trattano il valore come ogni altro "né FIAT né NFT"; la sola
+     * funzione che lo confronta con {@code Crypto} per ricavare il codice del movimento ({@code Importazioni.RitornaTipologiaTransazione})
+     * lo tratta come {@code Crypto}.
+     */
+    public static final String TIPOLOGIA = "Derivato";
+
+    /** @return {@code true} se la tipologia è quella dei contratti derivati ({@value #TIPOLOGIA}) */
+    public static boolean IsTipologiaDerivato(String tipologia) {
+        return tipologia != null && TIPOLOGIA.equalsIgnoreCase(tipologia.trim());
+    }
+
+    /**
+     * Porta alla tipologia {@value #TIPOLOGIA} le gambe di un movimento che sono il token di un contratto e hanno ancora quella scritta
+     * dalle versioni beta ({@code Crypto}). Un solo valore per ogni token è una condizione: Giacenze a data distingue le righe per
+     * simbolo e tipologia, quindi un contratto aperto con una e chiuso con l'altra apparirebbe come due righe, una positiva e una
+     * negativa. Non tocca le gambe di un'altra moneta e non cambia mai {@code Derivato} in altro.
+     *
+     * @return {@code true} se ha cambiato qualcosa
+     */
+    public static boolean NormalizzaTipologia(String[] v) {
+        if (v == null || v.length < 13) return false;
+        boolean cambiato = false;
+        if (v[8] != null && IsTokenContratto(v[8]) && !TIPOLOGIA.equals(v[9])) {
+            v[9] = TIPOLOGIA;
+            cambiato = true;
+        }
+        if (v[11] != null && IsTokenContratto(v[11]) && !TIPOLOGIA.equals(v[12])) {
+            v[12] = TIPOLOGIA;
+            cambiato = true;
+        }
+        return cambiato;
+    }
+
+    /**
+     * {@link #NormalizzaTipologia} su tutti i movimenti: al caricamento dell'archivio (per chi ha movimenti delle beta con i derivati) e
+     * prima di ogni ricalcolo, per i percorsi che inseriscono righe da un file vecchio (ripristino, importazione di un'altra copia).
+     *
+     * @return quanti movimenti ha cambiato
+     */
+    public static int NormalizzaTipologie(Iterable<String[]> movimenti) {
+        int n = 0;
+        if (movimenti == null) return 0;
+        for (String[] v : movimenti) {
+            if (NormalizzaTipologia(v)) n++;
+        }
+        return n;
+    }
+
+    /**
      * Prezzo del token di un contratto: <b>zero, senza cercare nulla</b>. È una fotografia della posizione, non una
      * cripto-attività con un mercato: senza questa regola ogni valutazione a moneta singola (giacenze del quadro RW,
      * Giacenze a data, soglia dei 51.645 euro) lo cercherebbe sulle fonti, in rete, e lo segnalerebbe come prezzo mancante.

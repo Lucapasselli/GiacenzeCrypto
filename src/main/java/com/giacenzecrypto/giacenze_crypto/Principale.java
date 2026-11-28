@@ -266,6 +266,9 @@ private static final long serialVersionUID = 3L;
     private transient RT_GraficoPlusvalenze RT_GraficoTipologia;
     /** Scheda "Redditi da derivati" del quadro RT, scritta a mano dopo initComponents (20/11/2026). */
     private transient GUI_RT_Derivati RT_Derivati;
+    /** La scheda Dashboard (a codice, prima fra quelle di {@code CDC}) e la versione dei movimenti con cui è stata compilata. */
+    private transient GUI_Dashboard Dashboard;
+    private long dashboardVersione = -1;
     /** Grafico della giacenza e del valore della moneta selezionata in "Giacenze a data" (scheda accanto al dettaglio). */
     private transient GiacenzeaData_Grafico GiacenzeaData_Grafico;
     
@@ -513,6 +516,17 @@ private static final long serialVersionUID = 3L;
         RT_GraficoTipologia = new RT_GraficoPlusvalenze();
         RT_Pannello_GraficoTipologia.setLayout(new java.awt.BorderLayout());
         RT_Pannello_GraficoTipologia.add(RT_GraficoTipologia, java.awt.BorderLayout.CENTER);
+        //Scheda "Dashboard" (senza .form): riepilogo per anno dei risultati del registro. Sta in prima posizione, ma gli indici
+        //delle altre schede di CDC non si usano più (setSelectedComponent): chi ne aggiunge una non deve contare le posizioni
+        Dashboard = new GUI_Dashboard(() -> Dashboard_Aggiorna(true), () -> Bottone_Errori.doClick(), this::Dashboard_RichiediValore,
+                this::Dashboard_ApriTransazioni);
+        CDC.insertTab("Dashboard", null, Dashboard, null, 0);
+        CDC.addChangeListener(e -> {
+            if (CDC.getSelectedComponent() == Dashboard) {
+                Dashboard_Aggiorna(false);
+                Dashboard.AlMostrarsi();
+            }
+        });
         //Scheda "Redditi da derivati" del quadro RT (senza .form): si riempie alla scelta dell'anno in RT_CompilaTabellaDettagli
         RT_Derivati = new GUI_RT_Derivati();
         jTabbedPane1.addTab("Redditi da derivati (bozza)", RT_Derivati);
@@ -618,6 +632,12 @@ private static final long serialVersionUID = 3L;
         //in un punto visibile e vicino ai dati (vedi GUI_Informazioni).
         Bottone_Titolo.setToolTipText("Informazioni sul programma, fonti dei dati e licenze");
         Bottone_Titolo.addActionListener(e -> GUI_Informazioni.Mostra(this));
+        //Colori del pulsante del titolo: nel form sono grigio chiaro fisso, che sul tema scuro e sul blu stona. Il tema li dichiara
+        //con due chiavi proprie (Temi/*.properties): senza (tema Chiaro) restano quelli del form
+        java.awt.Color titoloSfondo = UIManager.getColor("Giacenze.titoloSfondo");
+        java.awt.Color titoloTesto = UIManager.getColor("Giacenze.titoloTesto");
+        if (titoloSfondo != null) Bottone_Titolo.setBackground(titoloSfondo);
+        if (titoloTesto != null) Bottone_Titolo.setForeground(titoloTesto);
 
         SplashAvvio.fase(SplashAvvio.Fase.IMPOSTAZIONI);
 
@@ -629,7 +649,10 @@ private static final long serialVersionUID = 3L;
             ((JTextFieldDateEditor)Opzioni_Pulizie_DataChooser_Iniziale.getDateEditor()).setBackground(Color.lightGray);
             ((JTextFieldDateEditor)Opzioni_Pulizie_DataChooser_Finale.getDateEditor()).setBackground(Color.lightGray);
             Opzioni_Varie_Checkbox_TemaScuro.setSelected(true);
-        }else tema="Chiaro";      
+        }else if (FlatTemaBluLaf.is(tema)) {
+            //Il tema Blu è chiaro: non va riportato a "Chiaro", o l'opzione salvata andrebbe persa al primo salvataggio
+            Opzioni_Varie_Checkbox_TemaBlu.setSelected(true);
+        }else tema="Chiaro";
       
       //System.out.println("test");
       
@@ -855,11 +878,8 @@ private static final long serialVersionUID = 3L;
         TransazioniCrypto_Label_Filtri = new javax.swing.JLabel();
         jScrollPane_Filtri = new javax.swing.JScrollPane();
         TransazioniCrypto_Tabella_Filtri = new javax.swing.JTable();
-        jLabel10 = new javax.swing.JLabel();
-        jLabel11 = new javax.swing.JLabel();
-        jLabel12 = new javax.swing.JLabel();
-        TransazioniCrypto_Text_CostiCarico = new javax.swing.JTextField();
-        TransazioniCrypto_Text_Vendite = new javax.swing.JTextField();
+        TransazioniCrypto_Label_Derivati = new javax.swing.JLabel();
+        TransazioniCrypto_Text_Derivati = new javax.swing.JTextField();
         Bottone_Errori = new javax.swing.JButton();
         TransazioniCrypto_Bottone_Filtri = new javax.swing.JButton();
         TransazioniCrypto_Bottone_AzzeraFiltri = new javax.swing.JButton();
@@ -1166,6 +1186,7 @@ private static final long serialVersionUID = 3L;
         RW_Bottone_Documentazione1 = new javax.swing.JButton();
         Opzioni_Temi = new javax.swing.JPanel();
         Opzioni_Varie_Checkbox_TemaScuro = new javax.swing.JCheckBox();
+        Opzioni_Varie_Checkbox_TemaBlu = new javax.swing.JCheckBox();
         Opzioni_Varie = new javax.swing.JPanel();
         Opzioni_Varie_Titolo_Documentazione = new javax.swing.JLabel();
         Opzioni_Varie_Separatore_Documentazione = new javax.swing.JSeparator();
@@ -1756,7 +1777,7 @@ private static final long serialVersionUID = 3L;
 
         TransazioniCrypto_Label_Plusvalenza.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
         TransazioniCrypto_Label_Plusvalenza.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        TransazioniCrypto_Label_Plusvalenza.setText("Plusvalenze della tabella : ");
+        TransazioniCrypto_Label_Plusvalenza.setText("Plusvalenze cripto della tabella : ");
 
         TransazioniCrypto_Text_Plusvalenza.setEditable(false);
         TransazioniCrypto_Text_Plusvalenza.setBackground(new java.awt.Color(51, 51, 51));
@@ -1925,22 +1946,14 @@ private static final long serialVersionUID = 3L;
 
         TransazioniCrypto_TabbedPane.addTab("Filtri", TransazioniCrypto_Pannello_Filtri);
 
-        jLabel10.setFont(new java.awt.Font("Noto Sans", 1, 12)); // NOI18N
-        jLabel10.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel10.setText("Movimenti fiscalmente rilevanti su periodo");
+        TransazioniCrypto_Label_Derivati.setFont(new java.awt.Font("Noto Sans", 1, 14)); // NOI18N
+        TransazioniCrypto_Label_Derivati.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        TransazioniCrypto_Label_Derivati.setText("Derivati della tabella : ");
 
-        jLabel11.setText("Tot. Costi di Carico:");
-
-        jLabel12.setText("Tot. Corrispettivi :");
-
-        TransazioniCrypto_Text_CostiCarico.setEditable(false);
-
-        TransazioniCrypto_Text_Vendite.setEditable(false);
-        TransazioniCrypto_Text_Vendite.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                TransazioniCrypto_Text_VenditeActionPerformed(evt);
-            }
-        });
+        TransazioniCrypto_Text_Derivati.setEditable(false);
+        TransazioniCrypto_Text_Derivati.setBackground(new java.awt.Color(51, 51, 51));
+        TransazioniCrypto_Text_Derivati.setFont(new java.awt.Font("Noto Sans", 1, 24)); // NOI18N
+        TransazioniCrypto_Text_Derivati.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
         Bottone_Errori.setFont(new java.awt.Font("Noto Sans", 1, 18)); // NOI18N
         Bottone_Errori.setForeground(Tabelle.rossoElimina);
@@ -2079,16 +2092,8 @@ private static final long serialVersionUID = 3L;
                                 .addComponent(Bottone_Errori, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(TransazioniCrypto_Label_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(TransazioniCrypto_Text_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                    .addComponent(TransazioniCrypto_Text_CostiCarico, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(TransazioniCrypto_Text_Vendite, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(TransazioniCryptoLayout.createSequentialGroup()
-                                    .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                            .addComponent(TransazioniCrypto_Label_Derivati, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(TransazioniCrypto_Text_Derivati, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addGap(9, 9, 9))
         );
 
@@ -2130,15 +2135,9 @@ private static final long serialVersionUID = 3L;
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(TransazioniCrypto_Text_Plusvalenza, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabel10)
+                        .addComponent(TransazioniCrypto_Label_Derivati, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel11)
-                            .addComponent(jLabel12))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(TransazioniCryptoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(TransazioniCrypto_Text_CostiCarico, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(TransazioniCrypto_Text_Vendite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(TransazioniCrypto_Text_Derivati, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(54, 54, 54)
                         .addComponent(TransazioniCrypto_Bottone_AggiorbaVersione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 49, Short.MAX_VALUE)
@@ -6005,13 +6004,22 @@ private static final long serialVersionUID = 3L;
             }
         });
 
+        Opzioni_Varie_Checkbox_TemaBlu.setText("Usa Tema Blu");
+        Opzioni_Varie_Checkbox_TemaBlu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Opzioni_Varie_Checkbox_TemaBluActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout Opzioni_TemiLayout = new javax.swing.GroupLayout(Opzioni_Temi);
         Opzioni_Temi.setLayout(Opzioni_TemiLayout);
         Opzioni_TemiLayout.setHorizontalGroup(
             Opzioni_TemiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Opzioni_TemiLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(Opzioni_Varie_Checkbox_TemaScuro, javax.swing.GroupLayout.PREFERRED_SIZE, 474, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(Opzioni_TemiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Opzioni_Varie_Checkbox_TemaScuro, javax.swing.GroupLayout.PREFERRED_SIZE, 474, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Opzioni_Varie_Checkbox_TemaBlu, javax.swing.GroupLayout.PREFERRED_SIZE, 474, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         Opzioni_TemiLayout.setVerticalGroup(
@@ -6019,6 +6027,8 @@ private static final long serialVersionUID = 3L;
             .addGroup(Opzioni_TemiLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(Opzioni_Varie_Checkbox_TemaScuro)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Opzioni_Varie_Checkbox_TemaBlu)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -7265,6 +7275,8 @@ private void SettaIcone(){
      * <p>Tocca Swing: va chiamato sull'EDT.
      */
     private void Errori_AggiornaPulsante(){
+        //La scheda Dashboard mostra gli stessi contatori: anche i tre dei controlli secondari arrivano dopo il caricamento
+        if (Dashboard != null) Dashboard.ImpostaContatori(ContatoriErrori());
         int err = ContatoriErrori().totale();
         if (err == 0) {
             Bottone_Errori.setEnabled(false);
@@ -9277,13 +9289,16 @@ private void SettaIcone(){
         Principale_GiacenzeaData.AggiornaCoperturaPrezzi();
         java.util.List<RigaPrezzoDaCompletare> PrezziDaCompletare = new java.util.ArrayList<>();
         //Costi di carico letti dai movimenti : con il calcolo manuale vanno allineati prima (vedi la funzione)
-        if (Opzioni_GruppoWallet_CheckBox_PlusManuali.isSelected()) {
-            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            try {
-                Funzioni_AllineaPlusvalenzeSeManuale();
-            } finally {
-                this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
+        //Siamo sul thread grafico: se il motore ha del lavoro vero (movimenti cambiati dopo l'ultima passata) lo si fa in un
+        //thread con la finestra di avanzamento, che tiene vivo il disegno, invece di bloccare la finestra. A movimenti
+        //invariati non compare nulla (il controllo e' lo stesso confronto di impronte che il ricalcolo fa per primo).
+        if (Opzioni_GruppoWallet_CheckBox_PlusManuali.isSelected() && Calcoli_PlusvalenzeNew.PassataNecessaria()) {
+            Download progressAllineamento = new Download();
+            progressAllineamento.setLocationRelativeTo(this);
+            progressAllineamento.Titolo("Aggiornamento delle plusvalenze in corso....");
+            progressAllineamento.SetLabel("Aggiornamento delle plusvalenze in corso....");
+            progressAllineamento.EseguiBloccante(() -> Funzioni_AllineaPlusvalenzeSeManuale(),
+                    "l'aggiornamento delle plusvalenze", this);
         }
         
         //Gestisco i bottoni
@@ -15383,8 +15398,11 @@ if (result.isAction("delete-all")) {
 
     private void Opzioni_Varie_Checkbox_TemaScuroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Checkbox_TemaScuroActionPerformed
         // TODO add your handling code here:        
-        if (Opzioni_Varie_Checkbox_TemaScuro.isSelected()){ 
+        if (Opzioni_Varie_Checkbox_TemaScuro.isSelected()){
             try {
+                //I due temi si escludono: la scelta resta una sola, quella salvata in "Tema"
+                Opzioni_Varie_Checkbox_TemaBlu.setSelected(false);
+                FlatTemaBluLaf.RipristinaColoriTabelle();
                 UIManager.setLookAndFeel( new FlatDarkLaf() );
                 ((JTextFieldDateEditor)CDC_DataChooser_Iniziale.getDateEditor()).setBackground(Color.lightGray);
                 ((JTextFieldDateEditor)CDC_DataChooser_Finale.getDateEditor()).setBackground(Color.lightGray);
@@ -15430,8 +15448,85 @@ if (result.isAction("delete-all")) {
             }
         }
         SwingUtilities.updateComponentTreeUI(this);
-        Messaggi.SuccessMessage("Nuovo tema impostato", "Riavviare l'applicativo per la corretta applicazione del nuovo Tema.", this);
+        Funzioni_ChiediRiavvioPerTema();
     }//GEN-LAST:event_Opzioni_Varie_Checkbox_TemaScuroActionPerformed
+
+    private void Opzioni_Varie_Checkbox_TemaBluActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Opzioni_Varie_Checkbox_TemaBluActionPerformed
+        //Come il cambio verso il tema scuro: si applica subito il Look&Feel, il resto (righe, sfondi) richiede il riavvio
+        try {
+            if (Opzioni_Varie_Checkbox_TemaBlu.isSelected()) {
+                Opzioni_Varie_Checkbox_TemaScuro.setSelected(false);
+                UIManager.setLookAndFeel(new FlatTemaBluLaf());
+                FlatTemaBluLaf.ImpostaColoriTabelle();
+                tema = FlatTemaBluLaf.NOME_TEMA;
+                DatabaseH2.Opzioni_Scrivi("Tema", FlatTemaBluLaf.NOME_TEMA);
+            } else {
+                UIManager.setLookAndFeel(new FlatLightLaf());
+                FlatTemaBluLaf.RipristinaColoriTabelle();
+                tema = "Chiaro";
+                DatabaseH2.Opzioni_Scrivi("Tema", "Chiaro");
+                Tabelle.verdeScuro = new Color(23, 114, 69);
+                Tabelle.rosso = Color.RED;
+                Tabelle.Rosso = "red";
+                Tabelle.Verde = "green";
+            }
+            ((JTextFieldDateEditor)CDC_DataChooser_Iniziale.getDateEditor()).setBackground(Tabelle.grigioChiaro);
+            ((JTextFieldDateEditor)CDC_DataChooser_Finale.getDateEditor()).setBackground(Tabelle.grigioChiaro);
+            ((JTextFieldDateEditor)GiacenzeaData_Data_DataChooser.getDateEditor()).setBackground(Tabelle.grigioChiaro);
+            ((JTextFieldDateEditor)Opzioni_Pulizie_DataChooser_Iniziale.getDateEditor()).setBackground(Tabelle.grigioChiaro);
+            ((JTextFieldDateEditor)Opzioni_Pulizie_DataChooser_Finale.getDateEditor()).setBackground(Tabelle.grigioChiaro);
+            Bottone_Errori.setForeground(Tabelle.rosso);
+        } catch (UnsupportedLookAndFeelException ex) {
+            LoggerGC.ScriviErrore(ex);
+        }
+        SwingUtilities.updateComponentTreeUI(this);
+        Funzioni_ChiediRiavvioPerTema();
+    }//GEN-LAST:event_Opzioni_Varie_Checkbox_TemaBluActionPerformed
+
+    /**
+     * Dopo un cambio di tema: il Look&amp;Feel è già installato ma righe, sfondi e icone si sistemano del tutto solo
+     * all'avvio, quindi si propone il riavvio. Rispondendo sì si passa dalla chiusura ordinata (salvataggio dei movimenti
+     * se serve, preferenze, compattazione) e il nuovo processo parte da lì, aspettando la fine di questo
+     * ({@link RiavvioProgramma}). Con flatpak e Store il riavvio non è possibile da qui: resta l'avviso a riaprire a mano.
+     */
+    private void Funzioni_ChiediRiavvioPerTema() {
+        if (!RiavvioProgramma.Disponibile()) {
+            Messaggi.SuccessMessage("Nuovo tema impostato", "Riavviare l'applicativo per la corretta applicazione del nuovo Tema.", this);
+            return;
+        }
+        AppDialog.DialogResult risposta = AppDialog.builder(this)
+                .windowTitle("Nuovo tema impostato")
+                .bodyTitle("Riavviare il programma?")
+                .showTitleInBody(true)
+                .theme()
+                .type(AppDialog.DialogType.INFO)
+                .message("Per applicare del tutto il nuovo tema il programma deve riavviarsi.")
+                .details("Se ci sono movimenti non salvati, prima della chiusura verrà chiesto se salvarli. "
+                        + "Scegliendo \"Più tardi\" il tema sarà applicato al prossimo avvio.")
+                .action(AppDialog.DialogAction.builder("dopo", "Più tardi")
+                        .role(AppDialog.ActionRole.SECONDARY)
+                        .build())
+                .action(AppDialog.DialogAction.builder("riavvia", "Riavvia ora")
+                        .role(AppDialog.ActionRole.PRIMARY)
+                        .build())
+                .showDialog();
+        if (risposta == null || !risposta.isAction("riavvia")) {
+            return;
+        }
+        //Il nuovo processo parte dentro la chiusura, dopo i salvataggi: se l'utente annulla il salvataggio non parte
+        //niente, e se non riesce a partire il programma resta aperto
+        ChiudiProgramma(() -> {
+            try {
+                RiavvioProgramma.Avvia();
+                return true;
+            } catch (java.io.IOException ex) {
+                LoggerGC.ScriviErrore(ex);
+                Messaggi.WarningMessage("Riavvio", "Riavvio non riuscito",
+                        "Il programma resta aperto. Chiudilo e riaprilo a mano per applicare il tema: " + ex.getMessage(), this);
+                return false;
+            }
+        });
+    }
     private void Funzioni_NuovaVersioneDisponibile(){
         //L'edizione Store si aggiorna dallo Store, e basta: interrogare GitHub e aprirne le pagine di download
         //e' una via di distribuzione esterna, cioe' il territorio delle policy 10.8.3 e 10.2.2 del Microsoft
@@ -15518,6 +15613,93 @@ if (result.isAction("delete-all")) {
         thread.setDaemon(true);
         thread.start();
     }
+    /**
+     * Compila la scheda Dashboard. Si rifà solo se i movimenti sono cambiati ({@link #VersioneMovimenti}) o se {@code forza}:
+     * aprire la scheda più volte di fila non ricalcola niente. Con le plusvalenze da ricalcolare (calcolo manuale) o la tabella
+     * in aggiornamento mostra quello che c'è e lo dice, senza segnare la versione come letta, così il prossimo accesso riprova.
+     */
+    private void Dashboard_Aggiorna(boolean forza) {
+        boolean ricalcoloAttesa = TransazioniCrypto_RicalcolaPlusvalenze_Label.isVisible();
+        boolean inAggiornamento = TabellaCryptodaAggiornare;
+        if (!forza && dashboardVersione == VersioneMovimenti && !ricalcoloAttesa && !inAggiornamento) return;
+        try {
+            //Copia: la mappa e' un TreeMap non sincronizzato, e un caricamento in un altro thread la modifica
+            java.util.List<String[]> movimenti = new java.util.ArrayList<>(MappaCryptoWallet.values());
+            Principale_Dashboard.Riepilogo riepilogo = Principale_Dashboard.Calcola(movimenti,
+                    Principale_Dashboard.DichiarazioniPerAnno(com.giacenzecrypto.giacenze_crypto.Dichiarazioni.Elenco()));
+            int preferito = dashboardVersione < 0 ? Principale_Dashboard.Anno(CDC_DataIniziale) : Dashboard.AnnoScelto();
+            Dashboard.Imposta(riepilogo, preferito, ContatoriErrori());
+            dashboardVersione = VersioneMovimenti;
+            if (ricalcoloAttesa) {
+                Dashboard.MostraAvviso("Le plusvalenze sono da ricalcolare: i valori mostrati potrebbero non essere aggiornati.");
+            } else if (inAggiornamento) {
+                Dashboard.MostraAvviso("Il registro si sta aggiornando: premi Aggiorna fra qualche istante.");
+                dashboardVersione = -2;
+            }
+        } catch (java.util.ConcurrentModificationException ex) {
+            Dashboard.MostraAvviso("Il registro si sta aggiornando: premi Aggiorna fra qualche istante.");
+            dashboardVersione = -2;
+        }
+    }
+
+    /** Un solo thread per i valori della Dashboard: l'ultima richiesta vince, le precedenti ancora in coda si saltano. */
+    private final java.util.concurrent.ExecutorService dashboardValoreEsecutore = java.util.concurrent.Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "DashboardValore");
+        t.setDaemon(true);
+        return t;
+    });
+    private final java.util.concurrent.atomic.AtomicInteger dashboardValoreGenerazione = new java.util.concurrent.atomic.AtomicInteger();
+
+    /**
+     * Calcola in background il valore delle cripto-attività a inizio e fine anno per la Dashboard ({@link Principale_Dashboard#CalcolaValore}).
+     * Può cercare prezzi in rete, quindi mai sull'EDT e mai più di uno alla volta: scegliendo anni in fila conta solo l'ultimo. Non parte
+     * mentre il registro si sta aggiornando (la fotografia delle giacenze legge la mappa senza copiarla): lo dice e si riprova alla prossima scelta.
+     */
+    private void Dashboard_RichiediValore(int anno, int epoca) {
+        if (TabellaCryptodaAggiornare || TransazioniCrypto_RicalcolaPlusvalenze_Label.isVisible()) {
+            Dashboard.ValoreRimandato(anno, epoca, "Il registro si sta aggiornando");
+            return;
+        }
+        final long versione = VersioneMovimenti;
+        final int generazione = dashboardValoreGenerazione.incrementAndGet();
+        dashboardValoreEsecutore.execute(() -> {
+            //Una richiesta piu' recente e' gia' in coda: questa non serve, e l'anno si richiedera' se l'utente ci torna
+            if (generazione != dashboardValoreGenerazione.get()) {
+                SwingUtilities.invokeLater(() -> Dashboard.ValoreRimandato(anno, epoca, "Calcolo annullato da una scelta più recente"));
+                return;
+            }
+            Principale_Dashboard.ValoreAnno valore = null;
+            String motivo = null;
+            try {
+                long inizio = System.currentTimeMillis();
+                valore = Principale_Dashboard.CalcolaValore(anno, java.time.LocalDate.now());
+                System.out.println("Dashboard: valore dell'anno " + anno + " calcolato in " + (System.currentTimeMillis() - inizio) + " millisec. (fuori dall'EDT)");
+            } catch (java.util.ConcurrentModificationException ex) {
+                motivo = "Il registro si è aggiornato durante il calcolo";
+            } catch (RuntimeException ex) {
+                System.out.println("Dashboard: valore dell'anno " + anno + " non calcolato: " + ex);
+                motivo = "Valore non calcolabile (vedi il log)";
+            }
+            final Principale_Dashboard.ValoreAnno esito = valore;
+            final String perche = motivo;
+            SwingUtilities.invokeLater(() -> {
+                //Se i movimenti sono cambiati mentre si calcolava, il risultato e' di un registro che non c'e' piu'
+                if (esito != null && versione == VersioneMovimenti) Dashboard.ValoreCalcolato(anno, epoca, esito);
+                else Dashboard.ValoreRimandato(anno, epoca, perche != null ? perche : "Il registro è cambiato durante il calcolo");
+            });
+        });
+    }
+
+    /** Dalla Dashboard: imposta il periodo (salvando quello di prima, come la combo "Periodo") e passa a Transazioni Crypto. */
+    private void Dashboard_ApriTransazioni(String iniziale, String finale) {
+        //Prima la scheda, poi il periodo: con la tabella a video il ricaricamento ne costruisce subito le righe.
+        //CDC_ImpostaPeriodo non ricarica niente da sola (lo fa chi la chiama, come il dialogo dei filtri)
+        CDC.setSelectedComponent(TransazioniCrypto);
+        FiltriMovimenti_ImpostaPeriodo(iniziale, finale);
+        FiltriMovimenti_AggiornaPulsante();
+        TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa();
+    }
+
     private void Funzioni_CorrezioneErroriPrincipali(){
 
 //Un elenco con una riga per tipo di errore presente (GUI_Errori): un tipo nuovo e' una voce in piu' in Principale_Errori
@@ -15533,7 +15715,7 @@ if (erroreScelto != null) {
                                         + "Dalla versione 1.29, ai fini del calcolo della plusvalenza, tutti i movimenti di deposito non classificati verranno considerati <br>"
                                         + "come un deposito a costo Zero mentre tutti i prelievi non classificati verranno considerati alla stregua di un cashout.";
                                 Messaggi.InfoMessage("Movimenti non classificati", t, this);
-                             CDC.setSelectedIndex(1);
+                             CDC.setSelectedComponent(Analisi_Crypto);
                              AnalisiCrypto.setSelectedComponent(DepositiPrelievi);
                              DepositiPrelievi.requestFocus();
                                 
@@ -15557,7 +15739,7 @@ if (erroreScelto != null) {
                                         true, FiltriCorrenti.SoloLifoMancante());
                                 FiltriMovimenti_AggiornaPulsante();
                                 this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa();
-                                CDC.setSelectedIndex(0);
+                                CDC.setSelectedComponent(TransazioniCrypto);
                              
                             }
                             else if (Principale_Errori.ID_LIFO_MANCANTE.equals(erroreScelto)) {
@@ -15574,13 +15756,13 @@ if (erroreScelto != null) {
                                             FiltriCorrenti.SoloSenzaPrezzo(), true);
                                     FiltriMovimenti_AggiornaPulsante();
                                     this.TransazioniCrypto_Funzioni_CaricaTabellaCryptoDaMappa();
-                                    CDC.setSelectedIndex(0);
+                                    CDC.setSelectedComponent(TransazioniCrypto);
                                 } else if (scelta == Principale_LifoMancante.Scelta.CLASSIFICA) {
-                                    CDC.setSelectedIndex(1);
+                                    CDC.setSelectedComponent(Analisi_Crypto);
                                     AnalisiCrypto.setSelectedComponent(DepositiPrelievi);
                                     DepositiPrelievi.requestFocus();
                                 } else if (scelta == Principale_LifoMancante.Scelta.SALDI_NEGATIVI) {
-                                    CDC.setSelectedIndex(1);
+                                    CDC.setSelectedComponent(Analisi_Crypto);
                                     AnalisiCrypto.setSelectedComponent(SaldiNegativi);
                                     SaldiNegativi.requestFocus();
                                 }
@@ -15599,7 +15781,7 @@ if (erroreScelto != null) {
                                         + "(Earn, Dual Investment e simili) non ancora registrato come reward.<br><br>"
                                         + "Si verrà ora reindirizzati alla funzione <b>'Verifica Saldi Negativi'</b>.<br><br>";
                                 Messaggi.InfoMessage("Giacenze negative", t, this);
-                                CDC.setSelectedIndex(1);
+                                CDC.setSelectedComponent(Analisi_Crypto);
                                 AnalisiCrypto.setSelectedComponent(SaldiNegativi);
                                 SaldiNegativi.requestFocus();
 
@@ -15610,7 +15792,7 @@ if (erroreScelto != null) {
                                 if (Principale_TrasferimentiSenzaCollegamento.Gestisci(this)) {
                                     Funzioni_AggiornaTutto();
                                     TabellaCryptodaAggiornare = false;
-                                    CDC.setSelectedIndex(1);
+                                    CDC.setSelectedComponent(Analisi_Crypto);
                                     AnalisiCrypto.setSelectedComponent(DepositiPrelievi);
                                     DepositiPrelievi.requestFocus();
                                 }
@@ -18267,10 +18449,6 @@ if (erroreScelto != null) {
         Funzioni_CorrezioneErroriPrincipali();
     }//GEN-LAST:event_Bottone_ErroriActionPerformed
 
-    private void TransazioniCrypto_Text_VenditeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Text_VenditeActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_TransazioniCrypto_Text_VenditeActionPerformed
-
     private void TransazioniCrypto_Tabella_DettagliMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Tabella_DettagliMouseReleased
         // TODO add your handling code here:
         //Funzione che apre il popupmenu se premuto il tasto destro
@@ -18380,18 +18558,25 @@ if (erroreScelto != null) {
     }
 
     /**
-     * Scrive i riquadri plusvalenza, costi di carico e vendite sulle righe mostrate dalla tabella
+     * Scrive i riquadri della plusvalenza cripto e del reddito da derivati sulle righe mostrate dalla tabella
      * ({@link #TransazioniCrypto_MovimentiMostrati()}), quindi con periodo, filtri di caricamento <b>e</b> filtri di
      * riga. La chiama {@link #FiltriMovimenti_AggiornaIndicatori()}, da dove passa ogni cambio di filtro (anche un
      * tasto nel campo di ricerca o un filtro di colonna dal popup). La regola di somma è
      * {@link Principale_PlusvalenzeAliquote#Totali}, la stessa del dialogo.
      */
     private void TransazioniCrypto_AggiornaRiquadriTotali() {
-        Principale_PlusvalenzeAliquote.Riga t = Principale_PlusvalenzeAliquote.Totali(TransazioniCrypto_MovimentiMostrati());
+        java.util.List<String[]> mostrati = TransazioniCrypto_MovimentiMostrati();
+        Principale_PlusvalenzeAliquote.Riga t = Principale_PlusvalenzeAliquote.Totali(mostrati);
         TransazioniCrypto_Text_Plusvalenza.setText("€ " + Funzioni.formattaBigDecimal(t.plusvalenza, true));
-        TransazioniCrypto_Text_CostiCarico.setText("€ " + Funzioni.formattaBigDecimal(t.costi, true));
-        TransazioniCrypto_Text_Vendite.setText("€ " + Funzioni.formattaBigDecimal(t.vendite, true));
         TransazioniCrypto_Text_Plusvalenza.setForeground(t.plusvalenza.signum() < 0 ? Tabelle.rosso : Tabelle.verde);
+        //Redditi da derivati (c-quater) delle stesse righe: stanno in [46], mai in v[19], quindi non sono nel totale qui sopra
+        Object[] der = Derivati.TotaleRisultato(mostrati);
+        java.math.BigDecimal totaleDerivati = der[0] == null ? java.math.BigDecimal.ZERO : (java.math.BigDecimal) der[0];
+        TransazioniCrypto_Text_Derivati.setText("€ " + Funzioni.formattaBigDecimal(totaleDerivati, true));
+        TransazioniCrypto_Text_Derivati.setForeground(totaleDerivati.signum() < 0 ? Tabelle.rosso : Tabelle.verde);
+        TransazioniCrypto_Text_Derivati.setToolTipText(der[0] == null
+                ? "Nessuna riga mostrata ha un risultato da derivati"
+                : "Reddito da derivati delle righe mostrate (" + der[1] + " movimenti), a parte dalle plusvalenze delle cripto-attività");
     }
 
     private void TransazioniCrypto_Bottone_AnnullaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TransazioniCrypto_Bottone_AnnullaActionPerformed
@@ -20976,6 +21161,7 @@ try {
                     final long DimensioneFile = Math.max(1, TransazioniCrypto1.length());
                     long BytesLetti = 0;
                     long RigheLette = 0;
+                    int TipologieContrattiMigrate = 0;
 
                     try (FileReader fire = new FileReader(fileDaImportare); BufferedReader bure = new BufferedReader(fire);) {
                         while ((riga = bure.readLine()) != null) {
@@ -21005,6 +21191,8 @@ try {
                             //delle commissioni collegate, e solo sui movimenti originali: le righe scritte prima si
                             //sistemano qui. Fuori dal blocco di VersioneCambiata perché costa due confronti
                             GruppoOperazione.MigraAllaFormaAttuale(splittata);
+                            //Dal 27/11/2026 il token di un contratto ha la tipologia Derivato: le beta con i derivati la scrivevano Crypto
+                            if (Derivati.NormalizzaTipologia(splittata)) TipologieContrattiMigrate++;
                             
                             
                             
@@ -21074,6 +21262,12 @@ try {
 
                     } catch (IOException ex) {
                         LoggerGC.ScriviErrore(ex);
+                    }
+                    //Fuori dal ciclo: VersioneCambiata dentro accenderebbe le altre conversioni anche sulle righe dopo. Con almeno un
+                    //token migrato il file si riscrive (con la copia di sicurezza) e il caricamento dopo non ha più nulla da fare
+                    if (TipologieContrattiMigrate > 0) {
+                        System.out.println("Contratti derivati: tipologia Derivato su " + TipologieContrattiMigrate + " movimenti (prima Crypto)");
+                        VersioneCambiata = true;
                     }
 
                 } catch (IOException ex) {
@@ -21266,11 +21460,16 @@ try {
      * @param anno l'anno scelto
      */
     private void FiltriMovimenti_ImpostaAnno(int anno) {
+        FiltriMovimenti_ImpostaPeriodo(anno + "-01-01", anno + "-12-31");
+    }
+
+    /** Come {@link #FiltriMovimenti_ImpostaAnno(int)}, per un periodo qualunque ({@code yyyy-MM-dd}): lo usa anche la Dashboard. */
+    private void FiltriMovimenti_ImpostaPeriodo(String iniziale, String finale) {
         if (FiltriMovimenti_DataIniziale_Precedente == null) {
             FiltriMovimenti_DataIniziale_Precedente = CDC_DataIniziale;
             FiltriMovimenti_DataFinale_Precedente = CDC_DataFinale;
         }
-        CDC_ImpostaPeriodo(anno + "-01-01", anno + "-12-31");
+        CDC_ImpostaPeriodo(iniziale, finale);
     }
 
     /**
@@ -21765,7 +21964,6 @@ try {
            
            //1 - Movimenti senza prezzo
             //Questo indica nella colonna 32 se il movimento è provvisto o meno di prezzo.
-            String TipoMovimento=v[0].split("_")[4].trim().toUpperCase();
             //Calcolata una volta sola: più sotto serve di nuovo (haPrezzo) per il filtro
             //"solo movimenti senza prezzo". La funzione non è di sola lettura - normalizza
             //il campo 32 - ma è idempotente, quindi la seconda chiamata dava lo stesso esito.
@@ -21786,18 +21984,8 @@ try {
             //3 - Depositi/Prelievi sconosciuti
             //Questo serve per incrementare il numero degli errori qualora vi fossero
             //In questo caso incremento gli errori se trovo dei movimenti non classificati
-            boolean isAutomatico = "AU".equalsIgnoreCase(v[22]);//Escludo movimenti automatici
-            boolean causaleVuota = v[18].trim().isEmpty();//Includo solo movimenti senza causale
-
-            boolean isDepositoValido = TipoMovimento.equals("DC")
-                    && !Funzioni.isSCAM(v[11])//escludo se è scam
-                    && Funzioni.isBigDecimalNonZero(v[13]);//Escludo se la qta è zero
-
-            boolean isPrelievoValido = TipoMovimento.equals("PC")
-                    && !Funzioni.isSCAM(v[8])//escludo se è scam
-                    && Funzioni.isBigDecimalNonZero(v[10]);//Escludo se la qta è zero
-
-            if (!isAutomatico && causaleVuota && (isDepositoValido || isPrelievoValido)) {
+            //La regola e' in Principale_Errori.NonClassificato: la usa anche la Dashboard per contare gli errori di un anno
+            if (Principale_Errori.NonClassificato(v)) {
                 NumErroriMovSconosciuti++;
             }
      
@@ -22530,6 +22718,7 @@ try {
     private javax.swing.JButton Opzioni_Varie_Bottone_ProblemiNoti;
     private javax.swing.JCheckBox Opzioni_Varie_Checkbox_LogJsonDefi;
     private javax.swing.JCheckBox Opzioni_Varie_Checkbox_LogJsonPrezzi;
+    private javax.swing.JCheckBox Opzioni_Varie_Checkbox_TemaBlu;
     private javax.swing.JCheckBox Opzioni_Varie_Checkbox_TemaScuro;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_NoPlusvalenzeCommissioni;
     private javax.swing.JCheckBox Plusvalenze_Opzioni_CheckBox_Pre2023EarnCostoZero;
@@ -22642,6 +22831,7 @@ try {
     private javax.swing.JButton TransazioniCrypto_Bottone_Salva;
     private javax.swing.JLabel TransazioniCrypto_Label_Filtro;
     private javax.swing.JLabel TransazioniCrypto_Label_MovimentiNonSalvati;
+    private javax.swing.JLabel TransazioniCrypto_Label_Derivati;
     private javax.swing.JLabel TransazioniCrypto_Label_Plusvalenza;
     private javax.swing.JButton TransazioniCrypto_RicalcolaPlusvalenze_Bottone;
     private javax.swing.JLabel TransazioniCrypto_RicalcolaPlusvalenze_Label;
@@ -22652,15 +22842,11 @@ try {
     private javax.swing.JTabbedPane TransazioniCrypto_TabbedPane;
     private javax.swing.JTable TransazioniCrypto_Tabella_Filtri;
     private javax.swing.JTable TransazioniCrypto_Tabella_Dettagli;
-    private javax.swing.JTextField TransazioniCrypto_Text_CostiCarico;
+    private javax.swing.JTextField TransazioniCrypto_Text_Derivati;
     private javax.swing.JTextField TransazioniCrypto_Text_Plusvalenza;
-    private javax.swing.JTextField TransazioniCrypto_Text_Vendite;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;

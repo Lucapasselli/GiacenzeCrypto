@@ -469,17 +469,16 @@ public class Importazioni {
                 + "finanziaria</b>: si dichiarano in una sezione diversa del quadro RT/T, <b>non sono "
                 + "compensabili</b> con plus/minusvalenze da cripto-attività e i contratti esteri vanno nel "
                 + "quadro RW con un codice proprio.\n\n"
-                + "Il programma gestisce i derivati <b>solo in parte</b>. Profitti, perdite, funding, commissioni e bonus "
+                + "Il programma li gestisce come derivati (le opzioni non ancora). Profitti, perdite, funding, commissioni e bonus "
                 + "appena importati sono già <b>classificati come derivati</b> (salvo quelli di anni con una dichiarazione "
                 + "definitiva archiviata, per cui il programma chiede): il loro risultato va nella colonna "
                 + "<i>Risultato derivati</i> della tabella dei movimenti, separato dalle plusvalenze delle cripto-attività. "
-                + "Per i perpetui e i futures di OKX il contratto è neutro, il margine anche salvo l'opzione <i>Conto derivati</i>, "
-                + "e il reddito è calcolato in "
+                + "Il conto derivati è parte del derivato: il passaggio di cripto-attività dallo spot al conto è una cessione, "
+                + "per i perpetui e i futures di OKX il contratto è neutro e il reddito è calcolato in "
                 + "<b>LIFO</b>. Il risultato compare nel quadro <b>T/RT</b>, nella sezione dei redditi diversi di natura "
-                + "finanziaria, e non nel quadro W/RW. "
-                + "I movimenti importati prima di questa versione sono ancora <b>trattati come "
-                + "cripto-attività</b> finché non si classificano con <i>Classifica come derivato</i>, e concorrono a "
-                + "plusvalenze e giacenze cripto: <b>non è corretto</b>. "
+                + "finanziaria, e il valore del conto derivati nel quadro <b>W/RW</b> con il codice 9. "
+                + "Gli eventuali movimenti importati prima, e non ancora classificati, restano <b>trattati come "
+                + "cripto-attività</b> finché non si classificano con <i>Classifica come derivato</i>. "
                 + "Le stampe dei quadri W/RW e T/RT lo segnalano per gli anni interessati. Si consiglia di "
                 + "verificare con un professionista la qualificazione di questi importi."
                 + (testoDual.isEmpty() ? "" : "\n\n" + testoDual)
@@ -1523,6 +1522,8 @@ public class Importazioni {
             //va tolto, l'annullamento lo ha lasciato nell'array con il suo ID attuale
             if (MappaCryptoWallet.get(Vecchio[0]) == Vecchio) MappaCryptoWallet.remove(Vecchio[0]);
         }
+        //Un file o un ripristino delle versioni beta porta ancora "Crypto" sul token di un contratto
+        Derivati.NormalizzaTipologia(Valore);
         MappaCryptoWallet.put(Chiave, Valore);
         return ClassificabileComeDerivato;
     }
@@ -5008,7 +5009,7 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
      * Determina la tipologia (e il relativo codice a 2 lettere per l'ID transazione) di un movimento in base
      * al tipo delle monete uscente ed entrante (Crypto/NFT/FIAT/assente), secondo la matrice di classificazione
      * standard dell'applicazione (deposito/prelievo/scambio/acquisto/vendita).
-     * @param TipoUscita tipo della moneta uscente ({@code "Crypto"}, {@code "NFT"}, {@code "FIAT"}, oppure {@code null}/vuoto se assente)
+     * @param TipoUscita tipo della moneta uscente ({@code "Crypto"}, {@code "NFT"}, {@code "FIAT"}, {@code "Derivato"} come {@code "Crypto"}, oppure {@code null}/vuoto se assente)
      * @param TipoEntrata tipo della moneta entrante ({@code "Crypto"}, {@code "NFT"}, {@code "FIAT"}, oppure {@code null}/vuoto se assente)
      * @param valore se {@code 1} restituisce la descrizione testuale della tipologia, altrimenti il codice a 2 lettere
      * @return la tipologia o il codice corrispondente, oppure {@code null} se sia uscita che entrata sono assenti
@@ -5017,6 +5018,10 @@ public static List<String[]> Ex_OKX_Consolida(List<String[]> listaMovimentidaCon
          {   
              String Tipologia=null;
              String CodiceTipologia=null;
+             //Il token di un contratto derivato (Derivati.TIPOLOGIA) ha per il codice del movimento lo stesso comportamento di una crypto:
+             //deposito, prelievo, scambio. Senza questa riga la matrice sotto restituirebbe null e l'ID perderebbe la categoria
+             if (Derivati.IsTipologiaDerivato(TipoUscita)) TipoUscita="Crypto";
+             if (Derivati.IsTipologiaDerivato(TipoEntrata)) TipoEntrata="Crypto";
              if(TipoUscita==null||TipoUscita.isBlank()){
                  //ora gestisco le varie casistiche se M1 è una crypto
                  if(TipoEntrata==null||TipoEntrata.isBlank()){

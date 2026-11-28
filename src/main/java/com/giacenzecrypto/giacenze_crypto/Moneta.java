@@ -21,7 +21,7 @@ public class Moneta {
  // public String IndirizzoNoWallet;
   public String CostoCarico;
   public String Prezzo;
-  public String Tipo; //NFT, FIAT o CRYPTO
+  public String Tipo; //NFT, FIAT, Crypto o Derivato (il token di un contratto, Derivati.TIPOLOGIA)
   public String Rete;//da gestire, anzi forse conviene gestire rete e address come tipologia multipla
   
   public String GruppoRW;//usato solamente per calcolo finare RW come Base di appoggio, in futuro sarà da sostituire
@@ -172,7 +172,10 @@ public void SetAddress(String Address){
  * altrimenti {@code Crypto}.
  */
 public void AssegnaTipoAuto(){
-    if (ListeSimboli.Fiat().contains(Moneta)) {
+    if (Derivati.IsTokenContratto(Moneta)) {
+                //Il token di un contratto non e' una cripto-attivita' (vedi Derivati.TIPOLOGIA)
+                Tipo = Derivati.TIPOLOGIA;
+            } else if (ListeSimboli.Fiat().contains(Moneta)) {
                 Tipo = "FIAT";
             } else {
                 Tipo = "Crypto";

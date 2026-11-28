@@ -142,7 +142,7 @@ public final class AggiornamentoInstallazione {
         }
     }
 
-    private static Path PercorsoJar() {
+    static Path PercorsoJar() {
         try {
             return Path.of(AggiornamentoInstallazione.class.getProtectionDomain().getCodeSource().getLocation().toURI());
         } catch (Exception ex) {

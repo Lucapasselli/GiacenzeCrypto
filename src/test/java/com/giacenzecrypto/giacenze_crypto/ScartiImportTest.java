@@ -378,4 +378,42 @@ class ScartiImportTest {
         assertEquals(2, gruppi.get(1).size());
         assertEquals(1, gruppi.get(2).size());
     }
+
+    /**
+     * La penale di una liquidazione ha il bill "<billId>-PEN": se e' in archivio e' presente col suo nome intero, e non diventa un
+     * movimento "non presente in archivio" da recuperare (che il recupero poi non scriverebbe, perche' la deduplica la riconosce).
+     */
+    @Test
+    void laPenaleDiUnaLiquidazioneInArchivioNonEUnMovimentoDaRecuperare() {
+        Map<String, String[]> archivio = new TreeMap<>();
+        String[] penale = new String[Importazioni.ColonneTabella];
+        java.util.Arrays.fill(penale, "");
+        penale[0] = "20261121043129_OKX900_907_001_CM";
+        penale[3] = "OKX";
+        penale[24] = "900-PEN";
+        archivio.put(penale[0], penale);
+        String[] scambio = new String[Importazioni.ColonneTabella];
+        java.util.Arrays.fill(scambio, "");
+        scambio[0] = "20261121043129_OKX901_001_001_SC";
+        scambio[3] = "OKX";
+        scambio[24] = "901-902";
+        archivio.put(scambio[0], scambio);
+        java.util.Set<String> presenti = ScartiImport.BillPresenti(archivio);
+        assertTrue(presenti.contains("900-PEN"));
+        assertFalse(presenti.contains("900"), "il fill ha il suo movimento: la penale non lo certifica");
+        assertFalse(presenti.contains("PEN"));
+        assertTrue(presenti.contains("901") && presenti.contains("902"), "gli scambi restano spezzati nelle gambe");
+
+        String[] r = new String[19];
+        java.util.Arrays.fill(r, "");
+        r[0] = "2026-11-21 04:31:29";
+        r[1] = "OKX";
+        r[2] = "Trading";
+        r[4] = "Penale liquidazione|FUTURES";
+        r[14] = "900-PEN";
+        Map<String, String> mappa = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        mappa.put("Penale liquidazione|FUTURES", "COMMISSIONI");
+        assertNull(ScartiImport.Valuta(List.<String[]>of(r), mappa, presenti, Map.of()), "gia' in archivio: niente da proporre");
+        assertNotNull(ScartiImport.Valuta(List.<String[]>of(r), mappa, new java.util.HashSet<>(), Map.of()), "senza il movimento sarebbe un candidato");
+    }
 }

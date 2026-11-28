@@ -1414,4 +1414,105 @@ class OKXDerivatiTest {
         assertEquals(0, new java.math.BigDecimal("6.4").compareTo(saldo(OKXDerivati.SOTTOWALLET, "USDC")));
         assertEquals(0, new java.math.BigDecimal("20").add(sommaBalChg(ap, chiude, apre)).add(new java.math.BigDecimal("6.4")).compareTo(sommaUSDC()));
     }
+
+    // ---------------------------------------------------------------------------------------------
+    // Tipologia Derivato (27/11/2026) e passaggio dalle versioni beta, che scrivevano Crypto
+    // ---------------------------------------------------------------------------------------------
+
+    private static List<String[]> righeToken() {
+        return Principale.MappaCryptoWallet.values().stream().filter(v -> Derivati.Tipo(v).equals(Derivati.CONTRATTO)).toList();
+    }
+
+    @Test
+    void ilTokenDelContrattoNasceConLaTipologiaDerivatoEIlCodiceDelMovimentoNonCambia() {
+        depositoIniziale();
+        importa(apertura(), chiusuraParziale(), chiusuraFinale());
+        List<String[]> token = righeToken();
+        assertEquals(3, token.size());
+        for (String[] t : token) {
+            String tipologia = Derivati.IsTokenContratto(t[8]) ? t[9] : t[12];
+            assertEquals(Derivati.TIPOLOGIA, tipologia, t[0]);
+            //il codice dell'ID e la classificazione sono quelli di sempre: apertura = deposito, chiusure = prelievi
+            assertTrue(t[0].endsWith(t[11].isBlank() ? "_PC" : "_DC"), t[0]);
+        }
+        //Il margine resta USDC, cioe' Crypto: la tipologia Derivato e' solo dei contratti
+        assertTrue(Principale.MappaCryptoWallet.values().stream().filter(v -> Derivati.Tipo(v).equals(Derivati.MARGINE))
+                .allMatch(v -> "Crypto".equals(v[9]) || "Crypto".equals(v[12])));
+        assertTrue(Funzioni.ControllaSaldiNegativi(Principale.MappaCryptoWallet.values()).isEmpty());
+    }
+
+    /**
+     * Un archivio delle beta ha i token con Crypto, e una posizione aperta con la beta si chiude dopo l'aggiornamento con Derivato: la
+     * stessa pila (e la stessa riga di Giacenze a data) avrebbe due tipologie. Dopo la normalizzazione il calcolo e' identico a quello
+     * dell'archivio nuovo, e apertura e chiusura hanno la stessa chiave.
+     */
+    @Test
+    void unArchivioDelleBetaSiPortaAllaFormaAttualeSenzaCambiareIlCalcolo() {
+        movimentiDiPrima();
+        for (String[] v : movimenti(apertura(), chiusuraParziale(), chiusuraFinale())) Principale.MappaCryptoWallet.put(v[0], v);
+        Calcoli_PlusvalenzeNew.InvalidaStatoIncrementale();
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        java.util.Map<String, String[]> atteso = new java.util.TreeMap<>();
+        for (String[] v : Principale.MappaCryptoWallet.values()) atteso.put(v[0], impronta(v));
+        List<String[]> token = righeToken();
+        assertEquals(3, token.size());
+
+        //Beta: tutti i token con Crypto, tranne la chiusura finale scritta dopo l'aggiornamento
+        for (String[] t : token) {
+            if (Derivati.IsTokenContratto(t[8])) t[9] = "Crypto";
+            if (Derivati.IsTokenContratto(t[11])) t[12] = "Crypto";
+        }
+        String[] apertura = token.stream().filter(t -> Derivati.IsTokenContratto(t[11])).findFirst().orElseThrow();
+        String[] ultima = token.stream().filter(t -> Derivati.IsTokenContratto(t[8])).reduce((a, b) -> b).orElseThrow();
+        ultima[9] = Derivati.TIPOLOGIA;
+        assertNotEquals(Principale_GiacenzeaData.ChiaveRigaGamba(apertura, 1, ""), Principale_GiacenzeaData.ChiaveRigaGamba(ultima, 0, ""),
+                "senza normalizzazione lo stesso token ha due righe in Giacenze a data");
+
+        int cambiati = Derivati.NormalizzaTipologie(Principale.MappaCryptoWallet.values());
+        assertEquals(2, cambiati, "l'apertura e la prima chiusura: l'ultima e' gia' nella forma attuale");
+        assertEquals(0, Derivati.NormalizzaTipologie(Principale.MappaCryptoWallet.values()), "una seconda volta non trova niente");
+        assertEquals(Principale_GiacenzeaData.ChiaveRigaGamba(apertura, 1, ""), Principale_GiacenzeaData.ChiaveRigaGamba(ultima, 0, ""));
+        for (String[] t : token) {
+            assertEquals(Derivati.TIPOLOGIA, Derivati.IsTokenContratto(t[8]) ? t[9] : t[12], t[0]);
+        }
+
+        Calcoli_PlusvalenzeNew.InvalidaStatoIncrementale();
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        for (String[] v : Principale.MappaCryptoWallet.values()) {
+            assertArrayEquals(atteso.get(v[0]), impronta(v), "il movimento " + v[0] + " ha cambiato risultato");
+        }
+        assertTrue(Funzioni.ControllaSaldiNegativi(Principale.MappaCryptoWallet.values()).isEmpty());
+    }
+
+    @Test
+    void unaRigaInseritaConLaFormaDelleBetaSiNormalizzaAllInserimento() {
+        importa(apertura());
+        String[] t = righeToken().get(0);
+        String[] vecchia = t.clone();
+        vecchia[0] = t[0].replace("_001_", "_002_");
+        vecchia[12] = "Crypto";
+        Importazioni.InserisciMovimentosuMappaCryptoWallet(vecchia[0], vecchia);
+        assertEquals(Derivati.TIPOLOGIA, Principale.MappaCryptoWallet.get(vecchia[0])[12]);
+    }
+
+    @Test
+    void laTipologiaDerivatoHaPerIlCodiceDelMovimentoLoStessoComportamentoDiCrypto() {
+        for (String codice : new String[]{"Crypto", "Derivato"}) {
+            assertEquals("PC", Importazioni.RitornaTipologiaTransazione(codice, "", 0));
+            assertEquals("DC", Importazioni.RitornaTipologiaTransazione("", codice, 0));
+        }
+        assertEquals("PRELIEVO CRYPTO", Importazioni.RitornaTipologiaTransazione("Derivato", "", 1));
+        assertEquals("SC", Importazioni.RitornaTipologiaTransazione("Derivato", "Crypto", 0));
+        assertEquals("VC", Importazioni.RitornaTipologiaTransazione("Derivato", "FIAT", 0));
+        Moneta m = new Moneta();
+        m.Moneta = TOKEN_LONG;
+        m.AssegnaTipoAuto();
+        assertEquals(Derivati.TIPOLOGIA, m.Tipo);
+        m.Moneta = "BTC";
+        m.AssegnaTipoAuto();
+        assertEquals("Crypto", m.Tipo);
+        m.Moneta = "EUR";
+        m.AssegnaTipoAuto();
+        assertEquals("FIAT", m.Tipo);
+    }
 }

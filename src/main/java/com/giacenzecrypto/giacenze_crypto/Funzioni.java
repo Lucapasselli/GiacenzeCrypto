@@ -237,8 +237,32 @@ public class Funzioni {
         TimesTampUltimoControlloInternet = 0;
     }
 
+    /** Vero sui thread dentro {@link #SenzaRete}: per loro la rete "non c'e'", e le fonti di prezzo restano le sole gia' salvate. */
+    private static final ThreadLocal<Boolean> SENZA_RETE = ThreadLocal.withInitial(() -> false);
+
+    /**
+     * Esegue {@code lavoro} sul thread corrente come se non ci fosse connessione: {@link #CeConnessioneInternet()} risponde no e
+     * {@link AttesaConnessione#Attendi()} non aspetta, quindi i prezzi si leggono dalla cache e dai personalizzati e <b>niente si scarica</b>
+     * (e nessun "prezzo irrecuperabile" viene scritto: non si e' cercato). Vale solo per questo thread, e solo per la durata del lavoro: una
+     * importazione che gira altrove continua a usare la rete. Serve alla Dashboard, che non deve far partire scaricamenti aprendo una scheda.
+     */
+    static <T> T SenzaRete(java.util.function.Supplier<T> lavoro) {
+        boolean prima = SENZA_RETE.get();
+        SENZA_RETE.set(true);
+        try {
+            return lavoro.get();
+        } finally {
+            SENZA_RETE.set(prima);
+        }
+    }
+
+    /** @return vero dentro {@link #SenzaRete} sul thread corrente */
+    static boolean SenzaReteSuQuestoThread() {
+        return SENZA_RETE.get();
+    }
+
     static boolean CeConnessioneInternet() {
-        if (ReteDisabilitataPerTest) return false;
+        if (ReteDisabilitataPerTest || SENZA_RETE.get()) return false;
         String[] urls = {
             "https://www.google.com",
             "https://cloudflare.com",

@@ -437,6 +437,15 @@ public final class ScartiImport {
             if (v == null || v.length <= 24 || !"OKX".equalsIgnoreCase(v[3]) || Funzioni.noData(v[24])) {
                 continue;
             }
+            //La penale di una liquidazione ha un [24] suo, "<billId>-PEN" (CcxtInterop.SUFFISSO_BILL_PENALE): e' un bill unico, non uno
+            //scambio di due gambe. Spezzandolo sul trattino resterebbe il billId del fill e la penale, che la riga del documento cita
+            //col suo nome intero, risulterebbe sempre assente anche da importata (e il recupero non potrebbe mai scriverla: la
+            //deduplica la riconosce). Il billId del fill non va aggiunto da qui: lo porta il suo movimento.
+            String chiaveBill = v[24].trim();
+            if (chiaveBill.endsWith(CcxtInterop.SUFFISSO_BILL_PENALE)) {
+                presenti.add(chiaveBill);
+                continue;
+            }
             //Gli scambi uniscono gli ID delle gambe con "-" (prima del 02/04/2026 con "_", vedi ChiaveDedupOKX)
             for (String pezzo : v[24].split("[-_]")) {
                 if (!pezzo.isBlank()) {

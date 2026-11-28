@@ -26,6 +26,47 @@ public final class Principale_Errori {
     public static final String ID_MOVIMENTI_COLLEGATI = "MovimentiCollegati";
     public static final String ID_TRASFERIMENTI_SENZA_COLLEGAMENTO = "TrasferimentiSenzaCollegamento";
 
+    /**
+     * Un movimento di deposito o prelievo che nessuno ha classificato (campo 18 vuoto), non automatico, non SCAM e con quantità: è la regola
+     * che conta il primo contatore del pulsante, scritta una volta sola perché la usa anche la Dashboard per anno.
+     */
+    public static boolean NonClassificato(String[] v) {
+        if (v == null || v.length < 23 || v[0] == null) return false;
+        String[] id = v[0].split("_");
+        if (id.length < 5) return false;
+        String tipo = id[4].trim().toUpperCase();
+        boolean automatico = "AU".equalsIgnoreCase(v[22]);
+        boolean causaleVuota = v[18] == null || v[18].trim().isEmpty();
+        boolean deposito = tipo.equals("DC") && !Funzioni.isSCAM(Nz(v[11])) && Funzioni.isBigDecimalNonZero(v[13]);
+        boolean prelievo = tipo.equals("PC") && !Funzioni.isSCAM(Nz(v[8])) && Funzioni.isBigDecimalNonZero(v[10]);
+        return !automatico && causaleVuota && (deposito || prelievo);
+    }
+
+    private static String Nz(String s) {
+        return s == null ? "" : s;
+    }
+
+    /**
+     * Il movimento è contato fra quelli <i>senza prezzo</i>, ma <b>senza cercarlo</b>: legge solo ciò che {@code Prezzi.isMovimentoPrezzato}
+     * ha già scritto in {@code [32]} al caricamento della tabella (quella funzione può interrogare le fonti dei prezzi e normalizza il campo,
+     * qui non serve né l'uno né l'altro). Un campo ancora vuoto con valore {@code 0.00} si conta senza prezzo, come fa la funzione quando non
+     * trova niente. {@code PrezziIsMovimentoPrezzatoParitaTest} lo confronta con l'originale.
+     */
+    public static boolean SenzaPrezzo(String[] v) {
+        if (v == null || v.length < 33) return false;
+        if ((v[8] != null && !v[8].isBlank() && Funzioni.isSCAM(v[8])) || (v[11] != null && !v[11].isBlank() && Funzioni.isSCAM(v[11]))) return false;
+        String f = v[32] == null ? "" : v[32];
+        if (f.equalsIgnoreCase("SI")) return false;
+        //Vuoto o "NO": decide il valore. Qualunque altro testo non e' mai "SI" per la funzione originale
+        if (f.isBlank() || f.equals("NO")) return "0.00".equals(v[15]);
+        return true;
+    }
+
+    /** La parte A del LiFo manca (lettera {@code A} in {@code [38]}): lo stesso controllo del secondo contatore. */
+    public static boolean LifoMancante(String[] v) {
+        return v != null && v.length > 38 && v[38] != null && v[38].contains("A");
+    }
+
     /** Una voce da mostrare: un tipo di errore con il suo conteggio. */
     public record Voce(String id, String titolo, int quanti, String effetto, String descrizione) {
     }

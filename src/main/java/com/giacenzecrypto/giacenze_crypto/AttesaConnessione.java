@@ -114,6 +114,7 @@ public final class AttesaConnessione {
      *         o quando i tentativi si esauriscono
      */
     public static boolean Attendi() {
+        if (Funzioni.SenzaReteSuQuestoThread()) return false; //lavoro dichiaratamente senza rete (Dashboard): non si aspetta il ritorno
         if (annidamento == 0) return false;      //fuori da un'importazione non si cambia nulla
         if (abortita) return false;              //resa gia' decisa: non si pagano altri nove minuti
 

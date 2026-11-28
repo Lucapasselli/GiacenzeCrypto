@@ -40,6 +40,8 @@ private static final long serialVersionUID = 9L;
     transient List<String> Lista_Cryptovalute = new ArrayList<>();
     transient List<String> Lista_NFT = new ArrayList<>();
     transient List<String> Lista_FIAT = new ArrayList<>();
+    /** I token dei contratti derivati (tipologia {@link Derivati#TIPOLOGIA}): sono nel menu a parte, non fra le cripto-attività. */
+    transient List<String> Lista_Derivati = new ArrayList<>();
     boolean ModificaMovimento=false;
 
     /**
@@ -259,7 +261,7 @@ private static final long serialVersionUID = 9L;
         MonetaEntrataTipo_Label.setText("Tipo Moneta Entrata : ");
 
         MonetaEntrataTipo_ComboBox.setForeground(new java.awt.Color(51, 51, 51));
-        MonetaEntrataTipo_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "-----", "Crypto", "NFT", "FIAT" }));
+        MonetaEntrataTipo_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "-----", "Crypto", "NFT", "FIAT", "Derivato" }));
         MonetaEntrataTipo_ComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 MonetaEntrataTipo_ComboBoxItemStateChanged(evt);
@@ -267,7 +269,7 @@ private static final long serialVersionUID = 9L;
         });
 
         MonetaUscitaTipo_ComboBox.setForeground(new java.awt.Color(51, 51, 51));
-        MonetaUscitaTipo_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "-----", "Crypto", "NFT", "FIAT" }));
+        MonetaUscitaTipo_ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "-----", "Crypto", "NFT", "FIAT", "Derivato" }));
         MonetaUscitaTipo_ComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 MonetaUscitaTipo_ComboBoxItemStateChanged(evt);
@@ -680,6 +682,7 @@ private static final long serialVersionUID = 9L;
                 java.util.Set<String> setNFT    = new java.util.HashSet<>();
                 java.util.Set<String> setFIAT   = new java.util.HashSet<>();
                 setFIAT.add("EUR");
+                java.util.Set<String> setDerivati = new java.util.HashSet<>();
           for (String[] v : MappaCryptoWallet.values()) {
               //PARTE 1: Recupero Wallet e dettagli del wallet
               //Parte 2 recupero della lista delle crypto, lista nft etc...
@@ -694,6 +697,8 @@ private static final long serialVersionUID = 9L;
                   setNFT.add(MonetaUscita);
               }else if (TipoUscita.equalsIgnoreCase("FIAT")){
                   setFIAT.add(MonetaUscita);
+              }else if (Derivati.IsTipologiaDerivato(TipoUscita)){
+                  setDerivati.add(MonetaUscita);
               }
               //qui quelle in entrata mettendole ovviamente nella stessa mappa chemi servirà solo per avere poi l'elenco
               if (TipoEntrata.equalsIgnoreCase("Crypto")){
@@ -702,12 +707,16 @@ private static final long serialVersionUID = 9L;
                   setNFT.add(MonetaEntrata);
               }else if (TipoEntrata.equalsIgnoreCase("FIAT")){
                   setFIAT.add(MonetaEntrata);
+              }else if (Derivati.IsTipologiaDerivato(TipoEntrata)){
+                  setDerivati.add(MonetaEntrata);
               }
           }
           //un solo sort a fine ciclo: prima era 3*N ordinamenti dentro il for
           Lista_Cryptovalute = new ArrayList<>(setCrypto);
           Lista_NFT          = new ArrayList<>(setNFT);
           Lista_FIAT         = new ArrayList<>(setFIAT);
+          Lista_Derivati     = new ArrayList<>(setDerivati);
+          Collections.sort(Lista_Derivati);
           Collections.sort(Lista_Cryptovalute);
           Collections.sort(Lista_NFT);
           Collections.sort(Lista_FIAT);
@@ -724,6 +733,8 @@ private static final long serialVersionUID = 9L;
             Lista=Lista_NFT;
         } else if (Tipo.equalsIgnoreCase("FIAT")) {
             Lista=Lista_FIAT;
+        } else if (Derivati.IsTipologiaDerivato(Tipo)) {
+            Lista=Lista_Derivati;
         }
         combobox.setPopupVisible(false);
         combobox.removeAllItems();
@@ -1901,6 +1912,22 @@ private static final long serialVersionUID = 9L;
             
             }
         
+        //La tipologia Derivato e' dei soli token dei contratti (DERIV.<contratto>.LONG|SHORT), e quei token hanno solo quella: un'altra
+        //scelta darebbe due chiavi allo stesso token (Giacenze a data) e un codice del movimento sbagliato
+        String testoTipoDerivato = null;
+        boolean tipoUIncoerente = MonetaU != null && !MonetaU.isBlank() && MonetaUTipo != null
+                && Derivati.IsTokenContratto(MonetaU) != Derivati.IsTipologiaDerivato(MonetaUTipo);
+        boolean tipoEIncoerente = MonetaE != null && !MonetaE.isBlank() && MonetaETipo != null
+                && Derivati.IsTokenContratto(MonetaE) != Derivati.IsTipologiaDerivato(MonetaETipo);
+        if (tipoUIncoerente || tipoEIncoerente) {
+            nonCompleto = true;
+            testoTipoDerivato = "Derivato è la tipologia dei soli contratti derivati (token DERIV.…), e quei token hanno solo questa";
+            if (tipoUIncoerente) MonetaUscitaTipo_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));
+            if (tipoEIncoerente) MonetaEntrataTipo_ComboBox.setBackground(Color.getHSBColor(20, 20, 20));
+        }
+        MonetaUscitaTipo_ComboBox.setToolTipText(tipoUIncoerente ? testoTipoDerivato : null);
+        MonetaEntrataTipo_ComboBox.setToolTipText(tipoEIncoerente ? testoTipoDerivato : null);
+
                if (!nonCompleto)Bottone_Ok.setEnabled(true);
         else Bottone_Ok.setEnabled(false);
     

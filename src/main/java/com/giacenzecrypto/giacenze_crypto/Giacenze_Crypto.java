@@ -34,7 +34,9 @@ public class Giacenze_Crypto {
     public static void main(String[] args) {
 
         System.out.println("user.dir : " + System.getProperty("user.dir"));
-        VarStatiche.ArgomentiAvvio = args.clone();
+        //Dopo un riavvio chiesto dall'utente (cambio di tema) il processo precedente sta ancora chiudendo i database:
+        //si aspetta la sua fine prima di toccare qualunque file (vedi RiavvioProgramma)
+        VarStatiche.ArgomentiAvvio = RiavvioProgramma.AttendiChiusuraPrecedente(args);
         VarStatiche.setPathRisorse(getJarPath() + "/");
 
         //Prima passata: solo gli argomenti che servono a localizzare il logo. Tutto il resto (--debug,
@@ -178,6 +180,12 @@ public class Giacenze_Crypto {
                     Tabelle.Rosso = "FFA07A";
                     Tabelle.Verde = "9ACD32";
                     ImpostaColoriSelezione(Tabelle.selezioneScura, Color.WHITE);
+                } else if (FlatTemaBluLaf.is(Principale.tema)) {
+                    //Tema chiaro con la tavolozza blu notte: per icone, righe e dialoghi vale come
+                    //il chiaro (nessun confronto nel codice è con "Chiaro", solo con "Scuro")
+                    UIManager.setLookAndFeel(new FlatTemaBluLaf());
+                    FlatTemaBluLaf.ImpostaColoriTabelle();
+                    ImpostaColoriSelezione(Tabelle.selezione, Color.WHITE);
                 } else {
                     UIManager.setLookAndFeel(new FlatLightLaf());
                     Tabelle.verdeScuro = new Color(27, 94, 32);

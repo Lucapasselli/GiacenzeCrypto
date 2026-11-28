@@ -870,6 +870,30 @@ class Principale_GiacenzeaDataCostoCaricoTest {
     }
 
     @Test
+    void passataNecessariaDiceSeIlRicalcoloAvrebbeLavoroDaFare() {
+        //Il dettaglio di "Giacenze a data" (thread grafico) mette il ricalcolo nel thread con la finestra di avanzamento solo se
+        //c'e' lavoro vero: il controllo non deve modificare lo stato e deve seguire quello che AggiornaPlusvalenze farebbe
+        acquisto("2026-01-01 10:00", "weETH", "0.5", "100");
+        assertTrue(Calcoli_PlusvalenzeNew.PassataNecessaria(), "senza uno stato valido serve una passata");
+        assertTrue(Calcoli_PlusvalenzeNew.PassataNecessaria(), "il controllo non cambia lo stato: resta vero finche' non si ricalcola");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        assertFalse(Calcoli_PlusvalenzeNew.PassataNecessaria(), "movimenti invariati: nulla da fare");
+        assertFalse(Calcoli_PlusvalenzeNew.PassataNecessaria(), "ripetuto non cambia");
+
+        String[] vendita = vendita("2026-01-02 10:00", "weETH", "0.5", "150");
+        assertTrue(Calcoli_PlusvalenzeNew.PassataNecessaria(), "un movimento nuovo richiede una passata");
+
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        assertFalse(Calcoli_PlusvalenzeNew.PassataNecessaria());
+
+        vendita[15] = "160";
+        assertTrue(Calcoli_PlusvalenzeNew.PassataNecessaria(), "un movimento modificato richiede una passata");
+        Calcoli_PlusvalenzeNew.AggiornaPlusvalenze();
+        assertFalse(Calcoli_PlusvalenzeNew.PassataNecessaria());
+    }
+
+    @Test
     void ilValoreUnitarioNonSiScriveInNotazioneScientifica() {
         assertEquals("0.0000000015", Principale_GiacenzeaData.FormattaUnitario(1.5E-9));
         assertEquals("1234.5678", Principale_GiacenzeaData.FormattaUnitario(1234.5678));
